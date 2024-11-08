@@ -1,8 +1,7 @@
-﻿namespace ProjektGrupowy.API.DTOs.Project
+﻿namespace ProjektGrupowy.API.DTOs.Project;
+
+public class ProjectResponse
 {
-    public class ProjectResponse
-    {
-        public string Name { get; set; }
-        public string Description { get; set; }
-    }
+    public string Name { get; set; }
+    public string Description { get; set; }
 }

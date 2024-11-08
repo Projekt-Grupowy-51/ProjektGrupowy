@@ -1,90 +1,73 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
-using Microsoft.AspNetCore.Http;
+﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using ProjektGrupowy.API.Data;
 using ProjektGrupowy.API.DTOs.Project;
 using ProjektGrupowy.API.Models;
 using ProjektGrupowy.API.Services;
 
-namespace ProjektGrupowy.API.Controllers
+namespace ProjektGrupowy.API.Controllers;
+
+[Route("api/[controller]")]
+[ApiController]
+public class ProjectController(IProjectService projectService, IMapper mapper) : ControllerBase
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class ProjectController : ControllerBase
+    // GET: api/Project
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<ProjectResponse>>> GetProjectsAsync()
     {
-        private readonly IProjectService _projectService;
-        private readonly IMapper _mapper;
+        var projects = await projectService.GetProjectsAsync();
+        return Ok(mapper.Map<IEnumerable<ProjectResponse>>(projects));
+    }
 
-        public ProjectController(IProjectService projectService, IMapper mapper)
+    // GET: api/Project/5
+    [HttpGet("{id}")]
+    public async Task<ActionResult<ProjectResponse>> GetProjectAsync(int id)
+    {
+        var project = await projectService.GetProjectAsync(id);
+        if (project == null)
         {
-            _projectService = projectService;
-            _mapper = mapper;
+            return NotFound();
         }
 
-        // GET: api/Project
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<ProjectResponse>>> GetProjectsAsync()
+        return Ok(mapper.Map<ProjectResponse>(project));
+    }
+
+    // PUT: api/Project/5
+    // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+    [HttpPut("{id:int}")]
+    public async Task<IActionResult> PutProjectAsync(int id, ProjectRequest projectRequest)
+    {
+        var existingProject = await projectService.GetProjectAsync(id);
+
+        if (existingProject == null)
         {
-            var projects = await _projectService.GetProjectsAsync();
-            return Ok(_mapper.Map<IEnumerable<ProjectResponse>>(projects));
+            return BadRequest();
         }
 
-        // GET: api/Project/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<ProjectResponse>> GetProjectAsync(int id)
-        {
-            var project = await _projectService.GetProjectAsync(id);
-            if (project == null)
-            {
-                return NotFound();
-            }
+        var project = mapper.Map<Project>(projectRequest);
 
-            return Ok(_mapper.Map<ProjectResponse>(project));
-        }
+        var p = await projectService.UpdateProjectAsync(project);
 
-        // PUT: api/Project/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{name}")]
-        public async Task<IActionResult> PutProjectAsync(int id, ProjectRequest projectRequest)
-        {
-            var existingProject = await _projectService.GetProjectAsync(id);
+        return Ok(mapper.Map<ProjectResponse>(p));
+    }
 
-            if (existingProject == null)
-            {
-                return BadRequest();
-            }
+    // POST: api/Project
+    // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+    [HttpPost]
+    public async Task<ActionResult<ProjectResponse>> PostProject(ProjectRequest projectRequest)
+    {
+        var project = mapper.Map<Project>(projectRequest);
 
-            var project = _mapper.Map<Project>(projectRequest);
+        var p = await projectService.AddProjectAsync(project);
 
-            var p = await _projectService.UpdateProjectAsync(project);
+        return CreatedAtAction("GetProject", new { id = project.Id }, mapper.Map<ProjectResponse>(p));
+    }
 
-            return Ok(_mapper.Map<ProjectResponse>(p));
-        }
+    // DELETE: api/Project/5
+    [HttpDelete("{id:int}")]
+    public async Task<IActionResult> DeleteProject(int id)
+    {
+        await projectService.DeleteProjectAsync(id);
 
-        // POST: api/Project
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<ProjectResponse>> PostProject(ProjectRequest projectRequest)
-        {
-            var project = _mapper.Map<Project>(projectRequest);
-
-            var p = await _projectService.AddProjectAsync(project);
-
-            return CreatedAtAction("GetProject", new { id = project.Id }, _mapper.Map<ProjectResponse>(p));
-        }
-
-        // DELETE: api/Project/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteProject(int id)
-        {
-            await _projectService.DeleteProjectAsync(id);
-
-            return NoContent();
-        }
+        return NoContent();
     }
 }

@@ -1,48 +1,84 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ProjektGrupowy.API.Data;
 using ProjektGrupowy.API.Models;
+using ProjektGrupowy.API.Utils;
 
-namespace ProjektGrupowy.API.Repositories.Impl
+namespace ProjektGrupowy.API.Repositories.Impl;
+
+public class ProjectRepository(AppDbContext context, ILogger<ProjectRepository> logger) : IProjectRepository
 {
-    public class ProjectRepository : IProjectRepository
+    public async Task<Optional<Project>> AddProjectAsync(Project project)
     {
-        private readonly AppDbContext _context;
-
-        public ProjectRepository(AppDbContext context)
+        try
         {
-            _context = context;
+            var p = await context.Projects.AddAsync(project);
+            await context.SaveChangesAsync();
+
+            return Optional<Project>.Success(p.Entity);
         }
-
-        public async Task<Project> AddProjectAsync(Project project)
+        catch (Exception e)
         {
-            var p = await _context.Projects.AddAsync(project);
-            await _context.SaveChangesAsync();
-
-            return p.Entity;
+            logger.LogError(e, "An error occurred while adding project");
+            return Optional<Project>.Failure(e.Message);
         }
+    }
 
-        public async Task DeleteProjectAsync(Project project)
+    public async Task DeleteProjectAsync(Project project)
+    {
+        try
         {
-            _context.Projects.Remove(project);
-            await _context.SaveChangesAsync();
+            context.Projects.Remove(project);
+            await context.SaveChangesAsync();
         }
-
-        public async Task<Project> GetProjectAsync(int id)
+        catch (Exception e)
         {
-            return await _context.Projects.FirstOrDefaultAsync(p => p.Id == id);
+            logger.LogError(e, "An error occurred while deleting project");
         }
+    }
 
-        public async Task<IEnumerable<Project>> GetProjectsAsync()
+    public async Task<Optional<Project>> GetProjectAsync(int id)
+    {
+        try
         {
-            return await _context.Projects.ToListAsync();
+            var project = await context.Projects.FindAsync(id);
+            return project is null
+                ? Optional<Project>.Failure("Project not found")
+                : Optional<Project>.Success(project);
         }
-
-        public async Task<Project> UpdateProjectAsync(Project project)
+        catch (Exception e)
         {
-            var p = _context.Projects.Update(project);
-            await _context.SaveChangesAsync();
+            logger.LogError(e, "An error occurred while getting project");
+            return Optional<Project>.Failure(e.Message);
+        }
+    }
 
-            return p.Entity;
+    public async Task<Optional<IEnumerable<Project>>> GetProjectsAsync()
+    {
+        try
+        {
+            var projects = await context.Projects.ToListAsync();
+            return Optional<IEnumerable<Project>>.Success(projects);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "An error occurred while getting projects");
+            return Optional<IEnumerable<Project>>.Failure(e.Message);
+        }
+    }
+
+    public async Task<Optional<Project>> UpdateProjectAsync(Project project)
+    {
+        try
+        {
+            var p = context.Projects.Update(project);
+            await context.SaveChangesAsync();
+
+            return Optional<Project>.Success(p.Entity);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "An error occurred while updating project");
+            return Optional<Project>.Failure(e.Message);
         }
     }
 }
