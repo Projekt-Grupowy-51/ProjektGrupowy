@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using ProjektGrupowy.API.DTOs.Project;
+using ProjektGrupowy.API.Filters;
 using ProjektGrupowy.API.Models;
 using ProjektGrupowy.API.Services;
 
@@ -13,6 +14,7 @@ namespace ProjektGrupowy.API.Controllers;
 /// <param name="mapper"></param>
 [Route("api/[controller]")]
 [ApiController]
+[ServiceFilter(typeof(ValidateModelStateFilter))]
 public class ProjectController(IProjectService projectService, IMapper mapper) : ControllerBase
 {
     // GET: api/Project

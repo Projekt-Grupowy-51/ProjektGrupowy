@@ -22,7 +22,7 @@ services:
       dockerfile: Dockerfile
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Host=db;Database=mydatabase;Username=myuser;Password=mypassword
+      - ConnectionStrings__DefaultConnection=Host=db;Database=mydatabase;UserName=myuser;Password=mypassword
       - ASPNETCORE_URLS=http://+:80
     ports:
       - "5000:80"

@@ -1,9 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 
 namespace ProjektGrupowy.API.Models;
 
 public class Project
 {
+    [Key]
     public int Id { get; set; }
 
     [Required(ErrorMessage = "Podanie nazwy projektu jest wymagane.")]
