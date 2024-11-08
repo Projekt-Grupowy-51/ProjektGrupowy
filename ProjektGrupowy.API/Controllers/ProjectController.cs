@@ -6,6 +6,11 @@ using ProjektGrupowy.API.Services;
 
 namespace ProjektGrupowy.API.Controllers;
 
+/// <summary>
+/// Controller for managing projects.
+/// </summary>
+/// <param name="projectService"></param>
+/// <param name="mapper"></param>
 [Route("api/[controller]")]
 [ApiController]
 public class ProjectController(IProjectService projectService, IMapper mapper) : ControllerBase
@@ -15,7 +20,9 @@ public class ProjectController(IProjectService projectService, IMapper mapper) :
     public async Task<ActionResult<IEnumerable<ProjectResponse>>> GetProjectsAsync()
     {
         var projects = await projectService.GetProjectsAsync();
-        return Ok(mapper.Map<IEnumerable<ProjectResponse>>(projects));
+        return projects.IsSuccess
+            ? Ok(mapper.Map<IEnumerable<ProjectResponse>>(projects.GetValueOrThrow()))
+            : NotFound(projects.GetErrorOrThrow());
     }
 
     // GET: api/Project/5
@@ -23,12 +30,9 @@ public class ProjectController(IProjectService projectService, IMapper mapper) :
     public async Task<ActionResult<ProjectResponse>> GetProjectAsync(int id)
     {
         var project = await projectService.GetProjectAsync(id);
-        if (project == null)
-        {
-            return NotFound();
-        }
-
-        return Ok(mapper.Map<ProjectResponse>(project));
+        return project.IsSuccess
+            ? Ok(mapper.Map<ProjectResponse>(project.GetValueOrThrow()))
+            : NotFound(project.GetErrorOrThrow());
     }
 
     // PUT: api/Project/5
@@ -38,16 +42,18 @@ public class ProjectController(IProjectService projectService, IMapper mapper) :
     {
         var existingProject = await projectService.GetProjectAsync(id);
 
-        if (existingProject == null)
+        if (existingProject.IsFailure)
         {
-            return BadRequest();
+            return BadRequest(existingProject.GetErrorOrThrow());
         }
 
         var project = mapper.Map<Project>(projectRequest);
 
         var p = await projectService.UpdateProjectAsync(project);
 
-        return Ok(mapper.Map<ProjectResponse>(p));
+        return p.IsSuccess
+            ? NoContent()
+            : BadRequest(p.GetErrorOrThrow());
     }
 
     // POST: api/Project
@@ -59,7 +65,10 @@ public class ProjectController(IProjectService projectService, IMapper mapper) :
 
         var p = await projectService.AddProjectAsync(project);
 
-        return CreatedAtAction("GetProject", new { id = project.Id }, mapper.Map<ProjectResponse>(p));
+        return p.IsSuccess
+            ? CreatedAtAction("GetProject", new { id = p.GetValueOrThrow().Id },
+                mapper.Map<ProjectResponse>(p.GetValueOrThrow()))
+            : BadRequest(p.GetErrorOrThrow());
     }
 
     // DELETE: api/Project/5

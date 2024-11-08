@@ -8,7 +8,15 @@ public class Optional<TOption>
 {
     private readonly TOption _value;
     private readonly string _error;
+
+    /// <summary>
+    /// IsSuccess is a property that returns true if the result is a success.
+    /// </summary>
     public bool IsSuccess { get; }
+
+    /// <summary>
+    /// IsFailure is a property that returns true if the result is a failure.
+    /// </summary>
     public bool IsFailure => !IsSuccess;
 
     private Optional(TOption value, string error, bool isSuccess)
