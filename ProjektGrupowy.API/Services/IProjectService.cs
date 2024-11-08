@@ -1,13 +1,13 @@
 ﻿using ProjektGrupowy.API.Models;
+using ProjektGrupowy.API.Utils;
 
-namespace ProjektGrupowy.API.Services
+namespace ProjektGrupowy.API.Services;
+
+public interface IProjectService
 {
-    public interface IProjectService
-    {
-        Task<IEnumerable<Project>> GetProjectsAsync();
-        Task<Project> GetProjectAsync(int id);
-        Task<Project> AddProjectAsync(Project project);
-        Task<Project> UpdateProjectAsync(Project project);
-        Task DeleteProjectAsync(int id);
-    }
+    Task<Optional<IEnumerable<Project>>> GetProjectsAsync();
+    Task<Optional<Project>> GetProjectAsync(int id);
+    Task<Optional<Project>> AddProjectAsync(Project project);
+    Task<Optional<Project>> UpdateProjectAsync(Project project);
+    Task DeleteProjectAsync(int id);
 }

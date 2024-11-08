@@ -1,28 +1,22 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ProjektGrupowy.API.Models;
-using System.Reflection.Emit;
 
-namespace ProjektGrupowy.API.Data
+namespace ProjektGrupowy.API.Data;
+
+public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
-    public class AppDbContext : DbContext
+    public DbSet<Project> Projects { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
-        {
-        }
+        ConfigureProjects(modelBuilder);
+    }
 
-        public DbSet<Project> Projects { get; set; }
-
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            ConfigureProjects(modelBuilder);
-        }
-
-        private void ConfigureProjects(ModelBuilder modelBuilder)
-        {
-            modelBuilder.Entity<Project>().HasKey(p => p.Id);
-            modelBuilder.Entity<Project>()
-                .Property(p => p.Id)
-                .ValueGeneratedOnAdd();
-        }
+    private void ConfigureProjects(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Project>().HasKey(p => p.Id);
+        modelBuilder.Entity<Project>()
+            .Property(p => p.Id)
+            .ValueGeneratedOnAdd();
     }
 }
