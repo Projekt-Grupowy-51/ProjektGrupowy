@@ -6,9 +6,5 @@ namespace ProjektGrupowy.API.Models;
 
 public class User : IdentityUser
 {
-    public DateTime RegistrationDate { get; set; }
-    public User()
-    {
-        RegistrationDate = DateTime.UtcNow;
-    }
+    public DateTime RegistrationDate { get; set; } = DateTime.UtcNow;
 }

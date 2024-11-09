@@ -40,7 +40,7 @@ public class ProjectRepository(AppDbContext context, ILogger<ProjectRepository> 
     {
         try
         {
-            var project = await context.Projects.FindAsync(id);
+            var project = await context.Projects.Include(p => p.Videos).FirstOrDefaultAsync(p => p.Id == id);
             return project is null
                 ? Optional<Project>.Failure("Project not found")
                 : Optional<Project>.Success(project);
@@ -56,7 +56,7 @@ public class ProjectRepository(AppDbContext context, ILogger<ProjectRepository> 
     {
         try
         {
-            var projects = await context.Projects.ToListAsync();
+            var projects = await context.Projects.Include(p => p.Videos).ToListAsync();
             return Optional<IEnumerable<Project>>.Success(projects);
         }
         catch (Exception e)

@@ -28,7 +28,7 @@ public class ProjectController(IProjectService projectService, IMapper mapper) :
     }
 
     // GET: api/Project/5
-    [HttpGet("{id}")]
+    [HttpGet("{id:int}")]
     public async Task<ActionResult<ProjectResponse>> GetProjectAsync(int id)
     {
         var project = await projectService.GetProjectAsync(id);
