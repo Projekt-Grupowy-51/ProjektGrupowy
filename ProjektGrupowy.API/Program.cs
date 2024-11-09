@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using ProjektGrupowy.API.Data;
@@ -15,6 +14,7 @@ using ProjektGrupowy.API.Services.Impl;
 using ProjektGrupowy.API.Utils.Enums;
 using Serilog;
 using System.Text;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -54,13 +54,23 @@ app.Run();
 
 static void AddServices(WebApplicationBuilder builder)
 {
-    builder.Services.AddControllers();
+    builder.Services.AddControllers()
+        .AddJsonOptions(options => { options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve; });
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
 
+    // Project
     builder.Services.AddScoped<IProjectService, ProjectService>();
     builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
+
+    // Video
+    builder.Services.AddScoped<IVideoService, VideoService>();
+    builder.Services.AddScoped<IVideoRepository, VideoRepository>();
+
+    // Mapper
     builder.Services.AddAutoMapper(typeof(ProjectMap));
+    builder.Services.AddAutoMapper(typeof(VideoMap));
+
     builder.Services.AddScoped<ValidateModelStateFilter>();
 
     builder.Services.AddDbContext<AppDbContext>(options =>
@@ -71,23 +81,23 @@ static void AddServices(WebApplicationBuilder builder)
         .AddDefaultTokenProviders();
 
     builder.Services.AddAuthentication(options =>
-    {
-        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    })
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["JWT:ValidIssuer"],
-            ValidAudience = builder.Configuration["JWT:ValidAudience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Secret"]))
-        };
-    });
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        })
+        .AddJwtBearer(options =>
+        {
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = builder.Configuration["JWT:ValidIssuer"],
+                ValidAudience = builder.Configuration["JWT:ValidAudience"],
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Secret"]))
+            };
+        });
 }
 
 static async Task SeedDatabase(IServiceProvider serviceProvider)
@@ -102,7 +112,6 @@ static async Task CreateRoles(IServiceProvider serviceProvider)
     using var scope = serviceProvider.CreateScope();
 
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-    IdentityResult roleResult;
 
     var roleNames = Enum.GetValues(typeof(RoleEnum)).Cast<RoleEnum>();
 
@@ -111,14 +120,15 @@ static async Task CreateRoles(IServiceProvider serviceProvider)
         var roleExist = await roleManager.RoleExistsAsync(roleName.ToString());
         if (!roleExist)
         {
-            roleResult = await roleManager.CreateAsync(new IdentityRole(roleName.ToString()));
+            var roleResult = await roleManager.CreateAsync(new IdentityRole(roleName.ToString()));
             if (roleResult.Succeeded)
             {
                 Log.Information($"Rola {roleName} zosta³a pomyœlnie utworzona.");
             }
             else
             {
-                Log.Error($"B³¹d przy tworzeniu roli {roleName}: {string.Join(", ", roleResult.Errors.Select(e => e.Description))}");
+                Log.Error(
+                    $"B³¹d przy tworzeniu roli {roleName}: {string.Join(", ", roleResult.Errors.Select(e => e.Description))}");
             }
         }
         else
@@ -127,4 +137,3 @@ static async Task CreateRoles(IServiceProvider serviceProvider)
         }
     }
 }
-

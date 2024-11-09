@@ -1,13 +1,10 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using ProjektGrupowy.API.Data;
 using ProjektGrupowy.API.DTOs.Auth;
 using ProjektGrupowy.API.Filters;
 using ProjektGrupowy.API.Models;
-using ProjektGrupowy.API.Utils;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -34,33 +31,31 @@ public class AuthController(UserManager<User> userManager, RoleManager<IdentityR
             SecurityStamp = Guid.NewGuid().ToString()
         };
 
-        using (var transaction = await context.Database.BeginTransactionAsync())
+        await using var transaction = await context.Database.BeginTransactionAsync();
+        try
         {
-            try
+            var result = await userManager.CreateAsync(user, model.Password);
+            if (!result.Succeeded)
             {
-                var result = await userManager.CreateAsync(user, model.Password);
-                if (!result.Succeeded)
-                {
-                    var errors = result.Errors.Select(e => e.Description).ToList();
-                    return StatusCode(500, new { Status = "Error", Message = "User creation failed!", Errors = errors });
-                }
-
-                if (!await roleManager.RoleExistsAsync(model.Role.ToString()))
-                    return StatusCode(500, new { Status = "Error", Message = "Role does not exist!" });
-
-                var roleResult = await userManager.AddToRoleAsync(user, model.Role.ToString());
-                if (!roleResult.Succeeded)
-                    return StatusCode(500, new { Status = "Error", Message = "Failed to assign role to user." });
-
-                await transaction.CommitAsync();
-
-                return Ok(new { Status = "Success", Message = "User created and assigned to role successfully!" });
+                var errors = result.Errors.Select(e => e.Description).ToList();
+                return StatusCode(500, new { Status = "Error", Message = "User creation failed!", Errors = errors });
             }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync();
-                return StatusCode(500, new { Status = "Error", Message = "An error occurred during registration.", Detail = ex.Message });
-            }
+
+            if (!await roleManager.RoleExistsAsync(model.Role.ToString()))
+                return StatusCode(500, new { Status = "Error", Message = "Role does not exist!" });
+
+            var roleResult = await userManager.AddToRoleAsync(user, model.Role.ToString());
+            if (!roleResult.Succeeded)
+                return StatusCode(500, new { Status = "Error", Message = "Failed to assign role to user." });
+
+            await transaction.CommitAsync();
+
+            return Ok(new { Status = "Success", Message = "User created and assigned to role successfully!" });
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync();
+            return StatusCode(500, new { Status = "Error", Message = "An error occurred during registration.", Detail = ex.Message });
         }
     }
 
@@ -73,15 +68,12 @@ public class AuthController(UserManager<User> userManager, RoleManager<IdentityR
 
         var authClaims = new List<Claim>
         {
-            new Claim(ClaimTypes.Name, user.UserName),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new(ClaimTypes.Name, user.UserName),
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
         };
 
         var userRoles = await userManager.GetRolesAsync(user);
-        foreach (var userRole in userRoles)
-        {
-            authClaims.Add(new Claim(ClaimTypes.Role, userRole));
-        }
+        authClaims.AddRange(userRoles.Select(userRole => new Claim(ClaimTypes.Role, userRole)));
 
         var token = GenerateJwtToken(authClaims);
 

@@ -1,4 +1,5 @@
-﻿using ProjektGrupowy.API.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using ProjektGrupowy.API.Data;
 using ProjektGrupowy.API.Models;
 
 namespace ProjektGrupowy.API.DB;
@@ -7,7 +8,7 @@ public static class DbSeeder
 {
     public static async Task SeedAsync(AppDbContext context)
     {
-        if (context.Projects.Any())
+        if (await context.Projects.AnyAsync())
             return;
 
         await context.Projects.AddRangeAsync(
@@ -27,6 +28,7 @@ public static class DbSeeder
                 Description = "Opis projektu 3"
             }
         );
+
 
         await context.SaveChangesAsync();
     }
