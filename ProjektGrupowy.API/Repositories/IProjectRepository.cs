@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis.Options;
+﻿using Microsoft.EntityFrameworkCore.Storage;
 using ProjektGrupowy.API.Models;
 using ProjektGrupowy.API.Utils;
 
@@ -11,4 +11,6 @@ public interface IProjectRepository
     Task<Optional<Project>> AddProjectAsync(Project project);
     Task<Optional<Project>> UpdateProjectAsync(Project project);
     Task DeleteProjectAsync(Project project);
+
+    Task<IDbContextTransaction> BeginTransactionAsync();
 }

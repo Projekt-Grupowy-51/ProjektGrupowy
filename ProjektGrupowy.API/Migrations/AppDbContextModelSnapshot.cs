@@ -154,21 +154,6 @@ namespace ProjektGrupowy.API.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("ProjectVideo", b =>
-                {
-                    b.Property<int>("ProjectId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("VideoId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("ProjectId", "VideoId");
-
-                    b.HasIndex("VideoId");
-
-                    b.ToTable("ProjectVideo");
-                });
-
             modelBuilder.Entity("ProjektGrupowy.API.Models.Project", b =>
                 {
                     b.Property<int>("Id")
@@ -189,7 +174,7 @@ namespace ProjektGrupowy.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Projects");
+                    b.ToTable("Projekty");
                 });
 
             modelBuilder.Entity("ProjektGrupowy.API.Models.User", b =>
@@ -277,6 +262,9 @@ namespace ProjektGrupowy.API.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 
+                    b.Property<int>("ProjectId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -284,7 +272,9 @@ namespace ProjektGrupowy.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Videos");
+                    b.HasIndex("ProjectId");
+
+                    b.ToTable("Wideo");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -338,19 +328,20 @@ namespace ProjektGrupowy.API.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ProjectVideo", b =>
+            modelBuilder.Entity("ProjektGrupowy.API.Models.Video", b =>
                 {
-                    b.HasOne("ProjektGrupowy.API.Models.Project", null)
-                        .WithMany()
+                    b.HasOne("ProjektGrupowy.API.Models.Project", "Project")
+                        .WithMany("Videos")
                         .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ProjektGrupowy.API.Models.Video", null)
-                        .WithMany()
-                        .HasForeignKey("VideoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Navigation("Project");
+                });
+
+            modelBuilder.Entity("ProjektGrupowy.API.Models.Project", b =>
+                {
+                    b.Navigation("Videos");
                 });
 #pragma warning restore 612, 618
         }

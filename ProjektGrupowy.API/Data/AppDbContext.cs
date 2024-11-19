@@ -13,14 +13,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
     {
         base.OnModelCreating(modelBuilder);
 
-        // Konfiguracja związku wiele do wielu między projektami a wideo.
+        // Związek jeden do wielu między projektami a wideo.
         modelBuilder.Entity<Project>()
             .HasMany(p => p.Videos)
-            .WithMany(v => v.Projects)
-            .UsingEntity<Dictionary<string, object>>(
-                "ProjectVideo",
-                j => j.HasOne<Video>().WithMany().HasForeignKey("VideoId"),
-                j => j.HasOne<Project>().WithMany().HasForeignKey("ProjectId"));
+            .WithOne(v => v.Project)
+            .HasForeignKey(v => v.ProjectId);
 
         ConfigureProjects(modelBuilder);
     }
