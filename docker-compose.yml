@@ -3,7 +3,7 @@
 services:
   db:
     build:
-      context: ./db
+      context: ./ProjektGrupowy.API/db
       dockerfile: Dockerfile
     environment:
       POSTGRES_USER: myuser
@@ -18,7 +18,7 @@ services:
 
   app:
     build:
-      context: .
+      context: ./ProjektGrupowy.API
       dockerfile: Dockerfile
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
@@ -31,7 +31,17 @@ services:
     depends_on:
       - db
 
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    networks:
+      - mynetwork
+
 volumes:
   postgres_data:
+
 networks:
   mynetwork:
