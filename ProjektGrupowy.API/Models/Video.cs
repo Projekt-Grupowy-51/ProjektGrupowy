@@ -1,10 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ProjektGrupowy.API.Models;
 
 /// <summary>
 /// Klasa reprezentująca wideo jako model.
 /// </summary>
+
+[Table("Wideo")]
 public class Video
 {
     [Key] public int Id { get; set; }
@@ -15,7 +18,10 @@ public class Video
 
     [Required] [StringLength(255)] public string Path { get; set; }
 
-    public ICollection<Project> Projects { get; set; } = new List<Project>();
+    
+    // Navigation property to one project
+    public Project Project { get; set; }
+    public int ProjectId { get; set; }
 
     public Stream ToStream()
     {

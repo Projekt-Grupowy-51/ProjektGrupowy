@@ -7,29 +7,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ProjektGrupowy.API.Migrations
 {
     /// <inheritdoc />
-    public partial class AddedUser_AddedKey_Annotation : Migration
+    public partial class initialone : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<string>(
-                name: "Name",
-                table: "Projects",
-                type: "character varying(255)",
-                maxLength: 255,
-                nullable: false,
-                oldClrType: typeof(string),
-                oldType: "text");
-
-            migrationBuilder.AlterColumn<string>(
-                name: "Description",
-                table: "Projects",
-                type: "character varying(1000)",
-                maxLength: 1000,
-                nullable: false,
-                oldClrType: typeof(string),
-                oldType: "text");
-
             migrationBuilder.CreateTable(
                 name: "AspNetRoles",
                 columns: table => new
@@ -49,8 +31,8 @@ namespace ProjektGrupowy.API.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "text", nullable: false),
-                    UserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false),
                     RegistrationDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     NormalizedEmail = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
@@ -68,6 +50,20 @@ namespace ProjektGrupowy.API.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Projekty",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    Description = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Projekty", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -176,6 +172,28 @@ namespace ProjektGrupowy.API.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Wideo",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Title = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    Description = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    Path = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    ProjectId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Wideo", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Wideo_Projekty_ProjectId",
+                        column: x => x.ProjectId,
+                        principalTable: "Projekty",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -212,6 +230,11 @@ namespace ProjektGrupowy.API.Migrations
                 table: "AspNetUsers",
                 column: "NormalizedUserName",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Wideo_ProjectId",
+                table: "Wideo",
+                column: "ProjectId");
         }
 
         /// <inheritdoc />
@@ -233,28 +256,16 @@ namespace ProjektGrupowy.API.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "Wideo");
+
+            migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
 
-            migrationBuilder.AlterColumn<string>(
-                name: "Name",
-                table: "Projects",
-                type: "text",
-                nullable: false,
-                oldClrType: typeof(string),
-                oldType: "character varying(255)",
-                oldMaxLength: 255);
-
-            migrationBuilder.AlterColumn<string>(
-                name: "Description",
-                table: "Projects",
-                type: "text",
-                nullable: false,
-                oldClrType: typeof(string),
-                oldType: "character varying(1000)",
-                oldMaxLength: 1000);
+            migrationBuilder.DropTable(
+                name: "Projekty");
         }
     }
 }

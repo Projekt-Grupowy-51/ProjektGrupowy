@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using ProjektGrupowy.API.Data;
 using ProjektGrupowy.API.Models;
 using ProjektGrupowy.API.Utils;
@@ -35,6 +36,8 @@ public class ProjectRepository(AppDbContext context, ILogger<ProjectRepository> 
             logger.LogError(e, "An error occurred while deleting project");
         }
     }
+
+    public async Task<IDbContextTransaction> BeginTransactionAsync() => await context.Database.BeginTransactionAsync();
 
     public async Task<Optional<Project>> GetProjectAsync(int id)
     {

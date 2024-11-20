@@ -11,6 +11,7 @@ public class VideoService(
     IConfiguration configuration) : IVideoService
 {
     public async Task<Optional<IEnumerable<Video>>> GetVideosAsync() => await videoRepository.GetVideosAsync();
+
     public async Task<Optional<IEnumerable<Video>>> GetVideosFromProjectAsync(int projectId)
     {
         var project = await projectRepository.GetProjectAsync(projectId);
@@ -43,22 +44,32 @@ public class VideoService(
 
     public async Task<Optional<Video>> AddVideoToProjectAsync(int projectId, VideoRequest videoRequest)
     {
-        var project = await projectRepository.GetProjectAsync(projectId);
-        if (project.IsFailure)
+        await using var transaction = await projectRepository.BeginTransactionAsync();
+
+        try
         {
-            return Optional<Video>.Failure(project.GetErrorOrThrow());
-        }
+            var project = await projectRepository.GetProjectAsync(projectId);
+            if (project.IsFailure)
+                return Optional<Video>.Failure(project.GetErrorOrThrow());
 
-        var videoOptional = await AddVideoAsync(videoRequest);
-        if (videoOptional.IsFailure)
+            var videoOptional = await AddVideoAsync(videoRequest);
+            if (videoOptional.IsFailure)
+                return Optional<Video>.Failure(videoOptional.GetErrorOrThrow());
+
+            var projectEntity = project.GetValueOrThrow();
+            projectEntity.Videos.Add(videoOptional.GetValueOrThrow());
+
+            await projectRepository.UpdateProjectAsync(projectEntity);
+
+            await transaction.CommitAsync(); // Commit transaction if everything is successful
+
+            return videoOptional;
+        }
+        catch (Exception ex)
         {
-            return Optional<Video>.Failure(videoOptional.GetErrorOrThrow());
+            await transaction.RollbackAsync();          // Rollback transaction in case of any error
+            return Optional<Video>.Failure(ex.Message); // Return failure with exception details
         }
-
-        project.GetValueOrThrow().Videos.Add(videoOptional.GetValueOrThrow());
-        await projectRepository.UpdateProjectAsync(project.GetValueOrThrow());
-
-        return videoOptional;
     }
 
     public async Task<Optional<Video>> UpdateVideoAsync(Video video) => await videoRepository.UpdateVideoAsync(video);
@@ -67,8 +78,6 @@ public class VideoService(
     {
         var video = await videoRepository.GetVideoAsync(id);
         if (video.IsSuccess)
-        {
             await videoRepository.DeleteVideoAsync(video.GetValueOrThrow());
-        }
     }
 }
