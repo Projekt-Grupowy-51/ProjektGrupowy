@@ -33,12 +33,16 @@ services:
 
   frontend:
     build:
-      context: ./frontend
-      dockerfile: Dockerfile
+        context: ./frontend
+        dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+        - "3000:3000"
     networks:
-      - mynetwork
+        - mynetwork
+    depends_on:
+        - app
+
+
 
 volumes:
   postgres_data:

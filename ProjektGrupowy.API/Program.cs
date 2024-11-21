@@ -45,6 +45,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseCors("FrontendPolicy");
+
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -58,6 +60,20 @@ static void AddServices(WebApplicationBuilder builder)
         .AddJsonOptions(options => { options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve; });
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
+
+    // CORS
+    builder.Services.AddCors(options =>
+    {
+        options.AddPolicy("FrontendPolicy", policy =>
+        {
+            policy.WithOrigins("http://localhost:3000") // Adres Reacta
+                  .AllowAnyHeader()
+                  .AllowAnyMethod()
+                  .AllowCredentials();
+        });
+    });
+
+
 
     // Project
     builder.Services.AddScoped<IProjectService, ProjectService>();
