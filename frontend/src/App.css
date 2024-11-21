@@ -17,3 +17,11 @@ th, td {
     padding-left: 1rem;
     padding-right: 1rem;
 }
+
+th {
+    background: #c1fdfd;
+}
+
+table {
+    width: 100%;
+}
