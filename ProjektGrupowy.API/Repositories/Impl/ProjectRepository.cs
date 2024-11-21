@@ -40,7 +40,7 @@ public class ProjectRepository(AppDbContext context, ILogger<ProjectRepository> 
     {
         try
         {
-            var project = await context.Projects.Include(p => p.Videos).FirstOrDefaultAsync(p => p.Id == id);
+            var project = await context.Projects.FirstOrDefaultAsync(p => p.Id == id);
             return project is null
                 ? Optional<Project>.Failure("Project not found")
                 : Optional<Project>.Success(project);
