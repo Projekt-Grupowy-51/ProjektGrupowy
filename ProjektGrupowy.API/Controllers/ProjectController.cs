@@ -51,7 +51,10 @@ public class ProjectController(IProjectService projectService, IMapper mapper) :
 
         var project = mapper.Map<Project>(projectRequest);
 
-        var p = await projectService.UpdateProjectAsync(project);
+        existingProject.GetValueOrThrow().Name = project.Name;
+        existingProject.GetValueOrThrow().Description = project.Description;
+
+        var p = await projectService.UpdateProjectAsync(existingProject.GetValueOrThrow());
 
         return p.IsSuccess
             ? NoContent()
