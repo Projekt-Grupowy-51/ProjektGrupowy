@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ProjektGrupowy.API.Models;
 
-[Table("Projekty")]
+[Table("Projects")]
 public class Project
 {
     [Key]
@@ -17,5 +17,9 @@ public class Project
     [StringLength(1000, ErrorMessage = "Maksymalna długość opisu projektu wynosi 1000 znaków.")]
     public string Description { get; set; }
 
-    public ICollection<Video> Videos { get; set; } = new List<Video>();
+    public virtual ICollection<Video> Videos { get; set; } = new List<Video>();
+
+    public virtual Scientist Scientist { get; set; }
+
+    public int ScientistId { get; set; }
 }

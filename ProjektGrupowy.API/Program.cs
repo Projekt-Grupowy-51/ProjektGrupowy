@@ -87,6 +87,9 @@ static void AddServices(WebApplicationBuilder builder)
     builder.Services.AddScoped<IVideoService, VideoService>();
     builder.Services.AddScoped<IVideoRepository, VideoRepository>();
 
+    builder.Services.AddScoped<IScientistService, ScientistService>();
+    builder.Services.AddScoped<IScientistRepository, ScientistRepository>();
+
     // Mapper
     builder.Services.AddAutoMapper(typeof(ProjectMap));
     builder.Services.AddAutoMapper(typeof(VideoMap));
@@ -94,7 +97,10 @@ static void AddServices(WebApplicationBuilder builder)
     builder.Services.AddScoped<ValidateModelStateFilter>();
 
     builder.Services.AddDbContext<AppDbContext>(options =>
-        options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+        options
+            .UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+            .UseLazyLoadingProxies()
+    );
 
     builder.Services.AddIdentity<User, IdentityRole>()
         .AddEntityFrameworkStores<AppDbContext>()

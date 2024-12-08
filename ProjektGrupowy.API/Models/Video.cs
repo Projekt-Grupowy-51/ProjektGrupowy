@@ -7,7 +7,7 @@ namespace ProjektGrupowy.API.Models;
 /// Klasa reprezentująca wideo jako model.
 /// </summary>
 
-[Table("Wideo")]
+[Table("Vidoes")]
 public class Video
 {
     [Key] public int Id { get; set; }
@@ -20,7 +20,7 @@ public class Video
 
     
     // Navigation property to one project
-    public Project Project { get; set; }
+    public virtual Project Project { get; set; }
     public int ProjectId { get; set; }
 
     public Stream ToStream()

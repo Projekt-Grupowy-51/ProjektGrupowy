@@ -9,15 +9,24 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
     public DbSet<Project> Projects { get; set; }
     public DbSet<Video> Videos { get; set; }
 
+    public DbSet<Scientist> Scientists { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
-        // Związek jeden do wielu między projektami a wideo.
+        modelBuilder.Entity<Scientist>()
+            .HasMany(s => s.Projects)
+            .WithOne(p => p.Scientist)
+            .HasForeignKey(p => p.ScientistId)
+            .OnDelete(DeleteBehavior.Cascade);
+            
+
         modelBuilder.Entity<Project>()
             .HasMany(p => p.Videos)
             .WithOne(v => v.Project)
-            .HasForeignKey(v => v.ProjectId);
+            .HasForeignKey(v => v.ProjectId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         ConfigureProjects(modelBuilder);
     }
