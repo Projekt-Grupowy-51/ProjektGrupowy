@@ -17,9 +17,10 @@ public class Project
     [StringLength(1000, ErrorMessage = "Maksymalna długość opisu projektu wynosi 1000 znaków.")]
     public string Description { get; set; }
 
-    public virtual ICollection<Video> Videos { get; set; } = new List<Video>();
+    public virtual ICollection<Video>? Videos { get; set; } = new List<Video>();
 
+    public virtual ICollection<Subject>? Subjects { get; set; } = new List<Subject>();
+
+    [Required]
     public virtual Scientist Scientist { get; set; }
-
-    public int ScientistId { get; set; }
 }

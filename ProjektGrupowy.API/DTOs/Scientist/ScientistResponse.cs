@@ -13,6 +13,4 @@ public class ScientistResponse
     public string FullName => $"{FirstName} {LastName}";
 
     public string FullNameWithTitle => $"{Title} {FullName}";
-
-    public List<ProjectResponse> Projects { get; set; }
 }

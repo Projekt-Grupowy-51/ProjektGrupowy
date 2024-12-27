@@ -19,5 +19,5 @@ public class Scientist
     public string Title { get; set; }
     public string Description { get; set; }
 
-    public virtual ICollection<Project> Projects { get; set; } = new List<Project>();
+    public virtual ICollection<Project>? Projects { get; set; } = new List<Project>();
 }

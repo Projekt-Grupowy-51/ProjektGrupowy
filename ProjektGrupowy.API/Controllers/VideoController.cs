@@ -38,22 +38,6 @@ public class VideoController(IVideoService videoService, IMapper mapper) : Contr
             : NotFound(videoOptional.GetErrorOrThrow());
     }
 
-    [HttpGet("project/{projectId:int}")]
-    public async Task<ActionResult> GetVideosFromProjectAsync(int projectId)
-    {
-        var videos = await videoService.GetVideosFromProjectAsync(projectId);
-        return videos.IsSuccess
-            ? Ok(mapper.Map<IEnumerable<VideoResponse>>(videos.GetValueOrThrow()))
-            : NotFound(videos.GetErrorOrThrow());
-    }
-
-    [HttpPost("project/{projectId:int}")]
-    public async Task<ActionResult> AddVideoToProjectAsync(int projectId, VideoRequest videoRequest) {
-        var video = await videoService.AddVideoToProjectAsync(projectId, videoRequest);
-        return video.IsSuccess
-            ? CreatedAtAction("GetVideo", new { id = video.GetValueOrThrow().Id }, video.GetValueOrThrow())
-            : BadRequest(video.GetErrorOrThrow());
-    }
 
     [HttpDelete("{id:int}")]
     public async Task<ActionResult> DeleteVideoAsync(int id)

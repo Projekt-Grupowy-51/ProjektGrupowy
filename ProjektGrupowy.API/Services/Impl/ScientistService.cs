@@ -1,6 +1,4 @@
-﻿using ProjektGrupowy.API.DTOs.Project;
-using ProjektGrupowy.API.DTOs.Scientist;
-using ProjektGrupowy.API.Models;
+﻿using ProjektGrupowy.API.Models;
 using ProjektGrupowy.API.Repositories;
 using ProjektGrupowy.API.Utils;
 

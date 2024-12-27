@@ -34,11 +34,25 @@ public class ScientistController(IScientistService scientistService, IMapper map
     [HttpPost]
     public async Task<ActionResult<ScientistResponse>> AddScientistAsync(ScientistRequest scientistRequest)
     {
-        var scientist = mapper.Map<Scientist>(scientistRequest);
+        var scientist = new Scientist
+        {
+            FirstName = scientistRequest.FirstName,
+            LastName = scientistRequest.LastName,
+            Title = scientistRequest.Title,
+            Description = scientistRequest.Description
+        };
         var result = await scientistService.AddScientistAsync(scientist);
-        return result.IsSuccess
-            ? CreatedAtAction("GetScientist", new { id = result.GetValueOrThrow().Id }, result.GetValueOrThrow())
-            : BadRequest(result.GetErrorOrThrow());
+
+        if (result.IsSuccess)
+        {
+            var createdScientist = result.GetValueOrThrow();
+
+            var scientistResponse = mapper.Map<ScientistResponse>(createdScientist);
+
+            return CreatedAtAction("GetScientist", new { id = createdScientist.Id }, scientistResponse);
+        }
+
+        return BadRequest(result.GetErrorOrThrow());
     }
 
     [HttpPut("{id:int}")]
@@ -51,18 +65,25 @@ public class ScientistController(IScientistService scientistService, IMapper map
             return BadRequest(existingScientist.GetErrorOrThrow());
         }
 
-        var scientist = mapper.Map<Scientist>(scientistRequest);
+        var scientist = new Scientist
+        {
+            FirstName = scientistRequest.FirstName,
+            LastName = scientistRequest.LastName,
+            Title = scientistRequest.Title,
+            Description = scientistRequest.Description
+        };
 
-        existingScientist.GetValueOrThrow().FirstName = scientist.FirstName;
-        existingScientist.GetValueOrThrow().LastName = scientist.LastName;
-        existingScientist.GetValueOrThrow().Description = scientist.Description;
-        existingScientist.GetValueOrThrow().Title = scientist.Title;
+        var updatedScientist = existingScientist.GetValueOrThrow();
+        updatedScientist.FirstName = scientistRequest.FirstName;
+        updatedScientist.LastName = scientistRequest.LastName;
+        updatedScientist.Title = scientistRequest.Title;
+        updatedScientist.Description = scientistRequest.Description;
 
-        var s = await scientistService.UpdateScientistAsync(existingScientist.GetValueOrThrow());
+        var result = await scientistService.UpdateScientistAsync(updatedScientist);
 
-        return s.IsSuccess
+        return result.IsSuccess
             ? NoContent()
-            : BadRequest(s.GetErrorOrThrow());
+            : BadRequest(result.GetErrorOrThrow());
     }
 
     [HttpDelete("{id:int}")]
@@ -75,10 +96,14 @@ public class ScientistController(IScientistService scientistService, IMapper map
     [HttpPost("{scientistId:int}/project")]
     public async Task<ActionResult> AddProjectToScientist(int scientistId, ProjectRequest projectRequest)
     {
-        var project = mapper.Map<Project>(projectRequest);
+        var project = new Project
+        {
+            Name = projectRequest.Name,
+            Description = projectRequest.Description
+        };
         var result = await scientistService.AddProjectToScientist(scientistId, project);
         return result.IsSuccess
-            ? CreatedAtAction("GetProject", new { id = result.GetValueOrThrow().Id }, result.GetValueOrThrow())
+            ? CreatedAtAction("GetProject", new { id = result.GetValueOrThrow().Id })
             : BadRequest(result.GetErrorOrThrow());
     }
 }

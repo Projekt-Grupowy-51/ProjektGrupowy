@@ -12,10 +12,6 @@ public class ProjectMap : Profile
             .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
             .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
             .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description))
-            .ForMember(dest => dest.Videos, opt => opt.MapFrom(src => src.Videos));
-
-        CreateMap<ProjectRequest, Project>()
-            .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description))
-            .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name));
+            .ForMember(dest => dest.ScientistId, opt => opt.MapFrom(src => src.Scientist.Id));
     }
 }

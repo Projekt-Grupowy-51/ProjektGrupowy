@@ -3,25 +3,26 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ProjektGrupowy.API.Models;
 
-/// <summary>
-/// Klasa reprezentująca wideo jako model.
-/// </summary>
-
 [Table("Vidoes")]
 public class Video
 {
-    [Key] public int Id { get; set; }
+    [Key]
+    public int Id { get; set; }
 
-    [Required] [StringLength(255)] public string Title { get; set; }
+    [Required]
+    [StringLength(255)]
+    public string Title { get; set; }
 
-    [Required] [StringLength(255)] public string Description { get; set; }
+    [Required]
+    [StringLength(255)]
+    public string Description { get; set; }
 
-    [Required] [StringLength(255)] public string Path { get; set; }
+    [Required]
+    [StringLength(255)] 
+    public string Path { get; set; }
 
-    
-    // Navigation property to one project
-    public virtual Project Project { get; set; }
-    public int ProjectId { get; set; }
+    [Required]
+    public virtual VideoGroup VideoGroup { get; set; }
 
     public Stream ToStream()
     {
