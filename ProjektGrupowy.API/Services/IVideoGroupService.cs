@@ -1,4 +1,5 @@
-﻿using ProjektGrupowy.API.Models;
+﻿using ProjektGrupowy.API.DTOs.VideoGroup;
+using ProjektGrupowy.API.Models;
 using ProjektGrupowy.API.Utils;
 
 namespace ProjektGrupowy.API.Services
@@ -7,8 +8,8 @@ namespace ProjektGrupowy.API.Services
     {
         Task<Optional<IEnumerable<VideoGroup>>> GetVideoGroupsAsync();
         Task<Optional<VideoGroup>> GetVideoGroupAsync(int id);
-        Task<Optional<VideoGroup>> AddVideoGroupAsync(VideoGroup videoGroup);
-        Task<Optional<VideoGroup>> UpdateVideoGroupAsync(VideoGroup videoGroup);
+        Task<Optional<VideoGroup>> AddVideoGroupAsync(VideoGroupRequest videoGroupRequest);
+        Task<Optional<VideoGroup>> UpdateVideoGroupAsync(int videoGroupId, VideoGroupRequest videoGroupRequest);
         Task DeleteVideoGroupAsync(int id);
     }
 }

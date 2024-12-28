@@ -1,4 +1,5 @@
-﻿using ProjektGrupowy.API.Models;
+﻿using ProjektGrupowy.API.DTOs.Scientist;
+using ProjektGrupowy.API.Models;
 using ProjektGrupowy.API.Repositories;
 using ProjektGrupowy.API.Utils;
 
@@ -6,38 +7,16 @@ namespace ProjektGrupowy.API.Services.Impl;
 
 public class ScientistService(IScientistRepository scientistRepository) : IScientistService
 {
-    public async Task<Optional<Scientist>> AddProjectToScientist(int scientistId, Project project)
+    public async Task<Optional<Scientist>> AddScientistAsync(ScientistRequest scientistRequest)
     {
-        using var transaction = await scientistRepository.BeginTransactionAsync();
-        try
+        var scientist = new Scientist
         {
-            var scientist = await scientistRepository.GetScientistAsync(scientistId);
+            FirstName = scientistRequest.FirstName,
+            LastName = scientistRequest.LastName,
+            Title = scientistRequest.Title,
+            Description = scientistRequest.Description
+        };
 
-            if (scientist.IsFailure)
-                return Optional<Scientist>.Failure(scientist.GetErrorOrThrow());
-
-            if (project == null)
-            {
-                return Optional<Scientist>.Failure("Project cannot be null");
-            }
-
-            scientist.GetValueOrThrow().Projects.Add(project);
-
-            var updatedScientist = await scientistRepository.UpdateScientistAsync(scientist.GetValueOrThrow());
-
-            await transaction.CommitAsync();
-
-            return updatedScientist;
-        }
-        catch (Exception e)
-        {
-            await transaction.RollbackAsync();
-            return Optional<Scientist>.Failure(e.Message);
-        }
-    }
-
-    public async Task<Optional<Scientist>> AddScientistAsync(Scientist scientist)
-    {
         return await scientistRepository.AddScientistAsync(scientist);
     }
 
@@ -60,8 +39,21 @@ public class ScientistService(IScientistRepository scientistRepository) : IScien
         return await scientistRepository.GetScientistsAsync();
     }
 
-    public async Task<Optional<Scientist>> UpdateScientistAsync(Scientist scientist)
+    public async Task<Optional<Scientist>> UpdateScientistAsync(int scientistId, ScientistRequest scientistRequest)
     {
+        var scientistOptional = await scientistRepository.GetScientistAsync(scientistId);
+
+        if (scientistOptional.IsFailure)
+        {
+            return scientistOptional;
+        }
+
+        var scientist = scientistOptional.GetValueOrThrow();
+        scientist.Title = scientistRequest.Title;
+        scientist.FirstName = scientistRequest.FirstName;
+        scientist.LastName = scientistRequest.LastName;
+        scientist.Description = scientistRequest.Description;
+
         return await scientistRepository.UpdateScientistAsync(scientist);
     }
 }

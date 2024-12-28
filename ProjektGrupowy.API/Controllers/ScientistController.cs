@@ -34,14 +34,7 @@ public class ScientistController(IScientistService scientistService, IMapper map
     [HttpPost]
     public async Task<ActionResult<ScientistResponse>> AddScientistAsync(ScientistRequest scientistRequest)
     {
-        var scientist = new Scientist
-        {
-            FirstName = scientistRequest.FirstName,
-            LastName = scientistRequest.LastName,
-            Title = scientistRequest.Title,
-            Description = scientistRequest.Description
-        };
-        var result = await scientistService.AddScientistAsync(scientist);
+        var result = await scientistService.AddScientistAsync(scientistRequest);
 
         if (result.IsSuccess)
         {
@@ -58,28 +51,7 @@ public class ScientistController(IScientistService scientistService, IMapper map
     [HttpPut("{id:int}")]
     public async Task<IActionResult> PutScientistAsync(int id, ScientistRequest scientistRequest)
     {
-        var existingScientist = await scientistService.GetScientistAsync(id);
-
-        if (existingScientist.IsFailure)
-        {
-            return BadRequest(existingScientist.GetErrorOrThrow());
-        }
-
-        var scientist = new Scientist
-        {
-            FirstName = scientistRequest.FirstName,
-            LastName = scientistRequest.LastName,
-            Title = scientistRequest.Title,
-            Description = scientistRequest.Description
-        };
-
-        var updatedScientist = existingScientist.GetValueOrThrow();
-        updatedScientist.FirstName = scientistRequest.FirstName;
-        updatedScientist.LastName = scientistRequest.LastName;
-        updatedScientist.Title = scientistRequest.Title;
-        updatedScientist.Description = scientistRequest.Description;
-
-        var result = await scientistService.UpdateScientistAsync(updatedScientist);
+        var result = await scientistService.UpdateScientistAsync(id, scientistRequest);
 
         return result.IsSuccess
             ? NoContent()
@@ -91,19 +63,5 @@ public class ScientistController(IScientistService scientistService, IMapper map
     {
         await scientistService.DeleteScientistAsync(id);
         return NoContent();
-    }
-
-    [HttpPost("{scientistId:int}/project")]
-    public async Task<ActionResult> AddProjectToScientist(int scientistId, ProjectRequest projectRequest)
-    {
-        var project = new Project
-        {
-            Name = projectRequest.Name,
-            Description = projectRequest.Description
-        };
-        var result = await scientistService.AddProjectToScientist(scientistId, project);
-        return result.IsSuccess
-            ? CreatedAtAction("GetProject", new { id = result.GetValueOrThrow().Id })
-            : BadRequest(result.GetErrorOrThrow());
     }
 }

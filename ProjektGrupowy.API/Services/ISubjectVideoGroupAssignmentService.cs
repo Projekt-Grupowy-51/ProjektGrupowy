@@ -1,4 +1,5 @@
-﻿using ProjektGrupowy.API.Models;
+﻿using ProjektGrupowy.API.DTOs.SubjectVideoGroupAssignment;
+using ProjektGrupowy.API.Models;
 using ProjektGrupowy.API.Utils;
 
 namespace ProjektGrupowy.API.Services
@@ -7,8 +8,10 @@ namespace ProjektGrupowy.API.Services
     {
         Task<Optional<IEnumerable<SubjectVideoGroupAssignment>>> GetSubjectVideoGroupAssignmentsAsync();
         Task<Optional<SubjectVideoGroupAssignment>> GetSubjectVideoGroupAssignmentAsync(int id);
-        Task<Optional<SubjectVideoGroupAssignment>> AddSubjectVideoGroupAssignmentAsync(SubjectVideoGroupAssignment subjectVideoGroupAssignment);
-        Task<Optional<SubjectVideoGroupAssignment>> UpdateSubjectVideoGroupAssignmentAsync(SubjectVideoGroupAssignment subjectVideoGroupAssignment);
+        Task<Optional<SubjectVideoGroupAssignment>> AddSubjectVideoGroupAssignmentAsync(SubjectVideoGroupAssignmentRequest subjectVideoGroupAssignmentRequest);
+
+        Task<Optional<SubjectVideoGroupAssignment>> UpdateSubjectVideoGroupAssignmentAsync(
+            int subjectVideoGroupAssignmentId, SubjectVideoGroupAssignmentRequest subjectVideoGroupAssignmentRequest);
         Task DeleteSubjectVideoGroupAssignmentAsync(int subjectVideoGroupAssignmentId);
     }
 }

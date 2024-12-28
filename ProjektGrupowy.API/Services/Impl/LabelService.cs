@@ -1,10 +1,11 @@
-﻿using ProjektGrupowy.API.Models;
+﻿using ProjektGrupowy.API.DTOs.Label;
+using ProjektGrupowy.API.Models;
 using ProjektGrupowy.API.Repositories;
 using ProjektGrupowy.API.Utils;
 
 namespace ProjektGrupowy.API.Services.Impl;
 
-public class LabelService(ILabelRepository labelRepository) : ILabelService
+public class LabelService(ILabelRepository labelRepository, ISubjectRepository subjectRepository) : ILabelService
 {
     public async Task<Optional<IEnumerable<Label>>> GetLabelsAsync()
     {
@@ -16,13 +17,46 @@ public class LabelService(ILabelRepository labelRepository) : ILabelService
         return await labelRepository.GetLabelAsync(id);
     }
 
-    public async Task<Optional<Label>> AddLabelAsync(Label label)
+    public async Task<Optional<Label>> AddLabelAsync(LabelRequest labelRequest)
     {
+        var subjectOptional = await subjectRepository.GetSubjectAsync(labelRequest.SubjectId);
+
+        if (subjectOptional.IsFailure)
+        {
+            return Optional<Label>.Failure("No subject found");
+        }
+
+        var label = new Label
+        {
+            Name = labelRequest.Name,
+            Description = labelRequest.Description,
+            Subject = subjectOptional.GetValueOrThrow()
+        };
+
         return await labelRepository.AddLabelAsync(label);
     }
 
-    public async Task<Optional<Label>> UpdateLabelAsync(Label label)
+    public async Task<Optional<Label>> UpdateLabelAsync(int labelId, LabelRequest labelRequest)
     {
+        var labelOptional = await labelRepository.GetLabelAsync(labelId);
+
+        if (labelOptional.IsFailure)
+        {
+            return labelOptional;
+        }
+
+        var label = labelOptional.GetValueOrThrow();
+
+        var subjectOptional = await subjectRepository.GetSubjectAsync(labelRequest.SubjectId);
+        if (subjectOptional.IsFailure)
+        {
+            return Optional<Label>.Failure("No subject found!");
+        }
+
+        label.Name = labelRequest.Name;
+        label.Description = labelRequest.Description;
+        label.Subject = subjectOptional.GetValueOrThrow();
+
         return await labelRepository.UpdateLabelAsync(label);
     }
 

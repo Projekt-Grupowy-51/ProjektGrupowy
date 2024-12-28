@@ -1,4 +1,5 @@
-﻿using ProjektGrupowy.API.Models;
+﻿using ProjektGrupowy.API.DTOs.Labeler;
+using ProjektGrupowy.API.Models;
 using ProjektGrupowy.API.Repositories;
 using ProjektGrupowy.API.Utils;
 
@@ -16,13 +17,30 @@ public class LabelerService(ILabelerRepository labelerRepository) : ILabelerServ
         return await labelerRepository.GetLabelerAsync(id);
     }
 
-    public async Task<Optional<Labeler>> AddLabelerAsync(Labeler labeler)
+    public async Task<Optional<Labeler>> AddLabelerAsync(LabelerRequest labelerRequest)
     {
+        var labeler = new Labeler
+        {
+            Name = labelerRequest.Name,
+            Description = labelerRequest.Description
+        };
+
         return await labelerRepository.AddLabelerAsync(labeler);
     }
 
-    public async Task<Optional<Labeler>> UpdateLabelerAsync(Labeler labeler)
+    public async Task<Optional<Labeler>> UpdateLabelerAsync(int labelerId, LabelerRequest labelerRequest)
     {
+        var labelerOptional = await labelerRepository.GetLabelerAsync(labelerId);
+
+        if (labelerOptional.IsFailure)
+        {
+            return labelerOptional;
+        }
+
+        var labeler = labelerOptional.GetValueOrThrow();
+        labeler.Name = labelerRequest.Name;
+        labeler.Description = labelerRequest.Description;
+
         return await labelerRepository.UpdateLabelerAsync(labeler);
     }
 

@@ -29,7 +29,34 @@ public class VideoController(IVideoService videoService, IMapper mapper) : Contr
             : NotFound(video.GetErrorOrThrow());
     }
 
-    [HttpGet("stream/{id:int}")]
+    [HttpPost]
+    public async Task<ActionResult<VideoResponse>> AddVideoAsync(VideoRequest videoRequest)
+    {
+        var result = await videoService.AddVideoAsync(videoRequest);
+
+        if (result.IsSuccess)
+        {
+            var createdVideo = result.GetValueOrThrow();
+
+            var videoResponse = mapper.Map<VideoResponse>(createdVideo);
+
+            return CreatedAtAction("GetVideo", new { id = createdVideo.Id }, videoResponse);
+        }
+
+        return BadRequest(result.GetErrorOrThrow());
+    }
+
+    [HttpPut("{id:int}")]
+    public async Task<IActionResult> PutVideoAsync(int id, VideoRequest videoRequest)
+    {
+        var result = await videoService.UpdateVideoAsync(id, videoRequest);
+
+        return result.IsSuccess
+            ? NoContent()
+            : BadRequest(result.GetErrorOrThrow());
+    }
+
+    [HttpGet("{id:int}/stream")]
     public async Task<IActionResult> GetVideoStreamAsync(int id)
     {
         var videoOptional = await videoService.GetVideoAsync(id);

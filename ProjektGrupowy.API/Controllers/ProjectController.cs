@@ -7,17 +7,11 @@ using ProjektGrupowy.API.Services;
 
 namespace ProjektGrupowy.API.Controllers;
 
-/// <summary>
-/// Controller for managing projects.
-/// </summary>
-/// <param name="projectService"></param>
-/// <param name="mapper"></param>
 [Route("api/[controller]")]
 [ApiController]
 [ServiceFilter(typeof(ValidateModelStateFilter))]
 public class ProjectController(IProjectService projectService, IMapper mapper) : ControllerBase
 {
-    // GET: api/Project
     [HttpGet]
     public async Task<ActionResult<IEnumerable<ProjectResponse>>> GetProjectsAsync()
     {
@@ -27,7 +21,6 @@ public class ProjectController(IProjectService projectService, IMapper mapper) :
             : NotFound(projects.GetErrorOrThrow());
     }
 
-    // GET: api/Project/5
     [HttpGet("{id:int}")]
     public async Task<ActionResult<ProjectResponse>> GetProjectAsync(int id)
     {
@@ -37,38 +30,20 @@ public class ProjectController(IProjectService projectService, IMapper mapper) :
             : NotFound(project.GetErrorOrThrow());
     }
 
-    // PUT: api/Project/5
-    // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPut("{id:int}")]
     public async Task<IActionResult> PutProjectAsync(int id, ProjectRequest projectRequest)
     {
-        var existingProject = await projectService.GetProjectAsync(id);
-
-        if (existingProject.IsFailure)
-        {
-            return BadRequest(existingProject.GetErrorOrThrow());
-        }
-
-        var project = mapper.Map<Project>(projectRequest);
-
-        existingProject.GetValueOrThrow().Name = project.Name;
-        existingProject.GetValueOrThrow().Description = project.Description;
-
-        var p = await projectService.UpdateProjectAsync(existingProject.GetValueOrThrow());
+        var p = await projectService.UpdateProjectAsync(id, projectRequest);
 
         return p.IsSuccess
             ? NoContent()
             : BadRequest(p.GetErrorOrThrow());
     }
 
-    // POST: api/Project
-    // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPost]
     public async Task<ActionResult<ProjectResponse>> PostProject(ProjectRequest projectRequest)
     {
-        var project = mapper.Map<Project>(projectRequest);
-
-        var p = await projectService.AddProjectAsync(project);
+        var p = await projectService.AddProjectAsync(projectRequest);
 
         return p.IsSuccess
             ? CreatedAtAction("GetProject", new { id = p.GetValueOrThrow().Id },
@@ -76,7 +51,6 @@ public class ProjectController(IProjectService projectService, IMapper mapper) :
             : BadRequest(p.GetErrorOrThrow());
     }
 
-    // DELETE: api/Project/5
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteProject(int id)
     {
