@@ -7,23 +7,22 @@ namespace ProjektGrupowy.API.Services.Impl;
 
 public class VideoService(
     IVideoRepository videoRepository,
-    IProjectRepository projectRepository,
+    IVideoGroupRepository videoGroupRepository,
     IConfiguration configuration) : IVideoService
 {
     public async Task<Optional<IEnumerable<Video>>> GetVideosAsync() => await videoRepository.GetVideosAsync();
-
-    public async Task<Optional<IEnumerable<Video>>> GetVideosFromProjectAsync(int projectId)
-    {
-        var project = await projectRepository.GetProjectAsync(projectId);
-        return project.IsFailure
-            ? Optional<IEnumerable<Video>>.Failure(project.GetErrorOrThrow())
-            : Optional<IEnumerable<Video>>.Success(project.GetValueOrThrow().Videos);
-    }
 
     public async Task<Optional<Video>> GetVideoAsync(int id) => await videoRepository.GetVideoAsync(id);
 
     public async Task<Optional<Video>> AddVideoAsync(VideoRequest videoRequest)
     {
+        var videoGroupOptional = await videoGroupRepository.GetVideoGroupAsync(videoRequest.VideoGroupId);
+
+        if (videoGroupOptional.IsFailure)
+        {
+            return Optional<Video>.Failure("No video group found!");
+        }
+
         var filename = $"{Guid.NewGuid()}{Path.GetExtension(videoRequest.File.FileName)}";
         var videoPath = Path.Combine(configuration["Videos:Path"]!, filename);
 
@@ -36,43 +35,50 @@ public class VideoService(
         {
             Title = videoRequest.Title,
             Description = videoRequest.Description,
-            Path = videoPath
+            Path = videoPath,
+            VideoGroup = videoGroupOptional.GetValueOrThrow()
         };
 
         return await videoRepository.AddVideoAsync(video);
     }
 
-    public async Task<Optional<Video>> AddVideoToProjectAsync(int projectId, VideoRequest videoRequest)
+    public async Task<Optional<Video>> UpdateVideoAsync(int videoId, VideoRequest videoRequest)
     {
-        await using var transaction = await projectRepository.BeginTransactionAsync();
+        var videoOptional = await videoRepository.GetVideoAsync(videoId);
 
-        try
+        if (videoOptional.IsFailure)
         {
-            var project = await projectRepository.GetProjectAsync(projectId);
-            if (project.IsFailure)
-                return Optional<Video>.Failure(project.GetErrorOrThrow());
-
-            var videoOptional = await AddVideoAsync(videoRequest);
-            if (videoOptional.IsFailure)
-                return Optional<Video>.Failure(videoOptional.GetErrorOrThrow());
-
-            var projectEntity = project.GetValueOrThrow();
-            projectEntity.Videos.Add(videoOptional.GetValueOrThrow());
-
-            await projectRepository.UpdateProjectAsync(projectEntity);
-
-            await transaction.CommitAsync(); // Commit transaction if everything is successful
-
             return videoOptional;
         }
-        catch (Exception ex)
+
+        var video = videoOptional.GetValueOrThrow();
+
+        var videoGroupOptional = await videoGroupRepository.GetVideoGroupAsync(videoRequest.VideoGroupId);
+        if (videoGroupOptional.IsFailure)
         {
-            await transaction.RollbackAsync();          // Rollback transaction in case of any error
-            return Optional<Video>.Failure(ex.Message); // Return failure with exception details
+            return Optional<Video>.Failure("No video group found!");
         }
+
+        video.Title = videoRequest.Title;
+        video.Description = videoRequest.Description;
+        video.VideoGroup = videoGroupOptional.GetValueOrThrow();
+
+        if (videoRequest.File != null)
+        {
+            var filename = $"{Guid.NewGuid()}{Path.GetExtension(videoRequest.File.FileName)}";
+            var videoPath = Path.Combine(configuration["Videos:Path"]!, filename);
+
+            await using (var fileStream = new FileStream(videoPath, FileMode.Create))
+            {
+                await videoRequest.File.CopyToAsync(fileStream);
+            }
+
+            video.Path = videoPath;
+        }
+
+        return await videoRepository.UpdateVideoAsync(video);
     }
 
-    public async Task<Optional<Video>> UpdateVideoAsync(Video video) => await videoRepository.UpdateVideoAsync(video);
 
     public async Task DeleteVideoAsync(int id)
     {

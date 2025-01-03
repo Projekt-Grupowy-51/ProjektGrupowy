@@ -79,22 +79,46 @@ static void AddServices(WebApplicationBuilder builder)
 
 
 
-    // Project
-    builder.Services.AddScoped<IProjectService, ProjectService>();
+    // Repositories
+    builder.Services.AddScoped<IAssignedLabelRepository, AssignedLabelRepository>();
+    builder.Services.AddScoped<ILabelerRepository, LabelerRepository>();
+    builder.Services.AddScoped<ILabelRepository, LabelRepository>();
     builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
-
-    // Video
-    builder.Services.AddScoped<IVideoService, VideoService>();
+    builder.Services.AddScoped<IScientistRepository, ScientistRepository>();
+    builder.Services.AddScoped<ISubjectRepository, SubjectRepository>();
+    builder.Services.AddScoped<ISubjectVideoGroupAssignmentRepository, SubjectVideoGroupAssignmentRepository>();
+    builder.Services.AddScoped<IVideoGroupRepository, VideoGroupRepository>();
     builder.Services.AddScoped<IVideoRepository, VideoRepository>();
 
-    // Mapper
+    // Services
+    builder.Services.AddScoped<IAssignedLabelService, AssignedLabelService>();
+    builder.Services.AddScoped<ILabelerService, LabelerService>();
+    builder.Services.AddScoped<ILabelService, LabelService>();
+    builder.Services.AddScoped<IProjectService, ProjectService>();
+    builder.Services.AddScoped<IScientistService, ScientistService>();
+    builder.Services.AddScoped<ISubjectService, SubjectService>();
+    builder.Services.AddScoped<ISubjectVideoGroupAssignmentService, SubjectVideoGroupAssignmentService>();
+    builder.Services.AddScoped<IVideoGroupService, VideoGroupService>();
+    builder.Services.AddScoped<IVideoService, VideoService>();
+
+    // Map
+    builder.Services.AddAutoMapper(typeof(AssignedLabelMap));
+    builder.Services.AddAutoMapper(typeof(LabelerMap));
+    builder.Services.AddAutoMapper(typeof(LabelMap));
     builder.Services.AddAutoMapper(typeof(ProjectMap));
+    builder.Services.AddAutoMapper(typeof(ScientistMap));
+    builder.Services.AddAutoMapper(typeof(SubjectMap));
+    builder.Services.AddAutoMapper(typeof(SubjectVideoGroupAssignmentMap));
+    builder.Services.AddAutoMapper(typeof(VideoGroupMap));
     builder.Services.AddAutoMapper(typeof(VideoMap));
 
     builder.Services.AddScoped<ValidateModelStateFilter>();
 
     builder.Services.AddDbContext<AppDbContext>(options =>
-        options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+        options
+            .UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+            .UseLazyLoadingProxies()
+    );
 
     builder.Services.AddIdentity<User, IdentityRole>()
         .AddEntityFrameworkStores<AppDbContext>()

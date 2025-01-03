@@ -4,12 +4,11 @@ using ProjektGrupowy.API.Utils;
 
 namespace ProjektGrupowy.API.Services;
 
-public interface IVideoService {
+public interface IVideoService
+{
     Task<Optional<IEnumerable<Video>>> GetVideosAsync();
-    Task<Optional<IEnumerable<Video>>> GetVideosFromProjectAsync(int projectId);
     Task<Optional<Video>> GetVideoAsync(int id);
-    Task<Optional<Video>> AddVideoAsync(VideoRequest video);
-    Task<Optional<Video>> AddVideoToProjectAsync(int projectId, VideoRequest video);
-    Task<Optional<Video>> UpdateVideoAsync(Video video);
+    Task<Optional<Video>> AddVideoAsync(VideoRequest videoRequest);
+    Task<Optional<Video>> UpdateVideoAsync(int videoId, VideoRequest videoRequest);
     Task DeleteVideoAsync(int id);
 }

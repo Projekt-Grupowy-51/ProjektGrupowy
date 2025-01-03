@@ -8,22 +8,17 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
 {
     public DbSet<Project> Projects { get; set; }
     public DbSet<Video> Videos { get; set; }
+    public DbSet<Scientist> Scientists { get; set; }
+    public DbSet<Subject> Subjects { get; set; }
+    public DbSet<AssignedLabel> AssignedLabels { get; set; }
+    public DbSet<Label> Labels { get; set; }
+    public DbSet<SubjectVideoGroupAssignment> SubjectVideoGroupAssignments { get; set; }
+    public DbSet<Labeler> Labelers { get; set; }
+    public DbSet<VideoGroup> VideoGroups { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-
-        // Związek jeden do wielu między projektami a wideo.
-        modelBuilder.Entity<Project>()
-            .HasMany(p => p.Videos)
-            .WithOne(v => v.Project)
-            .HasForeignKey(v => v.ProjectId);
-
-        ConfigureProjects(modelBuilder);
-    }
-
-    private void ConfigureProjects(ModelBuilder modelBuilder)
-    {
-
     }
 }
