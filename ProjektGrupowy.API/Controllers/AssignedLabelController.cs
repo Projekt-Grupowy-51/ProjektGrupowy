@@ -20,7 +20,7 @@ public class AssignedLabelController(IAssignedLabelService assignedLabelService,
             : NotFound(assignedLabels.GetErrorOrThrow());
     }
 
-    [HttpGet("{id}")]
+    [HttpGet("{id:int}")]
     public async Task<ActionResult<AssignedLabelResponse>> GetAssignedLabelAsync(int id)
     {
         var assignedLabel = await assignedLabelService.GetAssignedLabelAsync(id);
@@ -34,19 +34,18 @@ public class AssignedLabelController(IAssignedLabelService assignedLabelService,
     {
         var result = await assignedLabelService.AddAssignedLabelAsync(assignedLabelRequest);
 
-        if (result.IsSuccess)
-        {
-            var createdAssignedLabel = result.GetValueOrThrow();
+        if (result.IsFailure) 
+            return BadRequest(result.GetErrorOrThrow());
+        
+        var createdAssignedLabel = result.GetValueOrThrow();
 
-            var assignedLabelResponse = mapper.Map<AssignedLabelResponse>(createdAssignedLabel);
+        var assignedLabelResponse = mapper.Map<AssignedLabelResponse>(createdAssignedLabel);
 
-            return CreatedAtAction("GetAssignedLabel", new { id = createdAssignedLabel.Id }, assignedLabelResponse);
-        }
+        return CreatedAtAction("GetAssignedLabel", new { id = createdAssignedLabel.Id }, assignedLabelResponse);
 
-        return BadRequest(result.GetErrorOrThrow());
     }
 
-    [HttpPut("{id}")]
+    [HttpPut("{id:int}")]
     public async Task<IActionResult> PutAssignedLabelAsync(int id, AssignedLabelRequest assignedLabelRequest)
     {
         var result = await assignedLabelService.UpdateAssignedLabelAsync(id, assignedLabelRequest);
@@ -56,7 +55,7 @@ public class AssignedLabelController(IAssignedLabelService assignedLabelService,
             : BadRequest(result.GetErrorOrThrow());
     }
 
-    [HttpDelete("{id}")]
+    [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteAssignedLabelAsync(int id)
     {
         await assignedLabelService.DeleteAssignedLabelAsync(id);

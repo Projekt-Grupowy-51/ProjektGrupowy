@@ -12,5 +12,8 @@ public interface IProjectRepository
     Task<Optional<Project>> UpdateProjectAsync(Project project);
     Task DeleteProjectAsync(Project project);
 
+    Task<Optional<IEnumerable<Project>>> GetProjectsOfScientist(int scientistId);
+    Task<Optional<IEnumerable<Project>>> GetProjectsOfScientist(Scientist scientist);
+
     Task<IDbContextTransaction> BeginTransactionAsync();
 }

@@ -10,5 +10,8 @@ public interface IProjectService
     Task<Optional<Project>> GetProjectAsync(int id);
     Task<Optional<Project>> AddProjectAsync(ProjectRequest projectRequest);
     Task<Optional<Project>> UpdateProjectAsync(int projectId, ProjectRequest projectRequest);
+
+    Task<Optional<IEnumerable<Project>>> GetProjectsOfScientist(int scientistId);
+
     Task DeleteProjectAsync(int id);
 }

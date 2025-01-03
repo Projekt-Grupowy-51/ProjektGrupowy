@@ -36,16 +36,15 @@ public class ScientistController(IScientistService scientistService, IMapper map
     {
         var result = await scientistService.AddScientistAsync(scientistRequest);
 
-        if (result.IsSuccess)
-        {
-            var createdScientist = result.GetValueOrThrow();
+        if (result.IsFailure) 
+            return BadRequest(result.GetErrorOrThrow());
+        
+        var createdScientist = result.GetValueOrThrow();
 
-            var scientistResponse = mapper.Map<ScientistResponse>(createdScientist);
+        var scientistResponse = mapper.Map<ScientistResponse>(createdScientist);
 
-            return CreatedAtAction("GetScientist", new { id = createdScientist.Id }, scientistResponse);
-        }
+        return CreatedAtAction("GetScientist", new { id = createdScientist.Id }, scientistResponse);
 
-        return BadRequest(result.GetErrorOrThrow());
     }
 
     [HttpPut("{id:int}")]

@@ -20,7 +20,7 @@ public class VideoGroupController(IVideoGroupService videoGroupService, IMapper 
             : NotFound(videoGroups.GetErrorOrThrow());
     }
 
-    [HttpGet("{id}")]
+    [HttpGet("{id:int}")]
     public async Task<ActionResult<VideoGroupResponse>> GetVideoGroupAsync(int id)
     {
         var videoGroup = await videoGroupService.GetVideoGroupAsync(id);
@@ -34,19 +34,18 @@ public class VideoGroupController(IVideoGroupService videoGroupService, IMapper 
     {
         var result = await videoGroupService.AddVideoGroupAsync(videoGroupRequest);
 
-        if (result.IsSuccess)
-        {
-            var createdVideoGroup = result.GetValueOrThrow();
+        if (result.IsFailure) 
+            return BadRequest(result.GetErrorOrThrow());
+        
+        var createdVideoGroup = result.GetValueOrThrow();
 
-            var videoGroupResponse = mapper.Map<VideoGroupResponse>(createdVideoGroup);
+        var videoGroupResponse = mapper.Map<VideoGroupResponse>(createdVideoGroup);
 
-            return CreatedAtAction("GetVideoGroup", new { id = createdVideoGroup.Id }, videoGroupResponse);
-        }
+        return CreatedAtAction("GetVideoGroup", new { id = createdVideoGroup.Id }, videoGroupResponse);
 
-        return BadRequest(result.GetErrorOrThrow());
     }
 
-    [HttpPut("{id}")]
+    [HttpPut("{id:int}")]
     public async Task<IActionResult> PutVideoGroupAsync(int id, VideoGroupRequest videoGroupRequest)
     {
         var result = await videoGroupService.UpdateVideoGroupAsync(id, videoGroupRequest);
@@ -56,7 +55,7 @@ public class VideoGroupController(IVideoGroupService videoGroupService, IMapper 
             : BadRequest(result.GetErrorOrThrow());
     }
 
-    [HttpDelete("{id}")]
+    [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteVideoGroupAsync(int id)
     {
         await videoGroupService.DeleteVideoGroupAsync(id);
