@@ -72,19 +72,10 @@ public class SubjectRepository(AppDbContext context, ILogger<SubjectRepository> 
     {
         try
         {
-            // 1. Include subjects in project
-            var projectWithSubjects = await context.Projects
-                .Include(p => p.Subjects)
-                .FirstOrDefaultAsync(p => p.Id == projectId);
-
-            // 2. Check if project exists and return failure if not
-            if (projectWithSubjects is null)
-            {
-                return Optional<IEnumerable<Subject>>.Failure($"Project of id {projectId} was not found.");
-            }
-            
-            // If the included collection is null, return empty array
-            var subjects = projectWithSubjects.Subjects?.ToArray() ?? [];
+            // Index lookup using "IX_Projects_ScientistId" btree ("ScientistId")
+            var subjects = await context.Subjects
+                .Where(s => s.Project.Id == projectId)
+                .ToArrayAsync();
 
             return Optional<IEnumerable<Subject>>.Success(subjects);
         }
