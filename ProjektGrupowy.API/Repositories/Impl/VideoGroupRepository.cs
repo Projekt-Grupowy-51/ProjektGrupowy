@@ -70,6 +70,28 @@ public class VideoGroupRepository(AppDbContext context, ILogger<VideoGroupReposi
         }
     }
 
+    public async Task<Optional<IEnumerable<VideoGroup>>> GetVideoGroupsByProjectAsync(int projectId)
+    {
+        try
+        {
+            // This is efficient because it uses an indexed column ("IX_VideoGroups_ProjectId" btree ("ProjectId"))
+            // Check with psql: mydatabase=# EXPLAIN SELECT * FROM "VideoGroups" WHERE "ProjectId" = ...;
+            var videoGroups = await context.VideoGroups
+                .Where(v => v.Project.Id == projectId)
+                .ToArrayAsync();
+
+            return Optional<IEnumerable<VideoGroup>>.Success(videoGroups);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "An error occurred while getting video groups by project");
+            return Optional<IEnumerable<VideoGroup>>.Failure(e.Message);
+        }
+    }
+
+    public async Task<Optional<IEnumerable<VideoGroup>>> GetVideoGroupsByProjectAsync(Project project)
+        => await GetVideoGroupsByProjectAsync(project.Id);
+
     public async Task DeleteVideoGroupAsync(VideoGroup videoGroup)
     {
         try

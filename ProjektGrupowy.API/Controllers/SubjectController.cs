@@ -29,20 +29,28 @@ public class SubjectController(ISubjectService subjectService, IMapper mapper) :
             : NotFound(subject.GetErrorOrThrow());
     }
 
+    [HttpGet("project/{projectId:int}")]
+    public async Task<ActionResult<IEnumerable<SubjectResponse>>> GetSubjectsByProjectAsync(int projectId)
+    {
+        var subjects = await subjectService.GetSubjectsByProjectAsync(projectId);
+        return subjects.IsSuccess
+            ? Ok(mapper.Map<IEnumerable<SubjectResponse>>(subjects.GetValueOrThrow()))
+            : NotFound(subjects.GetErrorOrThrow());
+    }
+
     [HttpPost]
     public async Task<ActionResult<SubjectResponse>> AddSubjectAsync(SubjectRequest subjectRequest)
     {
         var result = await subjectService.AddSubjectAsync(subjectRequest);
 
-        if (result.IsFailure) 
+        if (result.IsFailure)
             return BadRequest(result.GetErrorOrThrow());
-        
+
         var createdSubject = result.GetValueOrThrow();
 
         var subjectResponse = mapper.Map<SubjectResponse>(createdSubject);
 
         return CreatedAtAction("GetSubject", new { id = createdSubject.Id }, subjectResponse);
-
     }
 
     [HttpPut("{id:int}")]

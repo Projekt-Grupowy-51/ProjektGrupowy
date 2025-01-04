@@ -5,7 +5,8 @@ using ProjektGrupowy.API.Utils;
 
 namespace ProjektGrupowy.API.Services.Impl;
 
-public class VideoGroupService(IVideoGroupRepository videoGroupRepository, IProjectRepository projectRepository) : IVideoGroupService
+public class VideoGroupService(IVideoGroupRepository videoGroupRepository, IProjectRepository projectRepository)
+    : IVideoGroupService
 {
     public async Task<Optional<IEnumerable<VideoGroup>>> GetVideoGroupsAsync()
     {
@@ -60,6 +61,12 @@ public class VideoGroupService(IVideoGroupRepository videoGroupRepository, IProj
 
         return await videoGroupRepository.UpdateVideoGroupAsync(videoGroup);
     }
+
+    public async Task<Optional<IEnumerable<VideoGroup>>> GetVideoGroupsByProjectAsync(int projectId)
+        => await videoGroupRepository.GetVideoGroupsByProjectAsync(projectId);
+
+    public async Task<Optional<IEnumerable<VideoGroup>>> GetVideoGroupsByProjectAsync(Project project)
+        => await videoGroupRepository.GetVideoGroupsByProjectAsync(project);
 
     public async Task DeleteVideoGroupAsync(int id)
     {
