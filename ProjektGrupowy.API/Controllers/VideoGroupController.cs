@@ -29,20 +29,28 @@ public class VideoGroupController(IVideoGroupService videoGroupService, IMapper 
             : NotFound(videoGroup.GetErrorOrThrow());
     }
 
+    [HttpGet("project/{projectId:int}")]
+    public async Task<ActionResult<IEnumerable<VideoGroupResponse>>> GetVideoGroupsByProjectAsync(int projectId)
+    {
+        var videoGroups = await videoGroupService.GetVideoGroupsByProjectAsync(projectId);
+        return videoGroups.IsSuccess
+            ? Ok(mapper.Map<IEnumerable<VideoGroupResponse>>(videoGroups.GetValueOrThrow()))
+            : NotFound(videoGroups.GetErrorOrThrow());
+    }
+
     [HttpPost]
     public async Task<ActionResult<VideoGroupResponse>> AddVideoGroupAsync(VideoGroupRequest videoGroupRequest)
     {
         var result = await videoGroupService.AddVideoGroupAsync(videoGroupRequest);
 
-        if (result.IsFailure) 
+        if (result.IsFailure)
             return BadRequest(result.GetErrorOrThrow());
-        
+
         var createdVideoGroup = result.GetValueOrThrow();
 
         var videoGroupResponse = mapper.Map<VideoGroupResponse>(createdVideoGroup);
 
         return CreatedAtAction("GetVideoGroup", new { id = createdVideoGroup.Id }, videoGroupResponse);
-
     }
 
     [HttpPut("{id:int}")]

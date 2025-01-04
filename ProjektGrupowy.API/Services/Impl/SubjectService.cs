@@ -5,7 +5,8 @@ using ProjektGrupowy.API.Utils;
 
 namespace ProjektGrupowy.API.Services.Impl;
 
-public class SubjectService(ISubjectRepository subjectRepository, IProjectRepository projectRepository) : ISubjectService
+public class SubjectService(ISubjectRepository subjectRepository, IProjectRepository projectRepository)
+    : ISubjectService
 {
     public async Task<Optional<IEnumerable<Subject>>> GetSubjectsAsync()
     {
@@ -49,7 +50,7 @@ public class SubjectService(ISubjectRepository subjectRepository, IProjectReposi
 
         var projectOptional = await projectRepository.GetProjectAsync(subjectRequest.ProjectId);
 
-        if (projectOptional.IsFailure) 
+        if (projectOptional.IsFailure)
         {
             return Optional<Subject>.Failure("No project found!");
         }
@@ -60,6 +61,12 @@ public class SubjectService(ISubjectRepository subjectRepository, IProjectReposi
 
         return await subjectRepository.UpdateSubjectAsync(subject);
     }
+
+    public async Task<Optional<IEnumerable<Subject>>> GetSubjectsByProjectAsync(int projectId)
+        => await subjectRepository.GetSubjectsByProjectAsync(projectId);
+
+    public async Task<Optional<IEnumerable<Subject>>> GetSubjectsByProjectAsync(Project project)
+        => await subjectRepository.GetSubjectsByProjectAsync(project);
 
     public async Task DeleteSubjectAsync(int id)
     {

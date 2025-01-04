@@ -9,5 +9,9 @@ public interface ISubjectRepository
     Task<Optional<Subject>> GetSubjectAsync(int id);
     Task<Optional<Subject>> AddSubjectAsync(Subject subject);
     Task<Optional<Subject>> UpdateSubjectAsync(Subject subject);
+
+    Task<Optional<IEnumerable<Subject>>> GetSubjectsByProjectAsync(int projectId);
+    Task<Optional<IEnumerable<Subject>>> GetSubjectsByProjectAsync(Project project);
+
     Task DeleteSubjectAsync(Subject subject);
 }

@@ -68,6 +68,27 @@ public class SubjectRepository(AppDbContext context, ILogger<SubjectRepository> 
         }
     }
 
+    public async Task<Optional<IEnumerable<Subject>>> GetSubjectsByProjectAsync(int projectId)
+    {
+        try
+        {
+            // Index lookup using "IX_Projects_ScientistId" btree ("ScientistId")
+            var subjects = await context.Subjects
+                .Where(s => s.Project.Id == projectId)
+                .ToArrayAsync();
+
+            return Optional<IEnumerable<Subject>>.Success(subjects);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "An error occurred while getting subjects by project");
+            return Optional<IEnumerable<Subject>>.Failure(e.Message);
+        }
+    }
+
+    public async Task<Optional<IEnumerable<Subject>>> GetSubjectsByProjectAsync(Project project)
+        => await GetSubjectsByProjectAsync(project.Id);
+
     public async Task DeleteSubjectAsync(Subject subject)
     {
         try
