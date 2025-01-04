@@ -89,6 +89,7 @@ static void AddServices(WebApplicationBuilder builder)
     builder.Services.AddScoped<ISubjectVideoGroupAssignmentRepository, SubjectVideoGroupAssignmentRepository>();
     builder.Services.AddScoped<IVideoGroupRepository, VideoGroupRepository>();
     builder.Services.AddScoped<IVideoRepository, VideoRepository>();
+    builder.Services.AddScoped<IProjectAccessCodeRepository, ProjectAccessCodeRepository>();
 
     // Services
     builder.Services.AddScoped<IAssignedLabelService, AssignedLabelService>();
@@ -100,6 +101,7 @@ static void AddServices(WebApplicationBuilder builder)
     builder.Services.AddScoped<ISubjectVideoGroupAssignmentService, SubjectVideoGroupAssignmentService>();
     builder.Services.AddScoped<IVideoGroupService, VideoGroupService>();
     builder.Services.AddScoped<IVideoService, VideoService>();
+    builder.Services.AddScoped<IProjectAccessCodeService, ProjectAccessCodeService>();
 
     // Map
     builder.Services.AddAutoMapper(typeof(AssignedLabelMap));

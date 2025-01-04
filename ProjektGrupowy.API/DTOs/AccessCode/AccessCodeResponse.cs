@@ -1,0 +1,10 @@
+﻿namespace ProjektGrupowy.API.DTOs.AccessCode;
+
+public class AccessCodeResponse
+{
+    public int ProjectId { get; set; }
+    public string Code { get; set; }
+    public DateTime CreatedAtUtc { get; set; }
+    public DateTime? ExpiresAtUtc { get; set; }
+    public bool IsValid { get; set; }
+}
