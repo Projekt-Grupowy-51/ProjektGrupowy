@@ -104,6 +104,7 @@ static void AddServices(WebApplicationBuilder builder)
     builder.Services.AddScoped<IProjectAccessCodeService, ProjectAccessCodeService>();
 
     // Map
+    builder.Services.AddAutoMapper(typeof(AccessCodeMap));
     builder.Services.AddAutoMapper(typeof(AssignedLabelMap));
     builder.Services.AddAutoMapper(typeof(LabelerMap));
     builder.Services.AddAutoMapper(typeof(LabelMap));
