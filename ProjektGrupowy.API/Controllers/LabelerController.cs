@@ -20,7 +20,7 @@ public class LabelerController(ILabelerService labelerService, IMapper mapper) :
             : NotFound(labelers.GetErrorOrThrow());
     }
 
-    [HttpGet("{id}")]
+    [HttpGet("{id:int}")]
     public async Task<ActionResult<LabelerResponse>> GetLabelerAsync(int id)
     {
         var labeler = await labelerService.GetLabelerAsync(id);
@@ -34,19 +34,18 @@ public class LabelerController(ILabelerService labelerService, IMapper mapper) :
     {
         var result = await labelerService.AddLabelerAsync(labelerRequest);
 
-        if (result.IsSuccess)
-        {
-            var createdLabeler = result.GetValueOrThrow();
+        if (result.IsFailure) 
+            return BadRequest(result.GetErrorOrThrow());
+        
+        var createdLabeler = result.GetValueOrThrow();
 
-            var labelerResponse = mapper.Map<LabelerResponse>(createdLabeler);
+        var labelerResponse = mapper.Map<LabelerResponse>(createdLabeler);
 
-            return CreatedAtAction("GetLabeler", new { id = createdLabeler.Id }, labelerResponse);
-        }
+        return CreatedAtAction("GetLabeler", new { id = createdLabeler.Id }, labelerResponse);
 
-        return BadRequest(result.GetErrorOrThrow());
     }
 
-    [HttpPut("{id}")]
+    [HttpPut("{id:int}")]
     public async Task<IActionResult> PutLabelerAsync(int id, LabelerRequest labelerRequest)
     {
         var result = await labelerService.UpdateLabelerAsync(id, labelerRequest);
@@ -56,7 +55,7 @@ public class LabelerController(ILabelerService labelerService, IMapper mapper) :
             : BadRequest(result.GetErrorOrThrow());
     }
 
-    [HttpDelete("{id}")]
+    [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteLabelerAsync(int id)
     {
         await labelerService.DeleteLabelerAsync(id);

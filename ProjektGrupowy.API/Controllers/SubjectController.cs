@@ -20,7 +20,7 @@ public class SubjectController(ISubjectService subjectService, IMapper mapper) :
             : NotFound(subjects.GetErrorOrThrow());
     }
 
-    [HttpGet("{id}")]
+    [HttpGet("{id:int}")]
     public async Task<ActionResult<SubjectResponse>> GetSubjectAsync(int id)
     {
         var subject = await subjectService.GetSubjectAsync(id);
@@ -34,19 +34,18 @@ public class SubjectController(ISubjectService subjectService, IMapper mapper) :
     {
         var result = await subjectService.AddSubjectAsync(subjectRequest);
 
-        if (result.IsSuccess)
-        {
-            var createdSubject = result.GetValueOrThrow();
+        if (result.IsFailure) 
+            return BadRequest(result.GetErrorOrThrow());
+        
+        var createdSubject = result.GetValueOrThrow();
 
-            var subjectResponse = mapper.Map<SubjectResponse>(createdSubject);
+        var subjectResponse = mapper.Map<SubjectResponse>(createdSubject);
 
-            return CreatedAtAction("GetSubject", new { id = createdSubject.Id }, subjectResponse);
-        }
+        return CreatedAtAction("GetSubject", new { id = createdSubject.Id }, subjectResponse);
 
-        return BadRequest(result.GetErrorOrThrow());
     }
 
-    [HttpPut("{id}")]
+    [HttpPut("{id:int}")]
     public async Task<IActionResult> PutSubjectAsync(int id, SubjectRequest subjectRequest)
     {
         var result = await subjectService.UpdateSubjectAsync(id, subjectRequest);
@@ -56,7 +55,7 @@ public class SubjectController(ISubjectService subjectService, IMapper mapper) :
             : BadRequest(result.GetErrorOrThrow());
     }
 
-    [HttpDelete("{id}")]
+    [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteSubjectAsync(int id)
     {
         await subjectService.DeleteSubjectAsync(id);

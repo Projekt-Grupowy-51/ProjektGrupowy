@@ -20,7 +20,7 @@ public class LabelController(ILabelService labelService, IMapper mapper) : Contr
             : NotFound(labels.GetErrorOrThrow());
     }
 
-    [HttpGet("{id}")]
+    [HttpGet("{id:int}")]
     public async Task<ActionResult<LabelResponse>> GetLabelAsync(int id)
     {
         var label = await labelService.GetLabelAsync(id);
@@ -34,19 +34,18 @@ public class LabelController(ILabelService labelService, IMapper mapper) : Contr
     {
         var result = await labelService.AddLabelAsync(labelRequest);
 
-        if (result.IsSuccess)
-        {
-            var createdLabel = result.GetValueOrThrow();
+        if (result.IsFailure) 
+            return BadRequest(result.GetErrorOrThrow());
+        
+        var createdLabel = result.GetValueOrThrow();
 
-            var labelResponse = mapper.Map<LabelResponse>(createdLabel);
+        var labelResponse = mapper.Map<LabelResponse>(createdLabel);
 
-            return CreatedAtAction("GetLabel", new { id = createdLabel.Id }, labelResponse);
-        }
+        return CreatedAtAction("GetLabel", new { id = createdLabel.Id }, labelResponse);
 
-        return BadRequest(result.GetErrorOrThrow());
     }
 
-    [HttpPut("{id}")]
+    [HttpPut("{id:int}")]
     public async Task<IActionResult> PutLabelAsync(int id, LabelRequest labelRequest)
     {
         var result = await labelService.UpdateLabelAsync(id, labelRequest);
@@ -56,7 +55,7 @@ public class LabelController(ILabelService labelService, IMapper mapper) : Contr
             : BadRequest(result.GetErrorOrThrow());
     }
 
-    [HttpDelete("{id}")]
+    [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteLabelAsync(int id)
     {
         await labelService.DeleteLabelAsync(id);

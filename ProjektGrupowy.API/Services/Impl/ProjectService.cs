@@ -5,7 +5,8 @@ using ProjektGrupowy.API.Utils;
 
 namespace ProjektGrupowy.API.Services.Impl;
 
-public class ProjectService(IProjectRepository projectRepository, IScientistRepository scientistRepository) : IProjectService
+public class ProjectService(IProjectRepository projectRepository, IScientistRepository scientistRepository)
+    : IProjectService
 {
     public async Task<Optional<IEnumerable<Project>>> GetProjectsAsync() => await projectRepository.GetProjectsAsync();
 
@@ -55,6 +56,8 @@ public class ProjectService(IProjectRepository projectRepository, IScientistRepo
         return await projectRepository.UpdateProjectAsync(project);
     }
 
+    public async Task<Optional<IEnumerable<Project>>> GetProjectsOfScientist(int scientistId)
+        => await projectRepository.GetProjectsOfScientist(scientistId);
 
     public async Task DeleteProjectAsync(int id)
     {

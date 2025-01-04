@@ -20,7 +20,7 @@ public class SubjectVideoGroupAssignmentController(ISubjectVideoGroupAssignmentS
             : NotFound(subjectVideoGroupAssignments.GetErrorOrThrow());
     }
 
-    [HttpGet("{id}")]
+    [HttpGet("{id:int}")]
     public async Task<ActionResult<SubjectVideoGroupAssignmentResponse>> GetSubjectVideoGroupAssignmentAsync(int id)
     {
         var subjectVideoGroupAssignment = await subjectVideoGroupAssignmentService.GetSubjectVideoGroupAssignmentAsync(id);
@@ -34,19 +34,18 @@ public class SubjectVideoGroupAssignmentController(ISubjectVideoGroupAssignmentS
     {
         var result = await subjectVideoGroupAssignmentService.AddSubjectVideoGroupAssignmentAsync(subjectVideoGroupAssignmentRequest);
 
-        if (result.IsSuccess)
-        {
-            var createdSubjectVideoGroupAssignment = result.GetValueOrThrow();
+        if (result.IsFailure) 
+            return BadRequest(result.GetErrorOrThrow());
+        
+        var createdSubjectVideoGroupAssignment = result.GetValueOrThrow();
 
-            var subjectVideoGroupAssignmentResponse = mapper.Map<SubjectVideoGroupAssignmentResponse>(createdSubjectVideoGroupAssignment);
+        var subjectVideoGroupAssignmentResponse = mapper.Map<SubjectVideoGroupAssignmentResponse>(createdSubjectVideoGroupAssignment);
 
-            return CreatedAtAction("GetSubjectVideoGroupAssignment", new { id = createdSubjectVideoGroupAssignment.Id }, subjectVideoGroupAssignmentResponse);
-        }
+        return CreatedAtAction("GetSubjectVideoGroupAssignment", new { id = createdSubjectVideoGroupAssignment.Id }, subjectVideoGroupAssignmentResponse);
 
-        return BadRequest(result.GetErrorOrThrow());
     }
 
-    [HttpPut("{id}")]
+    [HttpPut("{id:int}")]
     public async Task<IActionResult> PutSubjectVideoGroupAssignmentAsync(int id, SubjectVideoGroupAssignmentRequest subjectVideoGroupAssignmentRequest)
     {
         var result = await subjectVideoGroupAssignmentService.UpdateSubjectVideoGroupAssignmentAsync(id, subjectVideoGroupAssignmentRequest);
@@ -56,7 +55,7 @@ public class SubjectVideoGroupAssignmentController(ISubjectVideoGroupAssignmentS
             : BadRequest(result.GetErrorOrThrow());
     }
 
-    [HttpDelete("{id}")]
+    [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteSubjectVideoGroupAssignmentAsync(int id)
     {
         await subjectVideoGroupAssignmentService.DeleteSubjectVideoGroupAssignmentAsync(id);

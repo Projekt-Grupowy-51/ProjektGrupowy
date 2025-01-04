@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using ProjektGrupowy.API.DTOs.Project;
 using ProjektGrupowy.API.Filters;
-using ProjektGrupowy.API.Models;
 using ProjektGrupowy.API.Services;
 
 namespace ProjektGrupowy.API.Controllers;
@@ -28,6 +27,15 @@ public class ProjectController(IProjectService projectService, IMapper mapper) :
         return project.IsSuccess
             ? Ok(mapper.Map<ProjectResponse>(project.GetValueOrThrow()))
             : NotFound(project.GetErrorOrThrow());
+    }
+
+    [HttpGet("scientist/{scientistId:int}")]
+    public async Task<ActionResult<IEnumerable<ProjectResponse>>> GetProjectsOfScientistAsync(int scientistId)
+    {
+        var projects = await projectService.GetProjectsOfScientist(scientistId);
+        return projects.IsSuccess
+            ? Ok(mapper.Map<IEnumerable<ProjectResponse>>(projects.GetValueOrThrow()))
+            : NotFound(projects.GetErrorOrThrow());
     }
 
     [HttpPut("{id:int}")]

@@ -37,6 +37,36 @@ public class ProjectRepository(AppDbContext context, ILogger<ProjectRepository> 
         }
     }
 
+    public async Task<Optional<IEnumerable<Project>>> GetProjectsOfScientist(int scientistId)
+    {
+        try
+        {
+            // 1. Find scientist by primary key and include projects    
+            var scientistWithProjects = await context.Scientists
+                .Include(s => s.Projects)
+                .FirstOrDefaultAsync(s => s.Id == scientistId);
+
+            // 2. If scientist not found, return failure
+            if (scientistWithProjects is null)
+            {
+                return Optional<IEnumerable<Project>>.Failure($"Scientist of id {scientistId} was not found.");
+            }
+
+            // "Projects" property is not null because checked in the previous step - safe to use '!' operator
+            var projectsOfScientist = scientistWithProjects.Projects!.ToArray();
+
+            return Optional<IEnumerable<Project>>.Success(projectsOfScientist);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "An error occurred while getting projects of scientist");
+            return Optional<IEnumerable<Project>>.Failure(e.Message);
+        }
+    }
+
+    public Task<Optional<IEnumerable<Project>>> GetProjectsOfScientist(Scientist scientist) =>
+        GetProjectsOfScientist(scientist.Id);
+
     public async Task<IDbContextTransaction> BeginTransactionAsync() => await context.Database.BeginTransactionAsync();
 
     public async Task<Optional<Project>> GetProjectAsync(int id)

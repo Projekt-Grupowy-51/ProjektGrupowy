@@ -34,16 +34,15 @@ public class VideoController(IVideoService videoService, IMapper mapper) : Contr
     {
         var result = await videoService.AddVideoAsync(videoRequest);
 
-        if (result.IsSuccess)
-        {
-            var createdVideo = result.GetValueOrThrow();
+        if (result.IsFailure) 
+            return BadRequest(result.GetErrorOrThrow());
+        
+        var createdVideo = result.GetValueOrThrow();
 
-            var videoResponse = mapper.Map<VideoResponse>(createdVideo);
+        var videoResponse = mapper.Map<VideoResponse>(createdVideo);
 
-            return CreatedAtAction("GetVideo", new { id = createdVideo.Id }, videoResponse);
-        }
+        return CreatedAtAction("GetVideo", new { id = createdVideo.Id }, videoResponse);
 
-        return BadRequest(result.GetErrorOrThrow());
     }
 
     [HttpPut("{id:int}")]
