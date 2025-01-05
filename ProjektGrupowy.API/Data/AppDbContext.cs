@@ -15,10 +15,19 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
     public DbSet<SubjectVideoGroupAssignment> SubjectVideoGroupAssignments { get; set; }
     public DbSet<Labeler> Labelers { get; set; }
     public DbSet<VideoGroup> VideoGroups { get; set; }
+    public DbSet<ProjectAccessCode> ProjectAccessCodes { get; set; }
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        // === ProjectAccessCode === //
+        
+        modelBuilder.Entity<ProjectAccessCode>()
+            .HasIndex(p => p.Code)
+            .HasDatabaseName("IX_ProjectAccessCode_Code")
+            .IsUnique();
+
+        // ========================= //
         base.OnModelCreating(modelBuilder);
     }
 }
