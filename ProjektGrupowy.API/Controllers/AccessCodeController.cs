@@ -15,7 +15,7 @@ public class AccessCodeController(IProjectAccessCodeService service, IMapper map
         var accessCodes = await service.GetAccessCodesByProjectAsync(projectId);
         return accessCodes.IsSuccess
             ? Ok(mapper.Map<IEnumerable<AccessCodeResponse>>(accessCodes.GetValueOrThrow()))
-            : NotFound(accessCodes.GetErrorOrThrow());
+            : Unauthorized(accessCodes.GetErrorOrThrow());
     }
 
     [HttpPost("validate")]
