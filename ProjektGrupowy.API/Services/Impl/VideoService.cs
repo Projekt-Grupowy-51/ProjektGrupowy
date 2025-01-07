@@ -23,8 +23,21 @@ public class VideoService(
             return Optional<Video>.Failure("No video group found!");
         }
 
+        var videoGroup = videoGroupOptional.GetValueOrThrow();
+        var videoProject = videoGroup.Project;
+
+        var videoGroupId = videoGroup.Id.ToString();
+        var videoProjectId = videoProject.Id.ToString();
+
+        var videoRootDirectory = configuration["Videos:RootDirectory"] ?? "videos";
+
         var filename = $"{Guid.NewGuid()}{Path.GetExtension(videoRequest.File.FileName)}";
-        var videoPath = Path.Combine(configuration["Videos:Path"]!, filename);
+
+        var directoryPath = Path.Combine(AppContext.BaseDirectory, videoRootDirectory, videoProjectId, videoGroupId);
+        
+        Directory.CreateDirectory(directoryPath);
+
+        var videoPath = Path.Combine(directoryPath, filename);
 
         await using (var fileStream = new FileStream(videoPath, FileMode.Create))
         {
@@ -36,7 +49,7 @@ public class VideoService(
             Title = videoRequest.Title,
             Description = videoRequest.Description,
             Path = videoPath,
-            VideoGroup = videoGroupOptional.GetValueOrThrow()
+            VideoGroup = videoGroup
         };
 
         return await videoRepository.AddVideoAsync(video);
@@ -63,18 +76,18 @@ public class VideoService(
         video.Description = videoRequest.Description;
         video.VideoGroup = videoGroupOptional.GetValueOrThrow();
 
-        if (videoRequest.File != null)
+        if (videoRequest.File is null) 
+            return await videoRepository.UpdateVideoAsync(video);
+        
+        var filename = $"{Guid.NewGuid()}{Path.GetExtension(videoRequest.File.FileName)}";
+        var videoPath = Path.Combine(configuration["Videos:Path"]!, filename);
+
+        await using (var fileStream = new FileStream(videoPath, FileMode.Create))
         {
-            var filename = $"{Guid.NewGuid()}{Path.GetExtension(videoRequest.File.FileName)}";
-            var videoPath = Path.Combine(configuration["Videos:Path"]!, filename);
-
-            await using (var fileStream = new FileStream(videoPath, FileMode.Create))
-            {
-                await videoRequest.File.CopyToAsync(fileStream);
-            }
-
-            video.Path = videoPath;
+            await videoRequest.File.CopyToAsync(fileStream);
         }
+
+        video.Path = videoPath;
 
         return await videoRepository.UpdateVideoAsync(video);
     }

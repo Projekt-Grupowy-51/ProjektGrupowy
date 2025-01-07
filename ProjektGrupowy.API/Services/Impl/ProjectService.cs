@@ -93,12 +93,12 @@ public class ProjectService(
         var project = projectByIdOpt.GetValueOrThrow();
 
         // Round robin
-        var videoGroupAssignments = project
+        var videoGroupAssignment = project
             .Subjects
             .SelectMany(s => s.SubjectVideoGroupAssignments)
             .MinBy(sv => sv.Labelers.Count);
 
-        if (videoGroupAssignments == null)
+        if (videoGroupAssignment is null)
         {
             return Optional<bool>.Failure("No video group assignments found!");
         }
@@ -111,7 +111,7 @@ public class ProjectService(
 
         var labeler = labelerOpt.GetValueOrThrow();
 
-        videoGroupAssignments.Labelers.Add(labeler);
+        videoGroupAssignment.Labelers.Add(labeler);
 
         await projectRepository.UpdateProjectAsync(project);
 
