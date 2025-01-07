@@ -6,9 +6,13 @@ public class LabelerAssignmentDto
 {
     [Required]
     [Range(1, int.MaxValue)]
-    public int SubjectVideoGroupAssignmentId { get; set; }
+    public int LabelerId { get; set; }
 
     [Required]
     [Range(1, int.MaxValue)]
-    public int LabelerId { get; set; }
+    public int ProjectId { get; set; }
+
+    [Required]
+    [StringLength(16, MinimumLength = 16)]
+    public string AccessCode { get; set; }
 }

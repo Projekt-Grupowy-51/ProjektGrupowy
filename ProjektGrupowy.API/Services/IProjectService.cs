@@ -1,4 +1,5 @@
-﻿using ProjektGrupowy.API.DTOs.Project;
+﻿using ProjektGrupowy.API.DTOs.LabelerAssignment;
+using ProjektGrupowy.API.DTOs.Project;
 using ProjektGrupowy.API.Models;
 using ProjektGrupowy.API.Utils;
 
@@ -12,6 +13,7 @@ public interface IProjectService
     Task<Optional<Project>> UpdateProjectAsync(int projectId, ProjectRequest projectRequest);
 
     Task<Optional<IEnumerable<Project>>> GetProjectsOfScientist(int scientistId);
+    Task<Optional<bool>> AddLabelerToProjectAsync(LabelerAssignmentDto labelerAssignmentDto);
 
     Task DeleteProjectAsync(int id);
 }

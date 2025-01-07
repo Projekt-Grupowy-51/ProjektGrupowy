@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using ProjektGrupowy.API.DTOs.LabelerAssignment;
 using ProjektGrupowy.API.DTOs.Project;
 using ProjektGrupowy.API.Filters;
 using ProjektGrupowy.API.Services;
@@ -57,6 +58,15 @@ public class ProjectController(IProjectService projectService, IMapper mapper) :
             ? CreatedAtAction("GetProject", new { id = p.GetValueOrThrow().Id },
                 mapper.Map<ProjectResponse>(p.GetValueOrThrow()))
             : BadRequest(p.GetErrorOrThrow());
+    }
+
+    [HttpPost("assignment")]
+    public async Task<IActionResult> AssignLabelerToGroupAssignment(LabelerAssignmentDto laveAssignmentDto)
+    {
+        var result = await projectService.AddLabelerToProjectAsync(laveAssignmentDto);
+        return result.IsSuccess
+            ? Ok()
+            : BadRequest(result.GetErrorOrThrow());
     }
 
     [HttpDelete("{id:int}")]

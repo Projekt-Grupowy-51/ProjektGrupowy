@@ -1,11 +1,16 @@
-﻿using ProjektGrupowy.API.DTOs.Project;
+﻿using ProjektGrupowy.API.DTOs.LabelerAssignment;
+using ProjektGrupowy.API.DTOs.Project;
 using ProjektGrupowy.API.Models;
 using ProjektGrupowy.API.Repositories;
 using ProjektGrupowy.API.Utils;
 
 namespace ProjektGrupowy.API.Services.Impl;
 
-public class ProjectService(IProjectRepository projectRepository, IScientistRepository scientistRepository)
+public class ProjectService(
+    IProjectRepository projectRepository,
+    IScientistRepository scientistRepository,
+    IProjectAccessCodeRepository projectAccessCodeRepository,
+    ILabelerRepository labelerRepository)
     : IProjectService
 {
     public async Task<Optional<IEnumerable<Project>>> GetProjectsAsync() => await projectRepository.GetProjectsAsync();
@@ -58,6 +63,60 @@ public class ProjectService(IProjectRepository projectRepository, IScientistRepo
 
     public async Task<Optional<IEnumerable<Project>>> GetProjectsOfScientist(int scientistId)
         => await projectRepository.GetProjectsOfScientist(scientistId);
+
+    public async Task<Optional<bool>> AddLabelerToProjectAsync(LabelerAssignmentDto labelerAssignmentDto)
+    {
+        var projectId = labelerAssignmentDto.ProjectId;
+        var projectByIdOpt = await projectRepository.GetProjectAsync(projectId);
+        var labelerId = labelerAssignmentDto.LabelerId;
+
+        if (projectByIdOpt.IsFailure) 
+        {
+            return Optional<bool>.Failure("No project found!");
+        }
+
+        var code = labelerAssignmentDto.AccessCode;
+        var projectByCodeOpt = await projectAccessCodeRepository
+            .GetAccessCodeByCodeAsync(code);
+
+        if (projectByCodeOpt.IsFailure)
+        {
+            return Optional<bool>.Failure("No project found!");
+        }
+
+        // Check if project id and access code project id match
+        if (projectByIdOpt.GetValueOrThrow().Id != projectByCodeOpt.GetValueOrThrow().Project.Id)
+        {
+            return Optional<bool>.Failure("Project id and access code project id do not match!");
+        }
+
+        var project = projectByIdOpt.GetValueOrThrow();
+
+        // Round robin
+        var videoGroupAssignment = project
+            .Subjects
+            .SelectMany(s => s.SubjectVideoGroupAssignments)
+            .MinBy(sv => sv.Labelers.Count);
+
+        if (videoGroupAssignment is null)
+        {
+            return Optional<bool>.Failure("No video group assignments found!");
+        }
+
+        var labelerOpt = await labelerRepository.GetLabelerAsync(labelerId);
+        if (labelerOpt.IsFailure)
+        {
+            return Optional<bool>.Failure("No labeler found!");
+        }
+
+        var labeler = labelerOpt.GetValueOrThrow();
+
+        videoGroupAssignment.Labelers.Add(labeler);
+
+        await projectRepository.UpdateProjectAsync(project);
+
+        return Optional<bool>.Success(true);
+    }
 
     public async Task DeleteProjectAsync(int id)
     {
