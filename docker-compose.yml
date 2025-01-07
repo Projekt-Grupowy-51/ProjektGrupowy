@@ -31,16 +31,16 @@ services:
     depends_on:
       - db
 
-  frontend:
-    build:
-        context: ./frontend
-        dockerfile: Dockerfile
-    ports:
-        - "3000:3000"
-    networks:
-        - mynetwork
-    depends_on:
-        - app
+  # frontend:
+  #   build:
+  #       context: ./frontend
+  #       dockerfile: Dockerfile
+  #   ports:
+  #       - "3000:3000"
+  #   networks:
+  #       - mynetwork
+  #   depends_on:
+  #       - app
 
 
 
