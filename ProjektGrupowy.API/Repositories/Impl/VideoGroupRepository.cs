@@ -104,4 +104,28 @@ public class VideoGroupRepository(AppDbContext context, ILogger<VideoGroupReposi
             logger.LogError(e, "An error occurred while deleting video group");
         }
     }
+
+    public async Task<Optional<IEnumerable<Video>>> GetVideosByVideoGroupIdAsync(int id)
+    {
+        try
+        {
+            var videoGroup = await context.VideoGroups
+                .Include(vg => vg.Videos)
+                .FirstOrDefaultAsync(vg => vg.Id == id);
+
+            if (videoGroup is null)
+            {
+                logger.LogWarning("Video group with ID {VideoGroupId} not found", id);
+                return Optional<IEnumerable<Video>>.Failure("Video group not found");
+            }
+
+            return Optional<IEnumerable<Video>>.Success(videoGroup.Videos);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "An error occurred while getting videos for video group with ID {VideoGroupId}", id);
+            return Optional<IEnumerable<Video>>.Failure("An error occurred while processing your request");
+        }
+    }
+
 }

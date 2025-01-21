@@ -86,4 +86,23 @@ public class SubjectVideoGroupAssignmentRepository(
             logger.LogError(e, "An error occurred while deleting subject video group assignment");
         }
     }
+
+    public async Task<Optional<IEnumerable<SubjectVideoGroupAssignment>>> GetSubjectVideoGroupAssignmentsByProjectAsync(int projectId)
+    {
+        try
+        {
+            var assignments = await context.SubjectVideoGroupAssignments
+                .Where(x => x.Subject.Project.Id == projectId)
+                .ToListAsync();
+
+            return assignments.Any()
+                ? Optional<IEnumerable<SubjectVideoGroupAssignment>>.Success(assignments)
+                : Optional<IEnumerable<SubjectVideoGroupAssignment>>.Failure("No assignments found for the given project");
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "An error occurred while getting subject video group assignments by project");
+            return Optional<IEnumerable<SubjectVideoGroupAssignment>>.Failure(e.Message);
+        }
+    }
 }

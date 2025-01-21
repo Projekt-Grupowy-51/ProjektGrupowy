@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using ProjektGrupowy.API.DTOs.Video;
 using ProjektGrupowy.API.DTOs.VideoGroup;
 using ProjektGrupowy.API.Filters;
 using ProjektGrupowy.API.Services;
@@ -29,14 +30,7 @@ public class VideoGroupController(IVideoGroupService videoGroupService, IMapper 
             : NotFound(videoGroup.GetErrorOrThrow());
     }
 
-    [HttpGet("project/{projectId:int}")]
-    public async Task<ActionResult<IEnumerable<VideoGroupResponse>>> GetVideoGroupsByProjectAsync(int projectId)
-    {
-        var videoGroups = await videoGroupService.GetVideoGroupsByProjectAsync(projectId);
-        return videoGroups.IsSuccess
-            ? Ok(mapper.Map<IEnumerable<VideoGroupResponse>>(videoGroups.GetValueOrThrow()))
-            : NotFound(videoGroups.GetErrorOrThrow());
-    }
+
 
     [HttpPost]
     public async Task<ActionResult<VideoGroupResponse>> AddVideoGroupAsync(VideoGroupRequest videoGroupRequest)
@@ -70,4 +64,17 @@ public class VideoGroupController(IVideoGroupService videoGroupService, IMapper 
 
         return NoContent();
     }
+
+    [HttpGet("{id:int}/videos")]
+    public async Task<ActionResult<IEnumerable<VideoResponse>>> GetVideosByVideoGroupIdAsync(int id)
+    {
+        var videosResult = await videoGroupService.GetVideosByVideoGroupIdAsync(id);
+
+        if (videosResult.IsSuccess)
+        {
+            return Ok(mapper.Map<IEnumerable<VideoResponse>>(videosResult.GetValueOrThrow()));
+        }
+        return NotFound(videosResult.GetErrorOrThrow());
+    }
+
 }

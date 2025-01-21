@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useNavigate, useParams } from 'react-router-dom';
 import './css/ScientistProjects.css'; 
 
-const ScientistProjects = () => {
+const Projects = () => {
     const [projects, setProjects] = useState([]);
     const navigate = useNavigate();
 
@@ -79,4 +79,4 @@ const ScientistProjects = () => {
     );
 };
 
-export default ScientistProjects;
+export default Projects;

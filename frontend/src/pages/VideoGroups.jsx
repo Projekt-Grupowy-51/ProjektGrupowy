@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useNavigate, useParams } from 'react-router-dom';
 import './css/ScientistProjects.css';
 
-const ScientistVideoGroups = () => {
+const VideoGroupsDetails = () => {
     const [videoGroups, setVideoGroups] = useState([]);
     const navigate = useNavigate();
 
@@ -81,4 +81,4 @@ const ScientistVideoGroups = () => {
     );
 };
 
-export default ScientistVideoGroups;
+export default VideoGroupsDetails;

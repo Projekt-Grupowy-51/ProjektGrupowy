@@ -76,4 +76,9 @@ public class VideoGroupService(IVideoGroupRepository videoGroupRepository, IProj
             await videoGroupRepository.DeleteVideoGroupAsync(videoGroup.GetValueOrThrow());
         }
     }
+
+    public async Task<Optional<IEnumerable<Video>>> GetVideosByVideoGroupIdAsync(int id)
+    {
+        return await videoGroupRepository.GetVideosByVideoGroupIdAsync(id);
+    }
 }
