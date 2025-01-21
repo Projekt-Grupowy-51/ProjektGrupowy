@@ -180,11 +180,17 @@ namespace ProjektGrupowy.API.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<TimeSpan>("End")
+                        .HasColumnType("interval");
+
                     b.Property<int>("LabelId")
                         .HasColumnType("integer");
 
                     b.Property<int>("LabelerId")
                         .HasColumnType("integer");
+
+                    b.Property<TimeSpan>("Start")
+                        .HasColumnType("interval");
 
                     b.Property<int>("SubjectVideoGroupAssignmentId")
                         .HasColumnType("integer");
@@ -208,7 +214,7 @@ namespace ProjektGrupowy.API.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Description")
+                    b.Property<string>("ColorHex")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -216,8 +222,15 @@ namespace ProjektGrupowy.API.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<char>("Shortcut")
+                        .HasColumnType("character(1)");
+
                     b.Property<int>("SubjectId")
                         .HasColumnType("integer");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -233,10 +246,6 @@ namespace ProjektGrupowy.API.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -255,10 +264,19 @@ namespace ProjektGrupowy.API.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<DateOnly>("CreationDate")
+                        .HasColumnType("date");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)");
+
+                    b.Property<DateOnly?>("EndDate")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly?>("ModificationDate")
+                        .HasColumnType("date");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -316,10 +334,6 @@ namespace ProjektGrupowy.API.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -329,10 +343,6 @@ namespace ProjektGrupowy.API.Migrations
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -373,6 +383,12 @@ namespace ProjektGrupowy.API.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateOnly>("CreationDate")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly?>("ModificationDate")
+                        .HasColumnType("date");
 
                     b.Property<int>("SubjectId")
                         .HasColumnType("integer");
@@ -464,11 +480,6 @@ namespace ProjektGrupowy.API.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
-
                     b.Property<string>("Path")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -501,10 +512,6 @@ namespace ProjektGrupowy.API.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.Property<string>("Name")
                         .IsRequired()

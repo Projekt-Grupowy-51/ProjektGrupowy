@@ -36,7 +36,8 @@ public class SubjectVideoGroupAssignmentService(ISubjectVideoGroupAssignmentRepo
         var subjectVideoGroupAssignment = new SubjectVideoGroupAssignment
         {
             Subject = subjectOptional.GetValueOrThrow(),
-            VideoGroup = videoGroupOptional.GetValueOrThrow()
+            VideoGroup = videoGroupOptional.GetValueOrThrow(),
+            CreationDate = DateOnly.FromDateTime(DateTime.Today)
         };
 
         return await subjectVideoGroupAssignmentRepository.AddSubjectVideoGroupAssignmentAsync(subjectVideoGroupAssignment);
@@ -67,6 +68,7 @@ public class SubjectVideoGroupAssignmentService(ISubjectVideoGroupAssignmentRepo
 
         subjectVideoGroupAssignment.Subject = subjectOptional.GetValueOrThrow();
         subjectVideoGroupAssignment.VideoGroup = videoGroupOptional.GetValueOrThrow();
+        subjectVideoGroupAssignment.ModificationDate = DateOnly.FromDateTime(DateTime.Today);
 
         return await subjectVideoGroupAssignmentRepository.UpdateSubjectVideoGroupAssignmentAsync(subjectVideoGroupAssignment);
     }

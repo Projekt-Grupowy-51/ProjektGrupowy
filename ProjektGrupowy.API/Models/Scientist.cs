@@ -16,8 +16,6 @@ public class Scientist
     [Required(ErrorMessage = "wymagane")]
     [StringLength(255, ErrorMessage = "max 255 znakow")]
     public string LastName { get; set; }
-    public string Title { get; set; }
-    public string Description { get; set; }
 
     public virtual ICollection<Project>? Projects { get; set; } = new List<Project>();
 }

@@ -22,7 +22,6 @@ public class LabelerService(ILabelerRepository labelerRepository) : ILabelerServ
         var labeler = new Labeler
         {
             Name = labelerRequest.Name,
-            Description = labelerRequest.Description
         };
 
         return await labelerRepository.AddLabelerAsync(labeler);
@@ -39,7 +38,6 @@ public class LabelerService(ILabelerRepository labelerRepository) : ILabelerServ
 
         var labeler = labelerOptional.GetValueOrThrow();
         labeler.Name = labelerRequest.Name;
-        labeler.Description = labelerRequest.Description;
 
         return await labelerRepository.UpdateLabelerAsync(labeler);
     }
