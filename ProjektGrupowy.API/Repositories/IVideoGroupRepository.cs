@@ -14,4 +14,5 @@ public interface IVideoGroupRepository
     Task<Optional<IEnumerable<VideoGroup>>> GetVideoGroupsByProjectAsync(Project project);
 
     Task DeleteVideoGroupAsync(VideoGroup videoGroup);
+    Task<Optional<IEnumerable<Video>>> GetVideosByVideoGroupIdAsync(int id);
 }

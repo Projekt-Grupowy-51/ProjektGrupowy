@@ -3,27 +3,47 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: Arial, sans-serif;
+    font-family: 'Poppins', Arial, sans-serif;
 }
 
-body {
-    /*background-color: #d0ebff;*/
-    background: linear-gradient(180deg, #d0ebff, #2859cc);
+body, html {
+    background-color: #e0f7fa; /* Usuniêcie gradientu */
     color: #333;
+    height: 100vh; /* Ustawiamy pe³n¹ wysokoœæ widoku */
+    width: 100%; /* Ustawiamy pe³n¹ szerokoœæ */
+    display: flex;
+    flex-direction: column; /* Uk³ad kolumnowy */
 }
+
 
 .container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
+    flex: 1; /* Zapewnia, ¿e kontener zajmuje ca³¹ dostêpn¹ wysokoœæ */
+    padding: 20px; /* Dodajemy przestrzeñ wokó³ zawartoœci */
+    background-color: #ffffff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    margin-top: 80px; /* Ustawiamy przestrzeñ pod navbar */
+    overflow-y: auto; /* Dodajemy przewijanie w pionie, jeœli zawartoœæ przekroczy dostêpne miejsce */
+    min-height: calc(100vh - 120px); /* Ustawiamy minimaln¹ wysokoœæ, aby kontener zajmowa³ ca³¹ dostêpn¹ przestrzeñ */
+    width: 90vw; /* Ustawiamy szerokoœæ na 100% */
+    display: flex;
+    flex-direction: column; /* Zapewnia, ¿e zawartoœæ wewn¹trz kontenera rozci¹ga siê w pionie */
+}
+
+.content {
+    flex: 1; /* Zapewnia, ¿e zawartoœæ zajmuje dostêpne miejsce */
 }
 
 /* Nawigacja */
 .navbar {
-    background-color: #3B28CC;
+    background-color: #0288d1;
     padding: 15px 0;
     text-align: center;
-    width: 100vw;
+    width: 100%;
+    position: fixed; /* Ustawiamy navbar na sta³e na górze */
+    top: 0;
+    left: 0;
+    z-index: 1000; /* Zapewni, ¿e navbar zawsze bêdzie na wierzchu */
 }
 
     .navbar ul {
@@ -36,7 +56,7 @@ body {
     }
 
 .nav-link {
-    color: white;
+    color: #ffffff;
     text-decoration: none;
     font-weight: bold;
     padding: 8px 16px;
@@ -45,14 +65,16 @@ body {
 }
 
     .nav-link:hover {
-        background-color: #2667FF;
+        background-color: #03a9f4;
     }
 
 /* Nag³ówek */
 .heading {
     text-align: center;
-    color: #3d26e6;
+    color: #0288d1;
     margin-bottom: 20px;
+    font-size: 2rem;
+    font-weight: bold;
 }
 
 /* Tabela */
@@ -60,18 +82,20 @@ body {
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
-    background-color: white;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    background-color: #ffffff;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
 }
 
-    .project-table th, .project-table td {
+    .project-table th,
+    .project-table td {
         padding: 12px 20px;
         text-align: left;
         border: 1px solid #ddd;
     }
 
     .project-table th {
-        background-color: #3E8EFC;
+        background-color: #0288d1;
         color: white;
     }
 
@@ -83,21 +107,16 @@ body {
         background-color: #e3f2fd;
     }
 
-/* Ustawienie tabel obok siebie */
-.parallel-tables {
-    display: flex;
-    justify-content: space-between;
-    gap: 20px; /* Odstêp miêdzy tabelami */
-    margin-top: 20px;
-}
-
-#details-subject-table, #details-video-table {
-    width: 48%; /* Tabele zajmuj¹ po 48% szerokoœci */
-    margin: 0;
-}
-
 /* Przyciski */
-.add-btn, .details-btn, .delete-btn {
+button,
+a {
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.add-btn,
+.details-btn,
+.delete-btn {
     padding: 10px 20px;
     border: none;
     border-radius: 5px;
@@ -106,63 +125,65 @@ body {
 }
 
 .add-btn {
-    background-color: #3E8EFC;
+    background-color: #0288d1;
     color: white;
-    margin-bottom: 20px;
 }
 
     .add-btn:hover {
-        background-color: #3E8EFC;
-    }
-
-.details-btn {
-    background-color: #3E8EFC;
-    color: white;
-    margin-right: 10px;
-}
-
-    .details-btn:hover {
-        background-color: #2667FF;
+        background-color: #03a9f4;
     }
 
 .delete-btn {
-    background-color: #FF4D4D;
+    background-color: #e53935;
     color: white;
 }
 
     .delete-btn:hover {
-        background-color: #FF1A1A;
+        background-color: #d32f2f;
     }
 
 .edit-btn {
-    background-color: #3E8EFC;
+    background-color: #0288d1;
     color: white;
 }
 
     .edit-btn:hover {
-        background-color: #3E8EFC;
+        background-color: #03a9f4;
     }
 
 .back-btn {
-    background-color: #3E8EFC;
+    background-color: #0288d1;
     color: white;
 }
 
     .back-btn:hover {
-        background-color: #3E8EFC;
-    }   
-    
-    .back-btn a{
-        text-decoration:none;
-        color:white;
-        width:100%;
-        display:block;
+        background-color: #03a9f4;
     }
 
-/* Wideo */
+    .back-btn a {
+        text-decoration: none;
+        color: white;
+        width: 100%;
+        display: block;
+    }
+
+/* Stylizacja tabel */
+.parallel-tables {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+#details-subject-table,
+#details-video-table {
+    width: 48%;
+}
+
+/* Stylizacja wideo */
 video {
     width: 100%;
-    max-width: 1050px; /* Maksymalna szerokoœæ wideo */
+    max-width: 1050px;
     margin: 20px auto;
     display: block;
     border-radius: 8px;
@@ -172,8 +193,7 @@ video {
 .description {
     text-align: left;
     padding: 4vh 0;
-    width: 100%;
-    max-width: 800px; /* Maksymalna szerokoœæ wideo */
+    max-width: 800px;
     margin: 0 auto;
 }
 
@@ -182,7 +202,109 @@ video {
     margin: 0 auto;
 }
 
-.parallel-tables h2{
-    width:50%;
-    text-align:center;  
+.parallel-tables h2 {
+    width: 50%;
+    text-align: center;
+    color: #0288d1;
 }
+
+/* Stylizacja zak³adek */
+.tab-navigation {
+    display: flex;
+    justify-content: space-around; /* U¿yjemy przestrzeni równomiernie pomiêdzy zak³adkami */
+    border-bottom: 3px solid #0288d1; /* Ustawimy wyraŸniejszy kolor dla linii */
+    margin-bottom: 20px;
+    padding: 10px 0; /* Dodajemy wewnêtrzny odstêp, aby zak³adki by³y bardziej wyœrodkowane */
+}
+
+.tab-button {
+    flex: 1;
+    text-align: center;
+    padding: 12px 0;
+    font-weight: bold;
+    color: #0288d1;
+    background: #f1f1f1;
+    border: none;
+    border-radius: 5px 5px 0 0;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1rem; /* Dostosowanie rozmiaru czcionki */
+}
+
+    .tab-button:not(:last-child) {
+        margin-right: 10px; /* Wiêkszy odstêp pomiêdzy zak³adkami */
+    }
+
+    .tab-button.active {
+        background-color: #0288d1;
+        color: white;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15); /* Dodanie delikatnego cienia */
+        transform: translateY(-2px); /* Drobne uniesienie przy aktywnej zak³adce */
+    }
+
+    .tab-button:hover {
+        background-color: #03a9f4; /* Zmiana koloru przy hover */
+    }
+
+/* Dostosowanie treœci zak³adek */
+.tab-content {
+    padding: 20px;
+    background: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 0 0 10px 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.video-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* 2 columns */
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.video-container {
+    text-align: center;
+}
+
+video {
+    max-width: 100%;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+}
+
+.tables-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px; /* Odstêp miêdzy tabelami */
+    margin-top: 20px;
+}
+
+.table-wrapper {
+    flex: 1; /* Sprawia, ¿e tabele maj¹ równ¹ szerokoœæ */
+    max-width: 30%; /* Ogranicza szerokoœæ tabel */
+}
+
+.details-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+    .details-table th, .details-table td {
+        border: 1px solid #ddd;
+        padding: 8px;
+    }
+
+    .details-table th {
+        background-color: #f4f4f4;
+        text-align: left;
+    }
+
+    .details-table tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+
+    .details-table tr:hover {
+        background-color: #f1f1f1;
+    }
+

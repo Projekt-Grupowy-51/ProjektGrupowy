@@ -81,4 +81,9 @@ public class SubjectVideoGroupAssignmentService(ISubjectVideoGroupAssignmentRepo
             await subjectVideoGroupAssignmentRepository.DeleteSubjectVideoGroupAssignmentAsync(subjectVideoGroupAssignment.GetValueOrThrow());
         }
     }
+
+    public async Task<Optional<IEnumerable<SubjectVideoGroupAssignment>>> GetSubjectVideoGroupAssignmentsByProjectAsync(int projectId)
+    {
+        return await subjectVideoGroupAssignmentRepository.GetSubjectVideoGroupAssignmentsByProjectAsync(projectId);
+    }
 }

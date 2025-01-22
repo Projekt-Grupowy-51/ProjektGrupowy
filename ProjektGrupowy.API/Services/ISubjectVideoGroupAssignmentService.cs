@@ -13,4 +13,6 @@ public interface ISubjectVideoGroupAssignmentService
     Task<Optional<SubjectVideoGroupAssignment>> UpdateSubjectVideoGroupAssignmentAsync(
         int subjectVideoGroupAssignmentId, SubjectVideoGroupAssignmentRequest subjectVideoGroupAssignmentRequest);
     Task DeleteSubjectVideoGroupAssignmentAsync(int subjectVideoGroupAssignmentId);
+
+    Task<Optional<IEnumerable<SubjectVideoGroupAssignment>>> GetSubjectVideoGroupAssignmentsByProjectAsync(int projectId);
 }
