@@ -12,6 +12,7 @@ public class Label
 
     public string Name { get; set; }
     
+    [StringLength(7, MinimumLength = 7, ErrorMessage = "Hex koloru musi mieć 7 znaków")]
     public string ColorHex { get; set; }
     
     public string Type { get; set; } // consider enum, ask about it, in the json given to us all types are range
