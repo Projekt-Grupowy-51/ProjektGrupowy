@@ -3,12 +3,17 @@ import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 
 // Komponenty dla podstron
 
-import ScientistProjects from './pages/ScientistProjects';
-import ScientistSubjects from './pages/ScientistSubjects';
-import ScientistSubjectDetails from './pages/ScientistSubjectDetails';
-import ScientistVideoGroups from './pages/ScientistVideoGroups';
-import ScientistProjectDetails from './pages/ScientistProjectDetails';
+import Projects from './pages/Projects';
+import Subjects from './pages/Subjects';
+import SubjectDetails from './pages/SubjectDetails';
+import VideoGroups from './pages/VideoGroups';
+import ProjectDetails from './pages/ProjectDetails';
+import VideoGroupsDetails from './pages/VideoGroupsDetails';
 import Video from './pages/Video';
+import AddSubject from './pages/SubjectAdd';
+import AddVideoGroup from './pages/VideoGroupAdd';
+import AddLabel from './pages/LabelAdd';
+import SubjectVideoGroupAssignmentDetails from './pages/SubjectVideoGroupAssignmentDetails';
 
 
 function App() {
@@ -23,12 +28,31 @@ function App() {
                 </ul>
             </nav>
             <Routes>
-                <Route path="/projects/:id" element={<ScientistProjectDetails />} />
-                <Route path="/projects" element={<ScientistProjects />} />
-                <Route path="/subjects" element={<ScientistSubjects />} />
-                <Route path="/subjects/:id" element={<ScientistSubjectDetails />} />
-                <Route path="/video/:id" element={<Video />} /> 
-                <Route path="/videoGroups/" element={<ScientistVideoGroups />} /> 
+                {/* Project Routes */}
+                <Route path="/projects" element={<Projects />} />
+                <Route path="/projects/:id" element={<ProjectDetails />} />
+
+                {/* Subject Routes */}
+                <Route path="/subjects" element={<Subjects />} />
+                <Route path="/subjects/:id" element={<SubjectDetails />} />
+                <Route path="/subjects/add" element={<AddSubject />} />
+
+                {/* Video Group Routes */}
+                <Route path="/video-groups" element={<VideoGroups />} />
+                <Route path="/video-groups/:id" element={<VideoGroupsDetails />} />
+                <Route path="/video-groups/add" element={<AddVideoGroup />} />
+
+                {/* Video Routes */}
+                <Route path="/videos/:id" element={<Video />} />
+
+                <Route path="/video/:id" element={<Video />} />
+
+                { /* Subject Video Group Assignments Routes */ }
+
+                <Route path="/subject-video-group-assignments/:id" element={<SubjectVideoGroupAssignmentDetails/> } />
+
+                {/* Label Routes */}
+                <Route path="/labels/add" element={<AddLabel />} />
             </Routes>
         </Router>
     );

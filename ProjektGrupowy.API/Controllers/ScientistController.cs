@@ -5,13 +5,14 @@ using ProjektGrupowy.API.DTOs.Scientist;
 using ProjektGrupowy.API.Filters;
 using ProjektGrupowy.API.Models;
 using ProjektGrupowy.API.Services;
+using ProjektGrupowy.API.Services.Impl;
 
 namespace ProjektGrupowy.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
 [ServiceFilter(typeof(ValidateModelStateFilter))]
-public class ScientistController(IScientistService scientistService, IMapper mapper) : ControllerBase
+public class ScientistController(IScientistService scientistService, IProjectService projectService, IMapper mapper) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<IEnumerable<ScientistResponse>>> GetScientistsAsync()
@@ -62,5 +63,14 @@ public class ScientistController(IScientistService scientistService, IMapper map
     {
         await scientistService.DeleteScientistAsync(id);
         return NoContent();
+    }
+
+    [HttpGet("{scientistId:int}/Projects")]
+    public async Task<ActionResult<IEnumerable<ProjectResponse>>> GetProjectsOfScientistAsync(int scientistId)
+    {
+        var projects = await projectService.GetProjectsOfScientist(scientistId);
+        return projects.IsSuccess
+            ? Ok(mapper.Map<IEnumerable<ProjectResponse>>(projects.GetValueOrThrow()))
+            : NotFound(projects.GetErrorOrThrow());
     }
 }
