@@ -8,4 +8,7 @@ public class ProjectResponse
     public string Name { get; set; }
     public string Description { get; set; }
     public int ScientistId { get; set; }
+    public DateOnly CreationDate { get; set; }
+    public DateOnly? ModificationDate { get; set; }
+    public DateOnly? EndDate { get; set; }
 }

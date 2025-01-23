@@ -42,12 +42,16 @@ public class AssignedLabelService(
         {
             return Optional<AssignedLabel>.Failure("No subject video group assignment found");
         }
+        
+        
 
         var assignedLabel = new AssignedLabel
         {
             Label = labelOptional.GetValueOrThrow(),
             Labeler = labelerOptional.GetValueOrThrow(),
-            SubjectVideoGroupAssignment = subjectVideoGroupAssignmentOptional.GetValueOrThrow()
+            SubjectVideoGroupAssignment = subjectVideoGroupAssignmentOptional.GetValueOrThrow(),
+            Start = assignedLabelRequest.Start,
+            End = assignedLabelRequest.End
         };
 
         return await assignedLabelRepository.AddAssignedLabelAsync(assignedLabel);
@@ -87,6 +91,8 @@ public class AssignedLabelService(
         assignedLabel.Label = label;
         assignedLabel.Labeler = labeler;
         assignedLabel.SubjectVideoGroupAssignment = subjectVideoGroupAssignment;
+        assignedLabel.Start = assignedLabelRequest.Start;
+        assignedLabel.End = assignedLabelRequest.End;
 
         return await assignedLabelRepository.UpdateAssignedLabelAsync(assignedLabel);
     }

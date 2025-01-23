@@ -29,8 +29,10 @@ public class LabelService(ILabelRepository labelRepository, ISubjectRepository s
         var label = new Label
         {
             Name = labelRequest.Name,
-            Description = labelRequest.Description,
-            Subject = subjectOptional.GetValueOrThrow()
+            Subject = subjectOptional.GetValueOrThrow(),
+            ColorHex = labelRequest.ColorHex,
+            Type = labelRequest.Type,
+            Shortcut = labelRequest.Shortcut
         };
 
         return await labelRepository.AddLabelAsync(label);
@@ -54,8 +56,10 @@ public class LabelService(ILabelRepository labelRepository, ISubjectRepository s
         }
 
         label.Name = labelRequest.Name;
-        label.Description = labelRequest.Description;
         label.Subject = subjectOptional.GetValueOrThrow();
+        label.ColorHex = labelRequest.ColorHex;
+        label.Type = labelRequest.Type;
+        label.Shortcut = labelRequest.Shortcut;
 
         return await labelRepository.UpdateLabelAsync(label);
     }

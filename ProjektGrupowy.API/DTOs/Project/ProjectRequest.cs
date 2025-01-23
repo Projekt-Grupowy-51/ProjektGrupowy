@@ -14,4 +14,6 @@ public class ProjectRequest
 
     [Required]
     public int ScientistId { get; set; }
+    
+    public bool Finished { get; set; }
 }

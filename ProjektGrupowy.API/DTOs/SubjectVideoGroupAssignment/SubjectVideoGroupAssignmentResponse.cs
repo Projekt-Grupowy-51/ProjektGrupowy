@@ -5,4 +5,6 @@ public class SubjectVideoGroupAssignmentResponse
     public int Id { get; set; }
     public int SubjectId { get; set; }
     public int VideoGroupId { get; set; }
+    public DateOnly CreationDate { get; set; }
+    public DateOnly? ModificationDate { get; set; }
 }
