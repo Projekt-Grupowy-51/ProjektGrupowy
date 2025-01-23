@@ -116,7 +116,9 @@ a {
 }
 
     button {
-        background-color:#95e2f78b;
+        background-color: #95e2f78b;
+        width: 40%;
+        margin: 2% 5%;
     }
 
 .add-btn,
