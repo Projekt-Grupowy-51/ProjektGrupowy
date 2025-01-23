@@ -7,7 +7,7 @@
 }
 
 body, html {
-    background-color: #e0f7fa; /* Usuniêcie gradientu */
+    background-color: #e2f3ff; /* Usuniêcie gradientu */
     color: #333;
     height: 100vh; /* Ustawiamy pe³n¹ wysokoœæ widoku */
     width: 100%; /* Ustawiamy pe³n¹ szerokoœæ */
@@ -66,6 +66,7 @@ body, html {
 
     .nav-link:hover {
         background-color: #03a9f4;
+        color: #fff;
     }
 
 /* Nag³ówek */
@@ -114,6 +115,10 @@ a {
     font-weight: bold;
 }
 
+    button {
+        background-color:#95e2f78b;
+    }
+
 .add-btn,
 .details-btn,
 .delete-btn {
@@ -127,6 +132,8 @@ a {
 .add-btn {
     background-color: #0288d1;
     color: white;
+    margin: 2% 0%;
+    width:30%;
 }
 
     .add-btn:hover {
@@ -198,9 +205,17 @@ video {
 }
 
 .details {
-    width: 90%;
-    margin: 0 auto;
+    width: 100%;
+    margin: 0 auto;   
 }
+
+    .details p{
+        margin: 2% 5%;
+    }
+
+    .details .add-btn{
+        margin:2% 5%;
+    }
 
 .parallel-tables h2 {
     width: 50%;
@@ -214,7 +229,7 @@ video {
     justify-content: space-around; /* U¿yjemy przestrzeni równomiernie pomiêdzy zak³adkami */
     border-bottom: 3px solid #0288d1; /* Ustawimy wyraŸniejszy kolor dla linii */
     margin-bottom: 20px;
-    padding: 10px 0; /* Dodajemy wewnêtrzny odstêp, aby zak³adki by³y bardziej wyœrodkowane */
+    padding: 10px 0 0px 0; /* Dodajemy wewnêtrzny odstêp, aby zak³adki by³y bardziej wyœrodkowane */
 }
 
 .tab-button {
@@ -229,6 +244,7 @@ video {
     cursor: pointer;
     transition: all 0.3s ease;
     font-size: 1rem; /* Dostosowanie rozmiaru czcionki */
+    margin: 0% 5%;
 }
 
     .tab-button:not(:last-child) {
@@ -244,6 +260,7 @@ video {
 
     .tab-button:hover {
         background-color: #03a9f4; /* Zmiana koloru przy hover */
+        color: #f1f1f1;
     }
 
 /* Dostosowanie treœci zak³adek */

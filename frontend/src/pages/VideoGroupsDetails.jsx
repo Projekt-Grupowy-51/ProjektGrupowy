@@ -131,10 +131,10 @@ const VideoGroupDetails = () => {
     return (
         <div className="container">
             <div className="content">
-                <h1 className="heading">Video Group Details</h1>
+                <h1 className="heading">{videoGroupDetails.name}</h1>
                 <div className="details">
-                    <p><strong>ID:</strong> {videoGroupDetails.id}</p>
-                    <p><strong>Name:</strong> {videoGroupDetails.name}</p>
+                    {/*<p><strong>ID:</strong> {videoGroupDetails.id}</p>*/}
+                    {/*<p><strong>Name:</strong> {videoGroupDetails.name}</p>*/}
                     <p><strong>Description:</strong> {videoGroupDetails.description}</p>
                     <p><strong>Creator:</strong> {videoGroupDetails.creator}</p>
                 </div>
@@ -183,45 +183,45 @@ const VideoGroupDetails = () => {
                     <p>No videos associated with this video group.</p>
                 )}
 
-                <h2>Video Stream Preview (2x2 Grid)</h2>
-                <div className="video-grid">
-                    {streams.length > 0 ? (
-                        streams.map((streamUrl, index) => (
-                            <div className="video-container" key={index}>
-                                <video
-                                    ref={(el) => videoRefs.current[index] = el}
-                                    width="300"
-                                    height="200"
-                                    src={streamUrl}
-                                    type="video/mp4"
-                                    onTimeUpdate={handleTimeUpdate}
-                                    onLoadedMetadata={setVideoDuration}
-                                >
-                                    Your browser does not support the video tag.
-                                </video>
-                            </div>
-                        ))
-                    ) : (
-                        <p>Loading video streams...</p>
-                    )}
-                </div>
+                {/*<h2>Video Stream Preview (2x2 Grid)</h2>*/}
+                {/*<div className="video-grid">*/}
+                {/*    {streams.length > 0 ? (*/}
+                {/*        streams.map((streamUrl, index) => (*/}
+                {/*            <div className="video-container" key={index}>*/}
+                {/*                <video*/}
+                {/*                    ref={(el) => videoRefs.current[index] = el}*/}
+                {/*                    width="300"*/}
+                {/*                    height="200"*/}
+                {/*                    src={streamUrl}*/}
+                {/*                    type="video/mp4"*/}
+                {/*                    onTimeUpdate={handleTimeUpdate}*/}
+                {/*                    onLoadedMetadata={setVideoDuration}*/}
+                {/*                >*/}
+                {/*                    Your browser does not support the video tag.*/}
+                {/*                </video>*/}
+                {/*            </div>*/}
+                {/*        ))*/}
+                {/*    ) : (*/}
+                {/*        <p>Loading video streams...</p>*/}
+                {/*    )}*/}
+                {/*</div>*/}
 
-                <div className="timeline-container">
-                    <input
-                        type="range"
-                        min="0"
-                        max={duration}
-                        value={currentTime}
-                        onChange={handleTimelineChange}
-                        step="0.1"
-                        className="timeline"
-                    />
-                    <span>{Math.floor(currentTime)} / {Math.floor(duration)} sec</span>
-                </div>
+                {/*<div className="timeline-container">*/}
+                {/*    <input*/}
+                {/*        type="range"*/}
+                {/*        min="0"*/}
+                {/*        max={duration}*/}
+                {/*        value={currentTime}*/}
+                {/*        onChange={handleTimelineChange}*/}
+                {/*        step="0.1"*/}
+                {/*        className="timeline"*/}
+                {/*    />*/}
+                {/*    <span>{Math.floor(currentTime)} / {Math.floor(duration)} sec</span>*/}
+                {/*</div>*/}
 
-                <button className="play-stop-btn" onClick={handlePlayStop}>
-                    {isPlaying ? 'Stop All Videos' : 'Play All Videos'}
-                </button>
+                {/*<button className="play-stop-btn" onClick={handlePlayStop}>*/}
+                {/*    {isPlaying ? 'Stop All Videos' : 'Play All Videos'}*/}
+                {/*</button>*/}
             </div>
         </div>
     );

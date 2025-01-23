@@ -86,7 +86,7 @@ const ProjectDetails = () => {
     return (
         <div className="container">
             <div className="content">
-                <h1 className="heading">Project Details</h1>
+                <h1 className="heading">{project.name}</h1>
 
                 {/* Tab Navigation */}
                 <div className="tab-navigation">
@@ -94,7 +94,7 @@ const ProjectDetails = () => {
                         className={`tab-button ${activeTab === 'details' ? 'active' : ''}`}
                         onClick={() => setActiveTab('details')}
                     >
-                        Project Details
+                        Details
                     </button>
                     <button
                         className={`tab-button ${activeTab === 'subjects' ? 'active' : ''}`}
@@ -120,20 +120,20 @@ const ProjectDetails = () => {
                 <div className="tab-content">
                     {activeTab === 'details' && (
                         <div className="details">
-                            <p><strong>ID:</strong> {project.id}</p>
-                            <p><strong>Name:</strong> {project.name}</p>
+                            {/*<p><strong>ID:</strong> {project.id}</p>*/}
+                            {/*<p><strong>Name:</strong> {project.name}</p>*/}
                             <p><strong>Description:</strong> {project.description}</p>
                             <p><strong>Scientist:</strong> {project.scientist}</p>
                             <button className="edit-btn">Edit</button>
                             <button className="back-btn">
-                                <Link to="/projects">Back to list</Link>
+                                <Link to="/projects" onClick={() => setActiveTab('details')}>Back to list</Link>
                             </button>
                         </div>
                     )}
 
                     {activeTab === 'subjects' && (
                         <div className="subjects">
-                            <h2>Subjects</h2>
+                            {/*<h2>Subjects</h2>*/}
                             <div className="add-buttons">
                                 <Link to={`/subjects/add?projectId=${id}`}>
                                     <button className="add-btn">Add Subject</button>
@@ -178,7 +178,7 @@ const ProjectDetails = () => {
 
                     {activeTab === 'videos' && (
                         <div className="videos">
-                            <h2>Video Groups</h2>
+                            {/*<h2>Video Groups</h2>*/}
                             <div className="add-buttons">
                                 <Link to={`/video-groups/add?projectId=${id}`}>
                                     <button className="add-btn">Add Video Group</button>
@@ -223,7 +223,7 @@ const ProjectDetails = () => {
 
                     {activeTab === 'assignments' && (
                         <div className="assignments">
-                            <h2>Subject Video Group Assignments</h2>
+                            {/*<h2>Subject Video Group Assignments</h2>*/}
                             <div className="add-buttons">
                                 <Link to={`/assignments/add?projectId=${id}`}>
                                     <button className="add-btn">Add Assignment</button>

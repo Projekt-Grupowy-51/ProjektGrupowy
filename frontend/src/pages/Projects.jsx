@@ -48,7 +48,7 @@ const Projects = () => {
     return (
         <div className="container">
              <div className="content">
-                <h1 className="heading">Projects List</h1>
+                <h1 className="heading">Projects</h1>
                 <button className="add-btn" onClick={addProject}>Add new project</button>
 
                 <table className="project-table">
