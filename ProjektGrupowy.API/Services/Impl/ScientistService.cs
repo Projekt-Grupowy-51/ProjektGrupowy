@@ -12,9 +12,7 @@ public class ScientistService(IScientistRepository scientistRepository) : IScien
         var scientist = new Scientist
         {
             FirstName = scientistRequest.FirstName,
-            LastName = scientistRequest.LastName,
-            Title = scientistRequest.Title,
-            Description = scientistRequest.Description
+            LastName = scientistRequest.LastName
         };
 
         return await scientistRepository.AddScientistAsync(scientist);
@@ -49,10 +47,8 @@ public class ScientistService(IScientistRepository scientistRepository) : IScien
         }
 
         var scientist = scientistOptional.GetValueOrThrow();
-        scientist.Title = scientistRequest.Title;
         scientist.FirstName = scientistRequest.FirstName;
         scientist.LastName = scientistRequest.LastName;
-        scientist.Description = scientistRequest.Description;
 
         return await scientistRepository.UpdateScientistAsync(scientist);
     }

@@ -30,7 +30,6 @@ public class VideoGroupService(IVideoGroupRepository videoGroupRepository, IProj
         var videoGroup = new VideoGroup
         {
             Name = videoGroupRequest.Name,
-            Description = videoGroupRequest.Description,
             Project = projectOptional.GetValueOrThrow()
         };
 
@@ -56,7 +55,6 @@ public class VideoGroupService(IVideoGroupRepository videoGroupRepository, IProj
         }
 
         videoGroup.Name = videoGroupRequest.Name;
-        videoGroup.Description = videoGroupRequest.Description;
         videoGroup.Project = projectOptional.GetValueOrThrow();
 
         return await videoGroupRepository.UpdateVideoGroupAsync(videoGroup);

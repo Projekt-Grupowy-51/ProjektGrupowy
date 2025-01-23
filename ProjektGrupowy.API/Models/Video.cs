@@ -14,10 +14,6 @@ public class Video
     public string Title { get; set; }
 
     [Required]
-    [StringLength(255)]
-    public string Description { get; set; }
-
-    [Required]
     [StringLength(255)] 
     public string Path { get; set; }
 

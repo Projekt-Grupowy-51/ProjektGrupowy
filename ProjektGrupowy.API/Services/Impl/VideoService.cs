@@ -47,7 +47,6 @@ public class VideoService(
         var video = new Video
         {
             Title = videoRequest.Title,
-            Description = videoRequest.Description,
             Path = videoPath,
             VideoGroup = videoGroup
         };
@@ -73,7 +72,6 @@ public class VideoService(
         }
 
         video.Title = videoRequest.Title;
-        video.Description = videoRequest.Description;
         video.VideoGroup = videoGroupOptional.GetValueOrThrow();
 
         if (videoRequest.File is null) 

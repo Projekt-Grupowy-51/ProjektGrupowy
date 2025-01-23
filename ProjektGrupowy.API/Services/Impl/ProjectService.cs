@@ -30,7 +30,8 @@ public class ProjectService(
         {
             Name = projectRequest.Name,
             Description = projectRequest.Description,
-            Scientist = scientistOptional.GetValueOrThrow()
+            Scientist = scientistOptional.GetValueOrThrow(),
+            CreationDate = DateOnly.FromDateTime(DateTime.Today)
         };
 
         return await projectRepository.AddProjectAsync(project);
@@ -57,6 +58,8 @@ public class ProjectService(
         project.Name = projectRequest.Name;
         project.Description = projectRequest.Description;
         project.Scientist = scientistOptional.GetValueOrThrow();
+        project.ModificationDate = DateOnly.FromDateTime(DateTime.Today);
+        project.EndDate = projectRequest.Finished ? DateOnly.FromDateTime(DateTime.Today) : project.EndDate;
 
         return await projectRepository.UpdateProjectAsync(project);
     }
