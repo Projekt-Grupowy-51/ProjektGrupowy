@@ -101,29 +101,6 @@ const Videos = () => {
         }
     };
 
-    // Redirect to "Add Video" form
-    function addVideo() {
-        navigate(`/videos/add?videogroupId=${id}`);
-    }
-
-    // Delete a video
-    async function deleteVideo(videoId) {
-        try {
-            const response = await fetch(`http://localhost:5000/api/video/${videoId}`, {
-                method: 'DELETE',
-            });
-
-            if (response.ok) {
-                setVideos(videos.filter((video) => video.id !== videoId));
-                console.log('Deleted video:', videoId);
-            } else {
-                console.error('Error while deleting video:', response.statusText);
-            }
-        } catch (error) {
-            console.error('Error while deleting video:', error);
-        }
-    }
-
     // Check if videos exists before rendering
     if (!videos) return <div>Loading...</div>;
 
