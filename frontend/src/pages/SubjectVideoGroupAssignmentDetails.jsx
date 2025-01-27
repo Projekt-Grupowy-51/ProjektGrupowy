@@ -162,6 +162,66 @@ const SubjectVideoGroupAssignmentDetails = () => {
                             <p>Loading video group details...</p>
                         )}
                     </div>
+
+                    
+                </div>
+
+                <div className="tables-container pull-left">
+                    <div className="table-wrapper">
+                        <h2>Labelers</h2>
+                        <table className="details-table">
+                            <tbody>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Surname</th>
+                                    <th>Description</th>
+                                    <th>Index</th>
+                                    <th>Description</th>
+                                    <th>Description</th>
+                                    <th>Description</th>
+                                </tr>
+                                <tr>
+                                    <td>testowy uzytkownik</td>
+                                    <td>testowy uzytkownik</td>
+                                    <td>testowy uzytkownik</td>
+                                    <td>testowy uzytkownik</td>
+                                    <td>testowy uzytkownik</td>
+                                    <td>testowy uzytkownik</td>
+                                    <td>testowy uzytkownik</td>
+                                    <td>testowy uzytkownik</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div className="tables-container pull-left">
+                    <div className="table-wrapper">
+                        <h2>AsisgnedLabels</h2>
+                        <table className="details-table">
+                            <tbody>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Description</th>
+                                    <th>Color</th>
+                                    <th>Start</th>
+                                    <th>End</th>
+                                    <th>Labeler</th>
+                                </tr>
+                                <tr>
+                                    <td>testowa etykieta</td>
+                                    <td>testowa etykieta</td>
+                                    <td>testowa etykieta</td>
+                                    <td>testowa etykieta</td>
+                                    <td>testowa etykieta</td>
+                                    <td>testowa etykieta</td>
+                                    <td>testowa etykieta</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
                 <div className="actions">

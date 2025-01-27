@@ -9,7 +9,7 @@ import SubjectDetails from './pages/SubjectDetails';
 import VideoGroups from './pages/VideoGroups';
 import ProjectDetails from './pages/ProjectDetails';
 import VideoGroupsDetails from './pages/VideoGroupsDetails';
-import Video from './pages/Video';
+import Video from './pages/Videos';
 import AddSubject from './pages/SubjectAdd';
 import AddVideoGroup from './pages/VideoGroupAdd';
 import AddLabel from './pages/LabelAdd';
@@ -21,10 +21,8 @@ function App() {
         <Router>
             <nav className="navbar">
                 <ul>
-                    <li><Link to="/projects" className="nav-link">Projects</Link></li>
-                    <li><Link to="/subjects" className="nav-link">Subjects</Link></li>
-                    <li><Link to="/videoGroups" className="nav-link">Video Groups</Link></li>
-                    <li><Link to="/video/1" className="nav-link">Video 1</Link></li>
+                    <li><Link to="/projects" className="nav-link">Scientist</Link></li>
+                    <li><Link to="/videos/1" className="nav-link">User</Link></li>
                 </ul>
             </nav>
             <Routes>

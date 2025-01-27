@@ -7,9 +7,8 @@
 }
 
 body, html {
-    background-color: #e0f7fa; /* Usuniêcie gradientu */
+    background-color: #e2f3ff; /* Usuniêcie gradientu */
     color: #333;
-    height: 100vh; /* Ustawiamy pe³n¹ wysokoœæ widoku */
     width: 100%; /* Ustawiamy pe³n¹ szerokoœæ */
     display: flex;
     flex-direction: column; /* Uk³ad kolumnowy */
@@ -66,6 +65,7 @@ body, html {
 
     .nav-link:hover {
         background-color: #03a9f4;
+        color: #fff;
     }
 
 /* Nag³ówek */
@@ -114,6 +114,12 @@ a {
     font-weight: bold;
 }
 
+button {
+    background-color: #535bf2;
+    width: 40%;
+    margin: 2% 5%;
+}
+
 .add-btn,
 .details-btn,
 .delete-btn {
@@ -127,6 +133,8 @@ a {
 .add-btn {
     background-color: #0288d1;
     color: white;
+    margin: 2% 0%;
+    width: 30%;
 }
 
     .add-btn:hover {
@@ -180,15 +188,6 @@ a {
     width: 48%;
 }
 
-/* Stylizacja wideo */
-video {
-    width: 100%;
-    max-width: 1050px;
-    margin: 20px auto;
-    display: block;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-}
 
 .description {
     text-align: left;
@@ -198,9 +197,17 @@ video {
 }
 
 .details {
-    width: 90%;
+    width: 100%;
     margin: 0 auto;
 }
+
+    .details p {
+        margin: 2% 5%;
+    }
+
+    .details .add-btn {
+        margin: 2% 5%;
+    }
 
 .parallel-tables h2 {
     width: 50%;
@@ -214,7 +221,7 @@ video {
     justify-content: space-around; /* U¿yjemy przestrzeni równomiernie pomiêdzy zak³adkami */
     border-bottom: 3px solid #0288d1; /* Ustawimy wyraŸniejszy kolor dla linii */
     margin-bottom: 20px;
-    padding: 10px 0; /* Dodajemy wewnêtrzny odstêp, aby zak³adki by³y bardziej wyœrodkowane */
+    padding: 10px 0 0px 0; /* Dodajemy wewnêtrzny odstêp, aby zak³adki by³y bardziej wyœrodkowane */
 }
 
 .tab-button {
@@ -229,6 +236,7 @@ video {
     cursor: pointer;
     transition: all 0.3s ease;
     font-size: 1rem; /* Dostosowanie rozmiaru czcionki */
+    margin: 0% 5%;
 }
 
     .tab-button:not(:last-child) {
@@ -244,6 +252,7 @@ video {
 
     .tab-button:hover {
         background-color: #03a9f4; /* Zmiana koloru przy hover */
+        color: #f1f1f1;
     }
 
 /* Dostosowanie treœci zak³adek */
@@ -257,8 +266,7 @@ video {
 
 .video-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr); /* 2 columns */
-    gap: 20px;
+    grid-template-columns: repeat(4, 1fr); /* 2 columns */
     margin-top: 20px;
 }
 
@@ -267,14 +275,19 @@ video {
 }
 
 video {
-    max-width: 100%;
+    height: 35vh;
+    width: fit-content;
     border: 2px solid #ddd;
     border-radius: 8px;
+    margin: 0px auto;
+    display: block;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 }
 
 .tables-container {
     display: flex;
-    justify-content: space-between;
+    justify-content: space-between; /* Domyœlne roz³o¿enie tabel */
     gap: 20px; /* Odstêp miêdzy tabelami */
     margin-top: 20px;
 }
@@ -290,7 +303,8 @@ video {
     margin-bottom: 20px;
 }
 
-    .details-table th, .details-table td {
+    .details-table th,
+    .details-table td {
         border: 1px solid #ddd;
         padding: 8px;
     }
@@ -307,4 +321,9 @@ video {
     .details-table tr:hover {
         background-color: #f1f1f1;
     }
+
+/* Klasa do przesuwania elementów w tables-container w lewo */
+.pull-left {
+    justify-content: flex-start; /* Wyrównuje zawartoœæ kontenera do lewej strony */
+}
 

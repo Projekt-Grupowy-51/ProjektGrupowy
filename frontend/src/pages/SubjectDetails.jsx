@@ -71,16 +71,16 @@ const SubjectDetails = () => {
     return (
         <div className="container">
             <div className="content">
-                <h1 className="heading">Subject Details</h1>
+                <h1 className="heading">{subjectDetails.name}</h1>
                 <div className="details">
-                    <p><strong>ID:</strong> {subjectDetails.id}</p>
-                    <p><strong>Name:</strong> {subjectDetails.name}</p>
+                    {/*<p><strong>ID:</strong> {subjectDetails.id}</p>*/}
+                    {/*<p><strong>Name:</strong> {subjectDetails.name}</p>*/}
                     <p><strong>Description:</strong> {subjectDetails.description}</p>
                     <p><strong>Scientist:</strong> {subjectDetails.scientist}</p>
                 </div>
                 <button className="add-btn" onClick={addLabel}>Add new label</button>
                 <button className="back-btn">
-                    <Link to={`/projects/${subjectDetails.projectId}`}>Back to Project</Link>
+                    <Link to={`/projects/${subjectDetails.projectId}`} onClick={() => setActiveTab('subjects')}>Back to Project</Link>
                 </button>
 
                 <h2>Labels</h2>
