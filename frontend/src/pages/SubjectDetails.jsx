@@ -92,7 +92,6 @@ const SubjectDetails = () => {
                                 <th>Type</th>
                                 <th>Color</th>  {/* New column for Color */}
                                 <th>Shortcut</th>  {/* New column for Shortcut */}
-                                <th>Subject ID</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -113,7 +112,6 @@ const SubjectDetails = () => {
                                         ></div>
                                     </td>
                                     <td>{label.shortcut}</td>
-                                    <td>{label.subjectId}</td>
                                     <td>
                                         <button
                                             className="details-btn"
