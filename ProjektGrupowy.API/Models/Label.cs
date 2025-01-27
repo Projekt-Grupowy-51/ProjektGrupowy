@@ -17,7 +17,7 @@ public class Label
     
     public string Type { get; set; } // consider enum, ask about it, in the json given to us all types are range
 
-    public char Shortcut { get; set; }
+    public char? Shortcut { get; set; } = null;
     
     [Required]
     public virtual Subject Subject { get; set; }
