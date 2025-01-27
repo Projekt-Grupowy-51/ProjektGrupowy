@@ -10,9 +10,13 @@ import VideoGroups from './pages/VideoGroups';
 import ProjectDetails from './pages/ProjectDetails';
 import VideoGroupsDetails from './pages/VideoGroupsDetails';
 import Video from './pages/Videos';
+import AddVideo from './pages/VideoAdd';
 import AddSubject from './pages/SubjectAdd';
 import AddVideoGroup from './pages/VideoGroupAdd';
+import AddProjectPage from './pages/ProjectAdd';
+import EditProjectPage from './pages/ProjectEdit';
 import AddLabel from './pages/LabelAdd';
+import EditLabel from './pages/LabelEdit';
 import SubjectVideoGroupAssignmentDetails from './pages/SubjectVideoGroupAssignmentDetails';
 
 
@@ -29,6 +33,8 @@ function App() {
                 {/* Project Routes */}
                 <Route path="/projects" element={<Projects />} />
                 <Route path="/projects/:id" element={<ProjectDetails />} />
+                <Route path="/projects/edit/:id" element={<EditProjectPage />} />
+                <Route path="/projects/add" element={<AddProjectPage />} />
 
                 {/* Subject Routes */}
                 <Route path="/subjects" element={<Subjects />} />
@@ -38,10 +44,11 @@ function App() {
                 {/* Video Group Routes */}
                 <Route path="/video-groups" element={<VideoGroups />} />
                 <Route path="/video-groups/:id" element={<VideoGroupsDetails />} />
-                <Route path="/video-groups/add" element={<AddVideoGroup />} />
+                {/*<Route path="/video-groups/add" element={<AddVideo />} />*/}
 
                 {/* Video Routes */}
                 <Route path="/videos/:id" element={<Video />} />
+                <Route path="/videos/add" element={<AddVideo />} />
 
                 <Route path="/video/:id" element={<Video />} />
 
@@ -51,6 +58,7 @@ function App() {
 
                 {/* Label Routes */}
                 <Route path="/labels/add" element={<AddLabel />} />
+                <Route path="/labels/edit/:id" element={<EditLabel />} />
             </Routes>
         </Router>
     );

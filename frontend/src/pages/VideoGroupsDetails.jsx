@@ -136,7 +136,6 @@ const VideoGroupDetails = () => {
                     {/*<p><strong>ID:</strong> {videoGroupDetails.id}</p>*/}
                     {/*<p><strong>Name:</strong> {videoGroupDetails.name}</p>*/}
                     <p><strong>Description:</strong> {videoGroupDetails.description}</p>
-                    <p><strong>Creator:</strong> {videoGroupDetails.creator}</p>
                 </div>
                 <button className="add-btn" onClick={addVideo}>Add new video</button>
                 <button className="back-btn">

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import './css/ScientistProjects.css';
 
 const ProjectDetails = () => {
@@ -9,6 +9,7 @@ const ProjectDetails = () => {
     const [videoGroup, setVideoGroup] = useState([]);
     const [assignments, setAssignments] = useState([]); // State for SubjectVideoGroupAssignments
     const [activeTab, setActiveTab] = useState('details'); // Active tab state
+    const navigate = useNavigate();
 
     // Fetch project details from the API
     async function fetchProjectDetails() {
@@ -123,8 +124,7 @@ const ProjectDetails = () => {
                             {/*<p><strong>ID:</strong> {project.id}</p>*/}
                             {/*<p><strong>Name:</strong> {project.name}</p>*/}
                             <p><strong>Description:</strong> {project.description}</p>
-                            <p><strong>Scientist:</strong> {project.scientist}</p>
-                            <button className="edit-btn">Edit</button>
+                            <button className="edit-btn" onClick={() => navigate(`/projects/edit/${project.id}`)}>Edit</button>
                             <button className="back-btn">
                                 <Link to="/projects" onClick={() => setActiveTab('details')}>Back to list</Link>
                             </button>

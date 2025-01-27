@@ -23,7 +23,7 @@ const Projects = () => {
 
     // Dodawanie nowego projektu
     function addProject() {
-        console.log('Add new project');
+        
         // Implementacja logiki dodawania projektu
     }
 
@@ -49,7 +49,7 @@ const Projects = () => {
         <div className="container">
              <div className="content">
                 <h1 className="heading">Projects</h1>
-                <button className="add-btn" onClick={addProject}>Add new project</button>
+                <button className="add-btn" onClick={() => navigate(`/projects/add`)}>Add new project</button>
 
                 <table className="project-table">
                     <thead>

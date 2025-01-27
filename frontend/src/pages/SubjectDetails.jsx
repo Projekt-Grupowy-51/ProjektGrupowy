@@ -31,7 +31,9 @@ const SubjectDetails = () => {
                 throw new Error('Failed to fetch labels');
             }
             const data = await response.json();
-            setLabels(data.filter((label) => label.subjectId === parseInt(id))); // Filter labels by subject ID
+            const filteredLabels = data.filter((label) => label.subjectId === parseInt(id)); // Filter labels by subject ID
+            const sortedLabels = filteredLabels.sort((a, b) => a.id - b.id); // Sort labels by ID in ascending order
+            setLabels(sortedLabels);
         } catch (error) {
             console.error('Error fetching labels:', error);
         }
@@ -73,10 +75,7 @@ const SubjectDetails = () => {
             <div className="content">
                 <h1 className="heading">{subjectDetails.name}</h1>
                 <div className="details">
-                    {/*<p><strong>ID:</strong> {subjectDetails.id}</p>*/}
-                    {/*<p><strong>Name:</strong> {subjectDetails.name}</p>*/}
                     <p><strong>Description:</strong> {subjectDetails.description}</p>
-                    <p><strong>Scientist:</strong> {subjectDetails.scientist}</p>
                 </div>
                 <button className="add-btn" onClick={addLabel}>Add new label</button>
                 <button className="back-btn">
@@ -85,12 +84,14 @@ const SubjectDetails = () => {
 
                 <h2>Labels</h2>
                 {labels.length > 0 ? (
-                    <table className="project-table">
+                    <table className="project-table" id="label-table">
                         <thead>
                             <tr>
                                 <th>ID</th>
                                 <th>Name</th>
-                                <th>Description</th>
+                                <th>Type</th>
+                                <th>Color</th>  {/* New column for Color */}
+                                <th>Shortcut</th>  {/* New column for Shortcut */}
                                 <th>Subject ID</th>
                                 <th>Actions</th>
                             </tr>
@@ -100,14 +101,25 @@ const SubjectDetails = () => {
                                 <tr key={label.id}>
                                     <td>{label.id}</td>
                                     <td>{label.name}</td>
-                                    <td>{label.description}</td>
+                                    <td>{label.type}</td>  {/* Correct display of description */}
+                                    <td>
+                                        <div
+                                            style={{
+                                                backgroundColor: label.colorHex,
+                                                width: '30px',
+                                                height: '30px',
+                                                borderRadius: '50%',
+                                            }}
+                                        ></div>
+                                    </td>
+                                    <td>{label.shortcut}</td>
                                     <td>{label.subjectId}</td>
                                     <td>
                                         <button
                                             className="details-btn"
-                                            onClick={() => navigate(`/labels/${label.id}`)}
+                                            onClick={() => navigate(`/labels/edit/${label.id}`)}
                                         >
-                                            Details
+                                            Edit
                                         </button>
                                         <button className="delete-btn" onClick={() => deleteLabel(label.id)}>
                                             Delete
