@@ -146,6 +146,18 @@ const Videos = () => {
                 <button className="play-stop-btn" onClick={handlePlayStop}>
                     {isPlaying ? 'Stop All Videos' : 'Play All Videos'}
                 </button>
+                <button className="label-btn" style={{backgroundColor: 'red'}}>
+                    Label1
+                </button>
+                <button className="label-btn" style={{backgroundColor: 'green'}}>
+                    Label2
+                </button>
+                <button className="label-btn" style={{backgroundColor: 'yellow'}}>
+                    Label3
+                </button>
+                <button className="label-btn" style={{backgroundColor: 'blue'}}>
+                    Label4
+                </button>
             </div>
         </div>
     );
