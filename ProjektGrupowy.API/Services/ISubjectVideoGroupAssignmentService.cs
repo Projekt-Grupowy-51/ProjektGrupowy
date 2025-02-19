@@ -15,4 +15,8 @@ public interface ISubjectVideoGroupAssignmentService
     Task DeleteSubjectVideoGroupAssignmentAsync(int subjectVideoGroupAssignmentId);
 
     Task<Optional<IEnumerable<SubjectVideoGroupAssignment>>> GetSubjectVideoGroupAssignmentsByProjectAsync(int projectId);
+
+    Task<Optional<IEnumerable<Labeler>>> GetSubjectVideoGroupAssignmentsLabelersAsync(int id);
+    Task<Optional<IEnumerable<AssignedLabel>>> GetSubjectVideoGroupAssignmentAsignedLabelsAsync(int id);
+
 }

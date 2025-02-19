@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import httpClient from '../httpClient'; 
 import './css/ScientistProjects.css';
 
 const AddLabel = () => {
@@ -7,23 +8,18 @@ const AddLabel = () => {
     const navigate = useNavigate();
     const [labelData, setLabelData] = useState({
         name: '',
-        colorHex: '#ffffff',  // Default color
+        colorHex: '#ffffff',
         type: 'range',
         shortcut: '',
-        subjectId: new URLSearchParams(location.search).get('subjectId'), // Get subjectId from query params
+        subjectId: new URLSearchParams(location.search).get('subjectId'),
     });
-    const [error, setError] = useState('');  // To store error message
+    const [error, setError] = useState('');
 
-    // Handle form input change
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setLabelData((prevState) => ({
-            ...prevState,
-            [name]: value,
-        }));
+        setLabelData((prev) => ({ ...prev, [name]: value }));
     };
 
-    // Validate the form data
     const validateForm = () => {
         if (labelData.shortcut.length !== 1) {
             setError('Shortcut must be exactly one character.');
@@ -37,32 +33,17 @@ const AddLabel = () => {
         return true;
     };
 
-    // Handle form submission
     const handleSubmit = async (e) => {
         e.preventDefault();
-
-        // Validate before submitting
-        if (!validateForm()) {
-            return;
-        }
+        if (!validateForm()) return;
 
         try {
-            const response = await fetch(`http://localhost:5000/api/Label`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(labelData),
-            });
-
-            if (response.ok) {
-                alert('Label added successfully');
-                navigate(`/subjects/${labelData.subjectId}`); // Redirect to the subject details page
-            } else {
-                alert('Failed to add label');
-            }
+            await httpClient.post('/Label', labelData);
+            alert('Label added successfully');
+            navigate(`/subjects/${labelData.subjectId}`);
         } catch (error) {
             console.error('Error adding label:', error);
+            alert(error.response?.data?.message || 'Failed to add label');
         }
     };
 
@@ -91,17 +72,6 @@ const AddLabel = () => {
                         onChange={handleChange}
                     />
                 </div>
-                {/*<div>*/}
-                {/*    <label htmlFor="type">Type</label>*/}
-                {/*    <input*/}
-                {/*        type="text"*/}
-                {/*        id="type"*/}
-                {/*        name="type"*/}
-                {/*        value={labelData.type}*/}
-                {/*        onChange={handleChange}*/}
-                {/*        required*/}
-                {/*    />*/}
-                {/*</div>*/}
                 <div>
                     <label htmlFor="shortcut">Shortcut</label>
                     <input
@@ -110,17 +80,14 @@ const AddLabel = () => {
                         name="shortcut"
                         value={labelData.shortcut}
                         onChange={handleChange}
-                        maxLength="1" // Limit to one character
+                        maxLength="1"
                         required
                     />
                 </div>
-                {error && <p style={{ color: 'red' }}>{error}</p>} {/* Display error message */}
-                <button type="submit">Add Label</button>
+                {error && <p className="error">{error}</p>}
+                <button type="submit" className="add-btn">Add Label</button>
             </form>
-            <button
-                className="btn-back"
-                onClick={() => navigate(`/subjects/details/${labelData.subjectId}`)}
-            >
+            <button className="btn-back back-btn" onClick={() => navigate(`/subjects/details/${labelData.subjectId}`)}>
                 Back to Subject Details
             </button>
         </div>

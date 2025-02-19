@@ -1,77 +1,108 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import httpClient from '../httpClient';
+import "./css/ScientistProjects.css";
 
 function ProjectAdd() {
-    const [name, setName] = useState("");
-    const [description, setDescription] = useState("");
-    const [scientistId, setScientistId] = useState("");
+    const navigate = useNavigate();
+    const [formData, setFormData] = useState({
+        name: "",
+        description: "",
+        scientistId: "",
+        finished: false
+    });
+    const [error, setError] = useState("");
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
+        setError("");
 
-        const projectData = {
-            name,
-            description,
-            scientistId: parseInt(scientistId),
-            finished: false, // domyœlnie na false
-        };
+        // Walidacja scientistId
+        if (!Number.isInteger(Number(formData.scientistId))) {
+            setError("Scientist ID must be a valid number");
+            return;
+        }
 
-        // Wyœlij dane do API
-        fetch("http://localhost:5000/api/Project", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(projectData),
-        })
-            .then((response) => {
-                if (response.ok) {
-                    alert("Project added successfully!");
-                } else {
-                    alert("Failed to add project!");
-                }
-            })
-            .catch((error) => {
-                console.error("Error adding project:", error);
+        try {
+            const response = await httpClient.post("/Project", {
+                ...formData,
+                scientistId: parseInt(formData.scientistId)
             });
+
+            if (response.status === 201) {
+                alert("Project added successfully!");
+                navigate("/projects");
+            }
+        } catch (error) {
+            console.error("Error adding project:", error);
+            setError(error.response?.data?.message || "Failed to add project");
+        }
+    };
+
+    const handleChange = (e) => {
+        setFormData({
+            ...formData,
+            [e.target.name]: e.target.value
+        });
     };
 
     return (
-        <div>
-            <h2>Add New Project</h2>
-            <form onSubmit={handleSubmit}>
-                <div>
-                    <label>
-                        Name:
-                        <input
-                            type="text"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            required
-                        />
-                    </label>
+        <div className="container auth-container">
+            <h1 className="heading">Add New Project</h1>
+
+            <form onSubmit={handleSubmit} className="auth-form">
+                {error && <div className="error">{error}</div>}
+
+                <div className="form-group">
+                    <label>Project Name:</label>
+                    <input
+                        type="text"
+                        name="name"
+                        className="form-input"
+                        value={formData.name}
+                        onChange={handleChange}
+                        required
+                    />
                 </div>
-                <div>
-                    <label>
-                        Description:
-                        <textarea
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                            required
-                        />
-                    </label>
+
+                <div className="form-group">
+                    <label>Description:</label>
+                    <textarea
+                        name="description"
+                        className="form-input"
+                        value={formData.description}
+                        onChange={handleChange}
+                        required
+                        rows="4"
+                    />
                 </div>
-                <div>
-                    <label>
-                        Scientist ID:
-                        <input
-                            type="number"
-                            value={scientistId}
-                            onChange={(e) => setScientistId(e.target.value)}
-                            required
-                        />
-                    </label>
+
+                <div className="form-group">
+                    <label>Scientist ID:</label>
+                    <input
+                        type="number"
+                        name="scientistId"
+                        className="form-input"
+                        value={formData.scientistId}
+                        onChange={handleChange}
+                        required
+                        min="1"
+                    />
                 </div>
-                <button type="submit">Add Project</button>
+
+                <div className="form-group">
+                    <button type="submit" className="auth-btn add-btn">
+                        Create Project
+                    </button>
+
+                    <button
+                        type="button"
+                        className="auth-btn back-btn"
+                        onClick={() => navigate("/projects")}
+                    >
+                        Back to Projects
+                    </button>
+                </div>
             </form>
         </div>
     );

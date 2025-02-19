@@ -1,95 +1,63 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import httpClient from '../httpClient';
 import './css/ScientistProjects.css';
 
 const ProjectDetails = () => {
     const { id } = useParams();
     const [project, setProject] = useState(null);
     const [subjects, setSubjects] = useState([]);
-    const [videoGroup, setVideoGroup] = useState([]);
-    const [assignments, setAssignments] = useState([]); // State for SubjectVideoGroupAssignments
-    const [activeTab, setActiveTab] = useState('details'); // Active tab state
+    const [videoGroups, setVideoGroups] = useState([]);
+    const [assignments, setAssignments] = useState([]);
+    const [activeTab, setActiveTab] = useState('details');
+    const [error, setError] = useState('');
     const navigate = useNavigate();
 
-    // Fetch project details from the API
-    async function fetchProjectDetails() {
+    const fetchData = async () => {
         try {
-            const response = await fetch(`http://localhost:5000/api/project/${id}`);
-            const data = await response.json();
-            setProject(data);
-            fetchSubjects(id);
-            fetchVideoGroup(id);
-            fetchAssignments(id);
-        } catch (error) {
-            console.error('Error fetching project details:', error);
-        }
-    }
+            const [projectRes, subjectsRes, videoGroupsRes, assignmentsRes] = await Promise.all([
+                httpClient.get(`/project/${id}`),
+                httpClient.get(`/project/${id}/subjects`),
+                httpClient.get(`/project/${id}/videogroups`),
+                httpClient.get(`/project/${id}/SubjectVideoGroupAssignments`)
+            ]);
 
-    // Fetch subjects data
-    async function fetchSubjects(id) {
-        if (!id) return;
-        try {
-            const response = await fetch(`http://localhost:5000/api/project/${id}/subjects`);
-            const data = await response.json();
-            setSubjects(data);
+            setProject(projectRes.data);
+            setSubjects(subjectsRes.data);
+            setVideoGroups(videoGroupsRes.data);
+            setAssignments(assignmentsRes.data);
         } catch (error) {
-            console.error('Error fetching subjects:', error);
+            console.error('Error fetching data:', error);
+            setError(error.response?.data?.message || 'Failed to load project data');
         }
-    }
+    };
 
-    // Fetch video group data
-    async function fetchVideoGroup(id) {
-        if (!id) return;
-        try {
-            const response = await fetch(`http://localhost:5000/api/project/${id}/videogroups`);
-            const data = await response.json();
-            setVideoGroup(data);
-        } catch (error) {
-            console.error('Error fetching video group:', error);
-        }
-    }
+    const handleDeleteItem = async (endpoint, itemId) => {
+        if (!window.confirm('Are you sure you want to delete this item?')) return;
 
-    // Fetch SubjectVideoGroupAssignments data
-    async function fetchAssignments(id) {
-        if (!id) return;
         try {
-            const response = await fetch(`http://localhost:5000/api/project/${id}/SubjectVideoGroupAssignments`);
-            const data = await response.json();
-            setAssignments(data);
+            await httpClient.delete(`/${endpoint}/${itemId}`);
+            await fetchData();
+            alert('Item deleted successfully');
         } catch (error) {
-            console.error('Error fetching assignments:', error);
+            console.error('Error deleting item:', error);
+            setError(error.response?.data?.message || 'Deletion failed');
         }
-    }
-
-    // Handle deletion of a specific item
-    async function handleDeleteItem(endpoint, itemId, fetchDataCallback) {
-        try {
-            const response = await fetch(`http://localhost:5000/api/${endpoint}/${itemId}`, {
-                method: 'DELETE',
-            });
-            if (response.ok) {
-                console.log(`${endpoint} with ID ${itemId} deleted successfully`);
-                fetchDataCallback(id); // Refresh data
-            } else {
-                console.error(`Error deleting ${endpoint}:`, response.statusText);
-            }
-        } catch (error) {
-            console.error(`Error deleting ${endpoint}:`, error);
-        }
-    }
+    };
 
     useEffect(() => {
-        fetchProjectDetails();
+        fetchData();
     }, [id]);
 
-    if (!project) return <div>Loading...</div>;
+    if (!project) return <div className="container">Loading...</div>;
 
     return (
         <div className="container">
             <div className="content">
-                <h1 className="heading">{project.name}</h1>
+                <h1>{project.name}</h1>
+                {error && <div className="error">{error}</div>}
 
-                {/* Tab Navigation */}
+                {/* Zak³adki w starym stylu */}
                 <div className="tab-navigation">
                     <button
                         className={`tab-button ${activeTab === 'details' ? 'active' : ''}`}
@@ -113,27 +81,33 @@ const ProjectDetails = () => {
                         className={`tab-button ${activeTab === 'assignments' ? 'active' : ''}`}
                         onClick={() => setActiveTab('assignments')}
                     >
-                        Subject Video Group Assignments
+                        Assignments
                     </button>
                 </div>
 
-                {/* Tab Content */}
                 <div className="tab-content">
                     {activeTab === 'details' && (
                         <div className="details">
-                            {/*<p><strong>ID:</strong> {project.id}</p>*/}
-                            {/*<p><strong>Name:</strong> {project.name}</p>*/}
                             <p><strong>Description:</strong> {project.description}</p>
-                            <button className="edit-btn" onClick={() => navigate(`/projects/edit/${project.id}`)}>Edit</button>
-                            <button className="back-btn">
-                                <Link to="/projects" onClick={() => setActiveTab('details')}>Back to list</Link>
-                            </button>
+                            <div className="button-group">
+                                <button
+                                    className="edit-btn"
+                                    onClick={() => navigate(`/projects/edit/${project.id}`)}
+                                >
+                                    Edit
+                                </button>
+                                <button
+                                    className="back-btn"
+                                    onClick={() => navigate('/projects')}
+                                >
+                                    Back to Projects
+                                </button>
+                            </div>
                         </div>
                     )}
 
                     {activeTab === 'subjects' && (
                         <div className="subjects">
-                            {/*<h2>Subjects</h2>*/}
                             <div className="add-buttons">
                                 <Link to={`/subjects/add?projectId=${id}`}>
                                     <button className="add-btn">Add Subject</button>
@@ -146,7 +120,7 @@ const ProjectDetails = () => {
                                             <th>ID</th>
                                             <th>Name</th>
                                             <th>Description</th>
-                                            <th>Action</th>
+                                            <th>Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -161,7 +135,7 @@ const ProjectDetails = () => {
                                                     </Link>
                                                     <button
                                                         className="delete-btn"
-                                                        onClick={() => handleDeleteItem('subject', subject.id, fetchSubjects)}
+                                                        onClick={() => handleDeleteItem('subject', subject.id)}
                                                     >
                                                         Delete
                                                     </button>
@@ -171,31 +145,30 @@ const ProjectDetails = () => {
                                     </tbody>
                                 </table>
                             ) : (
-                                <p>No subjects in this project</p>
+                                <p>No subjects found</p>
                             )}
                         </div>
                     )}
 
                     {activeTab === 'videos' && (
                         <div className="videos">
-                            {/*<h2>Video Groups</h2>*/}
                             <div className="add-buttons">
                                 <Link to={`/video-groups/add?projectId=${id}`}>
                                     <button className="add-btn">Add Video Group</button>
                                 </Link>
                             </div>
-                            {videoGroup.length > 0 ? (
+                            {videoGroups.length > 0 ? (
                                 <table className="project-table">
                                     <thead>
                                         <tr>
                                             <th>ID</th>
                                             <th>Name</th>
                                             <th>Description</th>
-                                            <th>Action</th>
+                                            <th>Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {videoGroup.map((video) => (
+                                        {videoGroups.map((video) => (
                                             <tr key={video.id}>
                                                 <td>{video.id}</td>
                                                 <td>{video.name}</td>
@@ -206,7 +179,7 @@ const ProjectDetails = () => {
                                                     </Link>
                                                     <button
                                                         className="delete-btn"
-                                                        onClick={() => handleDeleteItem('videogroup', video.id, fetchVideoGroup)}
+                                                        onClick={() => handleDeleteItem('videogroup', video.id)}
                                                     >
                                                         Delete
                                                     </button>
@@ -216,14 +189,13 @@ const ProjectDetails = () => {
                                     </tbody>
                                 </table>
                             ) : (
-                                <p>No videos in this project</p>
+                                <p>No video groups found</p>
                             )}
                         </div>
                     )}
 
                     {activeTab === 'assignments' && (
                         <div className="assignments">
-                            {/*<h2>Subject Video Group Assignments</h2>*/}
                             <div className="add-buttons">
                                 <Link to={`/assignments/add?projectId=${id}`}>
                                     <button className="add-btn">Add Assignment</button>
@@ -234,9 +206,9 @@ const ProjectDetails = () => {
                                     <thead>
                                         <tr>
                                             <th>ID</th>
-                                            <th>Subject</th>
-                                            <th>Video Group</th>
-                                            <th>Action</th>
+                                            <th>Subject ID</th>
+                                            <th>Video Group ID</th>
+                                            <th>Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -251,7 +223,7 @@ const ProjectDetails = () => {
                                                     </Link>
                                                     <button
                                                         className="delete-btn"
-                                                        onClick={() => handleDeleteItem('SubjectVideoGroupAssignment', assignment.id, fetchAssignments)}
+                                                        onClick={() => handleDeleteItem('SubjectVideoGroupAssignment', assignment.id)}
                                                     >
                                                         Delete
                                                     </button>
@@ -261,7 +233,7 @@ const ProjectDetails = () => {
                                     </tbody>
                                 </table>
                             ) : (
-                                <p>No assignments in this project</p>
+                                <p>No assignments found</p>
                             )}
                         </div>
                     )}

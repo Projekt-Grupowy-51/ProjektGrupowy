@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useNavigate, useParams } from 'react-router-dom';
 import './css/ScientistProjects.css';
 
@@ -6,7 +6,7 @@ const VideoGroupsDetails = () => {
     const [videoGroups, setVideoGroups] = useState([]);
     const navigate = useNavigate();
 
-    // Pobiera list� grup video z API
+    // Pobiera listę grup video z API
     async function fetchVideoGroups() {
         try {
             const response = await fetch('http://localhost:5000/api/VideoGroup');

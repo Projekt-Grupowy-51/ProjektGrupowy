@@ -1,99 +1,136 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import httpClient from '../httpClient';
+import "./css/ScientistProjects.css";
 
 function ProjectEdit() {
-    const { id } = useParams(); // ID projektu z URL-a
+    const { id } = useParams();
     const navigate = useNavigate();
+    const [formData, setFormData] = useState({
+        name: "",
+        description: "",
+        scientistId: "",
+        finished: false
+    });
+    const [error, setError] = useState("");
 
-    const [name, setName] = useState("");
-    const [description, setDescription] = useState("");
-    const [scientistId, setScientistId] = useState("");
-    const [finished, setFinished] = useState(false);
-
-    // Funkcja do pobrania aktualnych danych projektu
     useEffect(() => {
-        fetch(`http://localhost:5000/api/Project/${id}`)
-            .then((response) => response.json())
-            .then((data) => {
-                setName(data.name || "");
-                setDescription(data.description || "");
-                setScientistId(data.scientistId || "");
-                setFinished(data.finished || false);
-            })
-            .catch((error) => {
-                console.error("Error fetching project data:", error);
-            });
+        const fetchProject = async () => {
+            try {
+                const response = await httpClient.get(`/Project/${id}`);
+                const data = response.data;
+                setFormData({
+                    name: data.name,
+                    description: data.description,
+                    scientistId: data.scientistId.toString(),
+                    finished: data.finished
+                });
+            } catch (error) {
+                console.error("Error fetching project:", error);
+                setError(error.response?.data?.message || "Failed to load project data");
+            }
+        };
+        fetchProject();
     }, [id]);
 
-    // Obs³uga zapisu zmian
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
+        setError("");
 
-        const projectData = {
-            name,
-            description,
-            scientistId: parseInt(scientistId),
-            finished,
-        };
+        if (!Number.isInteger(Number(formData.scientistId))) {
+            setError("Scientist ID must be a valid number");
+            return;
+        }
 
-        fetch(`http://localhost:5000/api/Project/${id}`, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(projectData),
-        })
-            .then((response) => {
-                if (response.ok) {
-                    alert("Project updated successfully!");
-                    navigate(`/projects/${id}`); // Przekierowanie np. do strony g³ównej
-                } else {
-                    alert("Failed to update project!");
-                }
-            })
-            .catch((error) => {
-                console.error("Error updating project:", error);
+        try {
+            await httpClient.put(`/Project/${id}`, {
+                ...formData,
+                scientistId: parseInt(formData.scientistId)
             });
+            alert("Project updated successfully!");
+            navigate(`/projects/${id}`);
+        } catch (error) {
+            console.error("Error updating project:", error);
+            setError(error.response?.data?.message || "Failed to update project");
+        }
+    };
+
+    const handleChange = (e) => {
+        const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+        setFormData({
+            ...formData,
+            [e.target.name]: value
+        });
     };
 
     return (
-        <div>
-            <h2>Edit Project</h2>
-            <form onSubmit={handleSubmit}>
-                <div>
-                    <label>
-                        Name:
-                        <input
-                            type="text"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            required
-                        />
-                    </label>
+        <div className="container">
+            <h1 className="heading">Edit Project</h1>
+            {error && <div className="error">{error}</div>}
+
+            <form onSubmit={handleSubmit} className="auth-form">
+                <div className="form-group">
+                    <label>Project Name:</label>
+                    <input
+                        type="text"
+                        name="name"
+                        className="form-input"
+                        value={formData.name}
+                        onChange={handleChange}
+                        required
+                    />
                 </div>
-                <div>
-                    <label>
-                        Description:
-                        <textarea
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                            required
-                        />
-                    </label>
+
+                <div className="form-group">
+                    <label>Description:</label>
+                    <textarea
+                        name="description"
+                        className="form-input"
+                        value={formData.description}
+                        onChange={handleChange}
+                        required
+                        rows="4"
+                    />
                 </div>
-                <div>
-                    <label>
-                        Finished:
-                        <select
-                            value={finished}
-                            onChange={(e) => setFinished(e.target.value === "true")}
-                        >
-                            <option value="true">True</option>
-                            <option value="false">False</option>
-                        </select>
-                    </label>
+
+                <div className="form-group">
+                    <label>Scientist ID:</label>
+                    <input
+                        type="number"
+                        name="scientistId"
+                        className="form-input"
+                        value={formData.scientistId}
+                        onChange={handleChange}
+                        required
+                        min="1"
+                    />
                 </div>
-                <button type="submit">Save Changes</button>
+
+                <div className="form-group">
+                    <label>Status:</label>
+                    <select
+                        name="finished"
+                        className="form-select"
+                        value={formData.finished}
+                        onChange={handleChange}
+                    >
+                        <option value={false}>Active</option>
+                        <option value={true}>Completed</option>
+                    </select>
+                </div>
+
+                <div className="button-group">
+                    <button type="submit" className="auth-btn edit-btn">
+                        Save Changes
+                    </button>
+                    <button
+                        type="button"
+                        className="auth-btn back-btn"
+                        onClick={() => navigate(`/projects/${id}`)}
+                    >
+                        Cancel
+                    </button>
+                </div>
             </form>
         </div>
     );

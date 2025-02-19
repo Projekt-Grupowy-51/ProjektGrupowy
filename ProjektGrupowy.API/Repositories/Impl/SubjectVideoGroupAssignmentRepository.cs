@@ -95,14 +95,45 @@ public class SubjectVideoGroupAssignmentRepository(
                 .Where(x => x.Subject.Project.Id == projectId)
                 .ToListAsync();
 
-            return assignments.Any()
-                ? Optional<IEnumerable<SubjectVideoGroupAssignment>>.Success(assignments)
-                : Optional<IEnumerable<SubjectVideoGroupAssignment>>.Failure("No assignments found for the given project");
+            return Optional<IEnumerable<SubjectVideoGroupAssignment>>.Success(assignments);
         }
         catch (Exception e)
         {
             logger.LogError(e, "An error occurred while getting subject video group assignments by project");
             return Optional<IEnumerable<SubjectVideoGroupAssignment>>.Failure(e.Message);
+        }
+    }
+    public async Task<Optional<IEnumerable<Labeler>>> GetSubjectVideoGroupAssignmentsLabelersAsync(int id)
+    {
+        try
+        {
+            var labelers = await context.SubjectVideoGroupAssignments
+                .SelectMany(x => x.Labelers)
+                .ToListAsync();
+
+            return Optional<IEnumerable<Labeler>>.Success(labelers);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "An error occurred while getting subject video group assignments labelers");
+            return Optional<IEnumerable<Labeler>>.Failure(e.Message);
+        }
+    }
+
+    public async Task<Optional<IEnumerable<AssignedLabel>>> GetSubjectVideoGroupAssignmentAsignedLabelsAsync(int id)
+    {
+        try
+        {
+            var labels = await context.SubjectVideoGroupAssignments
+                .SelectMany(x => x.AssignedLabels)
+                .ToListAsync();
+
+            return Optional<IEnumerable<AssignedLabel>>.Success(labels);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "An error occurred while getting subject video group assignments labelers");
+            return Optional<IEnumerable<AssignedLabel>>.Failure(e.Message);
         }
     }
 }

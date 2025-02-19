@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import httpClient from '../httpClient';
 import './css/ScientistProjects.css';
-
 
 const AddSubject = () => {
     const location = useLocation();
@@ -9,68 +9,76 @@ const AddSubject = () => {
     const [subjectData, setSubjectData] = useState({
         name: '',
         description: '',
-        projectId: new URLSearchParams(location.search).get('projectId'), // Get projectId from URL
+        projectId: new URLSearchParams(location.search).get('projectId'),
     });
+    const [error, setError] = useState('');
 
-    // Handle form input change
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setSubjectData((prevState) => ({
-            ...prevState,
-            [name]: value,
-        }));
+        setSubjectData(prev => ({ ...prev, [name]: value }));
     };
 
-    // Handle form submission
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError('');
+
+        if (!subjectData.name.trim() || !subjectData.description.trim()) {
+            setError('All fields are required');
+            return;
+        }
 
         try {
-            const response = await fetch(`http://localhost:5000/api/Subject`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(subjectData),
-            });
-
-            if (response.ok) {
-                alert('Subject added successfully');
-                navigate(`/projects/${subjectData.projectId}`); // Redirect to the project details page
-            } else {
-                alert('Failed to add subject');
-            }
+            await httpClient.post('/Subject', subjectData);
+            alert('Subject added successfully');
+            navigate(`/projects/${subjectData.projectId}`);
         } catch (error) {
             console.error('Error adding subject:', error);
+            setError(error.response?.data?.message || 'Failed to add subject');
         }
     };
 
     return (
-        <div className="container">
-            <h1>Add Subject</h1>
-            <form onSubmit={handleSubmit}>
-                <div>
-                    <label htmlFor="name">Name</label>
+        <div className="container auth-container">
+            <h1 className="heading">Add New Subject</h1>
+            {error && <div className="error">{error}</div>}
+
+            <form onSubmit={handleSubmit} className="auth-form">
+                <div className="form-group">
+                    <label>Subject Name:</label>
                     <input
                         type="text"
-                        id="name"
                         name="name"
+                        className="form-input"
                         value={subjectData.name}
                         onChange={handleChange}
                         required
                     />
                 </div>
-                <div>
-                    <label htmlFor="description">Description</label>
+
+                <div className="form-group">
+                    <label>Description:</label>
                     <textarea
-                        id="description"
                         name="description"
+                        className="form-input"
                         value={subjectData.description}
                         onChange={handleChange}
                         required
-                    ></textarea>
+                        rows="4"
+                    />
                 </div>
-                <button type="submit">Add Subject</button>
+
+                <div className="button-group">
+                    <button type="submit" className="auth-btn add-btn">
+                        Add Subject
+                    </button>
+                    <button
+                        type="button"
+                        className="auth-btn back-btn"
+                        onClick={() => navigate(-1)}
+                    >
+                        Cancel
+                    </button>
+                </div>
             </form>
         </div>
     );

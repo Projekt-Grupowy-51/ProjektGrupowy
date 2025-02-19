@@ -1,104 +1,112 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import httpClient from '../httpClient';
 import './css/ScientistProjects.css';
 
 const SubjectVideoGroupAssignmentDetails = () => {
-    const { id } = useParams(); // Get `id` from URL
+    const { id } = useParams();
+    const navigate = useNavigate();
     const [assignmentDetails, setAssignmentDetails] = useState(null);
     const [subject, setSubject] = useState(null);
     const [videoGroup, setVideoGroup] = useState(null);
-    const navigate = useNavigate();
+    const [labelers, setLabelers] = useState([]);
+    const [assignedLabels, setAssignedLabels] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState({
+        main: '',
+        labelers: '',
+        labels: ''
+    });
 
-    // Fetch assignment details
-    async function fetchAssignmentDetails() {
+    const fetchData = async () => {
         try {
-            const response = await fetch(`http://localhost:5000/api/SubjectVideoGroupAssignment/${id}`);
-            if (!response.ok) {
-                throw new Error('Failed to fetch assignment details');
+            setLoading(true);
+            setError({ main: '', labelers: '', labels: '' });
+
+            // Pobierz podstawowe dane przypisania
+            const assignmentResponse = await httpClient.get(`/SubjectVideoGroupAssignment/${id}`);
+            setAssignmentDetails(assignmentResponse.data);
+
+            // Pobierz dane subject i videoGroup równolegle
+            const [subjectResponse, videoGroupResponse] = await Promise.all([
+                httpClient.get(`/subject/${assignmentResponse.data.subjectId}`),
+                httpClient.get(`/videogroup/${assignmentResponse.data.videoGroupId}`)
+            ]);
+
+            setSubject(subjectResponse.data);
+            setVideoGroup(videoGroupResponse.data);
+
+            // Pobierz dane labelers i assignedLabels
+            try {
+                const [labelersResponse, labelsResponse] = await Promise.all([
+                    httpClient.get(`/SubjectVideoGroupAssignment/${id}/labelers`),
+                    httpClient.get(`/SubjectVideoGroupAssignment/${id}/assignedlabels`)
+                ]);
+                setLabelers(labelersResponse.data);
+                setAssignedLabels(labelsResponse.data);
+                console.log(labelsResponse.data);
+            } catch (err) {
+                setError(prev => ({
+                    ...prev,
+                    labelers: 'Error loading labelers',
+                    labels: 'Error loading labels'
+                }));
             }
-            const data = await response.json();
-            setAssignmentDetails(data);
-            fetchSubject(data.subjectId); // Fetch subject details associated with the assignment
-            fetchVideoGroup(data.videoGroupId); // Fetch video group details associated with the assignment
+
         } catch (error) {
-            console.error('Error fetching assignment details:', error);
+            setError(prev => ({ ...prev, main: 'Failed to load assignment details' }));
+        } finally {
+            setLoading(false);
         }
-    }
+    };
 
-    // Fetch subject details
-    async function fetchSubject(subjectId) {
-        try {
-            const response = await fetch(`http://localhost:5000/api/subject/${subjectId}`);
-            if (!response.ok) {
-                throw new Error('Failed to fetch subject details');
-            }
-            const data = await response.json();
-            setSubject(data);
-        } catch (error) {
-            console.error('Error fetching subject details:', error);
-        }
-    }
-
-    // Fetch video group details
-    async function fetchVideoGroup(videoGroupId) {
-        try {
-            const response = await fetch(`http://localhost:5000/api/videogroup/${videoGroupId}`);
-            if (!response.ok) {
-                throw new Error('Failed to fetch video group details');
-            }
-            const data = await response.json();
-            console.log(data);
-
-            setVideoGroup(data);
-        } catch (error) {
-            console.error('Error fetching video group details:', error);
-        }
-    }
-
-    // Fetch assignment details when component is mounted
     useEffect(() => {
-        if (id) fetchAssignmentDetails();
+        if (id) fetchData();
     }, [id]);
 
-    // Redirect to "Edit Assignment" form
-    function editAssignment() {
-        navigate(`/assignments/edit/${id}`); // Navigate to the edit form
-    }
+    const handleDelete = async () => {
+        if (!window.confirm('Are you sure you want to delete this assignment?')) return;
 
-    // Delete assignment
-    async function deleteAssignment() {
         try {
-            const response = await fetch(`http://localhost:5000/api/SubjectVideoGroupAssignment/${id}`, {
-                method: 'DELETE',
-            });
-
-            if (response.ok) {
-                console.log('Assignment deleted:', id);
-                navigate('/assignments'); // Redirect back to the assignments list
-            } else {
-                console.error('Error while deleting assignment:', response.statusText);
-            }
+            await httpClient.delete(`/SubjectVideoGroupAssignment/${id}`);
+            navigate('/assignments');
         } catch (error) {
-            console.error('Error while deleting assignment:', error);
+            setError(prev => ({ ...prev, main: 'Deletion failed' }));
         }
-    }
+    };
 
-    // Check if assignmentDetails exists before rendering
-    if (!assignmentDetails) return <div>Loading...</div>;
+    if (loading) return <div className="container"><div className="loading">Loading...</div></div>;
+    if (error.main) return <div className="container"><div className="error">{error.main}</div></div>;
 
     return (
         <div className="container">
             <div className="content">
-                <h1 className="heading">Subject Video Group Assignment Details</h1>
+                <div className="auth-header">
+                    <h1 className="heading">Assignment Details</h1>
+                    <div className="action-buttons">
+                        <button className="edit-btn" onClick={() => navigate(`/assignments/edit/${id}`)}>
+                            Edit
+                        </button>
+                        <button className="delete-btn" onClick={handleDelete}>
+                            Delete
+                        </button>
+                        <button className="refresh-btn add-btn" onClick={fetchData}>
+                            Refresh
+                        </button>
+                    </div>
+                </div>
+
+                {error.labelers && <div className="error">{error.labelers}</div>}
+                {error.labels && <div className="error">{error.labels}</div>}
 
                 <div className="tables-container">
-                    {/* Assignment Details Table */}
+                    {/* Basic Assignment Info */}
                     <div className="table-wrapper">
-                        <h2>Assignment Details</h2>
+                        <h2>Basic Information</h2>
                         <table className="details-table">
                             <tbody>
                                 <tr>
-                                    <th>ID</th>
+                                    <th>Assignment ID</th>
                                     <td>{assignmentDetails.id}</td>
                                 </tr>
                                 <tr>
@@ -113,16 +121,12 @@ const SubjectVideoGroupAssignmentDetails = () => {
                         </table>
                     </div>
 
-                    {/* Subject Details Table */}
+                    {/* Subject Details */}
                     <div className="table-wrapper">
                         <h2>Subject Details</h2>
                         {subject ? (
                             <table className="details-table">
                                 <tbody>
-                                    <tr>
-                                        <th>ID</th>
-                                        <td>{subject.id}</td>
-                                    </tr>
                                     <tr>
                                         <th>Name</th>
                                         <td>{subject.name}</td>
@@ -131,23 +135,23 @@ const SubjectVideoGroupAssignmentDetails = () => {
                                         <th>Description</th>
                                         <td>{subject.description}</td>
                                     </tr>
+                                    <tr>
+                                        <th>Project ID</th>
+                                        <td>{subject.projectId}</td>
+                                    </tr>
                                 </tbody>
                             </table>
                         ) : (
-                            <p>Loading subject details...</p>
+                            <p className="error">Error loading subject</p>
                         )}
                     </div>
 
-                    {/* Video Group Details Table */}
+                    {/* Video Group Details */}
                     <div className="table-wrapper">
                         <h2>Video Group Details</h2>
                         {videoGroup ? (
                             <table className="details-table">
                                 <tbody>
-                                    <tr>
-                                        <th>ID</th>
-                                        <td>{videoGroup.id}</td>
-                                    </tr>
                                     <tr>
                                         <th>Name</th>
                                         <td>{videoGroup.name}</td>
@@ -156,84 +160,92 @@ const SubjectVideoGroupAssignmentDetails = () => {
                                         <th>Description</th>
                                         <td>{videoGroup.description}</td>
                                     </tr>
+                                    <tr>
+                                        <th>Project ID</th>
+                                        <td>{videoGroup.projectId}</td>
+                                    </tr>
                                 </tbody>
                             </table>
                         ) : (
-                            <p>Loading video group details...</p>
+                            <p className="error">Error loading video group</p>
                         )}
                     </div>
-
-                    
                 </div>
 
-                <div className="tables-container pull-left">
+                {/* Labelers Table */}
+                <div className="tables-container">
                     <div className="table-wrapper">
-                        <h2>Labelers</h2>
-                        <table className="details-table">
-                            <tbody>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Name</th>
-                                    <th>Surname</th>
-                                    <th>Description</th>
-                                    <th>Index</th>
-                                    <th>Description</th>
-                                    <th>Description</th>
-                                    <th>Description</th>
-                                </tr>
-                                <tr>
-                                    <td>testowy uzytkownik</td>
-                                    <td>testowy uzytkownik</td>
-                                    <td>testowy uzytkownik</td>
-                                    <td>testowy uzytkownik</td>
-                                    <td>testowy uzytkownik</td>
-                                    <td>testowy uzytkownik</td>
-                                    <td>testowy uzytkownik</td>
-                                    <td>testowy uzytkownik</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <h2>Assigned Labelers</h2>
+                        {labelers.length > 0 ? (
+                            <table className="project-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Role</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {labelers.map(labeler => (
+                                        <tr key={labeler.id}>
+                                            <td>{labeler.id}</td>
+                                            <td>{labeler.name} {labeler.surname}</td>
+                                            <td>{labeler.email}</td>
+                                            <td>{labeler.role}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        ) : (
+                            <div className="no-data-info">
+                                {error.labelers ? 'Error loading labelers' : 'No labelers assigned'}
+                            </div>
+                        )}
                     </div>
                 </div>
 
-                <div className="tables-container pull-left">
+                {/* Assigned Labels Table */}
+                <div className="tables-container">
                     <div className="table-wrapper">
-                        <h2>AsisgnedLabels</h2>
-                        <table className="details-table">
-                            <tbody>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Name</th>
-                                    <th>Description</th>
-                                    <th>Color</th>
-                                    <th>Start</th>
-                                    <th>End</th>
-                                    <th>Labeler</th>
-                                </tr>
-                                <tr>
-                                    <td>testowa etykieta</td>
-                                    <td>testowa etykieta</td>
-                                    <td>testowa etykieta</td>
-                                    <td>testowa etykieta</td>
-                                    <td>testowa etykieta</td>
-                                    <td>testowa etykieta</td>
-                                    <td>testowa etykieta</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <h2>Assigned Labels</h2>
+                        {assignedLabels.length > 0 ? (
+                            <table className="project-table">
+                                <thead>
+                                    <tr>
+                                        <th>Label ID</th>
+                                        <th>Name</th>
+                                        <th>Start Time</th>
+                                        <th>End Time</th>
+                                        <th>Labeler</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {assignedLabels.map(label => (
+                                        <tr key={label.id}>
+                                            <td>{label.id}</td>
+                                            <td>{label.labelName}</td>
+                                            <td>{label.start}</td>
+                                            <td>{label.end}</td>
+                                            <td>{label.labelerName}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        ) : (
+                            <div className="no-data-info">
+                                {error.labels ? 'Error loading labels' : 'No labels assigned'}
+                            </div>
+                        )}
                     </div>
                 </div>
 
-                <div className="actions">
-                    {videoGroup ? (
-                        <button className="back-btn">
-                            <Link to={`/projects/${videoGroup.projectId}`}>Back to Project</Link>
-                        </button>
-                    ) : (
-                        <button className="back-btn">
-                            <Link to="/projects">Back to Projects</Link>
-                        </button>
-                    )}
+                <div className="action-buttons">
+                    <button className="back-btn">
+                        <Link to={videoGroup ? `/projects/${videoGroup.projectId}` : "/projects"}>
+                            Back to Project
+                        </Link>
+                    </button>
                 </div>
             </div>
         </div>

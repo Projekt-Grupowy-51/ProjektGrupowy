@@ -1,7 +1,10 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using ProjektGrupowy.API.DTOs.AssignedLabel;
+using ProjektGrupowy.API.DTOs.Labeler;
 using ProjektGrupowy.API.DTOs.SubjectVideoGroupAssignment;
 using ProjektGrupowy.API.Filters;
+using ProjektGrupowy.API.Models;
 using ProjektGrupowy.API.Services;
 
 namespace ProjektGrupowy.API.Controllers;
@@ -27,6 +30,24 @@ public class SubjectVideoGroupAssignmentController(ISubjectVideoGroupAssignmentS
         return subjectVideoGroupAssignment.IsSuccess
             ? Ok(mapper.Map<SubjectVideoGroupAssignmentResponse>(subjectVideoGroupAssignment.GetValueOrThrow()))
             : NotFound(subjectVideoGroupAssignment.GetErrorOrThrow());
+    }
+
+    [HttpGet("{id:int}/Labelers")]
+    public async Task<ActionResult<IEnumerable<LabelerResponse>>> GetSubjectVideoGroupAssignmentLabelersAsync(int id)
+    {
+        var labelers = await subjectVideoGroupAssignmentService.GetSubjectVideoGroupAssignmentsLabelersAsync(id);
+        return labelers.IsSuccess
+            ? Ok(mapper.Map<IEnumerable<LabelerResponse>>(labelers.GetValueOrThrow()))
+            : NotFound(labelers.GetErrorOrThrow());
+    }
+
+    [HttpGet("{id:int}/AssignedLabels")]
+    public async Task<ActionResult<IEnumerable<AssignedLabelResponse>>> GetSubjectVideoGroupAssignmentAsignedLabelsAsync(int id)
+    {
+        var labels = await subjectVideoGroupAssignmentService.GetSubjectVideoGroupAssignmentAsignedLabelsAsync(id);
+        return labels.IsSuccess
+            ? Ok(mapper.Map<IEnumerable<AssignedLabelResponse>>(labels.GetValueOrThrow()))
+            : NotFound(labels.GetErrorOrThrow());
     }
 
     [HttpPost]

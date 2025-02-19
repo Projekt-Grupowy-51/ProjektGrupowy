@@ -15,8 +15,10 @@ namespace ProjektGrupowy.API.Controllers;
 [ApiController]
 [ServiceFilter(typeof(ValidateModelStateFilter))] // ValidateModelStateFilter is a custom filter to validate model state
 public class AuthController(UserManager<User> userManager, RoleManager<IdentityRole> roleManager,
-                                AppDbContext context, IConfiguration configuration ) : ControllerBase
+                                AppDbContext context, IConfiguration configuration) : ControllerBase
 {
+    private readonly string JwtCookieName = "jwt";
+
     [HttpPost("Register")]
     public async Task<IActionResult> Register([FromBody] RegisterDto model)
     {
@@ -67,21 +69,158 @@ public class AuthController(UserManager<User> userManager, RoleManager<IdentityR
             return Unauthorized(new { Status = "Error", Message = "Invalid UserName or password!" });
 
         var authClaims = new List<Claim>
-        {
-            new(ClaimTypes.Name, user.UserName),
-            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-        };
+    {
+        new(ClaimTypes.Name, user.UserName),
+        new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+    };
 
         var userRoles = await userManager.GetRolesAsync(user);
         authClaims.AddRange(userRoles.Select(userRole => new Claim(ClaimTypes.Role, userRole)));
 
         var token = GenerateJwtToken(authClaims);
 
+        // Ustawienie tokenu jako ciasteczko HTTP Only
+        Response.Cookies.Append(JwtCookieName, new JwtSecurityTokenHandler().WriteToken(token), new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = false, // Używaj tylko w przypadku HTTPS
+            SameSite = SameSiteMode.Strict,
+            Expires = token.ValidTo
+        });
+
         return Ok(new
         {
-            Token = new JwtSecurityTokenHandler().WriteToken(token),
-            Expiration = token.ValidTo
+            Message = "Login successful!",
+            ExpiresAt = token.ValidTo // Zwróć czas wygaśnięcia tokena
         });
+    }
+
+    [HttpPost("Logout")]
+    public IActionResult Logout()
+    {
+        // Usuń ciasteczko JWT
+        Response.Cookies.Delete(JwtCookieName);
+        return Ok(new { Message = "Logout successful!" });
+    }
+
+    [HttpPost("RefreshToken")]
+    public async Task<IActionResult> RefreshToken()
+    {
+        var jwtToken = Request.Cookies[JwtCookieName];
+        if (string.IsNullOrEmpty(jwtToken))
+            return Unauthorized(new { Status = "Error", Message = "No token provided." });
+
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var validationParameters = GetTokenValidationParameters();
+
+        try
+        {
+            // Walidacja tokenu
+            var principal = tokenHandler.ValidateToken(jwtToken, validationParameters, out var validatedToken);
+
+            // Sprawdzenie czy token jest JWT
+            if (!(validatedToken is JwtSecurityToken jwtSecurityToken) ||
+                !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
+            {
+                return Unauthorized(new { Status = "Error", Message = "Invalid token." });
+            }
+
+            // Pobranie użytkownika
+            var user = await userManager.FindByNameAsync(principal.Identity.Name);
+            if (user == null)
+                return Unauthorized(new { Status = "Error", Message = "User not found." });
+
+            // Generowanie nowych claimów
+            var authClaims = new List<Claim>
+        {
+            new(ClaimTypes.Name, user.UserName),
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+        };
+
+            var userRoles = await userManager.GetRolesAsync(user);
+            authClaims.AddRange(userRoles.Select(role => new Claim(ClaimTypes.Role, role)));
+
+            // Generowanie nowego tokenu
+            var newToken = GenerateJwtToken(authClaims);
+
+            // Aktualizacja ciasteczka
+            Response.Cookies.Append(JwtCookieName, new JwtSecurityTokenHandler().WriteToken(newToken), new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = false,
+                SameSite = SameSiteMode.Strict,
+                Expires = newToken.ValidTo
+            });
+
+            return Ok(new
+            {
+                Message = "Token refreshed successfully!",
+                ExpiresAt = newToken.ValidTo
+            });
+        }
+        catch (SecurityTokenExpiredException)
+        {
+            return Unauthorized(new { Status = "Error", Message = "Token expired." });
+        }
+        catch (Exception ex)
+        {
+            return Unauthorized(new { Status = "Error", Message = "Invalid token.", Details = ex.Message });
+        }
+    }
+
+    [HttpGet("VerifyToken")]
+    public async Task<IActionResult> VerifyToken()
+    {
+        var jwtToken = Request.Cookies[JwtCookieName];
+        if (string.IsNullOrEmpty(jwtToken))
+            return Unauthorized(new { IsAuthenticated = false });
+
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var validationParameters = GetTokenValidationParameters();
+
+        try
+        {
+            // Walidacja tokenu
+            var principal = tokenHandler.ValidateToken(jwtToken, validationParameters, out var validatedToken);
+
+            // Dodatkowe sprawdzenie algorytmu podpisu
+            if (!(validatedToken is JwtSecurityToken jwtSecurityToken) ||
+                !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
+            {
+                return Unauthorized(new { IsAuthenticated = false });
+            }
+
+            // Pobranie użytkownika
+            var user = await userManager.FindByNameAsync(principal.Identity.Name);
+            if (user == null)
+                return Unauthorized(new { IsAuthenticated = false });
+
+            return Ok(new
+            {
+                IsAuthenticated = true,
+                Username = user.UserName,
+                Roles = await userManager.GetRolesAsync(user)
+            });
+        }
+        catch (Exception)
+        {
+            return Unauthorized(new { IsAuthenticated = false });
+        }
+    }
+
+    private TokenValidationParameters GetTokenValidationParameters()
+    {
+        return new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = configuration["JWT:ValidIssuer"],
+            ValidAudience = configuration["JWT:ValidAudience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Secret"])),
+            ClockSkew = TimeSpan.Zero // Brak tolerancji dla czasu wygaśnięcia
+        };
     }
 
     private JwtSecurityToken GenerateJwtToken(IEnumerable<Claim> authClaims)
@@ -91,7 +230,7 @@ public class AuthController(UserManager<User> userManager, RoleManager<IdentityR
         var token = new JwtSecurityToken(
             issuer: configuration["JWT:ValidIssuer"],
             audience: configuration["JWT:ValidAudience"],
-            expires: DateTime.Now.AddHours(3),
+            expires: DateTime.Now.AddMinutes(6),
             claims: authClaims,
             signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
         );

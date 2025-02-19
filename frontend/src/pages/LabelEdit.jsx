@@ -1,67 +1,63 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import httpClient from '../httpClient';
 import './css/ScientistProjects.css';
 
 const LabelEdit = () => {
-    const { id } = useParams();  // Pobranie ID etykiety z URL
+    const { id } = useParams();
     const [labelData, setLabelData] = useState({
         name: '',
         colorHex: '#ffffff',
-        type: '',
+        type: 'range',
         shortcut: '',
-        subjectId: 1,
+        subjectId: null,
     });
+    const [error, setError] = useState('');
     const navigate = useNavigate();
 
-    // Fetch the label data by ID
-    async function fetchLabelData() {
+    const fetchLabelData = async () => {
         try {
-            const response = await fetch(`http://localhost:5000/api/label/${id}`);
-            if (!response.ok) {
-                throw new Error('Failed to fetch label data');
-            }
-            const data = await response.json();
-            setLabelData(data);
+            const response = await httpClient.get(`/Label/${id}`);
+            setLabelData(response.data);
         } catch (error) {
             console.error('Error fetching label data:', error);
+            alert(error.response?.data?.message || 'Failed to load label data');
         }
-    }
+    };
 
-    // Fetch label data when the component mounts
     useEffect(() => {
         if (id) fetchLabelData();
     }, [id]);
 
-    // Handle form input change
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setLabelData((prevState) => ({
-            ...prevState,
-            [name]: value,
-        }));
+        setLabelData((prev) => ({ ...prev, [name]: value }));
     };
 
-    // Handle form submission (update the label)
+    const validateForm = () => {
+        if (labelData.shortcut.length !== 1) {
+            setError('Shortcut must be exactly one character.');
+            return false;
+        }
+        if (!/^#[0-9A-Fa-f]{6}$/.test(labelData.colorHex)) {
+            setError('Color must be in the format #ffffff.');
+            return false;
+        }
+        setError('');
+        return true;
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (!validateForm()) return;
 
         try {
-            const response = await fetch(`http://localhost:5000/api/label/${id}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(labelData),
-            });
-
-            if (response.ok) {
-                alert('Label updated successfully');
-                navigate(`/subjects/${labelData.subjectId}`); // Redirect to subject details page
-            } else {
-                alert('Failed to update label');
-            }
+            await httpClient.put(`/Label/${id}`, labelData);
+            alert('Label updated successfully');
+            navigate(`/subjects/${labelData.subjectId}`);
         } catch (error) {
             console.error('Error updating label:', error);
+            alert(error.response?.data?.message || 'Failed to update label');
         }
     };
 
@@ -88,7 +84,6 @@ const LabelEdit = () => {
                         name="colorHex"
                         value={labelData.colorHex}
                         onChange={handleChange}
-                        required
                     />
                 </div>
                 <div>
@@ -110,14 +105,17 @@ const LabelEdit = () => {
                         name="shortcut"
                         value={labelData.shortcut}
                         onChange={handleChange}
-                        maxLength="1" // Ensure the shortcut is only 1 character
+                        maxLength="1"
                         required
                     />
                 </div>
-                <button type="submit">Update Label</button>
+                {error && <p className="error">{error}</p>}
+                <button type="submit" className="edit-btn">
+                    Update Label
+                </button>
             </form>
             <button
-                className="btn-back"
+                className="btn-back back-btn"
                 onClick={() => navigate(`/subjects/details/${labelData.subjectId}`)}
             >
                 Back to Subject Details

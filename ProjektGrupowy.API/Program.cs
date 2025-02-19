@@ -1,11 +1,12 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using ProjektGrupowy.API.Data;
 using ProjektGrupowy.API.DB;
 using ProjektGrupowy.API.Filters;
-using ProjektGrupowy.API.Mapper;
 using ProjektGrupowy.API.Models;
 using ProjektGrupowy.API.Repositories;
 using ProjektGrupowy.API.Repositories.Impl;
@@ -52,32 +53,66 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+// Global exception handling
+app.UseExceptionHandler(errorApp =>
+{
+    errorApp.Run(async context =>
+    {
+        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        context.Response.ContentType = "application/json";
+
+        var exceptionHandlerPathFeature = context.Features.Get<IExceptionHandlerPathFeature>();
+        if (exceptionHandlerPathFeature?.Error != null)
+        {
+            Log.Error("An error occurred: {Error}", exceptionHandlerPathFeature.Error);
+
+            await context.Response.WriteAsync(new
+            {
+                StatusCode = context.Response.StatusCode,
+                Message = "An internal server error occurred."
+            }.ToString());
+        }
+    });
+});
+
+
 app.Run();
 
 static void AddServices(WebApplicationBuilder builder)
 {
     builder.Services.AddControllers()
-        .AddJsonOptions(options => {
+        .AddJsonOptions(options =>
+        {
             options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-            //options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
         });
 
     builder.Services.AddEndpointsApiExplorer();
-    builder.Services.AddSwaggerGen();
+    builder.Services.AddSwaggerGen(c =>
+    {
+        c.SwaggerDoc("v1", new OpenApiInfo
+        {
+            Title = "ProjektGrupowy API",
+            Version = "v1",
+            Description = "API for ProjektGrupowy application",
+            Contact = new OpenApiContact
+            {
+                Name = "Support",
+                Email = "support@projektgrupowy.com"
+            }
+        });
+    });
 
     // CORS
     builder.Services.AddCors(options =>
     {
         options.AddPolicy("FrontendPolicy", policy =>
         {
-            policy.WithOrigins("http://localhost:3000") // Adres Reacta
+            policy.WithOrigins("http://localhost:3000", "https://your-production-domain.com") // Dodaj wiêcej adresów
                   .AllowAnyHeader()
                   .AllowAnyMethod()
                   .AllowCredentials();
         });
     });
-
-
 
     // Repositories
     builder.Services.AddScoped<IAssignedLabelRepository, AssignedLabelRepository>();
@@ -103,48 +138,84 @@ static void AddServices(WebApplicationBuilder builder)
     builder.Services.AddScoped<IVideoService, VideoService>();
     builder.Services.AddScoped<IProjectAccessCodeService, ProjectAccessCodeService>();
 
-    // Map
-    builder.Services.AddAutoMapper(typeof(AccessCodeMap));
-    builder.Services.AddAutoMapper(typeof(AssignedLabelMap));
-    builder.Services.AddAutoMapper(typeof(LabelerMap));
-    builder.Services.AddAutoMapper(typeof(LabelMap));
-    builder.Services.AddAutoMapper(typeof(ProjectMap));
-    builder.Services.AddAutoMapper(typeof(ScientistMap));
-    builder.Services.AddAutoMapper(typeof(SubjectMap));
-    builder.Services.AddAutoMapper(typeof(SubjectVideoGroupAssignmentMap));
-    builder.Services.AddAutoMapper(typeof(VideoGroupMap));
-    builder.Services.AddAutoMapper(typeof(VideoMap));
+    // AutoMapper
+    builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
+    // Filters
     builder.Services.AddScoped<ValidateModelStateFilter>();
 
+    // Database Context
     builder.Services.AddDbContext<AppDbContext>(options =>
         options
             .UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
             .UseLazyLoadingProxies()
     );
 
-    builder.Services.AddIdentity<User, IdentityRole>()
-        .AddEntityFrameworkStores<AppDbContext>()
-        .AddDefaultTokenProviders();
+    // Identity
+    builder.Services.AddIdentity<User, IdentityRole>(options =>
+    {
+        options.Password.RequireDigit = true;
+        options.Password.RequiredLength = 8;
+        options.Password.RequireNonAlphanumeric = false;
+        options.Password.RequireUppercase = true;
+        options.Password.RequireLowercase = true;
+        options.User.RequireUniqueEmail = true;
+    })
+    .AddEntityFrameworkStores<AppDbContext>()
+    .AddDefaultTokenProviders();
+
+    // JWT Authentication
+    var jwtSecret = builder.Configuration["JWT:Secret"];
+    var jwtIssuer = builder.Configuration["JWT:ValidIssuer"];
+    var jwtAudience = builder.Configuration["JWT:ValidAudience"];
+
+    if (string.IsNullOrEmpty(jwtSecret)) throw new ArgumentNullException("JWT:Secret is missing in configuration.");
+    if (string.IsNullOrEmpty(jwtIssuer)) throw new ArgumentNullException("JWT:ValidIssuer is missing in configuration.");
+    if (string.IsNullOrEmpty(jwtAudience)) throw new ArgumentNullException("JWT:ValidAudience is missing in configuration.");
 
     builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
         {
-            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-        })
-        .AddJwtBearer(options =>
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtIssuer,
+            ValidAudience = jwtAudience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
+            ClockSkew = TimeSpan.Zero // Brak tolerancji czasu wygaœniêcia tokenu
+        };
+
+        options.Events = new JwtBearerEvents
         {
-            options.TokenValidationParameters = new TokenValidationParameters
+            OnAuthenticationFailed = context =>
             {
-                ValidateIssuer = true,
-                ValidateAudience = true,
-                ValidateLifetime = true,
-                ValidateIssuerSigningKey = true,
-                ValidIssuer = builder.Configuration["JWT:ValidIssuer"],
-                ValidAudience = builder.Configuration["JWT:ValidAudience"],
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Secret"]))
-            };
-        });
+                Log.Error("Authentication failed: {Exception}", context.Exception);
+                return Task.CompletedTask;
+            },
+            OnTokenValidated = context =>
+            {
+                Log.Information("Token validated for user: {Username}", context.Principal.Identity.Name);
+                return Task.CompletedTask;
+            }
+        };
+    });
+
+    // Authorization
+    builder.Services.AddAuthorization();
+
+
+    // Response Compression
+    builder.Services.AddResponseCompression(options =>
+    {
+        options.EnableForHttps = true;
+    });
 }
 
 static async Task SeedDatabase(IServiceProvider serviceProvider)
@@ -157,7 +228,6 @@ static async Task SeedDatabase(IServiceProvider serviceProvider)
 static async Task CreateRoles(IServiceProvider serviceProvider)
 {
     using var scope = serviceProvider.CreateScope();
-
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
     var roleNames = Enum.GetValues(typeof(RoleEnum)).Cast<RoleEnum>();
@@ -174,8 +244,7 @@ static async Task CreateRoles(IServiceProvider serviceProvider)
             }
             else
             {
-                Log.Error(
-                    $"B³¹d przy tworzeniu roli {roleName}: {string.Join(", ", roleResult.Errors.Select(e => e.Description))}");
+                Log.Error($"B³¹d przy tworzeniu roli {roleName}: {string.Join(", ", roleResult.Errors.Select(e => e.Description))}");
             }
         }
         else
