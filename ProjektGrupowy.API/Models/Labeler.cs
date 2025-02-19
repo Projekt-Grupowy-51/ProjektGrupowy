@@ -9,6 +9,9 @@ public class Labeler
     [Key]
     public int Id { get; set; }
     public string Name { get; set; }
+    
+    [ForeignKey("UserId")]
+    public virtual User User { get; set; }
 
     public virtual ICollection<AssignedLabel>? AssignedLabels { get; set; }
 

@@ -8,18 +8,26 @@ using ProjektGrupowy.API.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.AspNetCore.Authorization;
+using ProjektGrupowy.API.DTOs.Scientist;
+using ProjektGrupowy.API.Services;
+using ProjektGrupowy.API.Services.Impl;
+using ProjektGrupowy.API.Utils.Enums;
+using ProjektGrupowy.API.DTOs.Labeler;
 
 namespace ProjektGrupowy.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
 [ServiceFilter(typeof(ValidateModelStateFilter))] // ValidateModelStateFilter is a custom filter to validate model state
+[Authorize]
 public class AuthController(UserManager<User> userManager, RoleManager<IdentityRole> roleManager,
-                                AppDbContext context, IConfiguration configuration) : ControllerBase
+                                AppDbContext context, IConfiguration configuration, IScientistService scientistService, ILabelerService labelerService) : ControllerBase
 {
-    private readonly string JwtCookieName = "jwt";
+    private readonly string JwtCookieName = configuration["JWT:JwtCookieName"];
 
     [HttpPost("Register")]
+    [AllowAnonymous]
     public async Task<IActionResult> Register([FromBody] RegisterDto model)
     {
         var userExists = await userManager.FindByNameAsync(model.UserName);
@@ -50,6 +58,42 @@ public class AuthController(UserManager<User> userManager, RoleManager<IdentityR
             if (!roleResult.Succeeded)
                 return StatusCode(500, new { Status = "Error", Message = "Failed to assign role to user." });
 
+            if (model.Role == RoleEnum.Scientist)
+            {
+                var scientistRequest = new ScientistRequest
+                {
+                    FirstName = model.UserName,
+                    LastName = model.UserName
+                };
+
+                var scientistResult = await scientistService.AddScientistWithUser(scientistRequest, user);
+
+                if (scientistResult.IsFailure)
+                    return BadRequest(scientistResult.GetErrorOrThrow());
+
+                var createdScientist = scientistResult.GetValueOrThrow();
+                user.Scientist = createdScientist;
+
+                await context.SaveChangesAsync();
+            }
+            else if (model.Role == RoleEnum.Labeler)
+            {
+                var labelerRequest = new LabelerRequest
+                {
+                    Name = model.UserName
+                };
+
+                var labelerResult = await labelerService.AddLabelerWithUser(labelerRequest, user);
+
+                if (labelerResult.IsFailure)
+                    return BadRequest(labelerResult.GetErrorOrThrow());
+
+                var createdLabeler = labelerResult.GetValueOrThrow();
+                user.Labeler = createdLabeler;
+
+                await context.SaveChangesAsync();
+            }
+
             await transaction.CommitAsync();
 
             return Ok(new { Status = "Success", Message = "User created and assigned to role successfully!" });
@@ -61,7 +105,9 @@ public class AuthController(UserManager<User> userManager, RoleManager<IdentityR
         }
     }
 
+
     [HttpPost("Login")]
+    [AllowAnonymous]
     public async Task<IActionResult> Login([FromBody] LoginDto model)
     {
         var user = await userManager.FindByNameAsync(model.UserName);
@@ -69,10 +115,11 @@ public class AuthController(UserManager<User> userManager, RoleManager<IdentityR
             return Unauthorized(new { Status = "Error", Message = "Invalid UserName or password!" });
 
         var authClaims = new List<Claim>
-    {
-        new(ClaimTypes.Name, user.UserName),
-        new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-    };
+        {
+            new(ClaimTypes.Name, user.UserName),
+            new(ClaimTypes.NameIdentifier, user.Id),
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+        };
 
         var userRoles = await userManager.GetRolesAsync(user);
         authClaims.AddRange(userRoles.Select(userRole => new Claim(ClaimTypes.Role, userRole)));
@@ -132,10 +179,11 @@ public class AuthController(UserManager<User> userManager, RoleManager<IdentityR
 
             // Generowanie nowych claimów
             var authClaims = new List<Claim>
-        {
-            new(ClaimTypes.Name, user.UserName),
-            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-        };
+            {
+                new(ClaimTypes.Name, user.UserName),
+                new(ClaimTypes.NameIdentifier, user.Id),
+                new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            };
 
             var userRoles = await userManager.GetRolesAsync(user);
             authClaims.AddRange(userRoles.Select(role => new Claim(ClaimTypes.Role, role)));

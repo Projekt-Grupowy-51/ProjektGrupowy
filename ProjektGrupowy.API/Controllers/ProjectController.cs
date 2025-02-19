@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ProjektGrupowy.API.DTOs.LabelerAssignment;
 using ProjektGrupowy.API.DTOs.Project;
@@ -7,21 +8,45 @@ using ProjektGrupowy.API.DTOs.SubjectVideoGroupAssignment;
 using ProjektGrupowy.API.DTOs.VideoGroup;
 using ProjektGrupowy.API.Filters;
 using ProjektGrupowy.API.Services;
+using ProjektGrupowy.API.Utils.Enums;
+using System.Security.Claims;
 
 namespace ProjektGrupowy.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
 [ServiceFilter(typeof(ValidateModelStateFilter))]
+[Authorize]
 public class ProjectController(IProjectService projectService, ISubjectService subjectService, IVideoGroupService videoGroupService, ISubjectVideoGroupAssignmentService subjectVideoGroupAssignmentService, IMapper mapper) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<IEnumerable<ProjectResponse>>> GetProjectsAsync()
     {
+        if (!User.IsInRole(RoleEnum.Scientist.ToString()) && !User.IsInRole(RoleEnum.Admin.ToString()))
+        {
+            return Forbid();
+        }
+
         var projects = await projectService.GetProjectsAsync();
-        return projects.IsSuccess
-            ? Ok(mapper.Map<IEnumerable<ProjectResponse>>(projects.GetValueOrThrow()))
-            : NotFound(projects.GetErrorOrThrow());
+
+        if (!projects.IsSuccess)
+            return NotFound(projects.GetErrorOrThrow());
+
+        if (User.IsInRole(RoleEnum.Scientist.ToString()))
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (userId == null)
+            {
+                return Unauthorized("User identity not found.");
+            }
+
+            var filteredProjects = projects.GetValueOrThrow().Where(x => x.Scientist.User.Id == userId);
+
+            return Ok(mapper.Map<IEnumerable<ProjectResponse>>(filteredProjects));
+        }
+
+        return Ok(mapper.Map<IEnumerable<ProjectResponse>>(projects.GetValueOrThrow()));
     }
 
     [HttpGet("{id:int}")]

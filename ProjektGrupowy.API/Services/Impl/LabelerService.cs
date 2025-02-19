@@ -27,6 +27,17 @@ public class LabelerService(ILabelerRepository labelerRepository) : ILabelerServ
         return await labelerRepository.AddLabelerAsync(labeler);
     }
 
+    public async Task<Optional<Labeler>> AddLabelerWithUser(LabelerRequest labelerRequest, User user)
+    {
+        var labeler = new Labeler
+        {
+            Name = labelerRequest.Name,
+            User = user
+        };
+
+        return await labelerRepository.AddLabelerAsync(labeler);
+    }
+
     public async Task<Optional<Labeler>> UpdateLabelerAsync(int labelerId, LabelerRequest labelerRequest)
     {
         var labelerOptional = await labelerRepository.GetLabelerAsync(labelerId);

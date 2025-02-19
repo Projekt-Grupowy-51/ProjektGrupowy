@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ProjektGrupowy.API.DTOs.Project;
 using ProjektGrupowy.API.DTOs.Scientist;
@@ -12,6 +13,7 @@ namespace ProjektGrupowy.API.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 [ServiceFilter(typeof(ValidateModelStateFilter))]
+[Authorize]
 public class ScientistController(IScientistService scientistService, IProjectService projectService, IMapper mapper) : ControllerBase
 {
     [HttpGet]

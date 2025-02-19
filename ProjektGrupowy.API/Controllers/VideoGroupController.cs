@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ProjektGrupowy.API.DTOs.Video;
 using ProjektGrupowy.API.DTOs.VideoGroup;
@@ -10,6 +11,7 @@ namespace ProjektGrupowy.API.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 [ServiceFilter(typeof(ValidateModelStateFilter))]
+[Authorize]
 public class VideoGroupController(IVideoGroupService videoGroupService, IMapper mapper) : ControllerBase
 {
     [HttpGet]

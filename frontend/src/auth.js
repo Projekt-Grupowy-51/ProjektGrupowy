@@ -75,14 +75,14 @@ class AuthService {
         }
     }
 
-    // Zaplanuj odœwie¿enie tokena 5 minut przed wygaœniêciem
+    // Zaplanuj odœwie¿enie tokena 1 minut przed wygaœniêciem
     scheduleTokenRefresh(expiresAt) {
         const now = new Date();
         const expiresIn = expiresAt.getTime() - now.getTime();
-        const refreshTime = expiresIn - 5 * 60 * 1000; // 5 minut przed wygaœniêciem
+        const refreshTime = expiresIn - 1 * 60 * 1000; // 1 minut przed wygaœniêciem
 
         if (refreshTime <= 0) {
-            // Jeœli zosta³o mniej ni¿ 5 minut, odœwie¿ natychmiast
+            // Jeœli zosta³o mniej ni¿ 1 minut, odœwie¿ natychmiast
             this.refreshToken();
             return;
         }

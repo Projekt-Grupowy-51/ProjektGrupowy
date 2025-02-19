@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ProjektGrupowy.API.DTOs.AccessCode;
 using ProjektGrupowy.API.Services;
@@ -7,6 +8,7 @@ namespace ProjektGrupowy.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
+[Authorize]
 public class AccessCodeController(IProjectAccessCodeService service, IMapper mapper) : ControllerBase
 {
     [HttpGet("project/{projectId:int}")]

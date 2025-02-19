@@ -17,5 +17,8 @@ public class Scientist
     [StringLength(255, ErrorMessage = "max 255 znakow")]
     public string LastName { get; set; }
 
+    [ForeignKey("UserId")]
+    public virtual User User { get; set; }
+
     public virtual ICollection<Project>? Projects { get; set; } = new List<Project>();
 }

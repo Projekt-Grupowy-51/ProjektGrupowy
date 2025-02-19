@@ -18,6 +18,18 @@ public class ScientistService(IScientistRepository scientistRepository) : IScien
         return await scientistRepository.AddScientistAsync(scientist);
     }
 
+    public async Task<Optional<Scientist>> AddScientistWithUser(ScientistRequest scientistRequest, User user)
+    {
+        var scientist = new Scientist
+        {
+            FirstName = scientistRequest.FirstName,
+            LastName = scientistRequest.LastName,
+            User =  user
+        };
+
+        return await scientistRepository.AddScientistAsync(scientist);
+    }
+
     public async Task DeleteScientistAsync(int id)
     {
         var scientist = await scientistRepository.GetScientistAsync(id);

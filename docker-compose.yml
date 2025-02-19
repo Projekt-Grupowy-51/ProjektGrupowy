@@ -30,6 +30,8 @@ services:
       - mynetwork
     depends_on:
       - db
+    volumes:
+      - videos_data:/app/videos
 
   # frontend:
   #   build:
@@ -46,6 +48,7 @@ services:
 
 volumes:
   postgres_data:
+  videos_data:
 
 networks:
   mynetwork:

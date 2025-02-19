@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ProjektGrupowy.API.DTOs.Labeler;
 using ProjektGrupowy.API.Filters;
@@ -9,6 +10,7 @@ namespace ProjektGrupowy.API.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 [ServiceFilter(typeof(ValidateModelStateFilter))]
+[Authorize]
 public class LabelerController(ILabelerService labelerService, IMapper mapper) : ControllerBase
 {
     [HttpGet]

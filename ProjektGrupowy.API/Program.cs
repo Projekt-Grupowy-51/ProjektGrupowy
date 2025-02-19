@@ -168,44 +168,55 @@ static void AddServices(WebApplicationBuilder builder)
     var jwtSecret = builder.Configuration["JWT:Secret"];
     var jwtIssuer = builder.Configuration["JWT:ValidIssuer"];
     var jwtAudience = builder.Configuration["JWT:ValidAudience"];
+    var jwtCookieName = builder.Configuration["JWT:JwtCookieName"];
 
     if (string.IsNullOrEmpty(jwtSecret)) throw new ArgumentNullException("JWT:Secret is missing in configuration.");
     if (string.IsNullOrEmpty(jwtIssuer)) throw new ArgumentNullException("JWT:ValidIssuer is missing in configuration.");
     if (string.IsNullOrEmpty(jwtAudience)) throw new ArgumentNullException("JWT:ValidAudience is missing in configuration.");
 
     builder.Services.AddAuthentication(options =>
-    {
-        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    })
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = jwtIssuer,
-            ValidAudience = jwtAudience,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
-            ClockSkew = TimeSpan.Zero // Brak tolerancji czasu wygaœniêcia tokenu
-        };
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        })
+        .AddJwtBearer(options =>
+        {
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = jwtIssuer,
+                ValidAudience = jwtAudience,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
+                ClockSkew = TimeSpan.Zero
+            };
 
-        options.Events = new JwtBearerEvents
-        {
-            OnAuthenticationFailed = context =>
+            options.Events = new JwtBearerEvents
             {
-                Log.Error("Authentication failed: {Exception}", context.Exception);
-                return Task.CompletedTask;
-            },
-            OnTokenValidated = context =>
-            {
-                Log.Information("Token validated for user: {Username}", context.Principal.Identity.Name);
-                return Task.CompletedTask;
-            }
-        };
-    });
+                OnMessageReceived = context =>
+                {
+                    var token = context.Request.Cookies[jwtCookieName];
+                    if (!string.IsNullOrEmpty(token))
+                    {
+                        context.Token = token;
+                    }
+                    return Task.CompletedTask;
+                },
+                OnAuthenticationFailed = context =>
+                {
+                    Log.Error("Authentication failed: {Exception}", context.Exception);
+                    return Task.CompletedTask;
+                },
+                OnTokenValidated = context =>
+                {
+                    Log.Information("Token validated for user: {Username}", context.Principal.Identity.Name);
+                    return Task.CompletedTask;
+                }
+            };
+        });
+
 
     // Authorization
     builder.Services.AddAuthorization();
