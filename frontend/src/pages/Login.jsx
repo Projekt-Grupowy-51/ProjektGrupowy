@@ -3,6 +3,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import authService from '../auth';
 import './css/ScientistProjects.css';
 
+const roleMap = {
+    Labeler: 1,
+    Scientist: 2
+};
+
 const AuthPage = () => {
     const [isLoginView, setIsLoginView] = useState(true);
     const [formData, setFormData] = useState({
@@ -31,15 +36,16 @@ const AuthPage = () => {
         try {
             if (isLoginView) {
                 await authService.login(formData.username, formData.password);
+
+                navigate('/projects');
             } else {
                 await authService.register({
                     userName: formData.username,
                     email: formData.email,
                     password: formData.password,
-                    role: formData.role
+                    role: roleMap[formData.role]
                 });
             }
-            navigate('/projects');
         } catch (err) {
             setError(isLoginView
                 ? 'Invalid credentials'
