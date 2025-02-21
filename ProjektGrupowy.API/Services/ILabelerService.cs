@@ -12,4 +12,5 @@ public interface ILabelerService
     Task<Optional<Labeler>> UpdateLabelerAsync(int labelerId, LabelerRequest labelerRequest);
     Task DeleteLabelerAsync(int id);
     Task<Optional<Labeler>> AddLabelerWithUser(LabelerRequest labelerRequest, User user);
+    Task<Optional<Labeler>> GetLabelerByUserIdAsync(string userId);
 }

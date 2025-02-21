@@ -101,4 +101,21 @@ public class SubjectRepository(AppDbContext context, ILogger<SubjectRepository> 
             logger.LogError(e, "An error occurred while deleting subject");
         }
     }
+
+    public async Task<Optional<IEnumerable<Subject>>> GetSubjectsByScientistId(int scientistId)
+    {
+        try
+        {
+            var subjects = await context.Subjects
+                .Where(s => s.Project.Scientist.Id == scientistId)
+                .ToArrayAsync();
+
+            return Optional<IEnumerable<Subject>>.Success(subjects);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "An error occurred while getting subjects by scientist id");
+            return Optional<IEnumerable<Subject>>.Failure(e.Message);
+        }
+    }
 }

@@ -15,4 +15,6 @@ public interface ISubjectService
     Task<Optional<IEnumerable<Subject>>> GetSubjectsByProjectAsync(Project project);
 
     Task DeleteSubjectAsync(int id);
+
+    Task<Optional<IEnumerable<Subject>>> GetSubjectsByScientistId(int scientistId);
 }

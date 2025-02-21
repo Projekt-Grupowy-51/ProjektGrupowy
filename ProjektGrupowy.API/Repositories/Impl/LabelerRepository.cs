@@ -81,4 +81,20 @@ public class LabelerRepository(AppDbContext context, ILogger<LabelerRepository> 
             logger.LogError(e, "An error occurred while deleting labeler");
         }
     }
+
+    public async Task<Optional<Labeler>> GetLabelerByUserIdAsync(string userId)
+    {
+        try
+        {
+            var labeler = await context.Labelers.FirstOrDefaultAsync(l => l.User.Id == userId);
+            return labeler is null
+                ? Optional<Labeler>.Failure("Labeler not found")
+                : Optional<Labeler>.Success(labeler);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "An error occurred while getting labeler by user id");
+            return Optional<Labeler>.Failure(e.Message);
+        }
+    }
 }

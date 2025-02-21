@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import httpClient from '../httpClient';
 import './css/ScientistProjects.css';
-
 
 const AddVideoGroup = () => {
     const location = useLocation();
@@ -9,10 +9,11 @@ const AddVideoGroup = () => {
     const [videoGroupData, setVideoGroupData] = useState({
         name: '',
         description: '',
-        projectId: new URLSearchParams(location.search).get('projectId'), // Get projectId from URL
+        projectId: new URLSearchParams(location.search).get('projectId'), // Pobranie projectId z URL
     });
+    const [error, setError] = useState("");
 
-    // Handle form input change
+    // Obs³uga zmiany wartoœci w formularzu
     const handleChange = (e) => {
         const { name, value } = e.target;
         setVideoGroupData((prevState) => ({
@@ -21,33 +22,28 @@ const AddVideoGroup = () => {
         }));
     };
 
-    // Handle form submission
+    // Obs³uga przesy³ania formularza
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError("");
 
         try {
-            const response = await fetch(`http://localhost:5000/api/videogroup`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(videoGroupData),
-            });
+            const response = await httpClient.post("/videogroup", videoGroupData);
 
-            if (response.ok) {
-                alert('Video Group added successfully');
-                navigate(`/projects/${videoGroupData.projectId}`); // Redirect to the project details page
-            } else {
-                alert('Failed to add video group');
+            if (response.status === 201) {
+                alert("Video Group added successfully");
+                navigate(`/projects/${videoGroupData.projectId}`); // Przekierowanie na stronê projektu
             }
         } catch (error) {
-            console.error('Error adding video group:', error);
+            console.error("Error adding video group:", error);
+            setError(error.response?.data?.message || "Failed to add video group");
         }
     };
 
     return (
         <div className="container">
             <h1>Add Video Group</h1>
+            {error && <div className="error">{error}</div>}
             <form onSubmit={handleSubmit}>
                 <div>
                     <label htmlFor="name">Title</label>

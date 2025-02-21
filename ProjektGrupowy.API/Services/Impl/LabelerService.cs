@@ -59,4 +59,9 @@ public class LabelerService(ILabelerRepository labelerRepository) : ILabelerServ
         if (labeler.IsSuccess)
             await labelerRepository.DeleteLabelerAsync(labeler.GetValueOrThrow());
     }
+
+    public async Task<Optional<Labeler>> GetLabelerByUserIdAsync(string userId)
+    {
+        return await labelerRepository.GetLabelerByUserIdAsync(userId);
+    }
 }
