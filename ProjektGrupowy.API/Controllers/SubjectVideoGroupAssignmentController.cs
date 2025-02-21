@@ -86,4 +86,11 @@ public class SubjectVideoGroupAssignmentController(ISubjectVideoGroupAssignmentS
         return NoContent();
     }
 
+    [HttpPost("{assignmentId}/assign-labeler/{labelerId}")]
+    public async Task<IActionResult> AssignLabelerToSubjectVideoGroup(int assignmentId, int labelerId)
+    {
+        var result = await subjectVideoGroupAssignmentService.AssignLabelerToAssignmentAsync(assignmentId, labelerId);
+        return result.IsSuccess ? Ok("Labeler assigned successfully") : NotFound();
+    }
+
 }
