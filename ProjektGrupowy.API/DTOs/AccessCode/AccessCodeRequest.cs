@@ -7,8 +7,4 @@ public class AccessCodeRequest
     [Required]
     [StringLength(16, MinimumLength = 16)]
     public string Code { get; set; }
-
-    [Required]
-    [Range(1, int.MaxValue)]
-    public int ProjectId { get; set; }
 }

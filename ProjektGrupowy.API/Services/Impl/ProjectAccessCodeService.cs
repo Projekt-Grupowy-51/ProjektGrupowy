@@ -20,7 +20,7 @@ public class ProjectAccessCodeService(
 
             var accessCode = accessCodeOpt.GetValueOrThrow();
 
-            return accessCode.IsValid && accessCode.Project.Id == accessCodeRequest.ProjectId;
+            return accessCode.IsValid;
         }
         catch (Exception e)
         {

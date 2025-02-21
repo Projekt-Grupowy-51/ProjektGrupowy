@@ -9,7 +9,6 @@ namespace ProjektGrupowy.API.Services.Impl;
 public class ProjectService(
     IProjectRepository projectRepository,
     IScientistRepository scientistRepository,
-    IProjectAccessCodeRepository projectAccessCodeRepository,
     ILabelerRepository labelerRepository)
     : IProjectService
 {
@@ -69,54 +68,27 @@ public class ProjectService(
 
     public async Task<Optional<bool>> AddLabelerToProjectAsync(LabelerAssignmentDto labelerAssignmentDto)
     {
-        var projectId = labelerAssignmentDto.ProjectId;
-        var projectByIdOpt = await projectRepository.GetProjectAsync(projectId);
-        var labelerId = labelerAssignmentDto.LabelerId;
+        var projectByCodeOpt = await projectRepository.GetProjectByAccessCodeAsync(labelerAssignmentDto.AccessCode);
+        var labelerByIdOpt = await labelerRepository.GetLabelerAsync(labelerAssignmentDto.LabelerId);
 
-        if (projectByIdOpt.IsFailure) 
+        if (projectByCodeOpt.IsFailure) 
         {
             return Optional<bool>.Failure("No project found!");
         }
 
-        var code = labelerAssignmentDto.AccessCode;
-        var projectByCodeOpt = await projectAccessCodeRepository
-            .GetAccessCodeByCodeAsync(code);
-
-        if (projectByCodeOpt.IsFailure)
-        {
-            return Optional<bool>.Failure("No project found!");
-        }
-
-        // Check if project id and access code project id match
-        if (projectByIdOpt.GetValueOrThrow().Id != projectByCodeOpt.GetValueOrThrow().Project.Id)
-        {
-            return Optional<bool>.Failure("Project id and access code project id do not match!");
-        }
-
-        var project = projectByIdOpt.GetValueOrThrow();
-
-        // Round robin
-        var videoGroupAssignment = project
-            .Subjects
-            .SelectMany(s => s.SubjectVideoGroupAssignments)
-            .MinBy(sv => sv.Labelers.Count);
-
-        if (videoGroupAssignment is null)
-        {
-            return Optional<bool>.Failure("No video group assignments found!");
-        }
-
-        var labelerOpt = await labelerRepository.GetLabelerAsync(labelerId);
-        if (labelerOpt.IsFailure)
+        if (labelerByIdOpt.IsFailure)
         {
             return Optional<bool>.Failure("No labeler found!");
         }
 
-        var labeler = labelerOpt.GetValueOrThrow();
+        var project = projectByCodeOpt.GetValueOrThrow();
+        var labeler = labelerByIdOpt.GetValueOrThrow();
 
-        videoGroupAssignment.Labelers.Add(labeler);
+        labeler.ProjectLabelers.Add(project);
+        project.ProjectLabelers.Add(labeler);
 
         await projectRepository.UpdateProjectAsync(project);
+        await labelerRepository.UpdateLabelerAsync(labeler);
 
         return Optional<bool>.Success(true);
     }

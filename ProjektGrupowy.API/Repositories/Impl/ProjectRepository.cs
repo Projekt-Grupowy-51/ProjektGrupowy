@@ -45,6 +45,31 @@ public class ProjectRepository(AppDbContext context, ILogger<ProjectRepository> 
     public Task<Optional<IEnumerable<Project>>> GetProjectsOfScientist(Scientist scientist) =>
         GetProjectsOfScientist(scientist.Id);
 
+    public async Task<Optional<Project>> GetProjectByAccessCodeAsync(string code)
+    {
+        try
+        {
+            // Nested loops and two index lookups "IX_ProjectAccessCode_Code" on "ProjectAccessCodes"
+            // and "PK_Projects" on "Projects"
+            var validAccessCode = await context
+                .ProjectAccessCodes
+                .AsNoTracking()
+                .Where(p => p.Code == code)
+                .Where(p => p.ExpiresAtUtc == null || p.ExpiresAtUtc > DateTime.UtcNow)
+                .Include(projectAccessCode => projectAccessCode.Project)
+                .SingleOrDefaultAsync();
+
+            return validAccessCode is null
+                ? Optional<Project>.Failure("There is no valid access code for this project.")
+                : Optional<Project>.Success(validAccessCode.Project);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "An error occurred while getting the project by access code.");
+            return Optional<Project>.Failure(e.Message);
+        }
+    }
+
     public async Task DeleteScientistAsync(Scientist scientist)
     {
         try

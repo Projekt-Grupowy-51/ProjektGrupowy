@@ -54,7 +54,7 @@ public class ProjectController(IProjectService projectService, ISubjectService s
             : BadRequest(p.GetErrorOrThrow());
     }
 
-    [HttpPost("assignment")]
+    [HttpPost("join")]
     public async Task<IActionResult> AssignLabelerToGroupAssignment(LabelerAssignmentDto laveAssignmentDto)
     {
         var result = await projectService.AddLabelerToProjectAsync(laveAssignmentDto);

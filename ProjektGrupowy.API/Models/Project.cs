@@ -20,13 +20,16 @@ public class Project
     public DateOnly CreationDate { get; set; }
     
     public DateOnly? ModificationDate { get; set; }
-    
+        
     public DateOnly? EndDate { get; set; }
 
     public virtual ICollection<Video>? Videos { get; set; } = new List<Video>();
 
     public virtual ICollection<Subject>? Subjects { get; set; } = new List<Subject>();
     public virtual ICollection<ProjectAccessCode>? AccessCodes { get; set; } = new List<ProjectAccessCode>();
+
+    // Many-to-Many Relation
+    public virtual ICollection<Labeler> ProjectLabelers { get; set; } = new List<Labeler>();
 
     [Required]
     public virtual Scientist Scientist { get; set; }

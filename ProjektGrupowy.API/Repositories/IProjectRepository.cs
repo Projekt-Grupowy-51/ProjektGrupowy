@@ -15,5 +15,7 @@ public interface IProjectRepository
     Task<Optional<IEnumerable<Project>>> GetProjectsOfScientist(int scientistId);
     Task<Optional<IEnumerable<Project>>> GetProjectsOfScientist(Scientist scientist);
 
+    Task<Optional<Project>> GetProjectByAccessCodeAsync(string code);
+
     Task<IDbContextTransaction> BeginTransactionAsync();
 }
