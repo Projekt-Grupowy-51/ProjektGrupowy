@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 using ProjektGrupowy.API.Data;
 using ProjektGrupowy.API.Models;
 using ProjektGrupowy.API.Utils;
+using System.Linq;
 
 namespace ProjektGrupowy.API.Repositories.Impl;
 
