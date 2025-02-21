@@ -96,4 +96,9 @@ public class SubjectVideoGroupAssignmentService(ISubjectVideoGroupAssignmentRepo
     {
         return await subjectVideoGroupAssignmentRepository.GetSubjectVideoGroupAssignmentAsignedLabelsAsync(id);
     }
+
+    public async Task<Optional<SubjectVideoGroupAssignment>> AssignLabelerToAssignmentAsync(int assignmentId, int labelerId)
+    {
+        return await subjectVideoGroupAssignmentRepository.AssignLabelerToAssignmentAsync(assignmentId, labelerId);
+    }
 }

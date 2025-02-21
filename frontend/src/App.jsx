@@ -15,6 +15,7 @@ import EditProjectPage from './pages/ProjectEdit';
 import AddLabel from './pages/LabelAdd';
 import EditLabel from './pages/LabelEdit';
 import SubjectVideoGroupAssignmentDetails from './pages/SubjectVideoGroupAssignmentDetails';
+import LabelerVideoGroups from './pages/LabelerVideoGroups';
 import Login from './pages/Login';
 
 // Utwórz kontekst uwierzytelnienia
@@ -82,7 +83,7 @@ const Navbar = () => {
                 {isAuthenticated ? (
                     <>
                         <li><Link to="/projects" className="nav-link">Scientist</Link></li>
-                        <li><Link to="/videos/1" className="nav-link">User</Link></li>
+                        <li><Link to="/labeler-video-groups/1" className="nav-link">User</Link></li>
                         <li><button onClick={handleLogout} className="nav-link logout-btn">Logout</button></li>
                     </>
                 ) : (
@@ -119,6 +120,7 @@ function App() {
                         <Route path="/video/:id" element={<Video />} />
 
                         <Route path="/subject-video-group-assignments/:id" element={<SubjectVideoGroupAssignmentDetails />} />
+                        <Route path="/labeler-video-groups/:id" element={<LabelerVideoGroups />} />
 
                         <Route path="/labels/add" element={<AddLabel />} />
                         <Route path="/labels/edit/:id" element={<EditLabel />} />

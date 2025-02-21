@@ -136,4 +136,36 @@ public class SubjectVideoGroupAssignmentRepository(
             return Optional<IEnumerable<AssignedLabel>>.Failure(e.Message);
         }
     }
+
+    public async Task<Optional<SubjectVideoGroupAssignment>> AssignLabelerToAssignmentAsync(int assignmentId, int labelerId)
+    {
+        var assignment = await context.SubjectVideoGroupAssignments
+            .Include(a => a.Labelers)
+            .FirstOrDefaultAsync(a => a.Id == assignmentId);
+
+        if (assignment == null)
+        {
+            return Optional<SubjectVideoGroupAssignment>.Failure("SubjectVideoGroupAssignment not found");
+        }
+
+        var labeler = await context.Labelers.FindAsync(labelerId);
+        if (labeler == null)
+        {
+            return Optional<SubjectVideoGroupAssignment>.Failure("Labeler not found");
+        }
+
+        if (assignment.Labelers == null)
+        {
+            assignment.Labelers = new List<Labeler>();
+        }
+
+        if (!assignment.Labelers.Contains(labeler))
+        {
+            assignment.Labelers.Add(labeler);
+            await context.SaveChangesAsync();
+            return Optional<SubjectVideoGroupAssignment>.Success(assignment);
+        }
+
+        return Optional<SubjectVideoGroupAssignment>.Failure("Labeler is already assigned to this SubjectVideoGroupAssignment");
+    }
 }
