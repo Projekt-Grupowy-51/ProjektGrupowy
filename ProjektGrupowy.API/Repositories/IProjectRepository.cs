@@ -17,5 +17,7 @@ public interface IProjectRepository
 
     Task<Optional<Project>> GetProjectByAccessCodeAsync(string code);
 
+    Task<Optional<Dictionary<int, int>>> GetLabelerCountForAssignments(int projectId);
+
     Task<IDbContextTransaction> BeginTransactionAsync();
 }
