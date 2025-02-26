@@ -12,4 +12,6 @@ public interface ILabelerRepository
     Task DeleteLabelerAsync(Labeler labeler);
 
     Task<Optional<Labeler>> GetLabelerByUserIdAsync(string userId);
+
+    Task<Optional<IEnumerable<Labeler>>> GetUnassignedLabelersOfProjectAsync(int projectId);
 }

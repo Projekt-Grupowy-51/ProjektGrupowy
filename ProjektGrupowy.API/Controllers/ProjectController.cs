@@ -177,6 +177,15 @@ public class ProjectController(IProjectService projectService, ISubjectService s
             : BadRequest(result.GetErrorOrThrow());
     }
 
+    [HttpPost("{projectId:int}/distribute")]
+    public async Task<IActionResult> DistributeLabelersEqually(int projectId)
+    {
+        var result = await projectService.DistributeLabelersEquallyAsync(projectId);
+        return result.IsSuccess 
+            ? Ok(result.GetValueOrThrow())
+            : NotFound(result.GetErrorOrThrow());
+    }
+
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteProject(int id)
     {

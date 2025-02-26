@@ -16,4 +16,6 @@ public interface IProjectService
     Task<Optional<bool>> AddLabelerToProjectAsync(LabelerAssignmentDto labelerAssignmentDto);
 
     Task DeleteProjectAsync(int id);
+
+    Task<Optional<bool>> DistributeLabelersEquallyAsync(int projectId);
 }
