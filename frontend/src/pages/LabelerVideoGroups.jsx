@@ -58,7 +58,7 @@ const LabelerVideoGroups = () => {
                                         <td>{assignment.subjectId}</td>
                                         <td>{assignment.videoGroupId}</td>
                                     <td>
-                                            <button className="details-btn" onClick={() => navigate(`/video/${assignment.videoGroupId}`)}>Details</button>
+                                        <button className="details-btn" onClick={() => navigate(`/video/${assignment.id}`)}>Details</button>
                                     </td>
                                 </tr>
                             ))}

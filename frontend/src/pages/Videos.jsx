@@ -1,108 +1,186 @@
 ﻿import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
+import httpClient from '../httpClient';
 import './css/ScientistProjects.css';
 
 const Videos = () => {
-    const { id } = useParams(); // Get `id` from URL
-    const [videos, setVideos] = useState([]); // Renamed from labels to videos
-    const [streams, setStreams] = useState([]); // State for video streams
-    const [isPlaying, setIsPlaying] = useState(false); // Play/Stop state
-    const [currentTime, setCurrentTime] = useState(0); // Shared current time for all videos
-    const [duration, setDuration] = useState(0); // Shared video duration
-    const videoRefs = useRef([]); // Refs for video elements
-    const navigate = useNavigate();
+    const { id } = useParams();
+    const [videos, setVideos] = useState([]);
+    const [streams, setStreams] = useState([]);
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [labels, setLabels] = useState([]);
+    const [assignedLabels, setAssignedLabels] = useState([]);  // Przypisane etykiety
+    const [subjectId, setSubjectId] = useState(null);
+    const [labelTimestamps, setLabelTimestamps] = useState({});
+    const [currentTime, setCurrentTime] = useState(0);
+    const [duration, setDuration] = useState(0);
+    const videoRefs = useRef([]);
 
-    // Fetch video group details
-    async function fetchVideoGroupDetails() {
-        try {
-            const response = await fetch(`http://localhost:5000/api/videogroup/${id}`);
-            if (!response.ok) {
-                throw new Error('Failed to fetch video group details');
-            }
-            const data = await response.json();
-            //setVideoGroupDetails(data);
-            fetchVideos(data); // Fetch videos associated with the video group
-        } catch (error) {
-            console.error('Error fetching video group details:', error);
+    useEffect(() => {
+        if (id) {
+            fetchVideoGroupDetails(id);
+            fetchSubjectId();
         }
-    }
+    }, [id]);
 
-    // Fetch the list of videos
-    async function fetchVideos(videoGroupData) {
-        try {
-            const response = await fetch(`http://localhost:5000/api/VideoGroup/${id}/videos`);
-            if (!response.ok) {
-                throw new Error('Failed to fetch videos');
-            }
-            const data = await response.json();
-            setVideos(data); // Set the fetched video data
-
-            // Fetch video streams after fetching videos
-            fetchVideoStreams(data);
-        } catch (error) {
-            console.error('Error fetching videos:', error);
+    useEffect(() => {
+        if (subjectId !== null) {
+            fetchLabels();
+            fetchAssignedLabels();  // Pobranie przypisanych etykiet
         }
-    }
+    }, [subjectId]);
 
-    // Fetch video stream URLs for a given set of videos
+    const fetchVideoGroupDetails = async (videoId) => {
+        try {
+            const response = await httpClient.get(`/VideoGroup/${videoId}`, { withCredentials: true });
+            setVideos(response.data.videos || []);
+            fetchVideos(response.data.videos || []);
+        } catch (error) {
+            console.error('Failed to load video group details');
+        }
+    };
+
+    const fetchVideos = async () => {
+        try {
+            const response = await httpClient.get(`/VideoGroup/${id}/videos`, { withCredentials: true });
+            setVideos(response.data);
+            fetchVideoStreams(response.data);
+        } catch (error) {
+            console.error('Failed to load video list');
+        }
+    };
+
     async function fetchVideoStreams(videos) {
         const videoIds = videos.slice(0, 4).map((video) => video.id);
         const streamsPromises = videoIds.map(async (videoId) => {
-            const response = await fetch(`http://localhost:5000/api/Video/${videoId}/stream`);
-            if (!response.ok) {
-                throw new Error('Failed to fetch video stream');
+            try {
+                const response = await httpClient.get(`/Video/${videoId}/stream`, {
+                    withCredentials: true,
+                    responseType: 'blob'
+                });
+                return URL.createObjectURL(response.data);
+            } catch (error) {
+                return null;
             }
-            return response.url; // Get the stream URL
         });
 
         try {
             const streamUrls = await Promise.all(streamsPromises);
-            setStreams(streamUrls); // Set the stream URLs for the 4 videos
+            setStreams(streamUrls.filter(url => url !== null));
         } catch (error) {
             console.error('Error fetching video streams:', error);
         }
     }
 
-    // Fetch video group details when component is mounted
-    useEffect(() => {
-        if (id) fetchVideoGroupDetails();
-    }, [id]);
+    const fetchSubjectId = async () => {
+        try {
+            const response = await httpClient.get(`/SubjectVideoGroupAssignment/${id}`, { withCredentials: true });
+            setSubjectId(response.data.subjectId || null);
+        } catch (error) {
+            console.error('Error fetching subject video group assignment:', error);
+        }
+    };
 
-    // Handle play/stop for all videos
+    const fetchLabels = async () => {
+        if (subjectId === null) return;
+
+        try {
+            const response = await httpClient.get(`/Label/${subjectId}/subject`, { withCredentials: true });
+            setLabels(response.data || []);
+        } catch (error) {
+            console.error('Error fetching labels:', error);
+        }
+    };
+
+    const fetchAssignedLabels = async () => {
+        if (subjectId === null) return;
+
+        try {
+            const response = await httpClient.get(`/AssignedLabel`, { withCredentials: true });
+            setAssignedLabels(response.data || []);
+        } catch (error) {
+            console.error('Error fetching assigned labels:', error);
+        }
+    };
+
     const handlePlayStop = () => {
         if (isPlaying) {
-            // Pause all videos
             videoRefs.current.forEach((video) => video.pause());
         } else {
-            // Play all videos
             videoRefs.current.forEach((video) => video.play());
         }
-        setIsPlaying(!isPlaying); // Toggle play/stop state
+        setIsPlaying(!isPlaying);
     };
 
-    // Handle scrubbing the timeline
-    const handleTimelineChange = (event) => {
-        const newTime = parseFloat(event.target.value);
-        setCurrentTime(newTime); // Update shared time
-        videoRefs.current.forEach((video) => video.currentTime = newTime); // Set the new time for all videos
+    const handleLabelClick = async (labelId) => {
+        const video = videoRefs.current[0];
+        if (!video) return;
+
+        const time = video.currentTime;
+        setLabelTimestamps((prev) => {
+            if (prev[labelId] && !prev[labelId].sent) {
+                sendLabelData(labelId, prev[labelId].start, time);
+                const newTimestamps = { ...prev };
+                newTimestamps[labelId].sent = true;
+                return newTimestamps;
+            } else {
+                return { ...prev, [labelId]: { start: time, sent: false } };
+            }
+        });
     };
 
-    // Handle video time updates
-    const handleTimeUpdate = () => {
-        // Find the maximum current time across all videos
-        const maxTime = Math.max(...videoRefs.current.map((video) => video.currentTime));
-        setCurrentTime(maxTime); // Update the shared current time
+    const formatTime = (seconds) => {
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const remainingSeconds = Math.floor(seconds % 60);
+
+        return `${padZero(hours)}:${padZero(minutes)}:${padZero(remainingSeconds)}`;
     };
 
-    // Set video duration once the first video has been loaded
-    const setVideoDuration = () => {
-        if (videoRefs.current[0]) {
-            setDuration(videoRefs.current[0].duration);
+    const padZero = (num) => num.toString().padStart(2, '0');
+
+    const sendLabelData = async (labelId, start, end) => {
+        const labelerId = 1;
+        const startFormatted = formatTime(start);
+        const endFormatted = formatTime(end);
+
+        const data = {
+            labelId,
+            subjectVideoGroupAssignmentId: subjectId,
+            labelerId,
+            start: startFormatted,
+            end: endFormatted
+        };
+
+        const newAssignedLabel = {
+            labelId,
+            start: startFormatted, 
+            end: endFormatted,
+            colorHex: labels.find((label) => label.id === labelId)?.colorHex || '#000000',
+        };
+
+        try {
+            await httpClient.post('/AssignedLabel', data, { withCredentials: true });
+            setAssignedLabels((prevLabels) => [...prevLabels, newAssignedLabel]); 
+            setLabelTimestamps((prev) => {
+                const newTimestamps = { ...prev };
+                if (newTimestamps[labelId]) {
+                    newTimestamps[labelId].sent = true;
+                }
+                return newTimestamps;
+            });
+        } catch (error) {
+            console.error('Error assigning label:', error);
         }
     };
 
-    // Check if videos exists before rendering
-    if (!videos) return <div>Loading...</div>;
+    const handleTimeUpdate = () => {
+        const video = videoRefs.current[0];
+        if (video) {
+            setCurrentTime(video.currentTime);
+            setDuration(video.duration);
+        }
+    };
 
     return (
         <div className="container">
@@ -118,11 +196,9 @@ const Videos = () => {
                                     height="200"
                                     src={streamUrl}
                                     type="video/mp4"
+                                    controls
                                     onTimeUpdate={handleTimeUpdate}
-                                    onLoadedMetadata={setVideoDuration}
-                                >
-                                    Your browser does not support the video tag.
-                                </video>
+                                />
                             </div>
                         ))
                     ) : (
@@ -130,34 +206,71 @@ const Videos = () => {
                     )}
                 </div>
 
-                <div className="timeline-container">
-                    <input
-                        type="range"
-                        min="0"
-                        max={duration}
-                        value={currentTime}
-                        onChange={handleTimelineChange}
-                        step="0.1"
-                        className="timeline"
-                    />
-                    <span>{Math.floor(currentTime)} / {Math.floor(duration)} sec</span>
+                <div className="controls">
+                    <button className="play-stop-btn" onClick={handlePlayStop}>
+                        {isPlaying ? 'Stop All Videos' : 'Play All Videos'}
+                    </button>
+
+                    <div className="progress-bar">
+                        <input
+                            type="range"
+                            min="0"
+                            max={duration || 100}
+                            value={currentTime}
+                            onChange={(e) => {
+                                const video = videoRefs.current[0];
+                                if (video) {
+                                    video.currentTime = e.target.value;
+                                    setCurrentTime(e.target.value);
+                                }
+                            }}
+                        />
+                        <span>{currentTime.toFixed(2)} / {duration.toFixed(2)} s</span>
+                    </div>
                 </div>
 
-                <button className="play-stop-btn" onClick={handlePlayStop}>
-                    {isPlaying ? 'Stop All Videos' : 'Play All Videos'}
-                </button>
-                <button className="label-btn" style={{backgroundColor: 'red'}}>
-                    Label1
-                </button>
-                <button className="label-btn" style={{backgroundColor: 'green'}}>
-                    Label2
-                </button>
-                <button className="label-btn" style={{backgroundColor: 'yellow'}}>
-                    Label3
-                </button>
-                <button className="label-btn" style={{backgroundColor: 'blue'}}>
-                    Label4
-                </button>
+                <div className="labels-container">
+                    {labels.length > 0 ? (
+                        labels.map((label, index) => (
+                            <button
+                                key={index}
+                                className="label-btn"
+                                style={{ backgroundColor: label.colorHex }}
+                                onClick={() => handleLabelClick(label.id)}
+                            >
+                                {label.name} {'[' + label.shortcut + ']'}
+                            </button>
+                        ))
+                    ) : (
+                        <p>No labels available</p>
+                    )}
+                </div>
+
+                <div className="assigned-labels">
+                    <h3>Assigned Labels:</h3>
+                    {assignedLabels.length > 0 ? (
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Label ID</th>
+                                    <th>Start Time</th>
+                                    <th>End Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {assignedLabels.map((label, index) => (
+                                    <tr key={index}>
+                                        <td>{label.labelId}</td>
+                                        <td>{label.start}</td>
+                                        <td>{label.end}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    ) : (
+                        <p>No labels assigned yet</p>
+                    )}
+                </div>
             </div>
         </div>
     );
