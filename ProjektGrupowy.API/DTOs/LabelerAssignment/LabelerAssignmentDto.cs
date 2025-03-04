@@ -9,10 +9,6 @@ public class LabelerAssignmentDto
     public int LabelerId { get; set; }
 
     [Required]
-    [Range(1, int.MaxValue)]
-    public int ProjectId { get; set; }
-
-    [Required]
     [StringLength(16, MinimumLength = 16)]
     public string AccessCode { get; set; }
 }

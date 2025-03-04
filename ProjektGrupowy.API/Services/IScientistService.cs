@@ -13,4 +13,6 @@ public interface IScientistService
     Task<Optional<Scientist>> UpdateScientistAsync(int scientistId, ScientistRequest scientistRequest);
     Task DeleteScientistAsync(int id);
     Task<Optional<Scientist>> AddScientistWithUser(ScientistRequest scientistRequest, User user);
+
+    Task<Optional<Scientist>> GetScientistByUserIdAsync(string userId);
 }

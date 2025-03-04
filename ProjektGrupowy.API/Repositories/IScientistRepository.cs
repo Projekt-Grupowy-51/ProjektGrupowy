@@ -13,4 +13,6 @@ public interface IScientistRepository
     Task DeleteScientistAsync(Scientist scientist);
 
     Task<IDbContextTransaction> BeginTransactionAsync();
+
+    Task<Optional<Scientist>> GetScientistByUserIdAsync(string userId);
 }

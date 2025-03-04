@@ -64,4 +64,9 @@ public class ScientistService(IScientistRepository scientistRepository) : IScien
 
         return await scientistRepository.UpdateScientistAsync(scientist);
     }
+
+    public async Task<Optional<Scientist>> GetScientistByUserIdAsync(string userId)
+    {
+        return await scientistRepository.GetScientistByUserIdAsync(userId);
+    }
 }

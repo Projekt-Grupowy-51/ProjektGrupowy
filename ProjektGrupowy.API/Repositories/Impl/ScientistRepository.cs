@@ -82,4 +82,20 @@ public class ScientistRepository(AppDbContext context, ILogger<ScientistReposito
     }
 
     public async Task<IDbContextTransaction> BeginTransactionAsync() => await context.Database.BeginTransactionAsync();
+
+    public async Task<Optional<Scientist>> GetScientistByUserIdAsync(string userId)
+    {
+        try
+        {
+            var scientist = await context.Scientists.FirstOrDefaultAsync(s => s.User.Id == userId);
+            return scientist is null
+                ? Optional<Scientist>.Failure("Scientist not found")
+                : Optional<Scientist>.Success(scientist);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Failed to get scientist by user id");
+            return Optional<Scientist>.Failure(e.Message);
+        }
+    }
 }

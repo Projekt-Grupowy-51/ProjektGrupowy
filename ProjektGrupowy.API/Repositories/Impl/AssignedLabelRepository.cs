@@ -81,4 +81,32 @@ public class AssignedLabelRepository(AppDbContext context, ILogger<AssignedLabel
             logger.LogError(e, "An error occurred while deleting assigned label");
         }
     }
+
+    public async Task<Optional<IEnumerable<AssignedLabel>>> GetAssignedLabelsByLabelerIdAsync(int labelerId)
+    {
+        try
+        {
+            var assignedLabels = await context.AssignedLabels.Where(a => a.Labeler.Id == labelerId).ToListAsync();
+            return Optional<IEnumerable<AssignedLabel>>.Success(assignedLabels);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "An error occurred while getting assigned labels by labeler");
+            return Optional<IEnumerable<AssignedLabel>>.Failure(e.Message);
+        }
+    }
+
+    public async Task<Optional<IEnumerable<AssignedLabel>>> GetAssignedLabelsByScientistIdAsync(int scientistId)
+    {
+        try
+        {
+            var assignedLabels = await context.AssignedLabels.Where(a => a.SubjectVideoGroupAssignment.Subject.Project.Scientist.Id == scientistId).ToListAsync();
+            return Optional<IEnumerable<AssignedLabel>>.Success(assignedLabels);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "An error occurred while getting assigned labels by scientist");
+            return Optional<IEnumerable<AssignedLabel>>.Failure(e.Message);
+        }
+    }
 }

@@ -112,6 +112,7 @@ function App() {
                         <Route path="/subjects/add" element={<AddSubject />} />
 
                         <Route path="/video-groups" element={<VideoGroups />} />
+                        <Route path="/video-groups/add" element={<AddVideoGroup />} />
                         <Route path="/video-groups/:id" element={<VideoGroupsDetails />} />
 
                         <Route path="/videos/:id" element={<Video />} />
@@ -119,6 +120,7 @@ function App() {
 
                         <Route path="/video/:id" element={<Video />} />
 
+                        <Route path="/assignments/:id" element={<SubjectVideoGroupAssignmentDetails />} />
                         <Route path="/subject-video-group-assignments/:id" element={<SubjectVideoGroupAssignmentDetails />} />
                         <Route path="/labeler-video-groups/:id" element={<LabelerVideoGroups />} />
 

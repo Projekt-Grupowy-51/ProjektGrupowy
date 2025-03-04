@@ -218,7 +218,7 @@ const ProjectDetails = () => {
                                                 <td>{assignment.subjectId}</td>
                                                 <td>{assignment.videoGroupId}</td>
                                                 <td>
-                                                    <Link to={`/subject-video-group-assignments/${assignment.id}`}>
+                                                    <Link to={`/assignments/${assignment.id}`}>
                                                         <button className="details-btn">View</button>
                                                     </Link>
                                                     <button

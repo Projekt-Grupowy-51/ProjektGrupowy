@@ -9,7 +9,7 @@ namespace ProjektGrupowy.API.Services.Impl;
 public class ProjectService(
     IProjectRepository projectRepository,
     IScientistRepository scientistRepository,
-    IProjectAccessCodeRepository projectAccessCodeRepository,
+    ISubjectVideoGroupAssignmentRepository subjectVideoGroupAssignmentRepository,
     ILabelerRepository labelerRepository)
     : IProjectService
 {
@@ -69,54 +69,27 @@ public class ProjectService(
 
     public async Task<Optional<bool>> AddLabelerToProjectAsync(LabelerAssignmentDto labelerAssignmentDto)
     {
-        var projectId = labelerAssignmentDto.ProjectId;
-        var projectByIdOpt = await projectRepository.GetProjectAsync(projectId);
-        var labelerId = labelerAssignmentDto.LabelerId;
-
-        if (projectByIdOpt.IsFailure) 
-        {
-            return Optional<bool>.Failure("No project found!");
-        }
-
-        var code = labelerAssignmentDto.AccessCode;
-        var projectByCodeOpt = await projectAccessCodeRepository
-            .GetAccessCodeByCodeAsync(code);
+        var projectByCodeOpt = await projectRepository.GetProjectByAccessCodeAsync(labelerAssignmentDto.AccessCode);
+        var labelerByIdOpt = await labelerRepository.GetLabelerAsync(labelerAssignmentDto.LabelerId);
 
         if (projectByCodeOpt.IsFailure)
         {
             return Optional<bool>.Failure("No project found!");
         }
 
-        // Check if project id and access code project id match
-        if (projectByIdOpt.GetValueOrThrow().Id != projectByCodeOpt.GetValueOrThrow().Project.Id)
-        {
-            return Optional<bool>.Failure("Project id and access code project id do not match!");
-        }
-
-        var project = projectByIdOpt.GetValueOrThrow();
-
-        // Round robin
-        var videoGroupAssignment = project
-            .Subjects
-            .SelectMany(s => s.SubjectVideoGroupAssignments)
-            .MinBy(sv => sv.Labelers.Count);
-
-        if (videoGroupAssignment is null)
-        {
-            return Optional<bool>.Failure("No video group assignments found!");
-        }
-
-        var labelerOpt = await labelerRepository.GetLabelerAsync(labelerId);
-        if (labelerOpt.IsFailure)
+        if (labelerByIdOpt.IsFailure)
         {
             return Optional<bool>.Failure("No labeler found!");
         }
 
-        var labeler = labelerOpt.GetValueOrThrow();
+        var project = projectByCodeOpt.GetValueOrThrow();
+        var labeler = labelerByIdOpt.GetValueOrThrow();
 
-        videoGroupAssignment.Labelers.Add(labeler);
+        labeler.ProjectLabelers.Add(project);
+        project.ProjectLabelers.Add(labeler);
 
         await projectRepository.UpdateProjectAsync(project);
+        await labelerRepository.UpdateLabelerAsync(labeler);
 
         return Optional<bool>.Success(true);
     }
@@ -128,5 +101,117 @@ public class ProjectService(
         {
             await projectRepository.DeleteProjectAsync(project.GetValueOrThrow());
         }
+    }
+
+    public async Task<Optional<bool>> DistributeLabelersEquallyAsync(int projectId)
+    {
+        var projectOptional = await projectRepository.GetProjectAsync(projectId);
+        if (projectOptional.IsFailure)
+        {
+            return Optional<bool>.Failure("No project found!");
+        }
+
+        var unassignedLabelersResult = await labelerRepository.GetUnassignedLabelersOfProjectAsync(projectId);
+
+        if (unassignedLabelersResult.IsFailure)
+        {
+            return Optional<bool>.Failure("No labelers found!");
+        }
+
+        var unassignedLabelers = unassignedLabelersResult.GetValueOrThrow().ToList();
+
+        return await AssignEquallyAsync(projectId, unassignedLabelers);
+    }
+
+    private async Task<Optional<bool>> AssignEquallyAsync(int projectId, IReadOnlyCollection<Labeler> labelers)
+    {
+        var countResult = await projectRepository.GetLabelerCountForAssignments(projectId);
+        if (countResult.IsFailure)
+        {
+            return Optional<bool>.Failure("Failed to get labeler count for assignments");
+        }
+
+        var assignmentsCount = countResult.GetValueOrThrow();
+
+        var n = assignmentsCount.Count;
+        var totalSize = assignmentsCount.Values.Sum() + labelers.Count;
+        var targetSize = totalSize / n;
+
+        var remaining = labelers.Count;
+        var assigned = 0;
+
+        await using var transaction = await projectRepository.BeginTransactionAsync();
+
+        try
+        {
+            foreach (var (assignmentId, labelerCount) in assignmentsCount)
+            {
+                var toAssign = Math.Max(0, targetSize - labelerCount);
+
+                if (toAssign == 0)
+                {
+                    continue;
+                }
+
+                var toAssignList = labelers
+                    .Skip(assigned)
+                    .Take(toAssign);
+
+                var assignResult = await AssignLabelerToAssignmentAsync(assignmentId, toAssignList);
+
+                if (assignResult.IsFailure)
+                {
+                    await transaction.RollbackAsync();
+                    return Optional<bool>.Failure("Failed to assign labeler to assignment");
+                }
+
+                assigned += toAssign;
+                remaining -= toAssign;
+            }
+
+            // Handle remaining labelers
+            if (remaining > 0)
+            {
+                var lastAssignmentId = assignmentsCount.Keys.Last();
+                var assignResult = await AssignLabelerToAssignmentAsync(lastAssignmentId, labelers.Skip(assigned));
+                if (assignResult.IsFailure)
+                {
+                    await transaction.RollbackAsync();
+                    return Optional<bool>.Failure("Failed to assign labeler to assignment");
+                }
+            }
+
+            await transaction.CommitAsync();
+            return Optional<bool>.Success(true);
+        }
+        catch (Exception e)
+        {
+            await transaction.RollbackAsync();
+            return Optional<bool>.Failure(e.Message);
+        }
+    }
+
+    private async Task<Optional<bool>> AssignLabelerToAssignmentAsync(int assignmentId, IEnumerable<Labeler> labelers)
+    {
+        var assignmentOptional =
+            await subjectVideoGroupAssignmentRepository.GetSubjectVideoGroupAssignmentAsync(assignmentId);
+        if (assignmentOptional.IsFailure)
+        {
+            return Optional<bool>.Failure("No assignment found!");
+        }
+
+        var assignment = assignmentOptional.GetValueOrThrow();
+
+        foreach (var labeler in labelers)
+        {
+            assignment.Labelers!.Add(labeler);
+            labeler.SubjectVideoGroups.Add(assignment);
+
+            await labelerRepository.UpdateLabelerAsync(labeler);
+        }
+
+        await subjectVideoGroupAssignmentRepository.UpdateSubjectVideoGroupAssignmentAsync(assignment);
+
+        return Optional<bool>.Success(true);
     }
 }

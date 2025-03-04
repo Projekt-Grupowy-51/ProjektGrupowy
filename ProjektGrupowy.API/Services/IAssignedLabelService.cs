@@ -13,4 +13,10 @@ public interface IAssignedLabelService
     Task<Optional<AssignedLabel>> UpdateAssignedLabelAsync(int assignedLabelId,
         AssignedLabelRequest assignedLabelRequest);
     Task DeleteAssignedLabelAsync(int id);
+
+    Task<Optional<IEnumerable<AssignedLabel>>> GetAssignedLabelsByScientistIdAsync(int scientistId);
+    Task<Optional<IEnumerable<AssignedLabel>>> GetAssignedLabelsByLabelerIdAsync(int labelerId);
+
+    Task<bool> IsAssignedToLabelerAsync(int subjectVideoGroupAssignmentId, int labelerId);
+    Task<bool> IsAssignedToScientistAsync(int subjectVideoGroupAssignmentId, int scientistId);
 }

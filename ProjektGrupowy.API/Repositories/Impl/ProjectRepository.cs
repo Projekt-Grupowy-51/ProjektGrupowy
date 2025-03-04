@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
 using ProjektGrupowy.API.Data;
 using ProjektGrupowy.API.Models;
@@ -44,6 +45,56 @@ public class ProjectRepository(AppDbContext context, ILogger<ProjectRepository> 
 
     public Task<Optional<IEnumerable<Project>>> GetProjectsOfScientist(Scientist scientist) =>
         GetProjectsOfScientist(scientist.Id);
+
+    public async Task<Optional<Project>> GetProjectByAccessCodeAsync(string code)
+    {
+        try
+        {
+            // Nested loops and two index lookups "IX_ProjectAccessCode_Code" on "ProjectAccessCodes"
+            // and "PK_Projects" on "Projects"
+            var validAccessCode = await context
+                .ProjectAccessCodes
+                .AsNoTracking()
+                .Where(p => p.Code == code)
+                .Where(p => p.ExpiresAtUtc == null || p.ExpiresAtUtc > DateTime.UtcNow)
+                .Include(projectAccessCode => projectAccessCode.Project)
+                .SingleOrDefaultAsync();
+
+            return validAccessCode is null
+                ? Optional<Project>.Failure("There is no valid access code for this project.")
+                : Optional<Project>.Success(validAccessCode.Project);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "An error occurred while getting the project by access code.");
+            return Optional<Project>.Failure(e.Message);
+        }
+    }
+
+    public async Task<Optional<Dictionary<int, int>>> GetLabelerCountForAssignments(int projectId)
+    {
+        try
+        {
+            var result = await context.SubjectVideoGroupAssignments
+                .Where(svga => svga.VideoGroup.Project.Id == 1)
+                .GroupBy(svga => svga.Id)
+                .Select(g => new
+                {
+                    SubjectVideoGroupAssignmentId = g.Key,
+                    LabelerCount = g.SelectMany(svga => svga.Labelers)
+                        .Distinct()
+                        .Count()
+                })
+                .ToDictionaryAsync(x => x.SubjectVideoGroupAssignmentId, x => x.LabelerCount);
+
+            return Optional<Dictionary<int, int>>.Success(result);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "An error occurred while getting labeler count for assignments");
+            return Optional<Dictionary<int, int>>.Failure(e.Message);
+        }
+    }
 
     public async Task DeleteScientistAsync(Scientist scientist)
     {

@@ -103,4 +103,26 @@ public class AssignedLabelService(
         if (assignedLabel.IsSuccess)
             await assignedLabelRepository.DeleteAssignedLabelAsync(assignedLabel.GetValueOrThrow());
     }
+
+    public async Task<Optional<IEnumerable<AssignedLabel>>> GetAssignedLabelsByScientistIdAsync(int scientistId)
+    {
+        return await assignedLabelRepository.GetAssignedLabelsByScientistIdAsync(scientistId);
+    }
+
+    public async Task<Optional<IEnumerable<AssignedLabel>>> GetAssignedLabelsByLabelerIdAsync(int labelerId)
+    {
+        return await assignedLabelRepository.GetAssignedLabelsByLabelerIdAsync(labelerId);
+    }
+
+    public async Task<bool> IsAssignedToLabelerAsync(int subjectVideoGroupAssignmentId, int labelerId)
+    {
+        var assignedLabels = await assignedLabelRepository.GetAssignedLabelsByLabelerIdAsync(labelerId);
+        return assignedLabels.GetValueOrThrow().Any(al => al.SubjectVideoGroupAssignment.Id == subjectVideoGroupAssignmentId);
+    }
+
+    public async Task<bool> IsAssignedToScientistAsync(int subjectVideoGroupAssignmentId, int scientistId)
+    {
+        var assignedLabels = await assignedLabelRepository.GetAssignedLabelsByScientistIdAsync(scientistId);
+        return assignedLabels.GetValueOrThrow().Any(al => al.SubjectVideoGroupAssignment.Id == subjectVideoGroupAssignmentId);
+    }
 }

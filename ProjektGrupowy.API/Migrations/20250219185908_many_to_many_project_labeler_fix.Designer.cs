@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using ProjektGrupowy.API.Data;
@@ -11,9 +12,11 @@ using ProjektGrupowy.API.Data;
 namespace ProjektGrupowy.API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250219185908_many_to_many_project_labeler_fix")]
+    partial class many_to_many_project_labeler_fix
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -267,14 +270,7 @@ namespace ProjektGrupowy.API.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("UserId")
-                        .IsUnique();
 
                     b.ToTable("Labelers");
                 });
@@ -367,14 +363,7 @@ namespace ProjektGrupowy.API.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("UserId")
-                        .IsUnique();
 
                     b.ToTable("Scientists");
                 });
@@ -676,17 +665,6 @@ namespace ProjektGrupowy.API.Migrations
                     b.Navigation("Subject");
                 });
 
-            modelBuilder.Entity("ProjektGrupowy.API.Models.Labeler", b =>
-                {
-                    b.HasOne("ProjektGrupowy.API.Models.User", "User")
-                        .WithOne("Labeler")
-                        .HasForeignKey("ProjektGrupowy.API.Models.Labeler", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("ProjektGrupowy.API.Models.Project", b =>
                 {
                     b.HasOne("ProjektGrupowy.API.Models.Scientist", "Scientist")
@@ -707,17 +685,6 @@ namespace ProjektGrupowy.API.Migrations
                         .IsRequired();
 
                     b.Navigation("Project");
-                });
-
-            modelBuilder.Entity("ProjektGrupowy.API.Models.Scientist", b =>
-                {
-                    b.HasOne("ProjektGrupowy.API.Models.User", "User")
-                        .WithOne("Scientist")
-                        .HasForeignKey("ProjektGrupowy.API.Models.Scientist", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("ProjektGrupowy.API.Models.Subject", b =>
@@ -810,14 +777,6 @@ namespace ProjektGrupowy.API.Migrations
             modelBuilder.Entity("ProjektGrupowy.API.Models.SubjectVideoGroupAssignment", b =>
                 {
                     b.Navigation("AssignedLabels");
-                });
-
-            modelBuilder.Entity("ProjektGrupowy.API.Models.User", b =>
-                {
-                    b.Navigation("Labeler")
-                        .IsRequired();
-
-                    b.Navigation("Scientist");
                 });
 
             modelBuilder.Entity("ProjektGrupowy.API.Models.VideoGroup", b =>

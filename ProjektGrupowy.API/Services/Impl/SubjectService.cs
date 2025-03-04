@@ -74,4 +74,9 @@ public class SubjectService(ISubjectRepository subjectRepository, IProjectReposi
         if (subject.IsSuccess)
             await subjectRepository.DeleteSubjectAsync(subject.GetValueOrThrow());
     }
+
+    public async Task<Optional<IEnumerable<Subject>>> GetSubjectsByScientistId(int scientistId)
+    {
+        return await subjectRepository.GetSubjectsByScientistId(scientistId);
+    }
 }
