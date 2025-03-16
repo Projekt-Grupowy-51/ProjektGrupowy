@@ -21,7 +21,7 @@ public class VideoRepository(AppDbContext dbContext, ILogger<VideoRepository> lo
         }
     }
 
-    public async Task<Optional<IEnumerable<Video>>> GetVideosAsync(int videoGroupId, int pageSize, int pageNumber)
+    public async Task<Optional<IEnumerable<Video>>> GetVideosAsync(int videoGroupId, int positionInQueue)
     {
         try
         {
@@ -29,9 +29,8 @@ public class VideoRepository(AppDbContext dbContext, ILogger<VideoRepository> lo
             var videos = await dbContext.Videos
                 .AsNoTracking()
                 .Where(v => v.VideoGroupId == videoGroupId)
-                .Where(v => v.PositionInQueue >= pageSize * (pageNumber - 1))
-                .Take(pageSize)
-                .ToArrayAsync();
+                .Where(v => v.PositionInQueue == positionInQueue)
+                .ToListAsync();
 
             return Optional<IEnumerable<Video>>.Success(videos);
         }

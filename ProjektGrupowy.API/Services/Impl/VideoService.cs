@@ -11,7 +11,8 @@ public class VideoService(
     IConfiguration configuration) : IVideoService
 {
     public async Task<Optional<IEnumerable<Video>>> GetVideosAsync() => await videoRepository.GetVideosAsync();
-    public async Task<Optional<IEnumerable<Video>>> GetVideosAsync(int videoGroupId, int pageSize, int pageNumber) => await videoRepository.GetVideosAsync(videoGroupId, pageSize, pageNumber);
+
+    public async Task<Optional<IEnumerable<Video>>> GetVideosAsync(int videoGroupId, int positionInQueue) => await videoRepository.GetVideosAsync(videoGroupId, positionInQueue);
 
     public async Task<Optional<Video>> GetVideoAsync(int id) => await videoRepository.GetVideoAsync(id);
 
@@ -50,14 +51,12 @@ public class VideoService(
             return Optional<Video>.Failure("Error. videoGroup.Videos was null.");
         }
 
-        var currentVideoCount = videoGroup.Videos.Count();
-
         var video = new Video
         {
             Title = videoRequest.Title,
             Path = videoPath,
             VideoGroup = videoGroup,
-            PositionInQueue = currentVideoCount
+            PositionInQueue = videoRequest.PositionInQueue
         };
 
         return await videoRepository.AddVideoAsync(video);
