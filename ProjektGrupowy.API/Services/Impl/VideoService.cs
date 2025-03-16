@@ -11,6 +11,7 @@ public class VideoService(
     IConfiguration configuration) : IVideoService
 {
     public async Task<Optional<IEnumerable<Video>>> GetVideosAsync() => await videoRepository.GetVideosAsync();
+    public async Task<Optional<IEnumerable<Video>>> GetVideosAsync(int videoGroupId, int pageSize, int pageNumber) => await videoRepository.GetVideosAsync(videoGroupId, pageSize, pageNumber);
 
     public async Task<Optional<Video>> GetVideoAsync(int id) => await videoRepository.GetVideoAsync(id);
 
@@ -44,11 +45,19 @@ public class VideoService(
             await videoRequest.File.CopyToAsync(fileStream);
         }
 
+        if (videoGroup.Videos is null)
+        {
+            return Optional<Video>.Failure("Error. videoGroup.Videos was null.");
+        }
+
+        var currentVideoCount = videoGroup.Videos.Count();
+
         var video = new Video
         {
             Title = videoRequest.Title,
             Path = videoPath,
-            VideoGroup = videoGroup
+            VideoGroup = videoGroup,
+            PositionInQueue = currentVideoCount
         };
 
         return await videoRepository.AddVideoAsync(video);

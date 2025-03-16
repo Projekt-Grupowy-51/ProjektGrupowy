@@ -6,6 +6,7 @@ namespace ProjektGrupowy.API.Repositories;
 public interface IVideoRepository 
 {
     Task<Optional<IEnumerable<Video>>> GetVideosAsync();
+    Task<Optional<IEnumerable<Video>>> GetVideosAsync(int videoGroupId, int pageSize, int pageNumber);
     Task<Optional<Video>> GetVideoAsync(int id);
     Task<Optional<Video>> AddVideoAsync(Video video);
     Task<Optional<Video>> UpdateVideoAsync(Video video);

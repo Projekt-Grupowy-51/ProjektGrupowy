@@ -154,7 +154,7 @@ public class ProjectController(IProjectService projectService, ISubjectService s
 
         var createdProject = projectResult.GetValueOrThrow();
 
-        return CreatedAtAction(nameof(GetProjectAsync), new { id = createdProject.Id },
+        return CreatedAtAction("GetProject", new { id = createdProject.Id },
             mapper.Map<ProjectResponse>(createdProject));
     }
 
