@@ -11,6 +11,7 @@ public class VideoGroupMap : Profile
         CreateMap<VideoGroup, VideoGroupResponse>()
             .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
             .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
-            .ForMember(dest => dest.ProjectId, opt => opt.MapFrom(src => src.Project.Id));
+            .ForMember(dest => dest.ProjectId, opt => opt.MapFrom(src => src.Project.Id))
+            .ForMember(dest => dest.VideoCount, opt => opt.MapFrom(src => src.Videos!.Count));
     }
 }

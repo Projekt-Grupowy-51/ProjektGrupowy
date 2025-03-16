@@ -144,7 +144,7 @@ public class ProjectRepository(AppDbContext context, ILogger<ProjectRepository> 
     {
         try
         {
-            var projects = await context.Projects.Include(p => p.Videos).ToListAsync();
+            var projects = await context.Projects.ToListAsync();
             return Optional<IEnumerable<Project>>.Success(projects);
         }
         catch (Exception e)

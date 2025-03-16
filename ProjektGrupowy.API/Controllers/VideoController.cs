@@ -22,6 +22,15 @@ public class VideoController(IVideoService videoService, IMapper mapper) : Contr
             : NotFound(videos.GetErrorOrThrow());
     }
 
+    [HttpGet("batch/{videoGroupId:int}/{positionInQueue:int}")]
+    public async Task<ActionResult<IEnumerable<VideoResponse>>> GetVideosAsync(int videoGroupId, int positionInQueue)
+    {
+        var videos = await videoService.GetVideosAsync(videoGroupId, positionInQueue);
+        return videos.IsSuccess
+            ? Ok(mapper.Map<IEnumerable<VideoResponse>>(videos.GetValueOrThrow()))
+            : NotFound(videos.GetErrorOrThrow());
+    }
+
     [HttpGet("{id:int}")]
     public async Task<ActionResult<VideoResponse>> GetVideoAsync(int id)
     {
@@ -36,15 +45,14 @@ public class VideoController(IVideoService videoService, IMapper mapper) : Contr
     {
         var result = await videoService.AddVideoAsync(videoRequest);
 
-        if (result.IsFailure) 
+        if (result.IsFailure)
             return BadRequest(result.GetErrorOrThrow());
-        
+
         var createdVideo = result.GetValueOrThrow();
 
         var videoResponse = mapper.Map<VideoResponse>(createdVideo);
 
         return CreatedAtAction("GetVideo", new { id = createdVideo.Id }, videoResponse);
-
     }
 
     [HttpPut("{id:int}")]
