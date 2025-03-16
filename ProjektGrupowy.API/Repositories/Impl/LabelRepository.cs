@@ -2,6 +2,7 @@
 using ProjektGrupowy.API.Data;
 using ProjektGrupowy.API.Models;
 using ProjektGrupowy.API.Utils;
+using System.Data.Common;
 
 namespace ProjektGrupowy.API.Repositories.Impl;
 
@@ -79,6 +80,23 @@ public class LabelRepository(AppDbContext context, ILogger<LabelRepository> logg
         catch (Exception e)
         {
             logger.LogError(e, "An error occurred while deleting label");
+        }
+    }
+
+    public async Task<Optional<IEnumerable<Label>>> GetLabelsBySubjectIdAsync(int subjectId)
+    {
+        try
+        {
+            var labels = await context.Labels
+                .Include(l => l.Subject)
+                .Where(l => l.Subject.Id == subjectId)
+                .ToListAsync();
+            return Optional<IEnumerable<Label>>.Success(labels);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "An error occurred while getting labels");
+            return Optional<IEnumerable<Label>>.Failure(e.Message);
         }
     }
 }

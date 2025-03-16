@@ -64,4 +64,13 @@ public class LabelController(ILabelService labelService, IMapper mapper) : Contr
 
         return NoContent();
     }
+
+    [HttpGet("{subjectId:int}/subject")]
+    public async Task<ActionResult<LabelResponse>> GetLabelsBySubjectIdAsync(int subjectId)
+    {
+        var labels = await labelService.GetLabelsBySubjectIdAsync(subjectId);
+        return labels.IsSuccess
+            ? Ok(mapper.Map<IEnumerable<LabelResponse>>(labels.GetValueOrThrow()))
+            : NotFound(labels.GetErrorOrThrow());
+    }
 }

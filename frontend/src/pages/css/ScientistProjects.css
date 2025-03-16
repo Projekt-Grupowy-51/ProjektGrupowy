@@ -196,6 +196,7 @@
         display: flex;
         align-items: center;
         gap: 6px;
+        width:100%;
     }
 
         .logout-btn:hover {
@@ -376,3 +377,39 @@
         }
     }
 
+.label-btn{
+    width:10vw;
+    margin: 1% !important;
+}
+
+.video-grid {
+    width:100%;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 5px; 
+    justify-items: center;
+    align-items: center; 
+    padding: 5px; 
+}
+
+.video-container {
+    height: 25vh; 
+}
+
+video {
+    height: 100%;
+    object-fit: cover;
+}
+
+.controls {
+    display: flex;
+    align-items:center;
+}
+
+.progress-bar{
+    width: 100%;
+}
+
+.play-stop-btn{
+    width:30%;
+}
