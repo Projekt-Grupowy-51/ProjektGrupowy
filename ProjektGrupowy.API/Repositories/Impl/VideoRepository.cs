@@ -21,6 +21,26 @@ public class VideoRepository(AppDbContext dbContext, ILogger<VideoRepository> lo
         }
     }
 
+    public async Task<Optional<IEnumerable<Video>>> GetVideosAsync(int videoGroupId, int positionInQueue)
+    {
+        try
+        {
+            // Index lookup
+            var videos = await dbContext.Videos
+                .AsNoTracking()
+                .Where(v => v.VideoGroupId == videoGroupId)
+                .Where(v => v.PositionInQueue == positionInQueue)
+                .ToListAsync();
+
+            return Optional<IEnumerable<Video>>.Success(videos);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "An error occurred while getting videos");
+            return Optional<IEnumerable<Video>>.Failure(e.Message);
+        }
+    }
+
     public async Task<Optional<Video>> GetVideoAsync(int id)
     {
         try

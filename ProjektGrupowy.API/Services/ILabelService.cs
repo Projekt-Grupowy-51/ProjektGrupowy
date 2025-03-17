@@ -11,4 +11,5 @@ public interface ILabelService
     Task<Optional<Label>> AddLabelAsync(LabelRequest labelRequest);
     Task<Optional<Label>> UpdateLabelAsync(int labelId, LabelRequest labelRequest);
     Task DeleteLabelAsync(int id);
+    Task<Optional<IEnumerable<Label>>> GetLabelsBySubjectIdAsync(int subjectId);
 }

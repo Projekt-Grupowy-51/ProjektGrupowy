@@ -45,6 +45,18 @@ const LabelerVideoGroups = () => {
     };
 
     useEffect(() => {
+        const fetchAssignments = async () => {
+            try {
+                const response = await httpClient.get(`/SubjectVideoGroupAssignment`);
+                setAssignments(response.data);
+                setError('');
+            } catch (error) {
+                setError(error.response?.data?.message || 'Failed to load assignments');
+            } finally {
+                setLoading(false);
+            }
+        };
+
         fetchAssignments();
     }, [labelerId]);
 
@@ -54,7 +66,6 @@ const LabelerVideoGroups = () => {
     return (
         <div className="container">
             <div className="content">
-                {/* Join Project Section - Always Visible */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                     <h1 className="heading">SubjectVideoGroupAssignments</h1>
                     <div className="join-project-section">
@@ -75,7 +86,8 @@ const LabelerVideoGroups = () => {
                     </div>
                 </div>
 
-                {/* Assignments List */}
+                {error && <div className="error">{error}</div>}
+
                 {loading ? (
                     <div style={{ padding: '20px', textAlign: 'center' }}>
                         Loading SubjectVideoGroupAssignments...
@@ -99,7 +111,7 @@ const LabelerVideoGroups = () => {
                                 <td>
                                     <button
                                         className="details-btn"
-                                        onClick={() => navigate(`/video/${assignment.videoGroupId}`)}
+                                        onClick={() => navigate(`/video/${assignment.id}`)}
                                     >
                                         Details
                                     </button>

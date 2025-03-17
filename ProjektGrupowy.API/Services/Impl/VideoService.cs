@@ -12,6 +12,8 @@ public class VideoService(
 {
     public async Task<Optional<IEnumerable<Video>>> GetVideosAsync() => await videoRepository.GetVideosAsync();
 
+    public async Task<Optional<IEnumerable<Video>>> GetVideosAsync(int videoGroupId, int positionInQueue) => await videoRepository.GetVideosAsync(videoGroupId, positionInQueue);
+
     public async Task<Optional<Video>> GetVideoAsync(int id) => await videoRepository.GetVideoAsync(id);
 
     public async Task<Optional<Video>> AddVideoAsync(VideoRequest videoRequest)
@@ -44,11 +46,17 @@ public class VideoService(
             await videoRequest.File.CopyToAsync(fileStream);
         }
 
+        if (videoGroup.Videos is null)
+        {
+            return Optional<Video>.Failure("Error. videoGroup.Videos was null.");
+        }
+
         var video = new Video
         {
             Title = videoRequest.Title,
             Path = videoPath,
-            VideoGroup = videoGroup
+            VideoGroup = videoGroup,
+            PositionInQueue = videoRequest.PositionInQueue
         };
 
         return await videoRepository.AddVideoAsync(video);

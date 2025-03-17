@@ -21,7 +21,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         // === ProjectAccessCode === //
-        
+
         modelBuilder.Entity<ProjectAccessCode>()
             .HasIndex(p => p.Code)
             .HasDatabaseName("IX_ProjectAccessCode_Code")
@@ -29,13 +29,22 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
 
         // ========================= //
 
+        // === Video <-> VideoGroupId === //
 
-        // === Project <=> Labeler === //
+        modelBuilder.Entity<Video>()
+            .HasOne(v => v.VideoGroup)
+            .WithMany(vg => vg.Videos)
+            .HasForeignKey(v => v.VideoGroupId);
 
-
+        // Index for cursor pagination
+        modelBuilder.Entity<Video>()
+            .HasIndex(v => new
+            {
+                v.VideoGroupId,
+                v.PositionInQueue
+            });
 
         // =========================== //
-
 
         base.OnModelCreating(modelBuilder);
     }

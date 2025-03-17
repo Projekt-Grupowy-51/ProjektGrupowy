@@ -70,4 +70,9 @@ public class LabelService(ILabelRepository labelRepository, ISubjectRepository s
         if (label.IsSuccess)
             await labelRepository.DeleteLabelAsync(label.GetValueOrThrow());
     }
+
+    public async Task<Optional<IEnumerable<Label>>> GetLabelsBySubjectIdAsync(int subjectId)
+    {
+        return await labelRepository.GetLabelsBySubjectIdAsync(subjectId);
+    }
 }

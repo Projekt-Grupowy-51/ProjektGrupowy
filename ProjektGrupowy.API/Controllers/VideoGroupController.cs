@@ -32,8 +32,6 @@ public class VideoGroupController(IVideoGroupService videoGroupService, IMapper 
             : NotFound(videoGroup.GetErrorOrThrow());
     }
 
-
-
     [HttpPost]
     public async Task<ActionResult<VideoGroupResponse>> AddVideoGroupAsync(VideoGroupRequest videoGroupRequest)
     {

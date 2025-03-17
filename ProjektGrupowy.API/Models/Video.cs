@@ -20,6 +20,11 @@ public class Video
     [Required]
     public virtual VideoGroup VideoGroup { get; set; }
 
+    public int PositionInQueue { get; set; }
+
+    // Only for indexing purposes
+    public int VideoGroupId { get; set; }
+
     public Stream ToStream()
     {
         try
