@@ -64,4 +64,9 @@ public class LabelerService(ILabelerRepository labelerRepository) : ILabelerServ
     {
         return await labelerRepository.GetLabelerByUserIdAsync(userId);
     }
+
+    public async Task<Optional<IEnumerable<Labeler>>> GetLabelersByProjectAsync(int projectId)
+    {
+        return await labelerRepository.GetLabelersOfProjectAsync(projectId);
+    }
 }

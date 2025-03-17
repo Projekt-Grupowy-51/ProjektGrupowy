@@ -11,6 +11,7 @@ using ProjektGrupowy.API.Models;
 using ProjektGrupowy.API.Services;
 using ProjektGrupowy.API.Utils.Enums;
 using System.Security.Claims;
+using ProjektGrupowy.API.DTOs.Labeler;
 
 namespace ProjektGrupowy.API.Controllers;
 
@@ -318,5 +319,20 @@ public class ProjectController(IProjectService projectService, ISubjectService s
         }
 
         return Ok(mapper.Map<IEnumerable<SubjectVideoGroupAssignmentResponse>>(subjectVideoGroupAssignmentsResult.GetValueOrThrow()));
+    }
+    
+    [HttpGet("{projectId:int}/Labelers")]
+    public async Task<ActionResult<IEnumerable<LabelerResponse>>> GetLabelersByProjectAsync(int projectId)
+    {
+        var checkResult = CheckGeneralAccess();
+        if (checkResult.Error != null)
+        {
+            return checkResult.Error;
+        }
+
+        var labelersResult = await labelerService.GetLabelersByProjectAsync(projectId);
+        return labelersResult.IsSuccess 
+            ? Ok(mapper.Map<IEnumerable<LabelerResponse>>(labelersResult.GetValueOrThrow()))
+            : NotFound(labelersResult.GetErrorOrThrow());
     }
 }

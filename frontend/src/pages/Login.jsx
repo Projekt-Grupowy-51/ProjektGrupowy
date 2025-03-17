@@ -4,7 +4,7 @@ import authService from '../auth';
 import './css/ScientistProjects.css';
 
 const roleMap = {
-    Labeler: 1,
+    Labeler: 3,
     Scientist: 2
 };
 
@@ -47,9 +47,10 @@ const AuthPage = () => {
                 });
             }
         } catch (err) {
-            setError(isLoginView
-                ? 'Invalid credentials'
-                : 'Registration failed. User may already exist.');
+            setError(err.message);
+            // setError(isLoginView
+            //     ? 'Invalid credentials'
+            //     : 'Registration failed. User may already exist.');
         }
     };
 
@@ -130,6 +131,14 @@ const AuthPage = () => {
                         onChange={handleInputChange}
                         required
                     />
+                    {!isLoginView && (
+                        <div className="password-hint">
+                            8-255 characters<br/>
+                            Lowercase letter<br/>
+                            Uppercase letter<br/>
+                            Number
+                        </div>
+                    )}
                 </div>
 
                 {!isLoginView && (
