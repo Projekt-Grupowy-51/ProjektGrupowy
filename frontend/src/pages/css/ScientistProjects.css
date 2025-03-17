@@ -1,5 +1,5 @@
     :root {
-        /* Rozszerzona paleta kolorów */
+        /* Rozszerzona paleta kolorï¿½w */
         --primary-blue: #026aa7;
         --secondary-blue: #039be5;
         --accent-teal: #00acc1;
@@ -206,7 +206,7 @@
             box-shadow: 0 4px 15px rgba(229, 57, 53, 0.3);
         }
 
-    /* Zak³adki - ulepszony design */
+    /* Zakï¿½adki - ulepszony design */
     .tab-navigation {
         display: flex;
         border-bottom: 2px solid rgba(2, 136, 209, 0.1);
@@ -309,7 +309,7 @@
         transition: var(--transition);
         background-color: #fff;
         color: var(--text-dark); /* Dodajemy jawnie kolor tekstu */
-        font-family: inherit; /* Dodajemy dla pewnoœci */
+        font-family: inherit; /* Dodajemy dla pewnoï¿½ci */
     }
 
         .form-input:focus, .form-select:focus {
@@ -319,8 +319,8 @@
         }
 
         .form-input::placeholder {
-            color: #90a4ae; /* Kolor placeholderów */
-            opacity: 1; /* Firefox domyœlnie zmniejsza opacity */
+            color: #90a4ae; /* Kolor placeholderï¿½w */
+            opacity: 1; /* Firefox domyï¿½lnie zmniejsza opacity */
         }
 
     .form-select {
@@ -413,3 +413,69 @@ video {
 .play-stop-btn{
     width:30%;
 }
+
+    .password-hint {
+        font-size: 0.7rem;
+        color: rgba(102, 102, 102, 0.6);
+        line-height: 1.2;
+        margin-top: 0.25rem;
+        letter-spacing: -0.1px;
+    }
+
+    .duration-options {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-bottom: 1rem;
+    }
+
+    .duration-btn {
+        padding: 0.5rem 1rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        background: #f5f5f5;
+        cursor: pointer;
+    }
+
+    .duration-btn.active {
+        background: #007bff;
+        color: white;
+        border-color: #007bff;
+    }
+
+    .generate-btn {
+        margin-top: 1rem;
+        padding: 0.75rem 1.5rem;
+        background: #28a745;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .join-project-section {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .access-code-input {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        width: 200px;
+    }
+
+    .join-btn {
+        padding: 8px 16px;
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    .join-btn:hover {
+        background-color: #218838;
+    }

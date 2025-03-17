@@ -6,7 +6,7 @@ class AuthService {
         this.initializeTokenRefresh();
     }
 
-    // Inicjalizacja odœwie¿ania tokena po prze³adowaniu strony
+    // Inicjalizacja odï¿½wieï¿½ania tokena po przeï¿½adowaniu strony
     initializeTokenRefresh() {
         const storedExpiresAt = localStorage.getItem('tokenExpiresAt');
         if (storedExpiresAt) {
@@ -38,7 +38,7 @@ class AuthService {
             const response = await httpClient.post('/Auth/Register', userData);
             return response.data;
         } catch (error) {
-            throw new Error('Registration failed');
+            throw new Error(error.message);
         }
     }
 
@@ -62,7 +62,7 @@ class AuthService {
         }
     }
 
-    // Odœwie¿anie tokena
+    // Odï¿½wieï¿½anie tokena
     async refreshToken() {
         try {
             const response = await httpClient.post('/Auth/RefreshToken');
@@ -75,14 +75,14 @@ class AuthService {
         }
     }
 
-    // Zaplanuj odœwie¿enie tokena 1 minut przed wygaœniêciem
+    // Zaplanuj odï¿½wieï¿½enie tokena 1 minut przed wygaï¿½niï¿½ciem
     scheduleTokenRefresh(expiresAt) {
         const now = new Date();
         const expiresIn = expiresAt.getTime() - now.getTime();
-        const refreshTime = expiresIn - 1 * 60 * 1000; // 1 minut przed wygaœniêciem
+        const refreshTime = expiresIn - 1 * 60 * 1000; // 1 minut przed wygaï¿½niï¿½ciem
 
         if (refreshTime <= 0) {
-            // Jeœli zosta³o mniej ni¿ 1 minut, odœwie¿ natychmiast
+            // Jeï¿½li zostaï¿½o mniej niï¿½ 1 minut, odï¿½wieï¿½ natychmiast
             this.refreshToken();
             return;
         }
@@ -96,7 +96,7 @@ class AuthService {
         }, refreshTime);
     }
 
-    // Wyczyœæ odœwie¿enie tokena
+    // Wyczyï¿½ï¿½ odï¿½wieï¿½enie tokena
     clearTokenRefresh() {
         if (this.tokenRefreshTimeout) {
             clearTimeout(this.tokenRefreshTimeout);

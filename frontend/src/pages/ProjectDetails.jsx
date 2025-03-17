@@ -11,21 +11,29 @@ const ProjectDetails = () => {
     const [assignments, setAssignments] = useState([]);
     const [activeTab, setActiveTab] = useState('details');
     const [error, setError] = useState('');
+    const [labelers, setLabelers] = useState([]);
+    const [accessCodes, setAccessCodes] = useState([]);
+    const [creationError, setCreationError] = useState('');
+    const [selectedDuration, setSelectedDuration] = useState('');
     const navigate = useNavigate();
 
     const fetchData = async () => {
         try {
-            const [projectRes, subjectsRes, videoGroupsRes, assignmentsRes] = await Promise.all([
+            const [projectRes, subjectsRes, videoGroupsRes, assignmentsRes, labelersRes, accessCodesRes] = await Promise.all([
                 httpClient.get(`/project/${id}`),
                 httpClient.get(`/project/${id}/subjects`),
                 httpClient.get(`/project/${id}/videogroups`),
-                httpClient.get(`/project/${id}/SubjectVideoGroupAssignments`)
+                httpClient.get(`/project/${id}/SubjectVideoGroupAssignments`),
+                httpClient.get(`/project/${id}/Labelers`),
+                httpClient.get(`/AccessCode/project/${id}`)
             ]);
 
             setProject(projectRes.data);
             setSubjects(subjectsRes.data);
             setVideoGroups(videoGroupsRes.data);
             setAssignments(assignmentsRes.data);
+            setLabelers(labelersRes.data);
+            setAccessCodes(accessCodesRes.data);
         } catch (error) {
             console.error('Error fetching data:', error);
             setError(error.response?.data?.message || 'Failed to load project data');
@@ -45,6 +53,63 @@ const ProjectDetails = () => {
         }
     };
 
+    const handleCreateAccessCode = async () => {
+        setCreationError('');
+
+        let expiresAt = null;
+
+        if (selectedDuration === 'unlimited') {
+            expiresAt = null;
+        } else {
+            const days = selectedDuration === '14days' ? 14 : 30;
+            
+            const now = new Date();
+            expiresAt = new Date(Date.UTC(
+                now.getUTCFullYear(),
+                now.getUTCMonth(),
+                now.getUTCDate() + days,
+                now.getUTCHours(),
+                now.getUTCMinutes(),
+                now.getUTCSeconds()
+            ));
+            
+            expiresAt = expiresAt.toISOString().split('.')[0] + 'Z';
+        }
+
+        try {
+            await httpClient.post('/AccessCode/project', {
+                projectId: parseInt(id),
+                expiresAtUtc: expiresAt
+            });
+
+            setSelectedDuration('');
+            await fetchData();
+            alert('Access code created successfully!');
+        } catch (error) {
+            setCreationError(error.response?.data?.message || 'Failed to create code');
+        }
+    };
+
+    const handleCopyCode = (code) => {
+        navigator.clipboard.writeText(code)
+            .then(() => {
+                alert('Code copied to clipboard!');
+            })
+            .catch(() => {
+                alert('Failed to copy code. Please try again.');
+            });
+    };
+
+    const handleDistributeLabelers = async () => {
+        try {
+            await httpClient.post(`/project/${id}/distribute`);
+            await fetchData();
+            alert('Labelers distributed successfully!');
+        } catch (error) {
+            setError(error.response?.data?.message || 'Distribution failed');
+        }
+    };
+
     useEffect(() => {
         fetchData();
     }, [id]);
@@ -56,8 +121,6 @@ const ProjectDetails = () => {
             <div className="content">
                 <h1>{project.name}</h1>
                 {error && <div className="error">{error}</div>}
-
-                {/* Zak�adki w starym stylu */}
                 <div className="tab-navigation">
                     <button
                         className={`tab-button ${activeTab === 'details' ? 'active' : ''}`}
@@ -82,6 +145,18 @@ const ProjectDetails = () => {
                         onClick={() => setActiveTab('assignments')}
                     >
                         Assignments
+                    </button>
+                    <button
+                        className={`tab-button ${activeTab === 'labelers' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('labelers')}
+                    >
+                        Labelers
+                    </button>
+                    <button
+                        className={`tab-button ${activeTab === 'accessCodes' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('accessCodes')}
+                    >
+                        Access Codes
                     </button>
                 </div>
 
@@ -235,8 +310,135 @@ const ProjectDetails = () => {
                             ) : (
                                 <p>No assignments found</p>
                             )}
+                            
                         </div>
                     )}
+                    {activeTab === 'labelers' && (
+                        <div className="labelers">
+                            <h2>Labeler Assignments</h2>
+                            <button
+                                className="distribute-btn"
+                                onClick={handleDistributeLabelers}
+                            >
+                                Distribute labelers
+                            </button>
+                            {labelers.length > 0 ? (
+                                <table className="project-table">
+                                    <thead>
+                                    <tr>
+                                        <th>Labeler ID</th>
+                                        <th>Username</th>
+                                        <th>Video Group ID</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {labelers.map((labeler) => {
+                                        // Get all assignments for this labeler in current project
+                                        const labelerAssignments = assignments.filter(assignment =>
+                                            assignment.labelers?.some(l => l.id === labeler.id) &&
+                                            videoGroups.some(vg =>
+                                                vg.id === assignment.videoGroupId &&
+                                                vg.projectId === parseInt(id)
+                                            )
+                                        );
+
+                                        return (
+                                            <React.Fragment key={labeler.id}>
+                                                <tr>
+                                                    <td>{labeler.id}</td>
+                                                    <td>{labeler.name}</td>
+                                                    {labelerAssignments.length > 0 ? (
+                                                        labelerAssignments.map((assignment) => (
+                                                            <td key={assignment.id}>{assignment.videoGroupId}</td>
+                                                        ))
+                                                    ) : (
+                                                        <td>No assignments</td> // Or leave this empty if preferred
+                                                    )}
+                                                </tr>
+                                            </React.Fragment>
+                                        );
+                                    })}
+                                    </tbody>
+                                </table>
+                            ) : (
+                                <p>No labelers found in this project</p>
+                            )}
+                        </div>
+                    )}
+                    {activeTab === 'accessCodes' && (
+                        <div className="access-codes">
+                            <div className="add-buttons">
+                                <div className="duration-options">
+                                    <button
+                                        className={`duration-btn ${selectedDuration === '14days' ? 'active' : ''}`}
+                                        onClick={() => setSelectedDuration('14days')}
+                                    >
+                                        14 Days
+                                    </button>
+                                    <button
+                                        className={`duration-btn ${selectedDuration === '30days' ? 'active' : ''}`}
+                                        onClick={() => setSelectedDuration('30days')}
+                                    >
+                                        30 Days
+                                    </button>
+                                    <button
+                                        className={`duration-btn ${selectedDuration === 'unlimited' ? 'active' : ''}`}
+                                        onClick={() => setSelectedDuration('unlimited')}
+                                    >
+                                        Unlimited
+                                    </button>
+
+                                    <button
+                                        className="generate-btn"
+                                        onClick={handleCreateAccessCode}
+                                    >
+                                        Generate Access Code
+                                    </button>
+                                </div>
+                                {creationError && <div className="error">{creationError}</div>}
+                            </div>
+
+                            {accessCodes.length > 0 ? (
+                                <table className="project-table">
+                                    <thead>
+                                    <tr>
+                                        <th>Code</th>
+                                        <th>Created At</th>
+                                        <th>Expires At</th>
+                                        <th>Valid</th>
+                                        <th>Methods</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {accessCodes.map((code) => (
+                                        <tr key={code.code}>
+                                            <td>{code.code}</td>
+                                            <td>{new Date(code.createdAtUtc).toLocaleString()}</td>
+                                            <td>
+                                                {code.expiresAtUtc
+                                                    ? new Date(code.expiresAtUtc).toLocaleString()
+                                                    : 'Never'}
+                                            </td>
+                                            <td>{code.isValid ? '✅' : '❌'}</td>
+                                            <td>
+                                                <button
+                                                    className="copy-btn"
+                                                    onClick={() => handleCopyCode(code.code)}
+                                                >
+                                                    Copy
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+
+                                    </tbody>
+                                </table>
+                            ) : (
+                                <p>No access codes found</p>
+                            )}
+                        </div>
+                    )}
+
                 </div>
             </div>
         </div>
