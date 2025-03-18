@@ -132,19 +132,30 @@ const Videos = () => {
         // Retrieve current label state from the ref (no re-render caused by accessing ref)
         const labelState = labelStateRef.current[labelId] || {};
 
-        // If the label is being measured, check if data has already been sent
+        // Optimistically update the label timestamp immediately
+        setLabelTimestamps((prevTimestamps) => {
+            const newTimestamps = { ...prevTimestamps };
+            const currentLabel = newTimestamps[labelId] || {};
+            if (!currentLabel.start) {
+                newTimestamps[labelId] = { start: time, sent: false }; // Starting to measure
+            } else if (!currentLabel.sent) {
+                newTimestamps[labelId] = { ...currentLabel, sent: true }; // Mark as sent
+            }
+            return newTimestamps;
+        });
+
+        // Handle sending label data asynchronously
         if (labelState.start && !labelState.sent) {
-            // Data hasn't been sent, send it
             sendLabelData(labelId, labelState.start, time);
             console.log("jestem tu teraz, " + time);
-
-            // Mark label as sent and update the ref state
-            labelStateRef.current[labelId] = { ...labelState, sent: true };
         } else if (!labelState.start) {
-            // Start measuring
-            console.log("Starting to measure: ", labelId, time);
             labelStateRef.current[labelId] = { start: time, sent: false };
+            console.log("Starting to measure: ", labelId, time);
         }
+    };
+
+    const isMeasuring = (labelId) => {
+        return labelTimestamps[labelId] && !labelTimestamps[labelId].sent;
     };
 
 
@@ -309,7 +320,7 @@ const Videos = () => {
                 <div className="labels-container">
                     {labels.length > 0 ? (
                         labels.map((label, index) => {
-                            const isMeasuring = labelTimestamps[label.id] && !labelTimestamps[label.id].sent;
+                            const measuring = isMeasuring(label.id);
                             return (
                                 <button
                                     key={index}
@@ -317,7 +328,7 @@ const Videos = () => {
                                     style={{ backgroundColor: label.colorHex }}
                                     onClick={() => handleLabelClick(label.id)}
                                 >
-                                    {label.name + ' [' + label.shortcut + ']'} {isMeasuring ? 'STOP' : 'start'}
+                                    {label.name + ' [' + label.shortcut + ']'} {measuring ? 'STOP' : 'start'}
                                 </button>
                             );
                         })
