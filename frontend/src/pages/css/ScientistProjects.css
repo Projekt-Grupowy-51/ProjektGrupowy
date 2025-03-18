@@ -332,7 +332,6 @@
     }
 
     .auth-btn {
-        width: 100%;
         padding: 16px;
         font-size: 1.1em;
         margin-top: 15px;
@@ -410,8 +409,29 @@ video {
     width: 100%;
 }
 
-.play-stop-btn{
-    width:30%;
+.play-stop-btn {
+    padding: 10px;
+    height: 55px;
+    margin: 5px;
+    width: 55px;
+}
+
+.seek-buttons{
+    display:flex;
+}
+
+.seek-btn {
+    padding: 10px;
+    width: fit-content;
+}
+
+.controls span {
+    margin:5px 20px;
+}
+
+.fa-backward p,
+.fa-forward p{
+    font-weight:100;
 }
 
     .password-hint {
@@ -457,6 +477,7 @@ video {
         display: flex;
         gap: 10px;
         align-items: center;
+        width:40%;
     }
 
     .access-code-input {
@@ -464,6 +485,7 @@ video {
         border: 1px solid #ddd;
         border-radius: 4px;
         width: 200px;
+        font-size:15px;
     }
 
     .join-btn {
@@ -479,3 +501,39 @@ video {
     .join-btn:hover {
         background-color: #218838;
     }
+
+.assigned-labels h3 {
+    background: rgba(3, 155, 229);
+    border-top: 1px solid #026aa7;
+    border-right: 1px solid #026aa7;
+    border-left: 1px solid #026aa7;
+    color: white;
+    text-align: center;
+}
+
+.assigned-labels-table {
+    max-height: 40vh;
+    overflow-y: auto;
+    border: 1px solid #026aa7;
+    padding: 20px 5px;
+}
+
+    .assigned-labels-table::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .assigned-labels-table::-webkit-scrollbar-thumb {
+        background:rgba(3, 155, 229);
+        border-radius: 3px;
+    }
+
+    .assigned-labels-table table thead th,
+    .assigned-labels-table table tbody td {
+        border-bottom: 1px solid #026aa7;
+    }
+
+.labels-container {
+    justify-content: center;
+    display: flex;
+    padding: 10px;
+}

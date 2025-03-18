@@ -105,29 +105,51 @@ const Videos = () => {
 
     const handlePlayStop = () => {
         if (isPlaying) {
-            videoRefs.current.forEach((video) => video.pause());
+            videoRefs.current.forEach((video) => {
+                if (video) {
+                    video.pause();
+                }
+            });
         } else {
-            videoRefs.current.forEach((video) => video.play());
+            videoRefs.current.forEach((video) => {
+                if (video) {
+                    video.play();
+                }
+            });
         }
         setIsPlaying(!isPlaying);
     };
 
-    const handleLabelClick = async (labelId) => {
+
+    const labelStateRef = useRef({}); // Ref to track label states without causing re-renders
+
+    const handleLabelClick = (labelId) => {
         const video = videoRefs.current[0];
         if (!video) return;
 
         const time = video.currentTime;
-        setLabelTimestamps((prev) => {
-            if (prev[labelId] && !prev[labelId].sent) {
-                sendLabelData(labelId, prev[labelId].start, time);
-                const newTimestamps = { ...prev };
-                newTimestamps[labelId].sent = true;
-                return newTimestamps;
-            } else {
-                return { ...prev, [labelId]: { start: time, sent: false } };
-            }
-        });
+
+        // Retrieve current label state from the ref (no re-render caused by accessing ref)
+        const labelState = labelStateRef.current[labelId] || {};
+
+        // If the label is being measured, check if data has already been sent
+        if (labelState.start && !labelState.sent) {
+            // Data hasn't been sent, send it
+            sendLabelData(labelId, labelState.start, time);
+            console.log("jestem tu teraz, " + time);
+
+            // Mark label as sent and update the ref state
+            labelStateRef.current[labelId] = { ...labelState, sent: true };
+        } else if (!labelState.start) {
+            // Start measuring
+            console.log("Starting to measure: ", labelId, time);
+            labelStateRef.current[labelId] = { start: time, sent: false };
+        }
     };
+
+
+
+
 
     const formatTime = (seconds) => {
         const hours = Math.floor(seconds / 3600);
@@ -154,31 +176,74 @@ const Videos = () => {
 
         const newAssignedLabel = {
             labelId,
-            start: startFormatted, 
+            start: startFormatted,
             end: endFormatted,
             colorHex: labels.find((label) => label.id === labelId)?.colorHex || '#000000',
         };
 
         try {
             await httpClient.post('/AssignedLabel', data, { withCredentials: true });
-            setAssignedLabels((prevLabels) => [...prevLabels, newAssignedLabel]); 
-            setLabelTimestamps((prev) => {
-                const newTimestamps = { ...prev };
-                if (newTimestamps[labelId]) {
-                    newTimestamps[labelId].sent = true;
-                }
-                return newTimestamps;
-            });
+            setAssignedLabels((prevLabels) => [...prevLabels, newAssignedLabel]);
+                    setLabelTimestamps((prev) => {
+                    const newTimestamps = { ...prev };
+                        if (newTimestamps[labelId]) {
+                            newTimestamps[labelId].sent = true;
+                        }
+                    return newTimestamps;
+                });
         } catch (error) {
             console.error('Error assigning label:', error);
         }
     };
+
+
 
     const handleTimeUpdate = () => {
         const video = videoRefs.current[0];
         if (video) {
             setCurrentTime(video.currentTime);
             setDuration(video.duration);
+        }
+    };
+
+    const handleDelete = async (id) => {
+        if (!window.confirm('Are you sure you want to delete this assigned label?')) return;
+
+        try {
+            await httpClient.delete(`/AssignedLabel/${id}`);
+            setAssignedLabels(prev => prev.filter(assignedLabel => assignedLabel.id !== id));
+        } catch (error) {
+            setError(error.response?.data?.message || 'Failed to delete assigned label');
+        }
+    };
+
+    useEffect(() => {
+        const handleKeyPress = (event) => {
+            const label = labels.find(l => l.shortcut.toLowerCase() === event.key.toLowerCase());
+            if (label) {
+                handleLabelClick(label.id);
+            }
+        };
+
+        window.addEventListener("keydown", handleKeyPress);
+        return () => {
+            window.removeEventListener("keydown", handleKeyPress);
+        };
+    }, [labels]);
+
+    const handleRewind = () => {
+        const video = videoRefs.current[0];
+        if (video) {
+            video.currentTime = Math.max(video.currentTime - 5, 0); 
+            setCurrentTime(video.currentTime);
+        }
+    };
+
+    const handleFastForward = () => {
+        const video = videoRefs.current[0];
+        if (video) {
+            video.currentTime = Math.min(video.currentTime + 5, video.duration);  
+            setCurrentTime(video.currentTime);
         }
     };
 
@@ -205,49 +270,66 @@ const Videos = () => {
                         <p>Loading video streams...</p>
                     )}
                 </div>
-
+                <div className="progress-bar">
+                    <input
+                        type="range"
+                        min="0"
+                        max={duration || 100}
+                        value={currentTime}
+                        onChange={(e) => {
+                            const video = videoRefs.current[0];
+                            if (video) {
+                                video.currentTime = e.target.value;
+                                setCurrentTime(e.target.value);
+                            }
+                        }}
+                    />
+                </div>
                 <div className="controls">
-                    <button className="play-stop-btn" onClick={handlePlayStop}>
-                        {isPlaying ? 'Stop All Videos' : 'Play All Videos'}
-                    </button>
-
-                    <div className="progress-bar">
-                        <input
-                            type="range"
-                            min="0"
-                            max={duration || 100}
-                            value={currentTime}
-                            onChange={(e) => {
-                                const video = videoRefs.current[0];
-                                if (video) {
-                                    video.currentTime = e.target.value;
-                                    setCurrentTime(e.target.value);
-                                }
-                            }}
-                        />
-                        <span>{currentTime.toFixed(2)} / {duration.toFixed(2)} s</span>
+                    <div className="seek-buttons">
+                        <button className="seek-btn" onClick={handleRewind}>
+                            <i className="fas fa-backward"><p>5s</p></i>
+                        </button>
                     </div>
+                    <button className="play-stop-btn" onClick={handlePlayStop}>
+                        <i className={`fas ${isPlaying ? 'fa-stop' : 'fa-play'}`}></i>
+                    </button>
+                    <div className="seek-buttons">
+
+                        <button className="seek-btn" onClick={handleFastForward}>
+                            <i className="fas fa-forward"><p>5s</p></i>
+                        </button>
+                    </div>
+                    <span>{currentTime.toFixed(2)} / {duration.toFixed(2)} s</span>
+
+
+                   
                 </div>
 
                 <div className="labels-container">
                     {labels.length > 0 ? (
-                        labels.map((label, index) => (
-                            <button
-                                key={index}
-                                className="label-btn"
-                                style={{ backgroundColor: label.colorHex }}
-                                onClick={() => handleLabelClick(label.id)}
-                            >
-                                {label.name} {'[' + label.shortcut + ']'}
-                            </button>
-                        ))
+                        labels.map((label, index) => {
+                            const isMeasuring = labelTimestamps[label.id] && !labelTimestamps[label.id].sent;
+                            return (
+                                <button
+                                    key={index}
+                                    className="label-btn"
+                                    style={{ backgroundColor: label.colorHex }}
+                                    onClick={() => handleLabelClick(label.id)}
+                                >
+                                    {label.name + ' [' + label.shortcut + ']'} {isMeasuring ? 'STOP' : 'start'}
+                                </button>
+                            );
+                        })
                     ) : (
                         <p>No labels available</p>
                     )}
                 </div>
 
+
                 <div className="assigned-labels">
                     <h3>Assigned Labels:</h3>
+                    <div className="assigned-labels-table">
                     {assignedLabels.length > 0 ? (
                         <table>
                             <thead>
@@ -255,21 +337,28 @@ const Videos = () => {
                                     <th>Label ID</th>
                                     <th>Start Time</th>
                                     <th>End Time</th>
+                                    <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {assignedLabels.map((label, index) => (
-                                    <tr key={index}>
-                                        <td>{label.labelId}</td>
-                                        <td>{label.start}</td>
-                                        <td>{label.end}</td>
-                                    </tr>
-                                ))}
+                                {assignedLabels.slice().reverse().map((label, index) => {
+                                    const matchingLabel = labels.find(l => l.id === label.labelId);
+                                    return (
+                                        <tr key={index}>
+                                            <td>{matchingLabel ? matchingLabel.name : "Unknown"}</td>
+                                            <td>{label.start}</td>
+                                            <td>{label.end}</td>
+                                            <td><button className="delete-btn" onClick={() => handleDelete(label.id)}>Delete</button></td>
+                                        </tr>
+                                    );
+                                })}
                             </tbody>
+
                         </table>
                     ) : (
                         <p>No labels assigned yet</p>
-                    )}
+                        )}
+                    </div>
                 </div>
             </div>
         </div>
