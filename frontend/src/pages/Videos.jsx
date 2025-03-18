@@ -9,7 +9,7 @@ const Videos = () => {
     const [streams, setStreams] = useState([]);
     const [isPlaying, setIsPlaying] = useState(false);
     const [labels, setLabels] = useState([]);
-    const [assignedLabels, setAssignedLabels] = useState([]);  // Przypisane etykiety
+    const [assignedLabels, setAssignedLabels] = useState([]);  
     const [subjectId, setSubjectId] = useState(null);
     const [labelTimestamps, setLabelTimestamps] = useState({});
     const [currentTime, setCurrentTime] = useState(0);
@@ -26,7 +26,7 @@ const Videos = () => {
     useEffect(() => {
         if (subjectId !== null) {
             fetchLabels();
-            fetchAssignedLabels();  // Pobranie przypisanych etykiet
+            fetchAssignedLabels();  
         }
     }, [subjectId]);
 
@@ -121,7 +121,7 @@ const Videos = () => {
     };
 
 
-    const labelStateRef = useRef({}); // Ref to track label states without causing re-renders
+    const labelStateRef = useRef({}); 
 
     const handleLabelClick = (labelId) => {
         const video = videoRefs.current[0];
@@ -129,22 +129,19 @@ const Videos = () => {
 
         const time = video.currentTime;
 
-        // Retrieve current label state from the ref (no re-render caused by accessing ref)
         const labelState = labelStateRef.current[labelId] || {};
 
-        // Optimistically update the label timestamp immediately
         setLabelTimestamps((prevTimestamps) => {
             const newTimestamps = { ...prevTimestamps };
             const currentLabel = newTimestamps[labelId] || {};
             if (!currentLabel.start) {
-                newTimestamps[labelId] = { start: time, sent: false }; // Starting to measure
+                newTimestamps[labelId] = { start: time, sent: false }; 
             } else if (!currentLabel.sent) {
-                newTimestamps[labelId] = { ...currentLabel, sent: true }; // Mark as sent
+                newTimestamps[labelId] = { ...currentLabel, sent: true }; 
             }
             return newTimestamps;
         });
 
-        // Handle sending label data asynchronously
         if (labelState.start && !labelState.sent) {
             sendLabelData(labelId, labelState.start, time);
             console.log("jestem tu teraz, " + time);
@@ -193,15 +190,19 @@ const Videos = () => {
         };
 
         try {
-            await httpClient.post('/AssignedLabel', data, { withCredentials: true });
-            setAssignedLabels((prevLabels) => [...prevLabels, newAssignedLabel]);
-                    setLabelTimestamps((prev) => {
-                    const newTimestamps = { ...prev };
-                        if (newTimestamps[labelId]) {
-                            newTimestamps[labelId].sent = true;
-                        }
-                    return newTimestamps;
-                });
+            await httpClient.post('/AssignedLabel', data);
+
+            setAssignedLabels((prevLabels) => [newAssignedLabel, ...prevLabels]); 
+
+            setLabelTimestamps((prev) => {
+                const newTimestamps = { ...prev };
+                if (newTimestamps[labelId]) {
+                    newTimestamps[labelId].sent = true;
+                }
+                return newTimestamps;
+            });
+
+            fetchAssignedLabels();
         } catch (error) {
             console.error('Error assigning label:', error);
         }
@@ -311,10 +312,7 @@ const Videos = () => {
                             <i className="fas fa-forward"><p>5s</p></i>
                         </button>
                     </div>
-                    <span>{currentTime.toFixed(2)} / {duration.toFixed(2)} s</span>
-
-
-                   
+                    <span>{currentTime.toFixed(2)} / {(isNaN(duration) ? 0 : duration).toFixed(2)} s</span>
                 </div>
 
                 <div className="labels-container">
