@@ -1,6 +1,6 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import httpClient from '../httpClient'; // Upewnij się o prawidłowej ścieżce
+import httpClient from '../httpClient'; 
 import './css/ScientistProjects.css';
 
 const SubjectDetails = () => {
@@ -9,7 +9,6 @@ const SubjectDetails = () => {
     const [labels, setLabels] = useState([]);
     const navigate = useNavigate();
 
-    // Pobieranie szczegółów tematu
     const fetchSubjectDetails = async () => {
         try {
             const response = await httpClient.get(`/subject/${id}`);
@@ -20,10 +19,9 @@ const SubjectDetails = () => {
         }
     };
 
-    // Pobieranie etykiet
     const fetchLabels = async () => {
         try {
-            const response = await httpClient.get(`subject/${id}/label`);
+            const response = await httpClient.get(`label/${id}/subject`);
             const filteredLabels = response.data
                 .filter(label => label.subjectId === parseInt(id))
                 .sort((a, b) => a.id - b.id);
