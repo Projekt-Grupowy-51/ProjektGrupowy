@@ -262,7 +262,6 @@ const Videos = () => {
     return (
         <div className="container">
             <div className="content">
-                {/* <h2>Video Stream Preview</h2> */}
                 <div className="container" id="video-container">
                     <div className="row" id='video-row'>
                         {streams.length > 0 ? (
@@ -272,7 +271,7 @@ const Videos = () => {
                                         streams.length === 1
                                             ? ''
                                             : streams.length <= 4
-                                            ? 'col-md-5'
+                                            ? 'col-md-6'
                                             : 'col-md-4'
                                     }`}
                                     key={index}
@@ -280,8 +279,7 @@ const Videos = () => {
                                     <div className="video-cell">
                                         <video
                                             ref={(el) => (videoRefs.current[index] = el)}
-                                            width="100%"
-                                            height="auto"
+                                            className="w-100 rounded shadow-sm"
                                             src={streamUrl}
                                             type="video/mp4"
                                             controls
@@ -291,100 +289,151 @@ const Videos = () => {
                                 </div>
                             ))
                         ) : (
-                            <p>Loading video streams...</p>
+                            <div className="col-12 text-center py-5">
+                                <div className="spinner-border text-primary" role="status">
+                                    <span className="visually-hidden">Loading...</span>
+                                </div>
+                                <p className="mt-3">Loading video streams...</p>
+                            </div>
                         )}
                     </div>
                 </div>
-                <div className="progress-bar">
-                    <input
-                        type="range"
-                        min="0"
-                        max={duration || 100}
-                        value={currentTime}
-                        onChange={(e) => {
-                            const video = videoRefs.current[0];
-                            if (video) {
-                                video.currentTime = e.target.value;
-                                setCurrentTime(e.target.value);
-                            }
-                        }}
-                    />
-                </div>
-                <div className="controls">
-                    <div className="seek-buttons">
-                        <button className="btn btn-primary seek-btn" onClick={handleRewind}>
-                            <i className="fas fa-backward"><p>5s</p></i>
-                        </button>
-                    </div>
-                    <button className="btn btn-primary play-stop-btn" onClick={handlePlayStop}>
-                        <i className={`fas ${isPlaying ? 'fa-stop' : 'fa-play'}`}></i>
-                    </button>
-                    <div className="seek-buttons">
-
-                        <button className="btn btn-primary seek-btn" onClick={handleFastForward}>
-                            <i className="fas fa-forward"><p>5s</p></i>
-                        </button>
-                    </div>
-                    <span>{currentTime.toFixed(2)} / {(isNaN(duration) ? 0 : duration).toFixed(2)} s</span>
-                </div>
-
-                <div className="labels-container">
-                    {labels.length > 0 ? (
-                        labels.map((label, index) => {
-                            const measuring = isMeasuring(label.id);
-                            return (
-                                <button
-                                    key={index}
-                                    className="btn label-btn"
-                                    style={{ backgroundColor: label.colorHex }}
-                                    onClick={() => handleLabelClick(label.id)}
-                                >
-                                    {label.name + ' [' + label.shortcut + ']'} {measuring ? 'STOP' : 'start'}
+                
+                <div className="card shadow-sm mb-4">
+                    <div className="card-body">
+                        <div className="progress mb-3">
+                            <input
+                                type="range"
+                                className="form-range"
+                                min="0"
+                                max={duration || 100}
+                                value={currentTime}
+                                onChange={(e) => {
+                                    const video = videoRefs.current[0];
+                                    if (video) {
+                                        video.currentTime = e.target.value;
+                                        setCurrentTime(e.target.value);
+                                    }
+                                }}
+                            />
+                        </div>
+                        
+                        <div className="d-flex justify-content-between align-items-center">
+                            <div className="btn-group">
+                                <button className="btn btn-primary" onClick={handleRewind}>
+                                    <i className="fas fa-backward me-1"></i>5s
                                 </button>
-                            );
-                        })
-                    ) : (
-                        <p>No labels available</p>
-                    )}
+                                <button className="btn btn-primary" onClick={handlePlayStop}>
+                                    <i className={`fas ${isPlaying ? 'fa-stop' : 'fa-play'}`}></i>
+                                </button>
+                                <button className="btn btn-primary" onClick={handleFastForward}>
+                                    <i className="fas fa-forward me-1"></i>5s
+                                </button>
+                            </div>
+                            <span className="badge bg-secondary fs-6">
+                                {currentTime.toFixed(2)} / {(isNaN(duration) ? 0 : duration).toFixed(2)} s
+                            </span>
+                        </div>
+                    </div>
                 </div>
 
+                <div className="card shadow-sm mb-4">
+                    <div className="card-header bg-primary text-white">
+                        <h5 className="card-title mb-0">Available Labels</h5>
+                    </div>
+                    <div className="card-body">
+                        <div className="d-flex flex-wrap justify-content-center">
+                            {labels.length > 0 ? (
+                                labels.map((label, index) => {
+                                    const measuring = isMeasuring(label.id);
+                                    return (
+                                        <button
+                                            key={index}
+                                            className="btn m-1"
+                                            style={{ 
+                                                backgroundColor: label.colorHex,
+                                                color: isLightColor(label.colorHex) ? '#000' : '#fff'
+                                            }}
+                                            onClick={() => handleLabelClick(label.id)}
+                                        >
+                                            {label.name} [{label.shortcut}] {measuring ? 'STOP' : 'start'}
+                                        </button>
+                                    );
+                                })
+                            ) : (
+                                <p className="text-center">No labels available</p>
+                            )}
+                        </div>
+                    </div>
+                </div>
 
                 <div className="assigned-labels">
-                    <h3>Assigned Labels:</h3>
+                    <h3>Assigned Labels</h3>
                     <div className="assigned-labels-table">
-                    {assignedLabels.length > 0 ? (
-                        <table className="normal-table">
-                            <thead className="table-dark">
-                                <tr>
-                                    <th>Label ID</th>
-                                    <th>Start Time</th>
-                                    <th>End Time</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {assignedLabels.slice().reverse().map((label, index) => {
-                                    const matchingLabel = labels.find(l => l.id === label.labelId);
-                                    return (
-                                        <tr key={index}>
-                                            <td>{matchingLabel ? matchingLabel.name : "Unknown"}</td>
-                                            <td>{label.start}</td>
-                                            <td>{label.end}</td>
-                                            <td><button className="btn btn-danger" onClick={() => handleDelete(label.id)}>Delete</button></td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-
-                        </table>
-                    ) : (
-                        <p>No labels assigned yet</p>
+                        {assignedLabels.length > 0 ? (
+                            <table className="normal-table">
+                                <thead>
+                                    <tr>
+                                        <th>Label</th>
+                                        <th>Start Time</th>
+                                        <th>End Time</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {assignedLabels.slice().reverse().map((label, index) => {
+                                        const matchingLabel = labels.find(l => l.id === label.labelId);
+                                        return (
+                                            <tr key={index}>
+                                                <td>
+                                                    <div className="d-flex align-items-center">
+                                                        <div 
+                                                            className="color-preview me-2" 
+                                                            style={{ 
+                                                                backgroundColor: matchingLabel?.colorHex || "#000000",
+                                                                width: '20px',
+                                                                height: '20px'
+                                                            }}
+                                                        ></div>
+                                                        {matchingLabel ? matchingLabel.name : "Unknown"}
+                                                    </div>
+                                                </td>
+                                                <td>{label.start}</td>
+                                                <td>{label.end}</td>
+                                                <td>
+                                                    <button 
+                                                        className="btn btn-danger btn-sm" 
+                                                        onClick={() => handleDelete(label.id)}
+                                                    >
+                                                        <i className="fas fa-trash"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        ) : (
+                            <div className="text-center py-4">
+                                <i className="fas fa-tags fs-1 text-muted"></i>
+                                <p className="text-muted mt-2">No labels assigned yet</p>
+                            </div>
                         )}
                     </div>
                 </div>
             </div>
         </div>
     );
+
+    // Helper function to determine if a color is light or dark
+    function isLightColor(color) {
+        const hex = color.replace('#', '');
+        const r = parseInt(hex.substr(0, 2), 16);
+        const g = parseInt(hex.substr(2, 2), 16);
+        const b = parseInt(hex.substr(4, 2), 16);
+        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+        return brightness > 155;
+    }
 };
 
 export default Videos;

@@ -40,15 +40,25 @@ const Projects = () => {
     return (
         <div className="container">
             <div className="content">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <div className="d-flex justify-content-between align-items-center mb-4">
                     <h1 className="heading">Projects</h1>
-                    <button className="btn add-btn text-white" onClick={() => navigate('/projects/add')}>Add New Project</button>
+                    <button 
+                        className="btn btn-primary" 
+                        onClick={() => navigate('/projects/add')}
+                    >
+                        <i className="fas fa-plus-circle me-2"></i>Add New Project
+                    </button>
                 </div>
 
-                {error && <div className="error">{error}</div>}
+                {error && <div className="error mb-4">{error}</div>}
 
                 {loading ? (
-                    <div style={{ padding: '20px', textAlign: 'center' }}>Loading projects...</div>
+                    <div className="text-center py-5">
+                        <div className="spinner-border text-primary" role="status">
+                            <span className="visually-hidden">Loading...</span>
+                        </div>
+                        <p className="mt-3">Loading projects...</p>
+                    </div>
                 ) : projects.length > 0 ? (
                     <table className="normal-table">
                         <thead>
@@ -66,15 +76,29 @@ const Projects = () => {
                                     <td>{project.name}</td>
                                     <td>{project.description}</td>
                                     <td>
-                                        <button className="btn btn-info" onClick={() => navigate(`/projects/${project.id}`)}>Details</button>
-                                        <button className="btn btn-danger" onClick={() => handleDelete(project.id)}>Delete</button>
+                                        <div className="btn-group">
+                                            <button 
+                                                className="btn btn-info" 
+                                                onClick={() => navigate(`/projects/${project.id}`)}
+                                            >
+                                                <i className="fas fa-eye me-1"></i>Details
+                                            </button>
+                                            <button 
+                                                className="btn btn-danger" 
+                                                onClick={() => handleDelete(project.id)}
+                                            >
+                                                <i className="fas fa-trash me-1"></i>Delete
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
                 ) : (
-                    <p className="error">No projects found</p>
+                    <div className="alert alert-info text-center">
+                        <i className="fas fa-info-circle me-2"></i>No projects found
+                    </div>
                 )}
             </div>
         </div>

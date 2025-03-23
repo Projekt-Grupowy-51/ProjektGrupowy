@@ -50,54 +50,80 @@ const VideoGroupAdd = () => {
     };
 
     return (
-        <div className="container">
-            <div className="content">
-                <h1>Add New Video Group</h1>
-                {error && <div className="error">{error}</div>}
-                <form onSubmit={handleSubmit}>
-                    <div className="form-group">
-                        <label htmlFor="name">Name</label>
-                        <input
-                            type="text"
-                            id="name"
-                            name="name"
-                            value={formData.name}
-                            onChange={handleChange}
-                            className="form-control"
-                            required
-                        />
-                    </div>
+        <div className="container py-4">
+            <div className="row justify-content-center">
+                <div className="col-lg-8">
+                    <div className="card shadow-sm">
+                        <div className="card-header bg-primary text-white">
+                            <h1 className="heading mb-0">Add New Video Group</h1>
+                        </div>
+                        <div className="card-body">
+                            {error && (
+                                <div className="alert alert-danger mb-4">
+                                    <i className="fas fa-exclamation-triangle me-2"></i>
+                                    {error}
+                                </div>
+                            )}
+                            
+                            <form onSubmit={handleSubmit}>
+                                <div className="mb-3">
+                                    <label htmlFor="name" className="form-label">Group Name</label>
+                                    <input
+                                        type="text"
+                                        id="name"
+                                        name="name"
+                                        value={formData.name}
+                                        onChange={handleChange}
+                                        className="form-control"
+                                        required
+                                    />
+                                </div>
 
-                    <div className="form-group">
-                        <label htmlFor="description">Description</label>
-                        <textarea
-                            id="description"
-                            name="description"
-                            value={formData.description}
-                            onChange={handleChange}
-                            className="form-control"
-                            rows="5"
-                            required
-                        ></textarea>
-                    </div>
+                                <div className="mb-3">
+                                    <label htmlFor="description" className="form-label">Description</label>
+                                    <textarea
+                                        id="description"
+                                        name="description"
+                                        value={formData.description}
+                                        onChange={handleChange}
+                                        className="form-control"
+                                        rows="5"
+                                        required
+                                    ></textarea>
+                                </div>
 
-                    <div className="button-group">
-                        <button 
-                            type="submit" 
-                            className="btn btn-primary"
-                            disabled={loading}
-                        >
-                            {loading ? 'Adding...' : 'Add Video Group'}
-                        </button>
-                        <button 
-                            type="button" 
-                            className="btn btn-secondary"
-                            onClick={() => navigate(`/projects/${formData.projectId}`)}
-                        >
-                            Cancel
-                        </button>
+                                <div className="mb-4">
+                                    <label htmlFor="projectId" className="form-label">Project ID</label>
+                                    <input
+                                        type="number" 
+                                        className="form-control"
+                                        value={formData.projectId}
+                                        disabled
+                                    />
+                                </div>
+
+                                <div className="d-flex">
+                                    <button 
+                                        type="submit" 
+                                        className="btn btn-primary me-2"
+                                        disabled={loading}
+                                    >
+                                        <i className="fas fa-plus-circle me-2"></i>
+                                        {loading ? "Adding..." : "Add Video Group"}
+                                    </button>
+                                    <button 
+                                        type="button" 
+                                        className="btn btn-secondary"
+                                        onClick={() => navigate(`/projects/${formData.projectId}`)}
+                                        disabled={loading}
+                                    >
+                                        <i className="fas fa-times me-2"></i>Cancel
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
-                </form>
+                </div>
             </div>
         </div>
     );

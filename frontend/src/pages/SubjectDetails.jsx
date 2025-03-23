@@ -48,44 +48,54 @@ const SubjectDetails = () => {
         }
     };
 
-    if (!subjectDetails) return <div className="loading">Ładowanie...</div>;
+    if (!subjectDetails) return (
+        <div className="container d-flex justify-content-center align-items-center py-5">
+            <div className="spinner-border text-primary" role="status">
+                <span className="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    );
 
     return (
         <div className="container">
             <div className="content">
-                <h1 className="heading">{subjectDetails.name}</h1>
+                <h1 className="heading mb-4">{subjectDetails.name}</h1>
 
-                <div className="details-section">
-                    <p className="detail-item">
-                        <span className="detail-label">Opis:</span>
-                        {subjectDetails.description}
-                    </p>
+                <div className="card shadow-sm mb-4">
+                    <div className="card-header bg-info text-white">
+                        <h5 className="card-title mb-0">Subject Details</h5>
+                    </div>
+                    <div className="card-body">
+                        <p className="card-text">
+                            <strong>Description:</strong> {subjectDetails.description}
+                        </p>
+                    </div>
                 </div>
 
-                <div className="action-buttons">
-                    <button className="add-btn" onClick={addLabel}>
-                        + Dodaj nową etykietę
+                <div className="d-flex justify-content-between mb-4">
+                    <button className="btn btn-primary" onClick={addLabel}>
+                        <i className="fas fa-plus-circle me-2"></i>Add New Label
                     </button>
                     <Link
-                        className="back-btn"
+                        className="btn btn-secondary"
                         to={`/projects/${subjectDetails.projectId}`}
                     >
-                        ← Wróć do projektu
+                        <i className="fas fa-arrow-left me-2"></i>Back to Project
                     </Link>
                 </div>
 
-                <h2 className="section-title">Etykiety</h2>
+                <h2 className="section-title">Labels</h2>
 
                 {labels.length > 0 ? (
                     <table className="normal-table">
                         <thead>
                             <tr>
                                 <th>ID</th>
-                                <th>Nazwa</th>
-                                <th>Typ</th>
-                                <th>Kolor</th>
-                                <th>Skrót</th>
-                                <th>Akcje</th>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Color</th>
+                                <th>Shortcut</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -95,25 +105,28 @@ const SubjectDetails = () => {
                                     <td>{label.name}</td>
                                     <td>{label.type}</td>
                                     <td>
-                                        <div
-                                            className="color-preview"
-                                            style={{ backgroundColor: label.colorHex }}
-                                        />
+                                        <div className="d-flex align-items-center">
+                                            <div
+                                                className="color-preview me-2"
+                                                style={{ backgroundColor: label.colorHex }}
+                                            />
+                                            <span>{label.colorHex}</span>
+                                        </div>
                                     </td>
                                     <td>{label.shortcut}</td>
                                     <td>
-                                        <div className="table-actions">
+                                        <div className="d-flex">
                                             <button
-                                                className="btn btn-info"
+                                                className="btn btn-primary btn-sm me-2"
                                                 onClick={() => navigate(`/labels/edit/${label.id}`)}
                                             >
-                                                Edytuj
+                                                <i className="fas fa-edit"></i>
                                             </button>
                                             <button
-                                                className="btn btn-danger"
+                                                className="btn btn-danger btn-sm"
                                                 onClick={() => deleteLabel(label.id)}
                                             >
-                                                Usuń
+                                                <i className="fas fa-trash"></i>
                                             </button>
                                         </div>
                                     </td>
@@ -122,7 +135,9 @@ const SubjectDetails = () => {
                         </tbody>
                     </table>
                 ) : (
-                    <p className="no-data-info">Brak etykiet dla tego tematu</p>
+                    <div className="alert alert-info">
+                        <i className="fas fa-info-circle me-2"></i>No labels found for this subject
+                    </div>
                 )}
             </div>
         </div>

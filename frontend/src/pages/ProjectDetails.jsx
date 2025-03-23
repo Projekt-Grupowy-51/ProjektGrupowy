@@ -159,78 +159,92 @@ const ProjectDetails = () => {
         fetchData();
     }, [id]);
 
-    if (!project) return <div className="container">Loading...</div>;
+    if (!project) return (
+        <div className="container d-flex justify-content-center align-items-center py-5">
+            <div className="spinner-border text-primary" role="status">
+                <span className="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    );
 
     return (
         <div className="container">
             <div className="content">
-                <h1>{project.name}</h1>
-                {error && <div className="error">{error}</div>}
+                <h1 className="heading mb-4">{project.name}</h1>
+                {error && <div className="alert alert-danger mb-3">{error}</div>}
+                
                 <div className="tab-navigation">
                     <button
                         className={`tab-button ${activeTab === 'details' ? 'active' : ''}`}
                         onClick={() => setActiveTab('details')}
                     >
-                        Details
+                        <i className="fas fa-info-circle me-2"></i>Details
                     </button>
                     <button
                         className={`tab-button ${activeTab === 'subjects' ? 'active' : ''}`}
                         onClick={() => setActiveTab('subjects')}
                     >
-                        Subjects
+                        <i className="fas fa-folder me-2"></i>Subjects
                     </button>
                     <button
                         className={`tab-button ${activeTab === 'videos' ? 'active' : ''}`}
                         onClick={() => setActiveTab('videos')}
                     >
-                        Video Groups
+                        <i className="fas fa-film me-2"></i>Video Groups
                     </button>
                     <button
                         className={`tab-button ${activeTab === 'assignments' ? 'active' : ''}`}
                         onClick={() => setActiveTab('assignments')}
                     >
-                        Assignments
+                        <i className="fas fa-tasks me-2"></i>Assignments
                     </button>
                     <button
                         className={`tab-button ${activeTab === 'labelers' ? 'active' : ''}`}
                         onClick={() => setActiveTab('labelers')}
                     >
-                        Labelers
+                        <i className="fas fa-users me-2"></i>Labelers
                     </button>
                     <button
                         className={`tab-button ${activeTab === 'accessCodes' ? 'active' : ''}`}
                         onClick={() => setActiveTab('accessCodes')}
                     >
-                        Access Codes
+                        <i className="fas fa-key me-2"></i>Access Codes
                     </button>
                 </div>
 
-                <div className="tab-content">
+                <div className="tab-content mt-4">
                     {activeTab === 'details' && (
-                        <div className="details">
-                            <p><strong>Description:</strong> {project.description}</p>
-                            <div className="button-group">
-                                <button
-                                    className="edit-btn"
-                                    onClick={() => navigate(`/projects/edit/${project.id}`)}
-                                >
-                                    Edit
-                                </button>
-                                <button
-                                    className="back-btn"
-                                    onClick={() => navigate('/projects')}
-                                >
-                                    Back to Projects
-                                </button>
+                        <div className="card shadow-sm">
+                            <div className="card-header bg-primary text-white">
+                                <h5 className="card-title mb-0">Project Details</h5>
+                            </div>
+                            <div className="card-body">
+                                <p className="card-text"><strong>Description:</strong> {project.description}</p>
+                                <div className="d-flex mt-3">
+                                    <button
+                                        className="btn btn-primary me-2"
+                                        onClick={() => navigate(`/projects/edit/${project.id}`)}
+                                    >
+                                        <i className="fas fa-edit me-2"></i>Edit Project
+                                    </button>
+                                    <button
+                                        className="btn btn-secondary"
+                                        onClick={() => navigate('/projects')}
+                                    >
+                                        <i className="fas fa-arrow-left me-2"></i>Back to Projects
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     )}
 
                     {activeTab === 'subjects' && (
                         <div className="subjects">
-                            <div className="add-buttons">
+                            <div className="d-flex justify-content-end mb-3">
                                 <Link to={`/subjects/add?projectId=${id}`}>
-                                    <button className="add-btn">Add Subject</button>
+                                    <button className="btn btn-primary">
+                                        <i className="fas fa-plus-circle me-2"></i>Add Subject
+                                    </button>
                                 </Link>
                             </div>
                             {subjects.length > 0 ? (
@@ -251,13 +265,15 @@ const ProjectDetails = () => {
                                                 <td>{subject.description}</td>
                                                 <td>
                                                     <Link to={`/subjects/${subject.id}`}>
-                                                        <button className="btn btn-info">View</button>
+                                                        <button className="btn btn-info me-2">
+                                                            <i className="fas fa-eye me-1"></i>View
+                                                        </button>
                                                     </Link>
                                                     <button
                                                         className="btn btn-danger"
                                                         onClick={() => handleDeleteItem('subject', subject.id)}
                                                     >
-                                                        Delete
+                                                        <i className="fas fa-trash me-1"></i>Delete
                                                     </button>
                                                 </td>
                                             </tr>
@@ -265,16 +281,20 @@ const ProjectDetails = () => {
                                     </tbody>
                                 </table>
                             ) : (
-                                <p>No subjects found</p>
+                                <div className="alert alert-info">
+                                    <i className="fas fa-info-circle me-2"></i>No subjects found
+                                </div>
                             )}
                         </div>
                     )}
 
                     {activeTab === 'videos' && (
                         <div className="videos">
-                            <div className="add-buttons">
+                            <div className="d-flex justify-content-end mb-3">
                                 <Link to={`/video-groups/add?projectId=${id}`}>
-                                    <button className="add-btn">Add Video Group</button>
+                                    <button className="btn btn-primary">
+                                        <i className="fas fa-plus-circle me-2"></i>Add Video Group
+                                    </button>
                                 </Link>
                             </div>
                             {videoGroups.length > 0 ? (
@@ -295,13 +315,15 @@ const ProjectDetails = () => {
                                                 <td>{video.description}</td>
                                                 <td>
                                                     <Link to={`/video-groups/${video.id}`}>
-                                                        <button className="btn btn-info">View</button>
+                                                        <button className="btn btn-info me-2">
+                                                            <i className="fas fa-eye me-1"></i>View
+                                                        </button>
                                                     </Link>
                                                     <button
                                                         className="btn btn-danger"
                                                         onClick={() => handleDeleteItem('videogroup', video.id)}
                                                     >
-                                                        Delete
+                                                        <i className="fas fa-trash me-1"></i>Delete
                                                     </button>
                                                 </td>
                                             </tr>
@@ -309,16 +331,20 @@ const ProjectDetails = () => {
                                     </tbody>
                                 </table>
                             ) : (
-                                <p>No video groups found</p>
+                                <div className="alert alert-info">
+                                    <i className="fas fa-info-circle me-2"></i>No video groups found
+                                </div>
                             )}
                         </div>
                     )}
 
                     {activeTab === 'assignments' && (
                         <div className="assignments">
-                            <div className="add-buttons">
+                            <div className="d-flex justify-content-end mb-3">
                                 <Link to={`/assignments/add?projectId=${id}`}>
-                                    <button className="add-btn">Add Assignment</button>
+                                    <button className="btn btn-primary">
+                                        <i className="fas fa-plus-circle me-2"></i>Add Assignment
+                                    </button>
                                 </Link>
                             </div>
                             {assignments.length > 0 ? (
@@ -339,13 +365,15 @@ const ProjectDetails = () => {
                                                 <td>{assignment.videoGroupId}</td>
                                                 <td>
                                                     <Link to={`/assignments/${assignment.id}`}>
-                                                        <button className="btn btn-info">View</button>
+                                                        <button className="btn btn-info me-2">
+                                                            <i className="fas fa-eye me-1"></i>View
+                                                        </button>
                                                     </Link>
                                                     <button
                                                         className="btn btn-danger"
                                                         onClick={() => handleDeleteItem('SubjectVideoGroupAssignment', assignment.id)}
                                                     >
-                                                        Delete
+                                                        <i className="fas fa-trash me-1"></i>Delete
                                                     </button>
                                                 </td>
                                             </tr>
@@ -353,228 +381,256 @@ const ProjectDetails = () => {
                                     </tbody>
                                 </table>
                             ) : (
-                                <p>No assignments found</p>
+                                <div className="alert alert-info">
+                                    <i className="fas fa-info-circle me-2"></i>No assignments found
+                                </div>
                             )}
-                            
                         </div>
                     )}
+
                     {activeTab === 'labelers' && (
                         <div className="labelers">
-                            <h2>Labeler Assignments</h2>
+                            <h2 className="mb-3">Labeler Assignments</h2>
                             <button
-                                className="distribute-btn"
+                                className="btn btn-primary mb-4"
                                 onClick={handleDistributeLabelers}
                             >
-                                Distribute labelers
+                                <i className="fas fa-random me-2"></i>Distribute Labelers
                             </button>
                             
-                            <div className="assignment-controls">
-                                <h3>Assign Labeler to Assignment</h3>
-                                {assignmentError && <div className="error">{assignmentError}</div>}
-                                <div className="assignment-form">
-                                    <div className="form-group">
-                                        <label htmlFor="labelerSelect">Select Labeler:</label>
-                                        <select 
-                                            id="labelerSelect"
-                                            className="form-select"
-                                            value={selectedLabeler} 
-                                            onChange={(e) => setSelectedLabeler(e.target.value)}
+                            <div className="card shadow-sm mb-4">
+                                <div className="card-header bg-info text-white">
+                                    <h5 className="card-title mb-0">Assign Labeler to Assignment</h5>
+                                </div>
+                                <div className="card-body">
+                                    {assignmentError && (
+                                        <div className="alert alert-danger mb-3">
+                                            <i className="fas fa-exclamation-triangle me-2"></i>{assignmentError}
+                                        </div>
+                                    )}
+                                    <div className="assignment-form">
+                                        <div className="row mb-3">
+                                            <div className="col-md-6">
+                                                <label htmlFor="labelerSelect" className="form-label">Select Labeler:</label>
+                                                <select 
+                                                    id="labelerSelect"
+                                                    className="form-select"
+                                                    value={selectedLabeler} 
+                                                    onChange={(e) => setSelectedLabeler(e.target.value)}
+                                                >
+                                                    <option value="">-- Select Labeler --</option>
+                                                    {labelers.map(labeler => (
+                                                        <option key={labeler.id} value={labeler.id}>
+                                                            {labeler.name} (ID: {labeler.id})
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                            <div className="col-md-6">
+                                                <label htmlFor="assignmentSelect" className="form-label">Select Assignment:</label>
+                                                <select 
+                                                    id="assignmentSelect"
+                                                    className="form-select"
+                                                    value={selectedAssignment} 
+                                                    onChange={(e) => setSelectedAssignment(e.target.value)}
+                                                >
+                                                    <option value="">-- Select Assignment --</option>
+                                                    {assignments.map(assignment => {
+                                                        // Find subject and video group names for better display
+                                                        const subject = subjects.find(s => s.id === assignment.subjectId);
+                                                        const videoGroup = videoGroups.find(vg => vg.id === assignment.videoGroupId);
+                                                        
+                                                        return (
+                                                            <option key={assignment.id} value={assignment.id}>
+                                                                Assignment #{assignment.id} - 
+                                                                Subject: {subject?.name || "Unknown"} (ID: {assignment.subjectId}), 
+                                                                Video Group: {videoGroup?.name || "Unknown"} (ID: {assignment.videoGroupId})
+                                                            </option>
+                                                        );
+                                                    })}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <button 
+                                            className="btn btn-success" 
+                                            disabled={!selectedLabeler || !selectedAssignment}
+                                            onClick={handleAssignLabeler}
                                         >
-                                            <option value="">-- Select Labeler --</option>
-                                            {labelers.map(labeler => (
-                                                <option key={labeler.id} value={labeler.id}>
-                                                    {labeler.name} (ID: {labeler.id})
-                                                </option>
-                                            ))}
-                                        </select>
+                                            <i className="fas fa-user-plus me-2"></i>Assign Labeler
+                                        </button>
                                     </div>
-                                    <div className="form-group">
-                                        <label htmlFor="assignmentSelect">Select Assignment:</label>
-                                        <select 
-                                            id="assignmentSelect"
-                                            className="form-select"
-                                            value={selectedAssignment} 
-                                            onChange={(e) => setSelectedAssignment(e.target.value)}
-                                        >
-                                            <option value="">-- Select Assignment --</option>
-                                            {assignments.map(assignment => {
-                                                // Find subject and video group names for better display
-                                                const subject = subjects.find(s => s.id === assignment.subjectId);
-                                                const videoGroup = videoGroups.find(vg => vg.id === assignment.videoGroupId);
-                                                
-                                                return (
-                                                    <option key={assignment.id} value={assignment.id}>
-                                                        Assignment #{assignment.id} - 
-                                                        Subject: {subject?.name || "Unknown"} (ID: {assignment.subjectId}), 
-                                                        Video Group: {videoGroup?.name || "Unknown"} (ID: {assignment.videoGroupId})
-                                                    </option>
-                                                );
-                                            })}
-                                        </select>
-                                    </div>
-                                    <button 
-                                        className="btn btn-success" 
-                                        disabled={!selectedLabeler || !selectedAssignment}
-                                        onClick={handleAssignLabeler}
-                                    >
-                                        Assign Labeler
-                                    </button>
                                 </div>
                             </div>
-                            
-                            <h3>Project Labelers</h3>
+
+                            <h3 className="mb-3">Project Labelers</h3>
                             {labelers.length > 0 ? (
                                 <table className="normal-table">
                                     <thead>
-                                    <tr>
-                                        <th>Labeler ID</th>
-                                        <th>Username</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    {labelers.map((labeler) => (
-                                        <tr key={labeler.id}>
-                                            <td>{labeler.id}</td>
-                                            <td>{labeler.name}</td>
+                                        <tr>
+                                            <th>Labeler ID</th>
+                                            <th>Username</th>
                                         </tr>
-                                    ))}
-                                    </tbody>
-                                </table>
-                            ) : (
-                                <p>No labelers found in this project</p>
-                            )}
-                            
-                            <h3>Assignment Labelers</h3>
-                            {assignments.some(assignment => assignment.labelers && assignment.labelers.length > 0) ? (
-                                <table className="normal-table">
-                                    <thead>
-                                    <tr>
-                                        <th>Labeler ID</th>
-                                        <th>Username</th>
-                                        <th>Video Group ID</th>
-                                        <th>Subject ID</th>
-                                        <th>Assignment ID</th>
-                                        <th>Actions</th>
-                                    </tr>
                                     </thead>
                                     <tbody>
-                                    {assignments
-                                        .filter(assignment => assignment.labelers && assignment.labelers.length > 0)
-                                        .flatMap(assignment => 
-                                            assignment.labelers.map(labeler => ({
-                                                labeler,
-                                                videoGroupId: assignment.videoGroupId,
-                                                subjectId: assignment.subjectId,
-                                                assignmentId: assignment.id
-                                            }))
-                                        )
-                                        .map((item, index) => (
-                                            <tr key={`${item.labeler.id}-${item.videoGroupId}-${index}`}>
-                                                <td>{item.labeler.id}</td>
-                                                <td>{item.labeler.name}</td>
-                                                <td>{item.videoGroupId}</td>
-                                                <td>{item.subjectId}</td>
-                                                <td>{item.assignmentId}</td>
-                                                <td>
-                                                    <button
-                                                        className="btn btn-danger"
-                                                        onClick={() => handleUnassignLabeler(item.assignmentId, item.labeler.id)}
-                                                    >
-                                                        Unassign
-                                                    </button>
-                                                </td>
+                                        {labelers.map((labeler) => (
+                                            <tr key={labeler.id}>
+                                                <td>{labeler.id}</td>
+                                                <td>{labeler.name}</td>
                                             </tr>
                                         ))}
                                     </tbody>
                                 </table>
                             ) : (
-                                <p>No labelers found in assignments</p>
+                                <div className="alert alert-info">
+                                    <i className="fas fa-info-circle me-2"></i>No labelers found in this project
+                                </div>
+                            )}
+
+                            <h3 className="mt-4 mb-3">Assignment Labelers</h3>
+                            {assignments.some(assignment => assignment.labelers && assignment.labelers.length > 0) ? (
+                                <table className="normal-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Labeler ID</th>
+                                            <th>Username</th>
+                                            <th>Video Group ID</th>
+                                            <th>Subject ID</th>
+                                            <th>Assignment ID</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {assignments
+                                            .filter(assignment => assignment.labelers && assignment.labelers.length > 0)
+                                            .flatMap(assignment => 
+                                                assignment.labelers.map(labeler => ({
+                                                    labeler,
+                                                    videoGroupId: assignment.videoGroupId,
+                                                    subjectId: assignment.subjectId,
+                                                    assignmentId: assignment.id
+                                                }))
+                                            )
+                                            .map((item, index) => (
+                                                <tr key={`${item.labeler.id}-${item.videoGroupId}-${index}`}>
+                                                    <td>{item.labeler.id}</td>
+                                                    <td>{item.labeler.name}</td>
+                                                    <td>{item.videoGroupId}</td>
+                                                    <td>{item.subjectId}</td>
+                                                    <td>{item.assignmentId}</td>
+                                                    <td>
+                                                        <button
+                                                            className="btn btn-danger btn-sm"
+                                                            onClick={() => handleUnassignLabeler(item.assignmentId, item.labeler.id)}
+                                                        >
+                                                            <i className="fas fa-user-minus me-1"></i>Unassign
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                    </tbody>
+                                </table>
+                            ) : (
+                                <div className="alert alert-info">
+                                    <i className="fas fa-info-circle me-2"></i>No labelers found in assignments
+                                </div>
                             )}
                         </div>
                     )}
+
                     {activeTab === 'accessCodes' && (
                         <div className="access-codes">
-                            <div className="add-buttons">
-                                <div className="duration-options">
-                                    <button
-                                        className={`btn btn-primary ${selectedDuration === '14days' ? 'active' : ''}`}
-                                        onClick={() => setSelectedDuration('14days')}
-                                    >
-                                        14 Days
-                                    </button>
-                                    <button
-                                        className={`btn btn-primary ${selectedDuration === '30days' ? 'active' : ''}`}
-                                        onClick={() => setSelectedDuration('30days')}
-                                    >
-                                        30 Days
-                                    </button>
-                                    <button
-                                        className={`btn btn-primary ${selectedDuration === 'unlimited' ? 'active' : ''}`}
-                                        onClick={() => setSelectedDuration('unlimited')}
-                                    >
-                                        Unlimited
-                                    </button>
-
-                                    <button
-                                        className="btn btn-success"
-                                        onClick={handleCreateAccessCode}
-                                    >
-                                        Generate Access Code
-                                    </button>
+                            <div className="card shadow-sm mb-4">
+                                <div className="card-header bg-primary text-white">
+                                    <h5 className="card-title mb-0">Generate Access Codes</h5>
                                 </div>
-                                {creationError && <div className="error">{creationError}</div>}
+                                <div className="card-body">
+                                    <div className="duration-options d-flex align-items-center gap-3 mb-3">
+                                        <div className="btn-group">
+                                            <button
+                                                className={`btn ${selectedDuration === '14days' ? 'btn-primary' : 'btn-outline-primary'}`}
+                                                onClick={() => setSelectedDuration('14days')}
+                                            >
+                                                14 Days
+                                            </button>
+                                            <button
+                                                className={`btn ${selectedDuration === '30days' ? 'btn-primary' : 'btn-outline-primary'}`}
+                                                onClick={() => setSelectedDuration('30days')}
+                                            >
+                                                30 Days
+                                            </button>
+                                            <button
+                                                className={`btn ${selectedDuration === 'unlimited' ? 'btn-primary' : 'btn-outline-primary'}`}
+                                                onClick={() => setSelectedDuration('unlimited')}
+                                            >
+                                                Unlimited
+                                            </button>
+                                        </div>
+                                        <button
+                                            className="btn btn-success"
+                                            onClick={handleCreateAccessCode}
+                                            disabled={!selectedDuration}
+                                        >
+                                            <i className="fas fa-key me-2"></i>Generate Access Code
+                                        </button>
+                                    </div>
+                                    {creationError && (
+                                        <div className="alert alert-danger">
+                                            <i className="fas fa-exclamation-triangle me-2"></i>{creationError}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
 
                             {accessCodes.length > 0 ? (
                                 <table className="normal-table">
                                     <thead>
-                                    <tr>
-                                        <th>Code</th>
-                                        <th>Created At</th>
-                                        <th>Expires At</th>
-                                        <th>Valid</th>
-                                        <th>Methods</th>
-                                    </tr>
+                                        <tr>
+                                            <th>Code</th>
+                                            <th>Created At</th>
+                                            <th>Expires At</th>
+                                            <th>Valid</th>
+                                            <th>Actions</th>
+                                        </tr>
                                     </thead>
                                     <tbody>
-                                    {accessCodes
-                                        .slice()
-                                        .sort((a, b) => {
-                                            if (!a.expiresAtUtc && !b.expiresAtUtc) return 0;
-                                            if (!a.expiresAtUtc) return -1;
-                                            if (!b.expiresAtUtc) return 1;
-                                            
-                                            return new Date(b.expiresAtUtc) - new Date(a.expiresAtUtc);
-                                        })
-                                        .map((code) => (
-                                        <tr key={code.code}>
-                                            <td>{code.code}</td>
-                                            <td>{new Date(code.createdAtUtc).toLocaleString()}</td>
-                                            <td>
-                                                {code.expiresAtUtc
-                                                    ? new Date(code.expiresAtUtc).toLocaleString()
-                                                    : 'Never'}
-                                            </td>
-                                            <td>{code.isValid ? '✅' : '❌'}</td>
-                                            <td>
-                                                <button
-                                                    className="btn btn-primary"
-                                                    onClick={() => handleCopyCode(code.code)}
-                                                >
-                                                    Copy
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))}
-
+                                        {accessCodes
+                                            .slice()
+                                            .sort((a, b) => {
+                                                if (!a.expiresAtUtc && !b.expiresAtUtc) return 0;
+                                                if (!a.expiresAtUtc) return -1;
+                                                if (!b.expiresAtUtc) return 1;
+                                                
+                                                return new Date(b.expiresAtUtc) - new Date(a.expiresAtUtc);
+                                            })
+                                            .map((code) => (
+                                                <tr key={code.code}>
+                                                    <td><code>{code.code}</code></td>
+                                                    <td>{new Date(code.createdAtUtc).toLocaleString()}</td>
+                                                    <td>
+                                                        {code.expiresAtUtc
+                                                            ? new Date(code.expiresAtUtc).toLocaleString()
+                                                            : 'Never'}
+                                                    </td>
+                                                    <td>{code.isValid ? <span className="badge bg-success">✓ Valid</span> : <span className="badge bg-danger">✗ Invalid</span>}</td>
+                                                    <td>
+                                                        <button
+                                                            className="btn btn-outline-primary btn-sm"
+                                                            onClick={() => handleCopyCode(code.code)}
+                                                        >
+                                                            <i className="fas fa-copy me-1"></i>Copy
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))}
                                     </tbody>
                                 </table>
                             ) : (
-                                <p>No access codes found</p>
+                                <div className="alert alert-info text-center">
+                                    <i className="fas fa-info-circle me-2"></i>No access codes found
+                                </div>
                             )}
                         </div>
                     )}
-
                 </div>
             </div>
         </div>

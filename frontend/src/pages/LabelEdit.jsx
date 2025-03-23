@@ -63,63 +63,112 @@ const LabelEdit = () => {
 
     return (
         <div className="container">
-            <h1>Edit Label</h1>
-            <form onSubmit={handleSubmit}>
-                <div>
-                    <label htmlFor="name">Name</label>
-                    <input
-                        type="text"
-                        id="name"
-                        name="name"
-                        value={labelData.name}
-                        onChange={handleChange}
-                        required
-                    />
-                </div>
-                <div>
-                    <label htmlFor="colorHex">Color</label>
-                    <input
-                        type="color"
-                        id="colorHex"
-                        name="colorHex"
-                        value={labelData.colorHex}
-                        onChange={handleChange}
-                    />
-                </div>
-                <div>
-                    <label htmlFor="type">Type</label>
-                    <input
-                        type="text"
-                        id="type"
-                        name="type"
-                        value={labelData.type}
-                        onChange={handleChange}
-                        required
-                    />
-                </div>
-                <div>
-                    <label htmlFor="shortcut">Shortcut</label>
-                    <input
-                        type="text"
-                        id="shortcut"
-                        name="shortcut"
-                        value={labelData.shortcut}
-                        onChange={handleChange}
-                        maxLength="1"
-                        required
-                    />
-                </div>
-                {error && <p className="error">{error}</p>}
-                <button type="submit" className="edit-btn">
-                    Update Label
-                </button>
-            </form>
-            <button
-                className="btn-back back-btn"
-                onClick={() => navigate(`/subjects/details/${labelData.subjectId}`)}
-            >
-                Back to Subject Details
-            </button>
+            <div className="content">
+                <h1 className="heading">Edit Label</h1>
+                {error && <div className="error">{error}</div>}
+                
+                <form onSubmit={handleSubmit} className="auth-form">
+                    <div className="form-group">
+                        <label htmlFor="name">Name</label>
+                        <input
+                            type="text"
+                            id="name"
+                            name="name"
+                            value={labelData.name}
+                            onChange={handleChange}
+                            className="form-control"
+                            required
+                        />
+                    </div>
+                    
+                    <div className="form-group">
+                        <label htmlFor="colorHex">Color</label>
+                        <div className="color-selector">
+                            <input
+                                type="color"
+                                id="colorHex"
+                                name="colorHex"
+                                value={labelData.colorHex}
+                                onChange={handleChange}
+                                className="color-input"
+                            />
+                            <div className="color-preview" style={{
+                                backgroundColor: labelData.colorHex,
+                                width: '30px',
+                                height: '30px',
+                                border: '1px solid #ccc',
+                                borderRadius: '4px',
+                                marginLeft: '10px',
+                                marginRight: '10px'
+                            }}></div>
+                            <span className="color-hex-value">{labelData.colorHex}</span>
+                        </div>
+                    </div>
+                    
+                    <div className="form-group">
+                        <label htmlFor="type">Type</label>
+                        <select
+                            id="type"
+                            name="type"
+                            value={labelData.type}
+                            onChange={handleChange}
+                            className="form-select"
+                            required
+                        >
+                            <option value="range">Range</option>
+                            <option value="point">Point</option>
+                        </select>
+                    </div>
+                    
+                    <div className="form-group">
+                        <label htmlFor="shortcut">Shortcut</label>
+                        <input
+                            type="text"
+                            id="shortcut"
+                            name="shortcut"
+                            value={labelData.shortcut}
+                            onChange={handleChange}
+                            className="form-control"
+                            maxLength="1"
+                            required
+                        />
+                    </div>
+                    
+                    <div className="button-group">
+                        <button type="submit" className="btn btn-primary">
+                            Update Label
+                        </button>
+                        <button
+                            type="button"
+                            className="btn btn-secondary"
+                            onClick={() => navigate(`/subjects/${labelData.subjectId}`)}
+                        >
+                            Back to Subject
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <style jsx>{`
+                .color-selector {
+                    display: flex;
+                    align-items: center;
+                }
+                
+                .color-input {
+                    width: 50px;
+                    height: 40px;
+                    padding: 0;
+                    border: none;
+                    background: none;
+                    cursor: pointer;
+                }
+                
+                .color-hex-value {
+                    font-family: monospace;
+                    font-size: 1rem;
+                }
+            `}</style>
         </div>
     );
 };

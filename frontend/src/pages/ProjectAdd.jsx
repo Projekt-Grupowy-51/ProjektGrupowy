@@ -11,15 +11,18 @@ function ProjectAdd() {
         scientistId: "",
         finished: false
     });
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError("");
+        setLoading(true);
 
-        // Walidacja scientistId
+        // Validate scientistId
         if (!Number.isInteger(Number(formData.scientistId))) {
             setError("Scientist ID must be a valid number");
+            setLoading(false);
             return;
         }
 
@@ -36,6 +39,8 @@ function ProjectAdd() {
         } catch (error) {
             console.error("Error adding project:", error);
             setError(error.response?.data?.message || "Failed to add project");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -47,63 +52,80 @@ function ProjectAdd() {
     };
 
     return (
-        <div className="container auth-container">
-            <h1 className="heading">Add New Project</h1>
+        <div className="container py-4">
+            <div className="row justify-content-center">
+                <div className="col-lg-8">
+                    <div className="card shadow-sm">
+                        <div className="card-header bg-primary text-white">
+                            <h1 className="heading mb-0">Add New Project</h1>
+                        </div>
+                        <div className="card-body">
+                            {error && <div className="alert alert-danger mb-4">{error}</div>}
 
-            <form onSubmit={handleSubmit} className="auth-form">
-                {error && <div className="error">{error}</div>}
+                            <form onSubmit={handleSubmit}>
+                                <div className="mb-3">
+                                    <label htmlFor="name" className="form-label">Project Name</label>
+                                    <input
+                                        type="text"
+                                        id="name"
+                                        name="name"
+                                        className="form-control"
+                                        value={formData.name}
+                                        onChange={handleChange}
+                                        required
+                                    />
+                                </div>
 
-                <div className="form-group">
-                    <label>Project Name:</label>
-                    <input
-                        type="text"
-                        name="name"
-                        className="form-input"
-                        value={formData.name}
-                        onChange={handleChange}
-                        required
-                    />
+                                <div className="mb-3">
+                                    <label htmlFor="description" className="form-label">Description</label>
+                                    <textarea
+                                        id="description"
+                                        name="description"
+                                        className="form-control"
+                                        value={formData.description}
+                                        onChange={handleChange}
+                                        required
+                                        rows="4"
+                                    />
+                                </div>
+
+                                <div className="mb-4">
+                                    <label htmlFor="scientistId" className="form-label">Scientist ID</label>
+                                    <input
+                                        type="number"
+                                        id="scientistId"
+                                        name="scientistId"
+                                        className="form-control"
+                                        value={formData.scientistId}
+                                        onChange={handleChange}
+                                        required
+                                        min="1"
+                                    />
+                                </div>
+
+                                <div className="d-flex">
+                                    <button 
+                                        type="submit" 
+                                        className="btn btn-primary me-2"
+                                        disabled={loading}
+                                    >
+                                        <i className="fas fa-plus-circle me-2"></i>
+                                        {loading ? "Creating..." : "Create Project"}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="btn btn-secondary"
+                                        onClick={() => navigate("/projects")}
+                                        disabled={loading}
+                                    >
+                                        <i className="fas fa-times me-2"></i>Cancel
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
                 </div>
-
-                <div className="form-group">
-                    <label>Description:</label>
-                    <textarea
-                        name="description"
-                        className="form-input"
-                        value={formData.description}
-                        onChange={handleChange}
-                        required
-                        rows="4"
-                    />
-                </div>
-
-                <div className="form-group">
-                    <label>Scientist ID:</label>
-                    <input
-                        type="number"
-                        name="scientistId"
-                        className="form-input"
-                        value={formData.scientistId}
-                        onChange={handleChange}
-                        required
-                        min="1"
-                    />
-                </div>
-
-                <div className="form-group">
-                    <button type="submit" className="auth-btn add-btn">
-                        Create Project
-                    </button>
-
-                    <button
-                        type="button"
-                        className="auth-btn back-btn"
-                        onClick={() => navigate("/projects")}
-                    >
-                        Back to Projects
-                    </button>
-                </div>
-            </form>
+            </div>
         </div>
     );
 }
