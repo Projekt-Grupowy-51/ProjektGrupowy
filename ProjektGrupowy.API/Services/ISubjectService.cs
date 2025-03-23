@@ -17,4 +17,6 @@ public interface ISubjectService
     Task DeleteSubjectAsync(int id);
 
     Task<Optional<IEnumerable<Subject>>> GetSubjectsByScientistId(int scientistId);
+
+    Task<Optional<IEnumerable<Label>>> GetSubjectLabelsAsync(int subjectId);
 }

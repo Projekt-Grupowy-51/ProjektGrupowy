@@ -17,4 +17,6 @@ public interface IVideoGroupService
     Task DeleteVideoGroupAsync(int id);
 
     Task<Optional<IEnumerable<Video>>> GetVideosByVideoGroupIdAsync(int id);
+
+    Task<Optional<IEnumerable<VideoGroup>>> GetVideoGroupsByScientistIdAsync(int scientistId);
 }

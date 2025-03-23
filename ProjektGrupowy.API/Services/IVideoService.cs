@@ -12,4 +12,5 @@ public interface IVideoService
     Task<Optional<Video>> AddVideoAsync(VideoRequest videoRequest);
     Task<Optional<Video>> UpdateVideoAsync(int videoId, VideoRequest videoRequest);
     Task DeleteVideoAsync(int id);
+    Task<Optional<IEnumerable<Video>>> GetVideosByScientistIdAsync(int scientistId);
 }

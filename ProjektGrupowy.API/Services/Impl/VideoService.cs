@@ -105,4 +105,9 @@ public class VideoService(
         if (video.IsSuccess)
             await videoRepository.DeleteVideoAsync(video.GetValueOrThrow());
     }
+
+    public async Task<Optional<IEnumerable<Video>>> GetVideosByScientistIdAsync(int scientistId)
+    {
+        return await videoRepository.GetVideosByScientistIdAsync(scientistId);
+    }
 }

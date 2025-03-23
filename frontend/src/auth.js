@@ -28,6 +28,7 @@ class AuthService {
             this.scheduleTokenRefresh(expiresAt);
             return response.data;
         } catch (error) {
+            console.log(error.message);
             throw new Error('Login failed');
         }
     }
@@ -35,9 +36,11 @@ class AuthService {
     // Rejestracja
     async register(userData) {
         try {
+            console.log(userData);
             const response = await httpClient.post('/Auth/Register', userData);
             return response.data;
         } catch (error) {
+            console.log(error);
             throw new Error(error.message);
         }
     }

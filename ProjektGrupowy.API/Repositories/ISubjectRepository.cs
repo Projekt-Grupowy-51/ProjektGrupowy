@@ -16,4 +16,5 @@ public interface ISubjectRepository
     Task DeleteSubjectAsync(Subject subject);
 
     Task<Optional<IEnumerable<Subject>>> GetSubjectsByScientistId(int scientistId);
+    Task<Optional<IEnumerable<Label>>> GetSubjectLabelsAsync(int subjectId);
 }

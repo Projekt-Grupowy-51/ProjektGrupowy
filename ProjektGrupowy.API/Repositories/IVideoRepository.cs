@@ -11,4 +11,5 @@ public interface IVideoRepository
     Task<Optional<Video>> AddVideoAsync(Video video);
     Task<Optional<Video>> UpdateVideoAsync(Video video);
     Task DeleteVideoAsync(Video video);
+    Task<Optional<IEnumerable<Video>>> GetVideosByScientistIdAsync(int scientistId);
 }

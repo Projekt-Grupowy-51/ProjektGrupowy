@@ -1,12 +1,11 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ProjektGrupowy.API.DTOs.Label;
 using ProjektGrupowy.API.DTOs.Subject;
 using ProjektGrupowy.API.Filters;
-using ProjektGrupowy.API.Models;
 using ProjektGrupowy.API.Services;
-using ProjektGrupowy.API.Utils.Enums;
-using System.Security.Claims;
+using ProjektGrupowy.API.Utils.Constants;
 
 namespace ProjektGrupowy.API.Controllers;
 
@@ -14,225 +13,154 @@ namespace ProjektGrupowy.API.Controllers;
 [ApiController]
 [ServiceFilter(typeof(ValidateModelStateFilter))]
 [Authorize]
-public class SubjectController(ISubjectService subjectService, IScientistService scientistService, ILabelerService labelerService, IProjectService projectService, IMapper mapper) : ControllerBase
+public class SubjectController(
+    ISubjectService subjectService,
+    IAuthorizationHelper authHelper,
+    IMapper mapper) : ControllerBase
 {
-    private (ActionResult? Error, bool IsScientist, bool IsAdmin, bool IsLabeler, Scientist? Scientist, Labeler? Labeler) CheckGeneralAccess()
-    {
-        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (userId == null)
-        {
-            return (Unauthorized("User identity not found."), false, false, false, null, null);
-        }
-
-        bool isScientist = User.IsInRole(RoleEnum.Scientist.ToString());
-        bool isAdmin = User.IsInRole(RoleEnum.Admin.ToString());
-        bool isLabeler = User.IsInRole(RoleEnum.Labeler.ToString());
-
-        if (!isScientist && !isAdmin && !isLabeler)
-        {
-            return (Forbid(), false, false, false, null, null);
-        }
-
-        if (isScientist)
-        {
-            return (null, true, false, false, scientistService.GetScientistByUserIdAsync(userId).Result.GetValueOrThrow(), null);
-        }
-
-        if (isLabeler)
-        {
-            return (null, false, false, true, null, labelerService.GetLabelerByUserIdAsync(userId).Result.GetValueOrThrow());
-        }
-
-        return (null, false, true, false, null, null);
-    }
-
+    [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<SubjectResponse>>> GetSubjectsAsync()
     {
-        var checkResult = CheckGeneralAccess();
+        var checkResult = await authHelper.CheckGeneralAccessAsync(User);
         if (checkResult.Error != null)
         {
             return checkResult.Error;
         }
 
-        if (checkResult.IsLabeler)
-        {
-            return Forbid();
-        }
-    
-        var subjects = checkResult.IsAdmin switch {
-            true => await subjectService.GetSubjectsAsync(),
-            false => await subjectService.GetSubjectsByScientistId(checkResult.Scientist!.Id)
-        };
+        var subjects = checkResult.IsAdmin 
+            ? await subjectService.GetSubjectsAsync()
+            : await subjectService.GetSubjectsByScientistId(checkResult.Scientist!.Id);
 
         return subjects.IsSuccess
             ? Ok(mapper.Map<IEnumerable<SubjectResponse>>(subjects.GetValueOrThrow()))
             : NotFound(subjects.GetErrorOrThrow());
     }
 
+    [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
     [HttpGet("{id:int}")]
     public async Task<ActionResult<SubjectResponse>> GetSubjectAsync(int id)
     {
-        var checkResult = CheckGeneralAccess();
+        var checkResult = await authHelper.CheckGeneralAccessAsync(User);
         if (checkResult.Error != null)
         {
             return checkResult.Error;
         }
 
-        if (checkResult.IsLabeler)
-        {
-            return Forbid();
-        }
-
-        var subjectResult = await subjectService.GetSubjectAsync(id);
-
-        if (subjectResult.IsFailure)
-        {
-            return NotFound(new { Message = "Subject not found" });
-        }
-
-        var subject = subjectResult.GetValueOrThrow();
-
         if (checkResult.IsScientist)
         {
-            if (subject.Project.Scientist.Id != checkResult.Scientist!.Id)
+            var authResult = await authHelper.EnsureScientistOwnsSubjectAsync(User, id);
+            if (authResult != null)
             {
-                return Forbid("Not your project");
+                return authResult;
             }
         }
 
-        return Ok(mapper.Map<SubjectResponse>(subject));
+        var subject = await subjectService.GetSubjectAsync(id);
+        return subject.IsSuccess 
+            ? Ok(mapper.Map<SubjectResponse>(subject.GetValueOrThrow())) 
+            : NotFound(subject.GetErrorOrThrow());
     }
 
+    [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
     [HttpPost]
-    public async Task<ActionResult<SubjectResponse>> AddSubjectAsync(SubjectRequest subjectRequest)
+    public async Task<ActionResult<SubjectResponse>> PostSubjectAsync(SubjectRequest subjectRequest)
     {
-        var checkResult = CheckGeneralAccess();
+        var checkResult = await authHelper.CheckGeneralAccessAsync(User);
         if (checkResult.Error != null)
         {
             return checkResult.Error;
         }
 
-        if (checkResult.IsLabeler)
-        {
-            return Forbid();
-        }
-
-        var projectResult = await projectService.GetProjectAsync(subjectRequest.ProjectId);
-
-        if (projectResult.IsFailure)
-        {
-            return BadRequest(projectResult.GetErrorOrThrow());
-        }
-
-        var project = projectResult.GetValueOrThrow();
-
         if (checkResult.IsScientist)
         {
-            if (project.Scientist.Id != checkResult.Scientist!.Id)
+            var authResult = await authHelper.EnsureScientistOwnsProjectAsync(User, subjectRequest.ProjectId);
+            if (authResult != null)
             {
-                return Forbid("Not your project");
+                return authResult;
             }
         }
 
         var result = await subjectService.AddSubjectAsync(subjectRequest);
-
         if (result.IsFailure)
             return BadRequest(result.GetErrorOrThrow());
 
         var createdSubject = result.GetValueOrThrow();
-
         var subjectResponse = mapper.Map<SubjectResponse>(createdSubject);
 
         return CreatedAtAction("GetSubject", new { id = createdSubject.Id }, subjectResponse);
     }
 
+    [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
     [HttpPut("{id:int}")]
     public async Task<IActionResult> PutSubjectAsync(int id, SubjectRequest subjectRequest)
     {
-        var checkResult = CheckGeneralAccess();
+        var checkResult = await authHelper.CheckGeneralAccessAsync(User);
         if (checkResult.Error != null)
         {
             return checkResult.Error;
         }
 
-        if (checkResult.IsLabeler)
-        {
-            return Forbid();
-        }
-
         var subjectResult = await subjectService.GetSubjectAsync(id);
-
         if (subjectResult.IsFailure)
         {
             return NotFound(new { Message = "Subject not found" });
         }
 
-        var subject = subjectResult.GetValueOrThrow();
-
         if (checkResult.IsScientist)
         {
-            var projectsResult = await projectService.GetProjectsOfScientist(checkResult.Scientist!.Id);
-
-            if (projectsResult.IsFailure)
+            var authResult = await authHelper.EnsureScientistOwnsSubjectAsync(User, id);
+            if (authResult != null)
             {
-                return BadRequest(projectsResult.GetErrorOrThrow());
+                return authResult;
             }
-
-            if (!projectsResult.GetValueOrThrow().Any(x => x.Id == subjectRequest.ProjectId))
+            
+            var projectAuthResult = await authHelper.EnsureScientistOwnsProjectAsync(User, subjectRequest.ProjectId);
+            if (projectAuthResult != null)
             {
-                return Forbid("Not your project");
+                return projectAuthResult;
             }
         }
 
         var result = await subjectService.UpdateSubjectAsync(id, subjectRequest);
-
         return result.IsSuccess
             ? NoContent()
             : BadRequest(result.GetErrorOrThrow());
     }
 
+    [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteSubjectAsync(int id)
     {
-        var checkResult = CheckGeneralAccess();
+        var checkResult = await authHelper.CheckGeneralAccessAsync(User);
         if (checkResult.Error != null)
         {
             return checkResult.Error;
         }
 
-        if (checkResult.IsLabeler)
-        {
-            return Forbid();
-        }
-
         var subjectResult = await subjectService.GetSubjectAsync(id);
-
         if (subjectResult.IsFailure)
         {
             return NotFound(new { Message = "Subject not found" });
         }
 
-        var subject = subjectResult.GetValueOrThrow();
-
         if (checkResult.IsScientist)
         {
-            if (subject.Project.Scientist.Id != checkResult.Scientist!.Id)
+            var authResult = await authHelper.EnsureScientistOwnsSubjectAsync(User, id);
+            if (authResult != null)
             {
-                return Forbid("Not your project");
+                return authResult;
             }
         }
 
         await subjectService.DeleteSubjectAsync(id);
-
         return NoContent();
     }
 
     [HttpGet("{id:int}/label")]
-    public async Task<ActionResult> GetSubjectLabelsAsync(int id)
+    public async Task<ActionResult<IEnumerable<LabelResponse>>> GetSubjectLabelsAsync(int id)
     {
-            /*
-        var checkResult = CheckGeneralAccess();
+        var checkResult = await authHelper.CheckGeneralAccessAsync(User);
         if (checkResult.Error != null)
         {
             return checkResult.Error;
@@ -240,15 +168,25 @@ public class SubjectController(ISubjectService subjectService, IScientistService
 
         if (checkResult.IsScientist)
         {
-            return Forbid();
+            var authResult = await authHelper.EnsureScientistOwnsSubjectAsync(User, id);
+            if (authResult != null)
+            {
+                return authResult;
+            }
+        }
+        
+        if (checkResult.IsLabeler)
+        {
+            var authResult = await authHelper.EnsureLabelerCanAccessSubjectAsync(User, id);
+            if (authResult != null)
+            {
+                return authResult;
+            }
         }
 
         var labels = await subjectService.GetSubjectLabelsAsync(id);
-
         return labels.IsSuccess
             ? Ok(mapper.Map<IEnumerable<LabelResponse>>(labels.GetValueOrThrow()))
-            : NotFound(labels.GetErrorOrThrow());*/
-
-            return NoContent();
+            : NotFound(labels.GetErrorOrThrow());
     }
 }

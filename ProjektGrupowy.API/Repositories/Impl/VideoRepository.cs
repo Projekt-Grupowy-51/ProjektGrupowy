@@ -5,18 +5,27 @@ using ProjektGrupowy.API.Utils;
 
 namespace ProjektGrupowy.API.Repositories.Impl;
 
-public class VideoRepository(AppDbContext dbContext, ILogger<VideoRepository> logger) : IVideoRepository
+public class VideoRepository : IVideoRepository
 {
+    private readonly AppDbContext _context;
+    private readonly ILogger<VideoRepository> _logger;
+
+    public VideoRepository(AppDbContext dbContext, ILogger<VideoRepository> logger)
+    {
+        _context = dbContext;
+        _logger = logger;
+    }
+
     public async Task<Optional<IEnumerable<Video>>> GetVideosAsync()
     {
         try
         {
-            var videos = await dbContext.Videos.ToListAsync();
+            var videos = await _context.Videos.ToListAsync();
             return Optional<IEnumerable<Video>>.Success(videos);
         }
         catch (Exception e)
         {
-            logger.LogError(e, "An error occurred while getting videos");
+            _logger.LogError(e, "An error occurred while getting videos");
             return Optional<IEnumerable<Video>>.Failure(e.Message);
         }
     }
@@ -26,7 +35,7 @@ public class VideoRepository(AppDbContext dbContext, ILogger<VideoRepository> lo
         try
         {
             // Index lookup
-            var videos = await dbContext.Videos
+            var videos = await _context.Videos
                 .AsNoTracking()
                 .Where(v => v.VideoGroupId == videoGroupId)
                 .Where(v => v.PositionInQueue == positionInQueue)
@@ -36,7 +45,7 @@ public class VideoRepository(AppDbContext dbContext, ILogger<VideoRepository> lo
         }
         catch (Exception e)
         {
-            logger.LogError(e, "An error occurred while getting videos");
+            _logger.LogError(e, "An error occurred while getting videos");
             return Optional<IEnumerable<Video>>.Failure(e.Message);
         }
     }
@@ -45,14 +54,14 @@ public class VideoRepository(AppDbContext dbContext, ILogger<VideoRepository> lo
     {
         try
         {
-            var video = await dbContext.Videos.FindAsync(id);
+            var video = await _context.Videos.FindAsync(id);
             return video is null
                 ? Optional<Video>.Failure("Video not found")
                 : Optional<Video>.Success(video);
         }
         catch (Exception e)
         {
-            logger.LogError(e, "An error occurred while getting video");
+            _logger.LogError(e, "An error occurred while getting video");
             return Optional<Video>.Failure(e.Message);
         }
     }
@@ -61,14 +70,14 @@ public class VideoRepository(AppDbContext dbContext, ILogger<VideoRepository> lo
     {
         try
         {
-            var v = await dbContext.Videos.AddAsync(video);
-            await dbContext.SaveChangesAsync();
+            var v = await _context.Videos.AddAsync(video);
+            await _context.SaveChangesAsync();
 
             return Optional<Video>.Success(v.Entity);
         }
         catch (Exception e)
         {
-            logger.LogError(e, "An error occurred while adding video");
+            _logger.LogError(e, "An error occurred while adding video");
             return Optional<Video>.Failure(e.Message);
         }
     }
@@ -77,14 +86,14 @@ public class VideoRepository(AppDbContext dbContext, ILogger<VideoRepository> lo
     {
         try
         {
-            dbContext.Videos.Update(video);
-            await dbContext.SaveChangesAsync();
+            _context.Videos.Update(video);
+            await _context.SaveChangesAsync();
 
             return Optional<Video>.Success(video);
         }
         catch (Exception e)
         {
-            logger.LogError(e, "An error occurred while updating video");
+            _logger.LogError(e, "An error occurred while updating video");
             return Optional<Video>.Failure(e.Message);
         }
     }
@@ -93,12 +102,31 @@ public class VideoRepository(AppDbContext dbContext, ILogger<VideoRepository> lo
     {
         try
         {
-            dbContext.Videos.Remove(video);
-            await dbContext.SaveChangesAsync();
+            _context.Videos.Remove(video);
+            await _context.SaveChangesAsync();
         }
         catch (Exception e)
         {
-            logger.LogError(e, "An error occurred while deleting video");
+            _logger.LogError(e, "An error occurred while deleting video");
+        }
+    }
+
+    public async Task<Optional<IEnumerable<Video>>> GetVideosByScientistIdAsync(int scientistId)
+    {
+        try
+        {
+            var videos = await _context.Videos
+                .Include(v => v.VideoGroup)
+                .ThenInclude(vg => vg.Project)
+                .Where(v => v.VideoGroup.Project.Scientist.Id == scientistId)
+                .ToListAsync();
+
+            return Optional<IEnumerable<Video>>.Success(videos);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "An error occurred while getting videos by scientist ID");
+            return Optional<IEnumerable<Video>>.Failure(e.Message);
         }
     }
 }

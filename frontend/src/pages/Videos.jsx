@@ -85,7 +85,7 @@ const Videos = () => {
         if (subjectId === null) return;
 
         try {
-            const response = await httpClient.get(`/Label/${subjectId}/subject`, { withCredentials: true });
+            const response = await httpClient.get(`/subject/${subjectId}/label`, { withCredentials: true });
             setLabels(response.data || []);
         } catch (error) {
             console.error('Error fetching labels:', error);

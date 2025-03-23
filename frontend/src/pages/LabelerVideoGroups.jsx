@@ -38,6 +38,7 @@ const LabelerVideoGroups = () => {
             setAssignments(response.data);
             setError('');
         } catch (error) {
+            console.log(error);
             setError(error.response?.data?.message || 'Failed to load assignments');
         } finally {
             setLoading(false);
@@ -45,18 +46,6 @@ const LabelerVideoGroups = () => {
     };
 
     useEffect(() => {
-        const fetchAssignments = async () => {
-            try {
-                const response = await httpClient.get(`/SubjectVideoGroupAssignment`);
-                setAssignments(response.data);
-                setError('');
-            } catch (error) {
-                setError(error.response?.data?.message || 'Failed to load assignments');
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchAssignments();
     }, [labelerId]);
 

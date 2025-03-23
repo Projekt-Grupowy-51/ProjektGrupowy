@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import httpClient from '../httpClient';
 import './css/ScientistProjects.css';
@@ -8,6 +8,7 @@ const Projects = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const navigate = useNavigate();
+    const effectRan = useRef(false);
 
     const fetchProjects = async () => {
         try {

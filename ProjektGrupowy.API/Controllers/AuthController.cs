@@ -1,19 +1,18 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using ProjektGrupowy.API.Data;
 using ProjektGrupowy.API.DTOs.Auth;
+using ProjektGrupowy.API.DTOs.Labeler;
+using ProjektGrupowy.API.DTOs.Scientist;
 using ProjektGrupowy.API.Filters;
 using ProjektGrupowy.API.Models;
+using ProjektGrupowy.API.Services;
+using ProjektGrupowy.API.Utils.Constants;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Microsoft.AspNetCore.Authorization;
-using ProjektGrupowy.API.DTOs.Scientist;
-using ProjektGrupowy.API.Services;
-using ProjektGrupowy.API.Services.Impl;
-using ProjektGrupowy.API.Utils.Enums;
-using ProjektGrupowy.API.DTOs.Labeler;
 
 namespace ProjektGrupowy.API.Controllers;
 
@@ -42,69 +41,60 @@ public class AuthController(UserManager<User> userManager, RoleManager<IdentityR
         };
 
         await using var transaction = await context.Database.BeginTransactionAsync();
-        try
+        var result = await userManager.CreateAsync(user, model.Password);
+        if (!result.Succeeded)
         {
-            var result = await userManager.CreateAsync(user, model.Password);
-            if (!result.Succeeded)
-            {
-                var errors = result.Errors.Select(e => e.Description).ToList();
-                return StatusCode(500, new { Status = "Error", Message = "User creation failed!", Errors = errors });
-            }
-
-            if (!await roleManager.RoleExistsAsync(model.Role.ToString()))
-                return StatusCode(500, new { Status = "Error", Message = "Role does not exist!" });
-
-            var roleResult = await userManager.AddToRoleAsync(user, model.Role.ToString());
-            if (!roleResult.Succeeded)
-                return StatusCode(500, new { Status = "Error", Message = "Failed to assign role to user." });
-
-            if (model.Role == RoleEnum.Scientist)
-            {
-                var scientistRequest = new ScientistRequest
-                {
-                    FirstName = model.UserName,
-                    LastName = model.UserName
-                };
-
-                var scientistResult = await scientistService.AddScientistWithUser(scientistRequest, user);
-
-                if (scientistResult.IsFailure)
-                    return BadRequest(scientistResult.GetErrorOrThrow());
-
-                var createdScientist = scientistResult.GetValueOrThrow();
-                user.Scientist = createdScientist;
-
-                await context.SaveChangesAsync();
-            }
-            else if (model.Role == RoleEnum.Labeler)
-            {
-                var labelerRequest = new LabelerRequest
-                {
-                    Name = model.UserName
-                };
-
-                var labelerResult = await labelerService.AddLabelerWithUser(labelerRequest, user);
-
-                if (labelerResult.IsFailure)
-                    return BadRequest(labelerResult.GetErrorOrThrow());
-
-                var createdLabeler = labelerResult.GetValueOrThrow();
-                user.Labeler = createdLabeler;
-
-                await context.SaveChangesAsync();
-            }
-
-            await transaction.CommitAsync();
-
-            return Ok(new { Status = "Success", Message = "User created and assigned to role successfully!" });
+            var errors = result.Errors.Select(e => e.Description).ToList();
+            return StatusCode(500, new { Status = "Error", Message = "User creation failed!", Errors = errors });
         }
-        catch (Exception ex)
+
+        if (!await roleManager.RoleExistsAsync(model.Role))
+            return StatusCode(500, new { Status = "Error", Message = "Role does not exist!" });
+
+        var roleResult = await userManager.AddToRoleAsync(user, model.Role);
+        if (!roleResult.Succeeded)
+            return StatusCode(500, new { Status = "Error", Message = "Failed to assign role to user." });
+
+        if (model.Role == RoleConstants.Scientist)
         {
-            await transaction.RollbackAsync();
-            return StatusCode(500, new { Status = "Error", Message = "An error occurred during registration.", Detail = ex.Message });
+            var scientistRequest = new ScientistRequest
+            {
+                FirstName = model.UserName,
+                LastName = model.UserName
+            };
+
+            var scientistResult = await scientistService.AddScientistWithUser(scientistRequest, user);
+
+            if (scientistResult.IsFailure)
+                return BadRequest(scientistResult.GetErrorOrThrow());
+
+            var createdScientist = scientistResult.GetValueOrThrow();
+            user.Scientist = createdScientist;
+
+            await context.SaveChangesAsync();
         }
+        else if (model.Role == RoleConstants.Labeler)
+        {
+            var labelerRequest = new LabelerRequest
+            {
+                Name = model.UserName
+            };
+
+            var labelerResult = await labelerService.AddLabelerWithUser(labelerRequest, user);
+
+            if (labelerResult.IsFailure)
+                return BadRequest(labelerResult.GetErrorOrThrow());
+
+            var createdLabeler = labelerResult.GetValueOrThrow();
+            user.Labeler = createdLabeler;
+
+            await context.SaveChangesAsync();
+        }
+
+        await transaction.CommitAsync();
+
+        return Ok(new { Status = "Success", Message = "User created and assigned to role successfully!" });
     }
-
 
     [HttpPost("Login")]
     [AllowAnonymous]
@@ -115,11 +105,11 @@ public class AuthController(UserManager<User> userManager, RoleManager<IdentityR
             return Unauthorized(new { Status = "Error", Message = "Invalid UserName or password!" });
 
         var authClaims = new List<Claim>
-        {
-            new(ClaimTypes.Name, user.UserName),
-            new(ClaimTypes.NameIdentifier, user.Id),
-            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-        };
+            {
+                new(ClaimTypes.Name, user.UserName),
+                new(ClaimTypes.NameIdentifier, user.Id),
+                new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            };
 
         var userRoles = await userManager.GetRolesAsync(user);
         authClaims.AddRange(userRoles.Select(userRole => new Claim(ClaimTypes.Role, userRole)));
@@ -160,60 +150,43 @@ public class AuthController(UserManager<User> userManager, RoleManager<IdentityR
         var tokenHandler = new JwtSecurityTokenHandler();
         var validationParameters = GetTokenValidationParameters();
 
-        try
+        var principal = tokenHandler.ValidateToken(jwtToken, validationParameters, out var validatedToken);
+
+        if (!(validatedToken is JwtSecurityToken jwtSecurityToken) ||
+            !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
         {
-            // Walidacja tokenu
-            var principal = tokenHandler.ValidateToken(jwtToken, validationParameters, out var validatedToken);
+            return Unauthorized(new { Status = "Error", Message = "Invalid token." });
+        }
 
-            // Sprawdzenie czy token jest JWT
-            if (!(validatedToken is JwtSecurityToken jwtSecurityToken) ||
-                !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
-            {
-                return Unauthorized(new { Status = "Error", Message = "Invalid token." });
-            }
+        var user = await userManager.FindByNameAsync(principal.Identity.Name);
+        if (user == null)
+            return Unauthorized(new { Status = "Error", Message = "User not found." });
 
-            // Pobranie użytkownika
-            var user = await userManager.FindByNameAsync(principal.Identity.Name);
-            if (user == null)
-                return Unauthorized(new { Status = "Error", Message = "User not found." });
-
-            // Generowanie nowych claimów
-            var authClaims = new List<Claim>
+        var authClaims = new List<Claim>
             {
                 new(ClaimTypes.Name, user.UserName),
                 new(ClaimTypes.NameIdentifier, user.Id),
                 new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             };
 
-            var userRoles = await userManager.GetRolesAsync(user);
-            authClaims.AddRange(userRoles.Select(role => new Claim(ClaimTypes.Role, role)));
+        var userRoles = await userManager.GetRolesAsync(user);
+        authClaims.AddRange(userRoles.Select(role => new Claim(ClaimTypes.Role, role)));
 
-            // Generowanie nowego tokenu
-            var newToken = GenerateJwtToken(authClaims);
+        var newToken = GenerateJwtToken(authClaims);
 
-            // Aktualizacja ciasteczka
-            Response.Cookies.Append(JwtCookieName, new JwtSecurityTokenHandler().WriteToken(newToken), new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = false,
-                SameSite = SameSiteMode.Strict,
-                Expires = newToken.ValidTo
-            });
-
-            return Ok(new
-            {
-                Message = "Token refreshed successfully!",
-                ExpiresAt = newToken.ValidTo
-            });
-        }
-        catch (SecurityTokenExpiredException)
+        Response.Cookies.Append(JwtCookieName, new JwtSecurityTokenHandler().WriteToken(newToken), new CookieOptions
         {
-            return Unauthorized(new { Status = "Error", Message = "Token expired." });
-        }
-        catch (Exception ex)
+            HttpOnly = true,
+            Secure = false,
+            SameSite = SameSiteMode.Strict,
+            Expires = newToken.ValidTo
+        });
+
+        return Ok(new
         {
-            return Unauthorized(new { Status = "Error", Message = "Invalid token.", Details = ex.Message });
-        }
+            Message = "Token refreshed successfully!",
+            ExpiresAt = newToken.ValidTo
+        });
     }
 
     [HttpGet("VerifyToken")]
@@ -226,34 +199,24 @@ public class AuthController(UserManager<User> userManager, RoleManager<IdentityR
         var tokenHandler = new JwtSecurityTokenHandler();
         var validationParameters = GetTokenValidationParameters();
 
-        try
-        {
-            // Walidacja tokenu
-            var principal = tokenHandler.ValidateToken(jwtToken, validationParameters, out var validatedToken);
+        var principal = tokenHandler.ValidateToken(jwtToken, validationParameters, out var validatedToken);
 
-            // Dodatkowe sprawdzenie algorytmu podpisu
-            if (!(validatedToken is JwtSecurityToken jwtSecurityToken) ||
-                !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
-            {
-                return Unauthorized(new { IsAuthenticated = false });
-            }
-
-            // Pobranie użytkownika
-            var user = await userManager.FindByNameAsync(principal.Identity.Name);
-            if (user == null)
-                return Unauthorized(new { IsAuthenticated = false });
-
-            return Ok(new
-            {
-                IsAuthenticated = true,
-                Username = user.UserName,
-                Roles = await userManager.GetRolesAsync(user)
-            });
-        }
-        catch (Exception)
+        if (!(validatedToken is JwtSecurityToken jwtSecurityToken) ||
+            !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
         {
             return Unauthorized(new { IsAuthenticated = false });
         }
+
+        var user = await userManager.FindByNameAsync(principal.Identity.Name);
+        if (user == null)
+            return Unauthorized(new { IsAuthenticated = false });
+
+        return Ok(new
+        {
+            IsAuthenticated = true,
+            Username = user.UserName,
+            Roles = await userManager.GetRolesAsync(user)
+        });
     }
 
     private TokenValidationParameters GetTokenValidationParameters()

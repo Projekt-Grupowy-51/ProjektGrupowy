@@ -4,8 +4,8 @@ import authService from '../auth';
 import './css/ScientistProjects.css';
 
 const roleMap = {
-    Labeler: 3,
-    Scientist: 2
+    Labeler: "Labeler",
+    Scientist: "Scientist"
 };
 
 const AuthPage = () => {

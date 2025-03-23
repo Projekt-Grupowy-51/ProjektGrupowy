@@ -128,4 +128,20 @@ public class VideoGroupRepository(AppDbContext context, ILogger<VideoGroupReposi
         }
     }
 
+    public async Task<Optional<IEnumerable<VideoGroup>>> GetVideoGroupsByScientistIdAsync(int scientistId)
+    {
+        try
+        {
+            var videoGroups = await context.VideoGroups
+                .Where(vg => vg.Project.Scientist.Id == scientistId)
+                .ToListAsync();
+
+            return Optional<IEnumerable<VideoGroup>>.Success(videoGroups);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "An error occurred while getting video groups by scientist ID");
+            return Optional<IEnumerable<VideoGroup>>.Failure(e.Message);
+        }
+    }
 }

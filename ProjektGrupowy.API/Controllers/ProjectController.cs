@@ -9,7 +9,7 @@ using ProjektGrupowy.API.DTOs.VideoGroup;
 using ProjektGrupowy.API.Filters;
 using ProjektGrupowy.API.Models;
 using ProjektGrupowy.API.Services;
-using ProjektGrupowy.API.Utils.Enums;
+using ProjektGrupowy.API.Utils.Constants;
 using System.Security.Claims;
 using ProjektGrupowy.API.DTOs.Labeler;
 
@@ -19,60 +19,39 @@ namespace ProjektGrupowy.API.Controllers;
 [ApiController]
 [ServiceFilter(typeof(ValidateModelStateFilter))]
 [Authorize]
-public class ProjectController(IProjectService projectService, ISubjectService subjectService, IVideoGroupService videoGroupService, ISubjectVideoGroupAssignmentService subjectVideoGroupAssignmentService, IScientistService scientistService, ILabelerService labelerService, IMapper mapper) : ControllerBase
+public class ProjectController(
+    IProjectService projectService, 
+    ISubjectService subjectService, 
+    IVideoGroupService videoGroupService, 
+    ISubjectVideoGroupAssignmentService subjectVideoGroupAssignmentService, 
+    ILabelerService labelerService, 
+    IAuthorizationHelper authHelper,
+    IMapper mapper) : ControllerBase
 {
-    private (ActionResult? Error, bool IsScientist, bool IsAdmin, Scientist? Scientist) CheckGeneralAccess()
-    {
-        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (userId == null)
-        {
-            return (Unauthorized("User identity not found."), false, false, null);
-        }
-
-        bool isScientist = User.IsInRole(RoleEnum.Scientist.ToString());
-        bool isAdmin = User.IsInRole(RoleEnum.Admin.ToString());
-
-        if (!isScientist && !isAdmin)
-        {
-            return (Forbid(), false, false, null);
-        }
-
-        if (isScientist)
-        {
-            return (null, true, false, scientistService.GetScientistByUserIdAsync(userId).Result.GetValueOrThrow());
-        }
-
-        return (null, false, true, null);
-    }
-
+    [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<ProjectResponse>>> GetProjectsAsync()
     {
-        var checkResult = CheckGeneralAccess();
+        var checkResult = await authHelper.CheckGeneralAccessAsync(User);
         if (checkResult.Error != null)
         {
             return checkResult.Error;
         }
 
-        if (checkResult.IsScientist)
-        {
-            var projects = await projectService.GetProjectsOfScientist(checkResult.Scientist!.Id);
-            return projects.IsSuccess ? Ok(mapper.Map<IEnumerable<ProjectResponse>>(projects.GetValueOrThrow())) : NotFound(projects.GetErrorOrThrow());
-        }
+        var projects = checkResult.IsAdmin
+            ? await projectService.GetProjectsAsync()
+            : await projectService.GetProjectsOfScientist(checkResult.Scientist!.Id);
 
-        if (checkResult.IsAdmin)
-        {
-            var projects = await projectService.GetProjectsAsync();
-            return projects.IsSuccess ? Ok(mapper.Map<IEnumerable<ProjectResponse>>(projects.GetValueOrThrow())) : NotFound(projects.GetErrorOrThrow());
-        }
-
-        return Forbid();
+        return projects.IsSuccess
+            ? Ok(mapper.Map<IEnumerable<ProjectResponse>>(projects.GetValueOrThrow()))
+            : NotFound(projects.GetErrorOrThrow());
     }
 
+    [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
     [HttpGet("{id:int}")]
     public async Task<ActionResult<ProjectResponse>> GetProjectAsync(int id)
     {
-        var checkResult = CheckGeneralAccess();
+        var checkResult = await authHelper.CheckGeneralAccessAsync(User);
         if (checkResult.Error != null)
         {
             return checkResult.Error;
@@ -80,31 +59,24 @@ public class ProjectController(IProjectService projectService, ISubjectService s
 
         if (checkResult.IsScientist)
         {
-            var projects = await projectService.GetProjectsOfScientist(checkResult.Scientist!.Id);
-
-            if (projects.IsFailure)
+            var authResult = await authHelper.EnsureScientistOwnsProjectAsync(User, id);
+            if (authResult != null)
             {
-                return NotFound(projects.GetErrorOrThrow());
+                return authResult;
             }
-
-            var project = projects.GetValueOrThrow().FirstOrDefault(p => p.Id == id);
-
-            return project != null ? Ok(mapper.Map<ProjectResponse>(project)) : NotFound("Project not found.");
         }
 
-        if (checkResult.IsAdmin)
-        {
-            var project = await projectService.GetProjectAsync(id);
-            return project.IsSuccess ? Ok(mapper.Map<ProjectResponse>(project.GetValueOrThrow())) : NotFound(project.GetErrorOrThrow());
-        }
-
-        return Forbid();
+        var project = await projectService.GetProjectAsync(id);
+        return project.IsSuccess
+            ? Ok(mapper.Map<ProjectResponse>(project.GetValueOrThrow()))
+            : NotFound(project.GetErrorOrThrow());
     }
 
+    [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
     [HttpPut("{id:int}")]
     public async Task<IActionResult> PutProjectAsync(int id, ProjectRequest projectRequest)
     {
-        var checkResult = CheckGeneralAccess();
+        var checkResult = await authHelper.CheckGeneralAccessAsync(User);
         if (checkResult.Error != null)
         {
             return checkResult.Error;
@@ -112,18 +84,12 @@ public class ProjectController(IProjectService projectService, ISubjectService s
 
         if (checkResult.IsScientist)
         {
-            var project = await projectService.GetProjectAsync(id);
-
-            if (project.IsFailure)
+            var authResult = await authHelper.EnsureScientistOwnsProjectAsync(User, id);
+            if (authResult != null)
             {
-                return NotFound(project.GetErrorOrThrow());
+                return authResult;
             }
-
-            if (project.GetValueOrThrow().Scientist.Id != checkResult.Scientist!.Id)
-            {
-                return Forbid();
-            }
-
+            
             projectRequest.ScientistId = checkResult.Scientist!.Id;
         }
 
@@ -133,10 +99,11 @@ public class ProjectController(IProjectService projectService, ISubjectService s
             : BadRequest(updateResult.GetErrorOrThrow());
     }
 
+    [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
     [HttpPost]
     public async Task<ActionResult<ProjectResponse>> PostProject(ProjectRequest projectRequest)
     {
-        var checkResult = CheckGeneralAccess();
+        var checkResult = await authHelper.CheckGeneralAccessAsync(User);
         if (checkResult.Error != null)
         {
             return checkResult.Error;
@@ -162,12 +129,14 @@ public class ProjectController(IProjectService projectService, ISubjectService s
     [HttpPost("join")]
     public async Task<IActionResult> AssignLabelerToGroupAssignment(LabelerAssignmentDto laveAssignmentDto)
     {
-        if (!User.IsInRole(RoleEnum.Labeler.ToString()))
+        if (!User.IsInRole(RoleConstants.Labeler))
         {
             return Forbid();
         }
 
-        var labeler = labelerService.GetLabelerByUserIdAsync(User.FindFirst(ClaimTypes.NameIdentifier)?.Value!).Result.GetValueOrThrow();
+        var labelerOpt = await labelerService.GetLabelerByUserIdAsync(User.FindFirst(ClaimTypes.NameIdentifier)?.Value!);
+
+        var labeler = labelerOpt.GetValueOrThrow() ?? throw new InvalidOperationException("Labeler not found.");
 
         laveAssignmentDto.LabelerId = labeler.Id;
 
@@ -178,19 +147,11 @@ public class ProjectController(IProjectService projectService, ISubjectService s
             : BadRequest(result.GetErrorOrThrow());
     }
 
+    [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
     [HttpPost("{projectId:int}/distribute")]
     public async Task<IActionResult> DistributeLabelersEqually(int projectId)
     {
-        var result = await projectService.DistributeLabelersEquallyAsync(projectId);
-        return result.IsSuccess 
-            ? Ok(result.GetValueOrThrow())
-            : NotFound(result.GetErrorOrThrow());
-    }
-
-    [HttpDelete("{id:int}")]
-    public async Task<IActionResult> DeleteProject(int id)
-    {
-        var checkResult = CheckGeneralAccess();
+        var checkResult = await authHelper.CheckGeneralAccessAsync(User);
         if (checkResult.Error != null)
         {
             return checkResult.Error;
@@ -198,16 +159,35 @@ public class ProjectController(IProjectService projectService, ISubjectService s
 
         if (checkResult.IsScientist)
         {
-            var project = await projectService.GetProjectAsync(id);
-
-            if (project.IsFailure)
+            var authResult = await authHelper.EnsureScientistOwnsProjectAsync(User, projectId);
+            if (authResult != null)
             {
-                return NotFound(project.GetErrorOrThrow());
+                return authResult;
             }
+        }
 
-            if (project.GetValueOrThrow().Scientist.Id != checkResult.Scientist!.Id)
+        var result = await projectService.DistributeLabelersEquallyAsync(projectId);
+        return result.IsSuccess 
+            ? Ok(result.GetValueOrThrow())
+            : NotFound(result.GetErrorOrThrow());
+    }
+
+    [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
+    [HttpDelete("{id:int}")]
+    public async Task<IActionResult> DeleteProject(int id)
+    {
+        var checkResult = await authHelper.CheckGeneralAccessAsync(User);
+        if (checkResult.Error != null)
+        {
+            return checkResult.Error;
+        }
+
+        if (checkResult.IsScientist)
+        {
+            var authResult = await authHelper.EnsureScientistOwnsProjectAsync(User, id);
+            if (authResult != null)
             {
-                return Forbid();
+                return authResult;
             }
         }
 
@@ -215,10 +195,11 @@ public class ProjectController(IProjectService projectService, ISubjectService s
         return NoContent();
     }
 
+    [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
     [HttpGet("{projectId:int}/Subjects")]
     public async Task<ActionResult<IEnumerable<SubjectResponse>>> GetSubjectsByProjectAsync(int projectId)
     {
-        var checkResult = CheckGeneralAccess();
+        var checkResult = await authHelper.CheckGeneralAccessAsync(User);
         if (checkResult.Error != null)
         {
             return checkResult.Error;
@@ -226,35 +207,24 @@ public class ProjectController(IProjectService projectService, ISubjectService s
 
         if (checkResult.IsScientist)
         {
-            var projects = await projectService.GetProjectsOfScientist(checkResult.Scientist!.Id);
-
-            if (projects.IsFailure)
+            var authResult = await authHelper.EnsureScientistOwnsProjectAsync(User, projectId);
+            if (authResult != null)
             {
-                return NotFound(projects.GetErrorOrThrow());
-            }
-
-            var project = projects.GetValueOrThrow().FirstOrDefault(p => p.Id == projectId);
-
-            if (project == null)
-            {
-                return NotFound("Project not found.");
+                return authResult;
             }
         }
 
         var subjectsResult = await subjectService.GetSubjectsByProjectAsync(projectId);
-
-        if (!subjectsResult.IsSuccess)
-        {
-            return NotFound(subjectsResult.GetErrorOrThrow());
-        }
-
-        return Ok(mapper.Map<IEnumerable<SubjectResponse>>(subjectsResult.GetValueOrThrow()));
+        return subjectsResult.IsSuccess 
+            ? Ok(mapper.Map<IEnumerable<SubjectResponse>>(subjectsResult.GetValueOrThrow()))
+            : NotFound(subjectsResult.GetErrorOrThrow());
     }
 
+    [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
     [HttpGet("{projectId:int}/VideoGroups")]
     public async Task<ActionResult<IEnumerable<VideoGroupResponse>>> GetVideoGroupsByProjectAsync(int projectId)
     {
-        var checkResult = CheckGeneralAccess();
+        var checkResult = await authHelper.CheckGeneralAccessAsync(User);
         if (checkResult.Error != null)
         {
             return checkResult.Error;
@@ -262,34 +232,24 @@ public class ProjectController(IProjectService projectService, ISubjectService s
 
         if (checkResult.IsScientist)
         {
-            var projects = await projectService.GetProjectsOfScientist(checkResult.Scientist!.Id);
-
-            if (projects.IsFailure)
+            var authResult = await authHelper.EnsureScientistOwnsProjectAsync(User, projectId);
+            if (authResult != null)
             {
-                return NotFound(projects.GetErrorOrThrow());
-            }
-
-            var project = projects.GetValueOrThrow().FirstOrDefault(p => p.Id == projectId);
-
-            if (project == null)
-            {
-                return NotFound("Project not found.");
+                return authResult;
             }
         }
 
         var videoGroupsResult = await videoGroupService.GetVideoGroupsByProjectAsync(projectId);
-        if (!videoGroupsResult.IsSuccess)
-        {
-            return NotFound(videoGroupsResult.GetErrorOrThrow());
-        }
-
-        return Ok(mapper.Map<IEnumerable<VideoGroupResponse>>(videoGroupsResult.GetValueOrThrow()));
+        return videoGroupsResult.IsSuccess 
+            ? Ok(mapper.Map<IEnumerable<VideoGroupResponse>>(videoGroupsResult.GetValueOrThrow()))
+            : NotFound(videoGroupsResult.GetErrorOrThrow());
     }
 
+    [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
     [HttpGet("{projectId:int}/SubjectVideoGroupAssignments")]
     public async Task<ActionResult<IEnumerable<SubjectVideoGroupAssignmentResponse>>> GetSubjectVideoGroupAssignmentsByProjectAsync(int projectId)
     {
-        var checkResult = CheckGeneralAccess();
+        var checkResult = await authHelper.CheckGeneralAccessAsync(User);
         if (checkResult.Error != null)
         {
             return checkResult.Error;
@@ -297,37 +257,36 @@ public class ProjectController(IProjectService projectService, ISubjectService s
 
         if (checkResult.IsScientist)
         {
-            var projects = await projectService.GetProjectsOfScientist(checkResult.Scientist!.Id);
-
-            if (projects.IsFailure)
+            var authResult = await authHelper.EnsureScientistOwnsProjectAsync(User, projectId);
+            if (authResult != null)
             {
-                return NotFound(projects.GetErrorOrThrow());
-            }
-
-            var project = projects.GetValueOrThrow().FirstOrDefault(p => p.Id == projectId);
-
-            if (project == null)
-            {
-                return NotFound("Project not found.");
+                return authResult;
             }
         }
 
-        var subjectVideoGroupAssignmentsResult = await subjectVideoGroupAssignmentService.GetSubjectVideoGroupAssignmentsByProjectAsync(projectId);
-        if (!subjectVideoGroupAssignmentsResult.IsSuccess)
-        {
-            return NotFound(subjectVideoGroupAssignmentsResult.GetErrorOrThrow());
-        }
-
-        return Ok(mapper.Map<IEnumerable<SubjectVideoGroupAssignmentResponse>>(subjectVideoGroupAssignmentsResult.GetValueOrThrow()));
+        var assignmentsResult = await subjectVideoGroupAssignmentService.GetSubjectVideoGroupAssignmentsByProjectAsync(projectId);
+        return assignmentsResult.IsSuccess 
+            ? Ok(mapper.Map<IEnumerable<SubjectVideoGroupAssignmentResponse>>(assignmentsResult.GetValueOrThrow()))
+            : NotFound(assignmentsResult.GetErrorOrThrow());
     }
     
+    [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
     [HttpGet("{projectId:int}/Labelers")]
     public async Task<ActionResult<IEnumerable<LabelerResponse>>> GetLabelersByProjectAsync(int projectId)
     {
-        var checkResult = CheckGeneralAccess();
+        var checkResult = await authHelper.CheckGeneralAccessAsync(User);
         if (checkResult.Error != null)
         {
             return checkResult.Error;
+        }
+
+        if (checkResult.IsScientist)
+        {
+            var authResult = await authHelper.EnsureScientistOwnsProjectAsync(User, projectId);
+            if (authResult != null)
+            {
+                return authResult;
+            }
         }
 
         var labelersResult = await labelerService.GetLabelersByProjectAsync(projectId);
