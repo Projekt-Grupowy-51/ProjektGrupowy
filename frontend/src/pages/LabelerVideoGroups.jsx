@@ -78,7 +78,7 @@ const LabelerVideoGroups = () => {
                         />
                         <button
                             onClick={handleJoinProject}
-                            className="join-btn"
+                            className="btn btn-success"
                         >
                             Join Project
                         </button>
@@ -93,7 +93,7 @@ const LabelerVideoGroups = () => {
                         Loading SubjectVideoGroupAssignments...
                     </div>
                 ) : assignments.length > 0 ? (
-                    <table className="assignments-table">
+                    <table className="normal-table">
                         <thead>
                         <tr>
                             <th>ID</th>
@@ -110,7 +110,7 @@ const LabelerVideoGroups = () => {
                                 <td>{assignment.videoGroupId}</td>
                                 <td>
                                     <button
-                                        className="details-btn"
+                                        className="btn btn-info"
                                         onClick={() => navigate(`/video/${assignment.id}`)}
                                     >
                                         Details

@@ -262,25 +262,38 @@ const Videos = () => {
     return (
         <div className="container">
             <div className="content">
-                <h2>Video Stream Preview (2x2 Grid)</h2>
-                <div className="video-grid">
-                    {streams.length > 0 ? (
-                        streams.map((streamUrl, index) => (
-                            <div className="video-container" key={index}>
-                                <video
-                                    ref={(el) => videoRefs.current[index] = el}
-                                    width="300"
-                                    height="200"
-                                    src={streamUrl}
-                                    type="video/mp4"
-                                    controls
-                                    onTimeUpdate={handleTimeUpdate}
-                                />
-                            </div>
-                        ))
-                    ) : (
-                        <p>Loading video streams...</p>
-                    )}
+                {/* <h2>Video Stream Preview</h2> */}
+                <div className="container" id="video-container">
+                    <div className="row" id='video-row'>
+                        {streams.length > 0 ? (
+                            streams.map((streamUrl, index) => (
+                                <div
+                                    className={`col-12 ${
+                                        streams.length === 1
+                                            ? ''
+                                            : streams.length <= 4
+                                            ? 'col-md-5'
+                                            : 'col-md-4'
+                                    }`}
+                                    key={index}
+                                >
+                                    <div className="video-cell">
+                                        <video
+                                            ref={(el) => (videoRefs.current[index] = el)}
+                                            width="100%"
+                                            height="auto"
+                                            src={streamUrl}
+                                            type="video/mp4"
+                                            controls
+                                            onTimeUpdate={handleTimeUpdate}
+                                        />
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <p>Loading video streams...</p>
+                        )}
+                    </div>
                 </div>
                 <div className="progress-bar">
                     <input
@@ -299,16 +312,16 @@ const Videos = () => {
                 </div>
                 <div className="controls">
                     <div className="seek-buttons">
-                        <button className="seek-btn" onClick={handleRewind}>
+                        <button className="btn btn-primary seek-btn" onClick={handleRewind}>
                             <i className="fas fa-backward"><p>5s</p></i>
                         </button>
                     </div>
-                    <button className="play-stop-btn" onClick={handlePlayStop}>
+                    <button className="btn btn-primary play-stop-btn" onClick={handlePlayStop}>
                         <i className={`fas ${isPlaying ? 'fa-stop' : 'fa-play'}`}></i>
                     </button>
                     <div className="seek-buttons">
 
-                        <button className="seek-btn" onClick={handleFastForward}>
+                        <button className="btn btn-primary seek-btn" onClick={handleFastForward}>
                             <i className="fas fa-forward"><p>5s</p></i>
                         </button>
                     </div>
@@ -322,7 +335,7 @@ const Videos = () => {
                             return (
                                 <button
                                     key={index}
-                                    className="label-btn"
+                                    className="btn label-btn"
                                     style={{ backgroundColor: label.colorHex }}
                                     onClick={() => handleLabelClick(label.id)}
                                 >
@@ -340,8 +353,8 @@ const Videos = () => {
                     <h3>Assigned Labels:</h3>
                     <div className="assigned-labels-table">
                     {assignedLabels.length > 0 ? (
-                        <table>
-                            <thead>
+                        <table className="normal-table">
+                            <thead className="table-dark">
                                 <tr>
                                     <th>Label ID</th>
                                     <th>Start Time</th>
@@ -357,7 +370,7 @@ const Videos = () => {
                                             <td>{matchingLabel ? matchingLabel.name : "Unknown"}</td>
                                             <td>{label.start}</td>
                                             <td>{label.end}</td>
-                                            <td><button className="delete-btn" onClick={() => handleDelete(label.id)}>Delete</button></td>
+                                            <td><button className="btn btn-danger" onClick={() => handleDelete(label.id)}>Delete</button></td>
                                         </tr>
                                     );
                                 })}

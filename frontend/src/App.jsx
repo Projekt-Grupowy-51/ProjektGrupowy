@@ -18,7 +18,7 @@ import SubjectVideoGroupAssignmentDetails from './pages/SubjectVideoGroupAssignm
 import LabelerVideoGroups from './pages/LabelerVideoGroups';
 import Login from './pages/Login';
 
-// Utwórz kontekst uwierzytelnienia
+// Utwï¿½rz kontekst uwierzytelnienia
 const AuthContext = createContext();
 
 // Provider kontekstu uwierzytelnienia
@@ -54,7 +54,7 @@ const AuthProvider = ({ children }) => {
     );
 };
 
-// Hook do u¿ycia kontekstu uwierzytelnienia
+// Hook do uï¿½ycia kontekstu uwierzytelnienia
 const useAuth = () => {
     return useContext(AuthContext);
 };
@@ -78,18 +78,41 @@ const Navbar = () => {
     const { isAuthenticated, handleLogout } = useAuth();
 
     return (
-        <nav className="navbar">
-            <ul>
-                {isAuthenticated ? (
-                    <>
-                        <li><Link to="/projects" className="nav-link">Scientist</Link></li>
-                        <li><Link to="/labeler-video-groups/1" className="nav-link">User</Link></li>
-                        <li><button onClick={handleLogout} className="nav-link logout-btn">Logout</button></li>
-                    </>
-                ) : (
-                    <li><Link to="/login" className="nav-link">Login</Link></li>
-                )}
-            </ul>
+        <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div className="container-fluid justify-content-center">
+                <button
+                    className="navbar-toggler"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#navbarNav"
+                    aria-controls="navbarNav"
+                    aria-expanded="false"
+                    aria-label="Toggle navigation"
+                >
+                    <span className="navbar-toggler-icon"></span>
+                </button>
+                <div className="collapse navbar-collapse justify-content-center" id="navbarNav">
+                    <ul className="navbar-nav">
+                        {isAuthenticated ? (
+                            <>
+                                <li className="nav-item">
+                                    <Link to="/projects" className="nav-link text-white">Scientist</Link>
+                                </li>
+                                <li className="nav-item">
+                                    <Link to="/labeler-video-groups/1" className="nav-link text-white">User</Link>
+                                </li>
+                                <li className="nav-item" style={{ width: '100%' }}>
+                                    <button onClick={handleLogout} className="btn btn-danger nav-link text-white w-100">Logout</button>
+                                </li>
+                            </>
+                        ) : (
+                            <li className="nav-item">
+                                <Link to="/login" className="nav-link text-white">Login</Link>
+                            </li>
+                        )}
+                    </ul>
+                </div>
+            </div>
         </nav>
     );
 };

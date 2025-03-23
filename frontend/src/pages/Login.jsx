@@ -167,7 +167,7 @@ const AuthPage = () => {
                     <p>
                         Don't have an account?{' '}
                         <button
-                            className="btn-link"
+                            className="btn btn-link"
                             onClick={() => setIsLoginView(false)}
                         >
                             Sign up now
@@ -177,7 +177,7 @@ const AuthPage = () => {
                     <p>
                         Already registered?{' '}
                         <button
-                            className="btn-link"
+                            className="btn btn-link"
                             onClick={() => setIsLoginView(true)}
                         >
                             Sign in here

@@ -77,7 +77,7 @@ const SubjectDetails = () => {
                 <h2 className="section-title">Etykiety</h2>
 
                 {labels.length > 0 ? (
-                    <table className="project-table">
+                    <table className="normal-table">
                         <thead>
                             <tr>
                                 <th>ID</th>
@@ -104,13 +104,13 @@ const SubjectDetails = () => {
                                     <td>
                                         <div className="table-actions">
                                             <button
-                                                className="edit-btn"
+                                                className="btn btn-info"
                                                 onClick={() => navigate(`/labels/edit/${label.id}`)}
                                             >
                                                 Edytuj
                                             </button>
                                             <button
-                                                className="delete-btn"
+                                                className="btn btn-danger"
                                                 onClick={() => deleteLabel(label.id)}
                                             >
                                                 Usuń

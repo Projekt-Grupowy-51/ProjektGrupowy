@@ -189,7 +189,7 @@ const ProjectDetails = () => {
                                 </Link>
                             </div>
                             {subjects.length > 0 ? (
-                                <table className="project-table">
+                                <table className="normal-table">
                                     <thead>
                                         <tr>
                                             <th>ID</th>
@@ -206,10 +206,10 @@ const ProjectDetails = () => {
                                                 <td>{subject.description}</td>
                                                 <td>
                                                     <Link to={`/subjects/${subject.id}`}>
-                                                        <button className="details-btn">View</button>
+                                                        <button className="btn btn-info">View</button>
                                                     </Link>
                                                     <button
-                                                        className="delete-btn"
+                                                        className="btn btn-danger"
                                                         onClick={() => handleDeleteItem('subject', subject.id)}
                                                     >
                                                         Delete
@@ -233,7 +233,7 @@ const ProjectDetails = () => {
                                 </Link>
                             </div>
                             {videoGroups.length > 0 ? (
-                                <table className="project-table">
+                                <table className="normal-table">
                                     <thead>
                                         <tr>
                                             <th>ID</th>
@@ -250,10 +250,10 @@ const ProjectDetails = () => {
                                                 <td>{video.description}</td>
                                                 <td>
                                                     <Link to={`/video-groups/${video.id}`}>
-                                                        <button className="details-btn">View</button>
+                                                        <button className="btn btn-info">View</button>
                                                     </Link>
                                                     <button
-                                                        className="delete-btn"
+                                                        className="btn btn-danger"
                                                         onClick={() => handleDeleteItem('videogroup', video.id)}
                                                     >
                                                         Delete
@@ -277,7 +277,7 @@ const ProjectDetails = () => {
                                 </Link>
                             </div>
                             {assignments.length > 0 ? (
-                                <table className="project-table">
+                                <table className="normal-table">
                                     <thead>
                                         <tr>
                                             <th>ID</th>
@@ -294,10 +294,10 @@ const ProjectDetails = () => {
                                                 <td>{assignment.videoGroupId}</td>
                                                 <td>
                                                     <Link to={`/assignments/${assignment.id}`}>
-                                                        <button className="details-btn">View</button>
+                                                        <button className="btn btn-info">View</button>
                                                     </Link>
                                                     <button
-                                                        className="delete-btn"
+                                                        className="btn btn-danger"
                                                         onClick={() => handleDeleteItem('SubjectVideoGroupAssignment', assignment.id)}
                                                     >
                                                         Delete
@@ -323,7 +323,7 @@ const ProjectDetails = () => {
                                 Distribute labelers
                             </button>
                             {labelers.length > 0 ? (
-                                <table className="project-table">
+                                <table className="normal-table">
                                     <thead>
                                     <tr>
                                         <th>Labeler ID</th>
@@ -370,26 +370,26 @@ const ProjectDetails = () => {
                             <div className="add-buttons">
                                 <div className="duration-options">
                                     <button
-                                        className={`duration-btn ${selectedDuration === '14days' ? 'active' : ''}`}
+                                        className={`btn btn-primary ${selectedDuration === '14days' ? 'active' : ''}`}
                                         onClick={() => setSelectedDuration('14days')}
                                     >
                                         14 Days
                                     </button>
                                     <button
-                                        className={`duration-btn ${selectedDuration === '30days' ? 'active' : ''}`}
+                                        className={`btn btn-primary ${selectedDuration === '30days' ? 'active' : ''}`}
                                         onClick={() => setSelectedDuration('30days')}
                                     >
                                         30 Days
                                     </button>
                                     <button
-                                        className={`duration-btn ${selectedDuration === 'unlimited' ? 'active' : ''}`}
+                                        className={`btn btn-primary ${selectedDuration === 'unlimited' ? 'active' : ''}`}
                                         onClick={() => setSelectedDuration('unlimited')}
                                     >
                                         Unlimited
                                     </button>
 
                                     <button
-                                        className="generate-btn"
+                                        className="btn btn-success"
                                         onClick={handleCreateAccessCode}
                                     >
                                         Generate Access Code
@@ -399,7 +399,7 @@ const ProjectDetails = () => {
                             </div>
 
                             {accessCodes.length > 0 ? (
-                                <table className="project-table">
+                                <table className="normal-table">
                                     <thead>
                                     <tr>
                                         <th>Code</th>
@@ -422,7 +422,7 @@ const ProjectDetails = () => {
                                             <td>{code.isValid ? '✅' : '❌'}</td>
                                             <td>
                                                 <button
-                                                    className="copy-btn"
+                                                    className="btn btn-primary"
                                                     onClick={() => handleCopyCode(code.code)}
                                                 >
                                                     Copy
