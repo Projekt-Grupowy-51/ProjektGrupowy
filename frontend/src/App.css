@@ -6,7 +6,7 @@
 }
 
 tr:nth-child(even) {
-    background: #F2F2F2;
+    background-color: inherit; /* Bootstrap handles row striping */
 }
 
 tr:nth-child(odd) {
@@ -14,14 +14,23 @@ tr:nth-child(odd) {
 }
 
 th, td {
-    padding-left: 1rem;
-    padding-right: 1rem;
+    padding: 0; /* Bootstrap handles padding */
+    text-align: left;
+    border: none; /* Bootstrap handles borders */
 }
 
 th {
-    background: #c1fdfd;
+    background: none; /* Bootstrap handles header styles */
+    color: inherit; /* Bootstrap handles text color */
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
 }
 
 table {
-    width: 100%;
+    margin: 20px 0;
+}
+
+tr:hover {
+    background-color: inherit; /* Bootstrap handles hover effects */
 }

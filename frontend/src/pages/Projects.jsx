@@ -41,7 +41,7 @@ const Projects = () => {
             <div className="content">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                     <h1 className="heading">Projects</h1>
-                    <button className="add-btn" onClick={() => navigate('/projects/add')}>Add New Project</button>
+                    <button className="btn add-btn text-white" onClick={() => navigate('/projects/add')}>Add New Project</button>
                 </div>
 
                 {error && <div className="error">{error}</div>}
@@ -49,7 +49,7 @@ const Projects = () => {
                 {loading ? (
                     <div style={{ padding: '20px', textAlign: 'center' }}>Loading projects...</div>
                 ) : projects.length > 0 ? (
-                    <table className="project-table">
+                    <table className="normal-table">
                         <thead>
                             <tr>
                                 <th>ID</th>
@@ -65,8 +65,8 @@ const Projects = () => {
                                     <td>{project.name}</td>
                                     <td>{project.description}</td>
                                     <td>
-                                        <button className="details-btn" onClick={() => navigate(`/projects/${project.id}`)}>Details</button>
-                                        <button className="delete-btn" onClick={() => handleDelete(project.id)}>Delete</button>
+                                        <button className="btn btn-info" onClick={() => navigate(`/projects/${project.id}`)}>Details</button>
+                                        <button className="btn btn-danger" onClick={() => handleDelete(project.id)}>Delete</button>
                                     </td>
                                 </tr>
                             ))}

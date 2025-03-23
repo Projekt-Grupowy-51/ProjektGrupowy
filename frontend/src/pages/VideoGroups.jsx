@@ -46,37 +46,44 @@ const VideoGroupsDetails = () => {
     }
 
     return (
-        <div className="container">
-            <div className="content">
-                <h1 className="heading">Video Groups List</h1>
-                <button className="add-btn" onClick={addVideoGroup}>Add new video group</button>
-
-                <table className="project-table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Description</th>
-                            <th>Project ID</th>
-                            <th>Actions</th>
+        <div className="container mt-4">
+            <h1 className="text-primary">Video Groups</h1>
+            <button className="btn btn-success mb-3" onClick={addVideoGroup}>
+                Add Video Group
+            </button>
+            <table className="normal-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {videoGroups.map((group) => (
+                        <tr key={group.id}>
+                            <td>{group.id}</td>
+                            <td>{group.name}</td>
+                            <td>{group.description}</td>
+                            <td>
+                                <button
+                                    className="btn btn-info me-2"
+                                    onClick={() => navigate(`/VideoGroup/${group.id}`)}
+                                >
+                                    Details
+                                </button>
+                                <button
+                                    className="btn btn-danger"
+                                    onClick={() => deleteVideoGroup(group.id)}
+                                >
+                                    Delete
+                                </button>
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        {videoGroups.map((videoGroup) => (
-                            <tr key={videoGroup.id}>
-                                <td>{videoGroup.id}</td>
-                                <td>{videoGroup.name}</td>
-                                <td>{videoGroup.description}</td>
-                                <td>{videoGroup.projectId}</td>
-                                <td>
-                                    <button className="details-btn" onClick={() => navigate(`/VideoGroup/${videoGroup.id}`)}>Details</button>
-                                    <button className="delete-btn" onClick={() => deleteVideoGroup(videoGroup.id)}>Delete</button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
+                    ))}
+                </tbody>
+            </table>
         </div>
     );
 };

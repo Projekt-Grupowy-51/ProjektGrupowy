@@ -129,99 +129,48 @@ const VideoGroupDetails = () => {
     if (!videoGroupDetails) return <div>Loading...</div>;
 
     return (
-        <div className="container">
-            <div className="content">
-                <h1 className="heading">{videoGroupDetails.name}</h1>
-                <div className="details">
-                    {/*<p><strong>ID:</strong> {videoGroupDetails.id}</p>*/}
-                    {/*<p><strong>Name:</strong> {videoGroupDetails.name}</p>*/}
-                    <p><strong>Description:</strong> {videoGroupDetails.description}</p>
-                </div>
-                <button className="add-btn" onClick={addVideo}>Add new video</button>
-                <button className="back-btn">
-                    <Link to={`/projects/${videoGroupDetails.projectId}`}>Back to Project</Link>
-                </button>
-
-                <h2>Videos</h2>
-                {videos.length > 0 ? (
-                    <table className="project-table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Title</th>
-                                <th>Description</th>
-                                <th>Video Group ID</th>
-                                <th>Path</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {videos.map((video) => (
-                                <tr key={video.id}>
-                                    <td>{video.id}</td>
-                                    <td>{video.title}</td>
-                                    <td>{video.description}</td>
-                                    <td>{video.videoGroupId}</td>
-                                    <td>{video.path}</td>
-                                    <td>
-                                        <button
-                                            className="details-btn"
-                                            onClick={() => navigate(`/videos/${video.id}`)}
-                                        >
-                                            Details
-                                        </button>
-                                        <button className="delete-btn" onClick={() => deleteVideo(video.id)}>
-                                            Delete
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                ) : (
-                    <p>No videos associated with this video group.</p>
-                )}
-
-                {/*<h2>Video Stream Preview (2x2 Grid)</h2>*/}
-                {/*<div className="video-grid">*/}
-                {/*    {streams.length > 0 ? (*/}
-                {/*        streams.map((streamUrl, index) => (*/}
-                {/*            <div className="video-container" key={index}>*/}
-                {/*                <video*/}
-                {/*                    ref={(el) => videoRefs.current[index] = el}*/}
-                {/*                    width="300"*/}
-                {/*                    height="200"*/}
-                {/*                    src={streamUrl}*/}
-                {/*                    type="video/mp4"*/}
-                {/*                    onTimeUpdate={handleTimeUpdate}*/}
-                {/*                    onLoadedMetadata={setVideoDuration}*/}
-                {/*                >*/}
-                {/*                    Your browser does not support the video tag.*/}
-                {/*                </video>*/}
-                {/*            </div>*/}
-                {/*        ))*/}
-                {/*    ) : (*/}
-                {/*        <p>Loading video streams...</p>*/}
-                {/*    )}*/}
-                {/*</div>*/}
-
-                {/*<div className="timeline-container">*/}
-                {/*    <input*/}
-                {/*        type="range"*/}
-                {/*        min="0"*/}
-                {/*        max={duration}*/}
-                {/*        value={currentTime}*/}
-                {/*        onChange={handleTimelineChange}*/}
-                {/*        step="0.1"*/}
-                {/*        className="timeline"*/}
-                {/*    />*/}
-                {/*    <span>{Math.floor(currentTime)} / {Math.floor(duration)} sec</span>*/}
-                {/*</div>*/}
-
-                {/*<button className="play-stop-btn" onClick={handlePlayStop}>*/}
-                {/*    {isPlaying ? 'Stop All Videos' : 'Play All Videos'}*/}
-                {/*</button>*/}
-            </div>
+        <div className="container mt-4">
+            <h1 className="text-primary">{videoGroupDetails.name}</h1>
+            <p>{videoGroupDetails.description}</p>
+            <button className="btn btn-success me-2" onClick={addVideo}>
+                Add Video
+            </button>
+            <Link to={`/projects/${videoGroupDetails.projectId}`} className="btn btn-secondary">
+                Back to Project
+            </Link>
+            <table className="normal-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Title</th>
+                        <th>Description</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {videos.map((video) => (
+                        <tr key={video.id}>
+                            <td>{video.id}</td>
+                            <td>{video.title}</td>
+                            <td>{video.description}</td>
+                            <td>
+                                <button
+                                    className="btn btn-info me-2"
+                                    onClick={() => navigate(`/videos/${video.id}`)}
+                                >
+                                    Details
+                                </button>
+                                <button
+                                    className="btn btn-danger"
+                                    onClick={() => deleteVideo(video.id)}
+                                >
+                                    Delete
+                                </button>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
         </div>
     );
 };

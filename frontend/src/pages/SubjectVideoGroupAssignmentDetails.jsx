@@ -27,7 +27,7 @@ const SubjectVideoGroupAssignmentDetails = () => {
             const assignmentResponse = await httpClient.get(`/SubjectVideoGroupAssignment/${id}`);
             setAssignmentDetails(assignmentResponse.data);
 
-            // Pobierz dane subject i videoGroup równolegle
+            // Pobierz dane subject i videoGroup rï¿½wnolegle
             const [subjectResponse, videoGroupResponse] = await Promise.all([
                 httpClient.get(`/subject/${assignmentResponse.data.subjectId}`),
                 httpClient.get(`/videogroup/${assignmentResponse.data.videoGroupId}`)
@@ -87,7 +87,7 @@ const SubjectVideoGroupAssignmentDetails = () => {
                         <button className="edit-btn" onClick={() => navigate(`/assignments/edit/${id}`)}>
                             Edit
                         </button>
-                        <button className="delete-btn" onClick={handleDelete}>
+                        <button className="btn btn-danger" onClick={handleDelete}>
                             Delete
                         </button>
                         <button className="refresh-btn add-btn" onClick={fetchData}>
@@ -177,7 +177,7 @@ const SubjectVideoGroupAssignmentDetails = () => {
                     <div className="table-wrapper">
                         <h2>Assigned Labelers</h2>
                         {labelers.length > 0 ? (
-                            <table className="project-table">
+                            <table className="normal-table">
                                 <thead>
                                     <tr>
                                         <th>ID</th>
@@ -210,7 +210,7 @@ const SubjectVideoGroupAssignmentDetails = () => {
                     <div className="table-wrapper">
                         <h2>Assigned Labels</h2>
                         {assignedLabels.length > 0 ? (
-                            <table className="project-table">
+                            <table className="normal-table">
                                 <thead>
                                     <tr>
                                         <th>Label ID</th>

@@ -68,12 +68,27 @@ button:focus-visible {
   }
 }
 
-table{
-    width:100%;
+/* Remove custom table styles */
+table {
+    margin: 20px 0;
 }
 
-td, th, tr {
-    text-align: center;
+th, td {
+    padding: 0; /* Bootstrap handles padding */
+    border: none; /* Bootstrap handles borders */
+}
+
+th {
+    background: none; /* Bootstrap handles header styles */
+    color: inherit; /* Bootstrap handles text color */
+}
+
+tr:nth-child(even) {
+    background-color: inherit; /* Bootstrap handles row striping */
+}
+
+tr:hover {
+    background-color: inherit; /* Bootstrap handles hover effects */
 }
 
 input, textarea {
