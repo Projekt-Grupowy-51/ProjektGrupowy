@@ -169,6 +169,41 @@ public class SubjectVideoGroupAssignmentRepository(
         return Optional<SubjectVideoGroupAssignment>.Failure("Labeler is already assigned to this SubjectVideoGroupAssignment");
     }
 
+    public async Task<Optional<SubjectVideoGroupAssignment>> UnassignLabelerFromAssignmentAsync(int assignmentId, int labelerId)
+    {
+        try
+        {
+            var assignment = await context.SubjectVideoGroupAssignments
+                .Include(a => a.Labelers)
+                .FirstOrDefaultAsync(a => a.Id == assignmentId);
+
+            if (assignment == null)
+            {
+                return Optional<SubjectVideoGroupAssignment>.Failure("SubjectVideoGroupAssignment not found");
+            }
+
+            var labeler = await context.Labelers.FindAsync(labelerId);
+            if (labeler == null)
+            {
+                return Optional<SubjectVideoGroupAssignment>.Failure("Labeler not found");
+            }
+
+            if (assignment.Labelers == null || !assignment.Labelers.Contains(labeler))
+            {
+                return Optional<SubjectVideoGroupAssignment>.Failure("Labeler is not assigned to this SubjectVideoGroupAssignment");
+            }
+
+            assignment.Labelers.Remove(labeler);
+            await context.SaveChangesAsync();
+            return Optional<SubjectVideoGroupAssignment>.Success(assignment);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "An error occurred while unassigning labeler from assignment");
+            return Optional<SubjectVideoGroupAssignment>.Failure(e.Message);
+        }
+    }
+
     public async Task<Optional<IEnumerable<SubjectVideoGroupAssignment>>> GetSubjectVideoGroupAssignmentsByVideoGroupIdAsync(int videoGroupId)
     {
         try

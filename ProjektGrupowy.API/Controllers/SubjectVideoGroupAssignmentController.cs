@@ -238,4 +238,23 @@ public class SubjectVideoGroupAssignmentController(
         var result = await subjectVideoGroupAssignmentService.AssignLabelerToAssignmentAsync(assignmentId, labelerId);
         return result.IsSuccess ? Ok("Labeler assigned successfully") : NotFound(result.GetErrorOrThrow());
     }
+
+    [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
+    [HttpDelete("{assignmentId}/unassign-labeler/{labelerId}")]
+    public async Task<IActionResult> UnassignLabelerFromSubjectVideoGroup(int assignmentId, int labelerId)
+    {
+        var checkResult = await authHelper.CheckGeneralAccessAsync(User);
+        if (checkResult.Error != null)
+            return checkResult.Error;
+
+        if (checkResult.IsScientist)
+        {
+            var authResult = await authHelper.EnsureScientistOwnsSubjectVideoGroupAssignmentAsync(User, assignmentId);
+            if (authResult != null)
+                return authResult;
+        }
+
+        var result = await subjectVideoGroupAssignmentService.UnassignLabelerFromAssignmentAsync(assignmentId, labelerId);
+        return result.IsSuccess ? Ok("Labeler unassigned successfully") : NotFound(result.GetErrorOrThrow());
+    }
 }
