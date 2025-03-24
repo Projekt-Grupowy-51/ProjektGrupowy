@@ -1,106 +1,45 @@
-﻿import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import httpClient from '../httpClient';
 import './css/ScientistProjects.css';
 
 const VideoGroupDetails = () => {
-    const { id } = useParams(); // Get `id` from URL
+    const { id } = useParams();
     const [videoGroupDetails, setVideoGroupDetails] = useState(null);
-    const [videos, setVideos] = useState([]); // Renamed from labels to videos
-    const [streams, setStreams] = useState([]); // State for video streams
-    const [isPlaying, setIsPlaying] = useState(false); // Play/Stop state
-    const [currentTime, setCurrentTime] = useState(0); // Shared current time for all videos
-    const [duration, setDuration] = useState(0); // Shared video duration
-    const videoRefs = useRef([]); // Refs for video elements
+    const [videos, setVideos] = useState([]);
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
     // Fetch video group details
     async function fetchVideoGroupDetails() {
+        setLoading(true);
+        setError('');
         try {
-            const response = await fetch(`http://localhost:5000/api/videogroup/${id}`);
-            if (!response.ok) {
-                throw new Error('Failed to fetch video group details');
-            }
-            const data = await response.json();
-            setVideoGroupDetails(data);
-            fetchVideos(data); // Fetch videos associated with the video group
+            const response = await httpClient.get(`/videogroup/${id}`);
+            setVideoGroupDetails(response.data);
+            fetchVideos();
         } catch (error) {
-            console.error('Error fetching video group details:', error);
+            setError(error.response?.data?.message || 'Failed to fetch video group details');
+            setLoading(false);
         }
     }
 
     // Fetch the list of videos
-    async function fetchVideos(videoGroupData) {
+    async function fetchVideos() {
         try {
-            const response = await fetch(`http://localhost:5000/api/VideoGroup/${id}/videos`);
-            if (!response.ok) {
-                throw new Error('Failed to fetch videos');
-            }
-            const data = await response.json();
-            setVideos(data); // Set the fetched video data
-
-            // Fetch video streams after fetching videos
-            fetchVideoStreams(data);
+            const response = await httpClient.get(`/VideoGroup/${id}/videos`);
+            setVideos(response.data);
         } catch (error) {
-            console.error('Error fetching videos:', error);
+            setError(error.response?.data?.message || 'Failed to fetch videos');
+        } finally {
+            setLoading(false);
         }
     }
 
-    // Fetch video stream URLs for a given set of videos
-    async function fetchVideoStreams(videos) {
-        const videoIds = videos.slice(0, 4).map((video) => video.id);
-        const streamsPromises = videoIds.map(async (videoId) => {
-            const response = await fetch(`http://localhost:5000/api/Video/${videoId}/stream`);
-            if (!response.ok) {
-                throw new Error('Failed to fetch video stream');
-            }
-            return response.url; // Get the stream URL
-        });
-
-        try {
-            const streamUrls = await Promise.all(streamsPromises);
-            setStreams(streamUrls); // Set the stream URLs for the 4 videos
-        } catch (error) {
-            console.error('Error fetching video streams:', error);
-        }
-    }
-
-    // Fetch video group details when component is mounted
     useEffect(() => {
         if (id) fetchVideoGroupDetails();
     }, [id]);
-
-    // Handle play/stop for all videos
-    const handlePlayStop = () => {
-        if (isPlaying) {
-            // Pause all videos
-            videoRefs.current.forEach((video) => video.pause());
-        } else {
-            // Play all videos
-            videoRefs.current.forEach((video) => video.play());
-        }
-        setIsPlaying(!isPlaying); // Toggle play/stop state
-    };
-
-    // Handle scrubbing the timeline
-    const handleTimelineChange = (event) => {
-        const newTime = parseFloat(event.target.value);
-        setCurrentTime(newTime); // Update shared time
-        videoRefs.current.forEach((video) => video.currentTime = newTime); // Set the new time for all videos
-    };
-
-    // Handle video time updates
-    const handleTimeUpdate = () => {
-        // Find the maximum current time across all videos
-        const maxTime = Math.max(...videoRefs.current.map((video) => video.currentTime));
-        setCurrentTime(maxTime); // Update the shared current time
-    };
-
-    // Set video duration once the first video has been loaded
-    const setVideoDuration = () => {
-        if (videoRefs.current[0]) {
-            setDuration(videoRefs.current[0].duration);
-        }
-    };
 
     // Redirect to "Add Video" form
     function addVideo() {
@@ -109,68 +48,92 @@ const VideoGroupDetails = () => {
 
     // Delete a video
     async function deleteVideo(videoId) {
-        try {
-            const response = await fetch(`http://localhost:5000/api/video/${videoId}`, {
-                method: 'DELETE',
-            });
+        if (!window.confirm('Are you sure you want to delete this video?')) return;
 
-            if (response.ok) {
-                setVideos(videos.filter((video) => video.id !== videoId));
-                console.log('Deleted video:', videoId);
-            } else {
-                console.error('Error while deleting video:', response.statusText);
-            }
+        try {
+            await httpClient.delete(`/video/${videoId}`);
+            setVideos(videos.filter((video) => video.id !== videoId));
+            alert('Video deleted successfully');
         } catch (error) {
-            console.error('Error while deleting video:', error);
+            setError(error.response?.data?.message || 'Failed to delete video');
         }
     }
 
-    // Check if videoGroupDetails exists before rendering
-    if (!videoGroupDetails) return <div>Loading...</div>;
+    if (loading) return (
+        <div className="container">
+            <div className="loading">Loading video group details...</div>
+        </div>
+    );
+
+    if (error) return (
+        <div className="container">
+            <div className="error">{error}</div>
+            <button className="btn btn-primary" onClick={() => navigate('/projects')}>
+                Back to Projects
+            </button>
+        </div>
+    );
+
+    if (!videoGroupDetails) return null;
 
     return (
-        <div className="container mt-4">
-            <h1 className="text-primary">{videoGroupDetails.name}</h1>
-            <p>{videoGroupDetails.description}</p>
-            <button className="btn btn-success me-2" onClick={addVideo}>
-                Add Video
-            </button>
-            <Link to={`/projects/${videoGroupDetails.projectId}`} className="btn btn-secondary">
-                Back to Project
-            </Link>
-            <table className="normal-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Title</th>
-                        <th>Description</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {videos.map((video) => (
-                        <tr key={video.id}>
-                            <td>{video.id}</td>
-                            <td>{video.title}</td>
-                            <td>{video.description}</td>
-                            <td>
-                                <button
-                                    className="btn btn-info me-2"
-                                    onClick={() => navigate(`/videos/${video.id}`)}
-                                >
-                                    Details
-                                </button>
-                                <button
-                                    className="btn btn-danger"
-                                    onClick={() => deleteVideo(video.id)}
-                                >
-                                    Delete
-                                </button>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
+        <div className="container">
+            <div className="content">
+                <h1 className="heading">{videoGroupDetails.name}</h1>
+
+                <div className="actions-row">
+                    <button className="btn add-btn" onClick={addVideo}>
+                        Add Video
+                    </button>
+                    <Link to={`/projects/${videoGroupDetails.projectId}`} className="btn back-btn">
+                        Back to Project
+                    </Link>
+                </div>
+
+                {/* Videos Table */}
+                <div className="table-container">
+                    <h2>Videos</h2>
+                    {videos.length > 0 ? (
+                        <table className="normal-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Title</th>
+                                    <th>Position</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {videos.map((video) => (
+                                    <tr key={video.id}>
+                                        <td>{video.id}</td>
+                                        <td>{video.title}</td>
+                                        <td>{video.positionInQueue}</td>
+                                        <td>
+                                            <div className="action-buttons">
+                                                <button
+                                                    className="btn btn-info"
+                                                    onClick={() => navigate(`/videos/${video.id}`)}
+                                                >
+                                                    View
+                                                </button>
+                                                <button
+                                                    className="btn btn-danger"
+                                                    onClick={() => deleteVideo(video.id)}
+                                                >
+                                                    Delete
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    ) : (
+                        <p>No videos found in this group. Add some videos to get started.</p>
+                    )}
+                </div>
+            </div>
         </div>
     );
 };

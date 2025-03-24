@@ -2,11 +2,11 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ProjektGrupowy.API.DTOs.AssignedLabel;
+using ProjektGrupowy.API.DTOs.Label;
 using ProjektGrupowy.API.Filters;
 using ProjektGrupowy.API.Models;
 using ProjektGrupowy.API.Services;
-using ProjektGrupowy.API.Services.Impl;
-using ProjektGrupowy.API.Utils.Enums;
+using ProjektGrupowy.API.Utils.Constants;
 using System.Security.Claims;
 
 namespace ProjektGrupowy.API.Controllers;
@@ -15,173 +15,113 @@ namespace ProjektGrupowy.API.Controllers;
 [ApiController]
 [ServiceFilter(typeof(ValidateModelStateFilter))]
 [Authorize]
-public class AssignedLabelController(IAssignedLabelService assignedLabelService, ISubjectVideoGroupAssignmentService subjectVideoGroupAssignmentService, IScientistService scientistService, ILabelerService labelerService, IMapper mapper) : ControllerBase
+public class AssignedLabelController(
+    IAssignedLabelService assignedLabelService,
+    ILabelerService labelerService,
+    ILabelService labelService,
+    ISubjectVideoGroupAssignmentService subjectVideoGroupAssignmentService,
+    IAuthorizationHelper authHelper,
+    IMapper mapper) : ControllerBase
 {
-    private (ActionResult? Error, bool IsScientist, bool IsAdmin, bool IsLabeler, Scientist? Scientist, Labeler? Labeler) CheckGeneralAccess()
-    {
-        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (userId == null)
-        {
-            return (Unauthorized("User identity not found."), false, false, false, null, null);
-        }
-
-        bool isScientist = User.IsInRole(RoleEnum.Scientist.ToString());
-        bool isAdmin = User.IsInRole(RoleEnum.Admin.ToString());
-        bool isLabeler = User.IsInRole(RoleEnum.Labeler.ToString());
-
-        if (!isScientist && !isAdmin && !isLabeler)
-        {
-            return (Forbid(), false, false, false, null, null);
-        }
-
-        if (isScientist)
-        {
-            return (null, true, false, false, scientistService.GetScientistByUserIdAsync(userId).Result.GetValueOrThrow(), null);
-        }
-
-        if (isLabeler)
-        {
-            return (null, false, false, true, null, labelerService.GetLabelerByUserIdAsync(userId).Result.GetValueOrThrow());
-        }
-
-        return (null, false, true, false, null, null);
-    }
-
     [HttpGet]
     public async Task<ActionResult<IEnumerable<AssignedLabelResponse>>> GetAssignedLabelsAsync()
     {
-        var checkResult = CheckGeneralAccess();
-        if (checkResult.Error != null)
+        if (User.IsInRole(RoleConstants.Labeler))
         {
-            return checkResult.Error;
+            var labelerResult = await authHelper.GetLabelerFromUserAsync(User);
+            if (labelerResult.Error != null)
+                return labelerResult.Error;
+
+            var labelerAssignedLabels = await assignedLabelService.GetAssignedLabelsByLabelerIdAsync(labelerResult.Labeler!.Id);
+            return labelerAssignedLabels.IsSuccess 
+                ? Ok(mapper.Map<IEnumerable<AssignedLabelResponse>>(labelerAssignedLabels.GetValueOrThrow())) 
+                : NotFound(labelerAssignedLabels.GetErrorOrThrow());
         }
+        else
+        {
+            var checkResult = await authHelper.CheckGeneralAccessAsync(User);
+            if (checkResult.Error != null)
+                return checkResult.Error;
 
-        var labels = checkResult.IsAdmin switch {
-            true => await assignedLabelService.GetAssignedLabelsAsync(),
-            false => checkResult.IsScientist switch {
-                true => await assignedLabelService.GetAssignedLabelsByScientistIdAsync(checkResult.Scientist!.Id),
-                false => await assignedLabelService.GetAssignedLabelsByLabelerIdAsync(checkResult.Labeler!.Id)
-            }
-        };
-
-        return labels.IsSuccess ? Ok(mapper.Map<IEnumerable<AssignedLabelResponse>>(labels.GetValueOrThrow())) : NotFound(labels.GetErrorOrThrow());
+            var assignedLabels = await assignedLabelService.GetAssignedLabelsAsync();
+            return assignedLabels.IsSuccess 
+                ? Ok(mapper.Map<IEnumerable<AssignedLabelResponse>>(assignedLabels.GetValueOrThrow())) 
+                : NotFound(assignedLabels.GetErrorOrThrow());
+        }
     }
 
     [HttpGet("{id:int}")]
     public async Task<ActionResult<AssignedLabelResponse>> GetAssignedLabelAsync(int id)
     {
-        var checkResult = CheckGeneralAccess();
-        if (checkResult.Error != null)
+        if (User.IsInRole(RoleConstants.Labeler))
         {
-            return checkResult.Error;
+            var authResult = await authHelper.EnsureLabelerOwnsAssignedLabelAsync(User, id);
+            if (authResult != null)
+                return authResult;
+        }
+        else
+        {
+            var checkResult = await authHelper.CheckGeneralAccessAsync(User);
+            if (checkResult.Error != null)
+                return checkResult.Error;
         }
 
-        var labelResult = await assignedLabelService.GetAssignedLabelAsync(id);
-
-        if (labelResult.IsFailure)
-        {
-            return NotFound(new { Message = "Label not found" });
-        }
-
-        var label = labelResult.GetValueOrThrow();
-
-        if (checkResult.IsScientist)
-        {
-            if (label.SubjectVideoGroupAssignment.Subject.Project.Scientist.Id != checkResult.Scientist!.Id)
-            {
-                return Forbid("Not your project");
-            }
-
-            return Ok(mapper.Map<AssignedLabelResponse>(label));
-        }
-
-        if (checkResult.IsLabeler)
-        {
-            if (label.Labeler.Id != checkResult.Labeler!.Id)
-            {
-                return Forbid("Not your assignment");
-            }
-
-            return Ok(mapper.Map<AssignedLabelResponse>(label));
-        }
-
-        return Ok(mapper.Map<AssignedLabelResponse>(label));
+        var assignedLabel = await assignedLabelService.GetAssignedLabelAsync(id);
+        return assignedLabel.IsSuccess 
+            ? Ok(mapper.Map<AssignedLabelResponse>(assignedLabel.GetValueOrThrow())) 
+            : NotFound(assignedLabel.GetErrorOrThrow());
     }
 
     [HttpPost]
     public async Task<ActionResult<AssignedLabelResponse>> AddAssignedLabelAsync(AssignedLabelRequest assignedLabelRequest)
     {
-        var checkResult = CheckGeneralAccess();
-        if (checkResult.Error != null)
+        if (User.IsInRole(RoleConstants.Labeler))
         {
-            return checkResult.Error;
+            var labelerResult = await authHelper.GetLabelerFromUserAsync(User);
+            if (labelerResult.Error != null)
+                return labelerResult.Error;
+
+            var authResult = await authHelper.EnsureLabelerCanAccessAssignmentAsync(User, assignedLabelRequest.SubjectVideoGroupAssignmentId);
+            if (authResult != null)
+                return authResult;
+
+            assignedLabelRequest.LabelerId = labelerResult.Labeler!.Id;
         }
-
-        if (checkResult.IsScientist)
+        else
         {
-            return BadRequest("Not implemented");
-        }
-
-        if (checkResult.IsLabeler)
-        {
-            var isAssigned = await assignedLabelService.IsAssignedToLabelerAsync(assignedLabelRequest.SubjectVideoGroupAssignmentId, checkResult.Labeler!.Id);
-            if (!isAssigned)
-            {
-                return Forbid("Not assigned to this assignment");
-            }
-
-            assignedLabelRequest.LabelerId = checkResult.Labeler.Id;
+            var checkResult = await authHelper.CheckGeneralAccessAsync(User);
+            if (checkResult.Error != null)
+                return checkResult.Error;
         }
 
         var result = await assignedLabelService.AddAssignedLabelAsync(assignedLabelRequest);
 
-        if (result.IsFailure)
+        if (result.IsFailure) 
             return BadRequest(result.GetErrorOrThrow());
-
+        
         var createdAssignedLabel = result.GetValueOrThrow();
-        return CreatedAtAction(
-            nameof(GetAssignedLabelAsync),
-            new { id = createdAssignedLabel.Id },
-            mapper.Map<AssignedLabelResponse>(createdAssignedLabel));
+        var assignedLabelResponse = mapper.Map<AssignedLabelResponse>(createdAssignedLabel);
+
+        return CreatedAtAction("GetAssignedLabel", new { id = createdAssignedLabel.Id }, assignedLabelResponse);
     }
 
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteAssignedLabelAsync(int id)
     {
-        var checkResult = CheckGeneralAccess();
-        if (checkResult.Error != null)
+        if (User.IsInRole(RoleConstants.Labeler))
         {
-            return checkResult.Error;
+            var authResult = await authHelper.EnsureLabelerOwnsAssignedLabelAsync(User, id);
+            if (authResult != null)
+                return authResult;
         }
-
-        var existingLabelResult = await assignedLabelService.GetAssignedLabelAsync(id);
-
-        if (existingLabelResult.IsFailure)
+        else
         {
-            return NotFound(new { Message = "Label not found" });
-        }
-
-        var existingLabel = existingLabelResult.GetValueOrThrow();
-
-        if (checkResult.IsScientist)
-        {
-            if (existingLabel.SubjectVideoGroupAssignment.Subject.Project.Scientist.Id != checkResult.Scientist!.Id)
-            {
-                return Forbid("Not your project");
-            }
-        }
-    
-        if (checkResult.IsLabeler)
-        {
-            if (existingLabel.Labeler.Id != checkResult.Labeler!.Id)
-            {
-                return Forbid("Not your assignment");
-            }
+            var checkResult = await authHelper.CheckGeneralAccessAsync(User);
+            if (checkResult.Error != null)
+                return checkResult.Error;
         }
 
         await assignedLabelService.DeleteAssignedLabelAsync(id);
-
         return NoContent();
     }
-
 }

@@ -1,78 +1,106 @@
-import React, { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import httpClient from '../httpClient';
 import './css/ScientistProjects.css';
 
-const AddVideoGroup = () => {
-    const location = useLocation();
-    const navigate = useNavigate();
-    const [videoGroupData, setVideoGroupData] = useState({
+const VideoGroupAdd = () => {
+    const [formData, setFormData] = useState({
         name: '',
         description: '',
-        projectId: new URLSearchParams(location.search).get('projectId'), // Pobranie projectId z URL
+        projectId: null
     });
-    const [error, setError] = useState("");
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
+    const location = useLocation();
 
-    // Obs³uga zmiany wartoœci w formularzu
+    useEffect(() => {
+        // Extract projectId from query params if available
+        const queryParams = new URLSearchParams(location.search);
+        const projectId = queryParams.get('projectId');
+        if (projectId) {
+            setFormData(prev => ({ ...prev, projectId: parseInt(projectId) }));
+        }
+    }, [location.search]);
+
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setVideoGroupData((prevState) => ({
-            ...prevState,
-            [name]: value,
-        }));
+        setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    // Obs³uga przesy³ania formularza
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError("");
+        setLoading(true);
+        setError('');
+
+        // Validate form
+        if (!formData.name || !formData.description || !formData.projectId) {
+            setError('Please fill in all required fields.');
+            setLoading(false);
+            return;
+        }
 
         try {
-            const response = await httpClient.post("/videogroup", videoGroupData);
-
-            if (response.status === 201) {
-                alert("Video Group added successfully");
-                navigate(`/projects/${videoGroupData.projectId}`); // Przekierowanie na stronê projektu
-            }
-        } catch (error) {
-            console.error("Error adding video group:", error);
-            setError(error.response?.data?.message || "Failed to add video group");
+            await httpClient.post('/videogroup', formData);
+            navigate(`/projects/${formData.projectId}`);
+        } catch (err) {
+            setError(err.response?.data?.message || 'An error occurred. Please try again.');
+            setLoading(false);
         }
     };
 
     return (
         <div className="container">
-            <h1>Add Video Group</h1>
-            {error && <div className="error">{error}</div>}
-            <form onSubmit={handleSubmit}>
-                <div>
-                    <label htmlFor="name">Title</label>
-                    <input
-                        type="text"
-                        id="name"
-                        name="name"
-                        value={videoGroupData.name}
-                        onChange={handleChange}
-                        required
-                    />
-                </div>
-                <div>
-                    <label htmlFor="description">Description</label>
-                    <textarea
-                        id="description"
-                        name="description"
-                        value={videoGroupData.description}
-                        onChange={handleChange}
-                        required
-                    ></textarea>
-                </div>
-                <button type="submit">Add Video Group</button>
-            </form>
-            <button className="back-btn" onClick={() => navigate(`/projects/${videoGroupData.projectId}`)}>
-                Back to Project
-            </button>
+            <div className="content">
+                <h1>Add New Video Group</h1>
+                {error && <div className="error">{error}</div>}
+                <form onSubmit={handleSubmit}>
+                    <div className="form-group">
+                        <label htmlFor="name">Name</label>
+                        <input
+                            type="text"
+                            id="name"
+                            name="name"
+                            value={formData.name}
+                            onChange={handleChange}
+                            className="form-control"
+                            required
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label htmlFor="description">Description</label>
+                        <textarea
+                            id="description"
+                            name="description"
+                            value={formData.description}
+                            onChange={handleChange}
+                            className="form-control"
+                            rows="5"
+                            required
+                        ></textarea>
+                    </div>
+
+                    <div className="button-group">
+                        <button 
+                            type="submit" 
+                            className="btn btn-primary"
+                            disabled={loading}
+                        >
+                            {loading ? 'Adding...' : 'Add Video Group'}
+                        </button>
+                        <button 
+                            type="button" 
+                            className="btn btn-secondary"
+                            onClick={() => navigate(`/projects/${formData.projectId}`)}
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     );
 };
 
-export default AddVideoGroup;
+export default VideoGroupAdd;

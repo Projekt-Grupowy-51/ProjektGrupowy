@@ -11,4 +11,5 @@ public interface ILabelRepository
     Task<Optional<Label>> UpdateLabelAsync(Label label);
     Task DeleteLabelAsync(Label label);
     Task<Optional<IEnumerable<Label>>> GetLabelsBySubjectIdAsync(int subjectId);
+    Task<Optional<IEnumerable<Label>>> GetLabelsByScientistIdAsync(int scientistId);
 }

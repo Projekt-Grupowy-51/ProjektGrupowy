@@ -101,4 +101,40 @@ public class SubjectVideoGroupAssignmentService(ISubjectVideoGroupAssignmentRepo
     {
         return await subjectVideoGroupAssignmentRepository.AssignLabelerToAssignmentAsync(assignmentId, labelerId);
     }
+
+    public async Task<Optional<IEnumerable<SubjectVideoGroupAssignment>>> GetSubjectVideoGroupAssignmentsByVideoGroupIdAsync(int videoGroupId)
+    {
+        return await subjectVideoGroupAssignmentRepository.GetSubjectVideoGroupAssignmentsByVideoGroupIdAsync(videoGroupId);
+    }
+
+    public async Task<Optional<IEnumerable<SubjectVideoGroupAssignment>>> GetSubjectVideoGroupAssignmentsByScientistIdAsync(int scientistId)
+    {
+        return await subjectVideoGroupAssignmentRepository.GetSubjectVideoGroupAssignmentsByScientistIdAsync(scientistId);
+    }
+
+    public async Task<Optional<IEnumerable<SubjectVideoGroupAssignment>>> GetAssignmentsForLabelerAsync(int labelerId)
+    {
+        return await subjectVideoGroupAssignmentRepository.GetAssignmentsForLabelerAsync(labelerId);
+    }
+
+    public async Task<Optional<IEnumerable<AssignedLabel>>> GetLabelerAssignedLabelsAsync(int assignmentId, int labelerId)
+    {
+        var assignmentResult = await subjectVideoGroupAssignmentRepository.GetSubjectVideoGroupAssignmentAsync(assignmentId);
+        if (assignmentResult.IsFailure)
+        {
+            return Optional<IEnumerable<AssignedLabel>>.Failure(assignmentResult.GetErrorOrThrow());
+        }
+
+        return await subjectVideoGroupAssignmentRepository.GetLabelerAssignedLabelsAsync(assignmentId, labelerId);
+    }
+
+    public async Task<Optional<IEnumerable<SubjectVideoGroupAssignment>>> GetSubjectVideoGroupAssignmentsBySubjectIdAsync(int subjectId)
+    {
+        return await subjectVideoGroupAssignmentRepository.GetSubjectVideoGroupAssignmentsBySubjectIdAsync(subjectId);
+    }
+
+    public async Task<Optional<SubjectVideoGroupAssignment>> UnassignLabelerFromAssignmentAsync(int assignmentId, int labelerId)
+    {
+        return await subjectVideoGroupAssignmentRepository.UnassignLabelerFromAssignmentAsync(assignmentId, labelerId);
+    }
 }

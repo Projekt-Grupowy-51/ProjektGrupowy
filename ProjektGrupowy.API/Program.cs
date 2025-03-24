@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -12,7 +13,7 @@ using ProjektGrupowy.API.Repositories;
 using ProjektGrupowy.API.Repositories.Impl;
 using ProjektGrupowy.API.Services;
 using ProjektGrupowy.API.Services.Impl;
-using ProjektGrupowy.API.Utils.Enums;
+using ProjektGrupowy.API.Utils.Constants;
 using Serilog;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -107,7 +108,7 @@ static void AddServices(WebApplicationBuilder builder)
     {
         options.AddPolicy("FrontendPolicy", policy =>
         {
-            policy.WithOrigins("http://localhost:3000", "https://your-production-domain.com") // Dodaj wiêcej adresów
+            policy.WithOrigins("http://localhost:3000")
                   .AllowAnyHeader()
                   .AllowAnyMethod()
                   .AllowCredentials();
@@ -137,6 +138,7 @@ static void AddServices(WebApplicationBuilder builder)
     builder.Services.AddScoped<IVideoGroupService, VideoGroupService>();
     builder.Services.AddScoped<IVideoService, VideoService>();
     builder.Services.AddScoped<IProjectAccessCodeService, ProjectAccessCodeService>();
+    builder.Services.AddScoped<IAuthorizationHelper, AuthorizationHelper>();
 
     // AutoMapper
     builder.Services.AddAutoMapper(typeof(Program).Assembly);
@@ -217,10 +219,17 @@ static void AddServices(WebApplicationBuilder builder)
             };
         });
 
+    builder.Services.AddAuthorization(options =>
+    {
+        options.DefaultPolicy = new AuthorizationPolicyBuilder()
+            .RequireRole(RoleConstants.Admin, RoleConstants.Scientist, RoleConstants.Labeler)
+            .Build();
 
-    // Authorization
-    builder.Services.AddAuthorization();
-
+        options.AddPolicy(PolicyConstants.RequireAdminOrScientist, policy =>
+            policy.RequireAssertion(context =>
+                context.User.IsInRole(RoleConstants.Admin) ||
+                context.User.IsInRole(RoleConstants.Scientist)));
+    });
 
     // Response Compression
     builder.Services.AddResponseCompression(options =>
@@ -241,26 +250,24 @@ static async Task CreateRoles(IServiceProvider serviceProvider)
     using var scope = serviceProvider.CreateScope();
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
-    var roleNames = Enum.GetValues(typeof(RoleEnum)).Cast<RoleEnum>();
-
-    foreach (var roleName in roleNames)
+    foreach (var roleName in RoleConstants.AllRoles)
     {
-        var roleExist = await roleManager.RoleExistsAsync(roleName.ToString());
+        var roleExist = await roleManager.RoleExistsAsync(roleName);
         if (!roleExist)
         {
-            var roleResult = await roleManager.CreateAsync(new IdentityRole(roleName.ToString()));
+            var roleResult = await roleManager.CreateAsync(new IdentityRole(roleName));
             if (roleResult.Succeeded)
             {
-                Log.Information($"Rola {roleName} zosta³a pomyœlnie utworzona.");
+                Log.Information($"Rola {roleName} zostaÅ‚a pomyÅ›lnie utworzona.");
             }
             else
             {
-                Log.Error($"B³¹d przy tworzeniu roli {roleName}: {string.Join(", ", roleResult.Errors.Select(e => e.Description))}");
+                Log.Error($"BÅ‚Ä…d przy tworzeniu roli {roleName}: {string.Join(", ", roleResult.Errors.Select(e => e.Description))}");
             }
         }
         else
         {
-            Log.Information($"Rola {roleName} ju¿ istnieje.");
+            Log.Information($"Rola {roleName} juÅ¼ istnieje.");
         }
     }
 }

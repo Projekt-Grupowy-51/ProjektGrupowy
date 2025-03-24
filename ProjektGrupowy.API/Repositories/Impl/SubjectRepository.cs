@@ -118,4 +118,21 @@ public class SubjectRepository(AppDbContext context, ILogger<SubjectRepository> 
             return Optional<IEnumerable<Subject>>.Failure(e.Message);
         }
     }
+
+    public async Task<Optional<IEnumerable<Label>>> GetSubjectLabelsAsync(int subjectId)
+    {
+        try
+        {
+            var labels = await context.Labels
+                .Where(l => l.Subject.Id == subjectId)
+                .ToListAsync();
+
+            return Optional<IEnumerable<Label>>.Success(labels);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "An error occurred while getting labels for subject");
+            return Optional<IEnumerable<Label>>.Failure(e.Message);
+        }
+    }
 }

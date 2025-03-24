@@ -79,4 +79,9 @@ public class SubjectService(ISubjectRepository subjectRepository, IProjectReposi
     {
         return await subjectRepository.GetSubjectsByScientistId(scientistId);
     }
+    
+    public async Task<Optional<IEnumerable<Label>>> GetSubjectLabelsAsync(int subjectId)
+    {
+        return await subjectRepository.GetSubjectLabelsAsync(subjectId);
+    }
 }

@@ -21,7 +21,7 @@ const SubjectDetails = () => {
 
     const fetchLabels = async () => {
         try {
-            const response = await httpClient.get(`label/${id}/subject`);
+            const response = await httpClient.get(`subject/${id}/label`);
             const filteredLabels = response.data
                 .filter(label => label.subjectId === parseInt(id))
                 .sort((a, b) => a.id - b.id);

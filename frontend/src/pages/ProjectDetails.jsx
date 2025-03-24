@@ -15,6 +15,10 @@ const ProjectDetails = () => {
     const [accessCodes, setAccessCodes] = useState([]);
     const [creationError, setCreationError] = useState('');
     const [selectedDuration, setSelectedDuration] = useState('');
+    // New state variables for labeler assignment
+    const [selectedLabeler, setSelectedLabeler] = useState('');
+    const [selectedAssignment, setSelectedAssignment] = useState('');
+    const [assignmentError, setAssignmentError] = useState('');
     const navigate = useNavigate();
 
     const fetchData = async () => {
@@ -27,7 +31,6 @@ const ProjectDetails = () => {
                 httpClient.get(`/project/${id}/Labelers`),
                 httpClient.get(`/AccessCode/project/${id}`)
             ]);
-
             setProject(projectRes.data);
             setSubjects(subjectsRes.data);
             setVideoGroups(videoGroupsRes.data);
@@ -107,6 +110,48 @@ const ProjectDetails = () => {
             alert('Labelers distributed successfully!');
         } catch (error) {
             setError(error.response?.data?.message || 'Distribution failed');
+        }
+    };
+
+    const handleAssignLabeler = async () => {
+        if (!selectedLabeler || !selectedAssignment) {
+            setAssignmentError('Please select both a labeler and an assignment');
+            return;
+        }
+
+        try {
+            await httpClient.post(`/SubjectVideoGroupAssignment/${selectedAssignment}/assign-labeler/${selectedLabeler}`);
+            setSelectedLabeler('');
+            setSelectedAssignment('');
+            setAssignmentError('');
+            await fetchData();
+            alert('Labeler assigned successfully!');
+        } catch (error) {
+            console.error('Error assigning labeler:', error);
+            setAssignmentError(error.response?.data?.message || 'Failed to assign labeler');
+        }
+    };
+
+    const handleUnassignLabeler = async (assignmentId, labelerId) => {
+        if (!window.confirm('Are you sure you want to remove this labeler assignment?')) return;
+
+        try {
+            // First find the assignment that has this labeler
+            const targetAssignment = assignments.find(
+                assignment => assignment.id === assignmentId && 
+                assignment.labelers?.some(l => l.id === labelerId)
+            );
+            
+            if (targetAssignment) {
+                await httpClient.delete(`/SubjectVideoGroupAssignment/${assignmentId}/unassign-labeler/${labelerId}`);
+                await fetchData();
+                alert('Labeler assignment removed successfully!');
+            } else {
+                setAssignmentError('Assignment not found');
+            }
+        } catch (error) {
+            console.error('Error unassigning labeler:', error);
+            setAssignmentError(error.response?.data?.message || 'Failed to unassign labeler');
         }
     };
 
@@ -322,46 +367,128 @@ const ProjectDetails = () => {
                             >
                                 Distribute labelers
                             </button>
+                            
+                            <div className="assignment-controls">
+                                <h3>Assign Labeler to Assignment</h3>
+                                {assignmentError && <div className="error">{assignmentError}</div>}
+                                <div className="assignment-form">
+                                    <div className="form-group">
+                                        <label htmlFor="labelerSelect">Select Labeler:</label>
+                                        <select 
+                                            id="labelerSelect"
+                                            className="form-select"
+                                            value={selectedLabeler} 
+                                            onChange={(e) => setSelectedLabeler(e.target.value)}
+                                        >
+                                            <option value="">-- Select Labeler --</option>
+                                            {labelers.map(labeler => (
+                                                <option key={labeler.id} value={labeler.id}>
+                                                    {labeler.name} (ID: {labeler.id})
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor="assignmentSelect">Select Assignment:</label>
+                                        <select 
+                                            id="assignmentSelect"
+                                            className="form-select"
+                                            value={selectedAssignment} 
+                                            onChange={(e) => setSelectedAssignment(e.target.value)}
+                                        >
+                                            <option value="">-- Select Assignment --</option>
+                                            {assignments.map(assignment => {
+                                                // Find subject and video group names for better display
+                                                const subject = subjects.find(s => s.id === assignment.subjectId);
+                                                const videoGroup = videoGroups.find(vg => vg.id === assignment.videoGroupId);
+                                                
+                                                return (
+                                                    <option key={assignment.id} value={assignment.id}>
+                                                        Assignment #{assignment.id} - 
+                                                        Subject: {subject?.name || "Unknown"} (ID: {assignment.subjectId}), 
+                                                        Video Group: {videoGroup?.name || "Unknown"} (ID: {assignment.videoGroupId})
+                                                    </option>
+                                                );
+                                            })}
+                                        </select>
+                                    </div>
+                                    <button 
+                                        className="btn btn-success" 
+                                        disabled={!selectedLabeler || !selectedAssignment}
+                                        onClick={handleAssignLabeler}
+                                    >
+                                        Assign Labeler
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <h3>Project Labelers</h3>
                             {labelers.length > 0 ? (
                                 <table className="normal-table">
                                     <thead>
                                     <tr>
                                         <th>Labeler ID</th>
                                         <th>Username</th>
-                                        <th>Video Group ID</th>
                                     </tr>
                                     </thead>
                                     <tbody>
-                                    {labelers.map((labeler) => {
-                                        // Get all assignments for this labeler in current project
-                                        const labelerAssignments = assignments.filter(assignment =>
-                                            assignment.labelers?.some(l => l.id === labeler.id) &&
-                                            videoGroups.some(vg =>
-                                                vg.id === assignment.videoGroupId &&
-                                                vg.projectId === parseInt(id)
-                                            )
-                                        );
-
-                                        return (
-                                            <React.Fragment key={labeler.id}>
-                                                <tr>
-                                                    <td>{labeler.id}</td>
-                                                    <td>{labeler.name}</td>
-                                                    {labelerAssignments.length > 0 ? (
-                                                        labelerAssignments.map((assignment) => (
-                                                            <td key={assignment.id}>{assignment.videoGroupId}</td>
-                                                        ))
-                                                    ) : (
-                                                        <td>No assignments</td> // Or leave this empty if preferred
-                                                    )}
-                                                </tr>
-                                            </React.Fragment>
-                                        );
-                                    })}
+                                    {labelers.map((labeler) => (
+                                        <tr key={labeler.id}>
+                                            <td>{labeler.id}</td>
+                                            <td>{labeler.name}</td>
+                                        </tr>
+                                    ))}
                                     </tbody>
                                 </table>
                             ) : (
                                 <p>No labelers found in this project</p>
+                            )}
+                            
+                            <h3>Assignment Labelers</h3>
+                            {assignments.some(assignment => assignment.labelers && assignment.labelers.length > 0) ? (
+                                <table className="normal-table">
+                                    <thead>
+                                    <tr>
+                                        <th>Labeler ID</th>
+                                        <th>Username</th>
+                                        <th>Video Group ID</th>
+                                        <th>Subject ID</th>
+                                        <th>Assignment ID</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {assignments
+                                        .filter(assignment => assignment.labelers && assignment.labelers.length > 0)
+                                        .flatMap(assignment => 
+                                            assignment.labelers.map(labeler => ({
+                                                labeler,
+                                                videoGroupId: assignment.videoGroupId,
+                                                subjectId: assignment.subjectId,
+                                                assignmentId: assignment.id
+                                            }))
+                                        )
+                                        .map((item, index) => (
+                                            <tr key={`${item.labeler.id}-${item.videoGroupId}-${index}`}>
+                                                <td>{item.labeler.id}</td>
+                                                <td>{item.labeler.name}</td>
+                                                <td>{item.videoGroupId}</td>
+                                                <td>{item.subjectId}</td>
+                                                <td>{item.assignmentId}</td>
+                                                <td>
+                                                    <button
+                                                        className="btn btn-danger"
+                                                        onClick={() => handleUnassignLabeler(item.assignmentId, item.labeler.id)}
+                                                    >
+                                                        Unassign
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            ) : (
+                                <p>No labelers found in assignments</p>
                             )}
                         </div>
                     )}
@@ -410,7 +537,16 @@ const ProjectDetails = () => {
                                     </tr>
                                     </thead>
                                     <tbody>
-                                    {accessCodes.map((code) => (
+                                    {accessCodes
+                                        .slice()
+                                        .sort((a, b) => {
+                                            if (!a.expiresAtUtc && !b.expiresAtUtc) return 0;
+                                            if (!a.expiresAtUtc) return -1;
+                                            if (!b.expiresAtUtc) return 1;
+                                            
+                                            return new Date(b.expiresAtUtc) - new Date(a.expiresAtUtc);
+                                        })
+                                        .map((code) => (
                                         <tr key={code.code}>
                                             <td>{code.code}</td>
                                             <td>{new Date(code.createdAtUtc).toLocaleString()}</td>

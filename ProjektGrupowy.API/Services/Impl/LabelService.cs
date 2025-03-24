@@ -75,4 +75,9 @@ public class LabelService(ILabelRepository labelRepository, ISubjectRepository s
     {
         return await labelRepository.GetLabelsBySubjectIdAsync(subjectId);
     }
+
+    public async Task<Optional<IEnumerable<Label>>> GetLabelsByScientistIdAsync(int scientistId)
+    {
+        return await labelRepository.GetLabelsByScientistIdAsync(scientistId);
+    }
 }

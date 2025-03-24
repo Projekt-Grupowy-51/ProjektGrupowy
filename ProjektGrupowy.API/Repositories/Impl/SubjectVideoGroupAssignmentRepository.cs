@@ -168,4 +168,133 @@ public class SubjectVideoGroupAssignmentRepository(
 
         return Optional<SubjectVideoGroupAssignment>.Failure("Labeler is already assigned to this SubjectVideoGroupAssignment");
     }
+
+    public async Task<Optional<SubjectVideoGroupAssignment>> UnassignLabelerFromAssignmentAsync(int assignmentId, int labelerId)
+    {
+        try
+        {
+            var assignment = await context.SubjectVideoGroupAssignments
+                .Include(a => a.Labelers)
+                .FirstOrDefaultAsync(a => a.Id == assignmentId);
+
+            if (assignment == null)
+            {
+                return Optional<SubjectVideoGroupAssignment>.Failure("SubjectVideoGroupAssignment not found");
+            }
+
+            var labeler = await context.Labelers.FindAsync(labelerId);
+            if (labeler == null)
+            {
+                return Optional<SubjectVideoGroupAssignment>.Failure("Labeler not found");
+            }
+
+            if (assignment.Labelers == null || !assignment.Labelers.Contains(labeler))
+            {
+                return Optional<SubjectVideoGroupAssignment>.Failure("Labeler is not assigned to this SubjectVideoGroupAssignment");
+            }
+
+            assignment.Labelers.Remove(labeler);
+            await context.SaveChangesAsync();
+            return Optional<SubjectVideoGroupAssignment>.Success(assignment);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "An error occurred while unassigning labeler from assignment");
+            return Optional<SubjectVideoGroupAssignment>.Failure(e.Message);
+        }
+    }
+
+    public async Task<Optional<IEnumerable<SubjectVideoGroupAssignment>>> GetSubjectVideoGroupAssignmentsByVideoGroupIdAsync(int videoGroupId)
+    {
+        try
+        {
+            var assignments = await context.SubjectVideoGroupAssignments
+                .Where(x => x.VideoGroup.Id == videoGroupId)
+                .ToListAsync();
+
+            return Optional<IEnumerable<SubjectVideoGroupAssignment>>.Success(assignments);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "An error occurred while getting subject video group assignments by video group");
+            return Optional<IEnumerable<SubjectVideoGroupAssignment>>.Failure(e.Message);
+        }
+    }
+
+    public async Task<Optional<IEnumerable<SubjectVideoGroupAssignment>>> GetSubjectVideoGroupAssignmentsByScientistIdAsync(int scientistId)
+    {
+        try
+        {
+            var assignments = await context.SubjectVideoGroupAssignments
+                .Include(x => x.Subject)
+                    .ThenInclude(s => s.Project)
+                .Include(x => x.VideoGroup)
+                .Where(x => x.Subject.Project.Scientist.Id == scientistId)
+                .ToListAsync();
+
+            return Optional<IEnumerable<SubjectVideoGroupAssignment>>.Success(assignments);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "An error occurred while getting subject video group assignments by scientist ID");
+            return Optional<IEnumerable<SubjectVideoGroupAssignment>>.Failure(e.Message);
+        }
+    }
+
+    public async Task<Optional<IEnumerable<SubjectVideoGroupAssignment>>> GetAssignmentsForLabelerAsync(int labelerId)
+    {
+        try
+        {
+            var assignments = await context.SubjectVideoGroupAssignments
+                .Include(x => x.Subject)
+                .Include(x => x.VideoGroup)
+                .Include(x => x.Labelers)
+                .Where(x => x.Labelers!.Any(l => l.Id == labelerId))
+                .ToListAsync();
+
+            return Optional<IEnumerable<SubjectVideoGroupAssignment>>.Success(assignments);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "An error occurred while getting assignments for labeler");
+            return Optional<IEnumerable<SubjectVideoGroupAssignment>>.Failure(e.Message);
+        }
+    }
+
+    public async Task<Optional<IEnumerable<AssignedLabel>>> GetLabelerAssignedLabelsAsync(int assignmentId, int labelerId)
+    {
+        try
+        {
+            var labels = await context.AssignedLabels
+                .Where(x => x.SubjectVideoGroupAssignment.Id == assignmentId && x.Labeler.Id == labelerId)
+                .ToListAsync();
+
+            return Optional<IEnumerable<AssignedLabel>>.Success(labels);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "An error occurred while getting assigned labels for labeler in assignment");
+            return Optional<IEnumerable<AssignedLabel>>.Failure(e.Message);
+        }
+    }
+
+    public async Task<Optional<IEnumerable<SubjectVideoGroupAssignment>>> GetSubjectVideoGroupAssignmentsBySubjectIdAsync(int subjectId)
+    {
+        try
+        {
+            var assignments = await context.SubjectVideoGroupAssignments
+                .Include(x => x.Subject)
+                .Include(x => x.VideoGroup)
+                .Include(x => x.Labelers)
+                .Where(x => x.Subject.Id == subjectId)
+                .ToListAsync();
+
+            return Optional<IEnumerable<SubjectVideoGroupAssignment>>.Success(assignments);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "An error occurred while getting subject video group assignments by subject ID {SubjectId}", subjectId);
+            return Optional<IEnumerable<SubjectVideoGroupAssignment>>.Failure(e.Message);
+        }
+    }
 }

@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Routes, Route, Link, Navigate, Outlet, useLoca
 import authService from './auth';
 import Projects from './pages/Projects';
 import SubjectDetails from './pages/SubjectDetails';
-import VideoGroups from './pages/VideoGroups';
 import ProjectDetails from './pages/ProjectDetails';
 import VideoGroupsDetails from './pages/VideoGroupsDetails';
 import Video from './pages/Videos';
@@ -12,11 +11,12 @@ import AddSubject from './pages/SubjectAdd';
 import AddVideoGroup from './pages/VideoGroupAdd';
 import AddProjectPage from './pages/ProjectAdd';
 import EditProjectPage from './pages/ProjectEdit';
-import AddLabel from './pages/LabelAdd';
+import LabelAdd from './pages/LabelAdd';
 import EditLabel from './pages/LabelEdit';
 import SubjectVideoGroupAssignmentDetails from './pages/SubjectVideoGroupAssignmentDetails';
 import LabelerVideoGroups from './pages/LabelerVideoGroups';
 import Login from './pages/Login';
+import SubjectVideoGroupAssignmentAdd from './pages/SubjectVideoGroupAssignmentAdd';
 
 // Utw�rz kontekst uwierzytelnienia
 const AuthContext = createContext();
@@ -134,7 +134,6 @@ function App() {
                         <Route path="/subjects/:id" element={<SubjectDetails />} />
                         <Route path="/subjects/add" element={<AddSubject />} />
 
-                        <Route path="/video-groups" element={<VideoGroups />} />
                         <Route path="/video-groups/add" element={<AddVideoGroup />} />
                         <Route path="/video-groups/:id" element={<VideoGroupsDetails />} />
 
@@ -144,10 +143,12 @@ function App() {
                         <Route path="/video/:id" element={<Video />} />
 
                         <Route path="/assignments/:id" element={<SubjectVideoGroupAssignmentDetails />} />
+                        <Route path="/assignments/add" element={<SubjectVideoGroupAssignmentAdd />} />
+
                         <Route path="/subject-video-group-assignments/:id" element={<SubjectVideoGroupAssignmentDetails />} />
                         <Route path="/labeler-video-groups/:id" element={<LabelerVideoGroups />} />
 
-                        <Route path="/labels/add" element={<AddLabel />} />
+                        <Route path="/labels/add" element={<LabelAdd />} />
                         <Route path="/labels/edit/:id" element={<EditLabel />} />
                     </Route>
 

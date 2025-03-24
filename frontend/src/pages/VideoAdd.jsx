@@ -1,94 +1,284 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import './css/ScientistProjects.css'; // Importujemy plik CSS
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import httpClient from '../httpClient';
+import './css/ScientistProjects.css';
 
 const VideoAdd = () => {
-    const [title, setTitle] = useState('');
-    const [description, setDescription] = useState('');
-    const [videoUrl, setVideoUrl] = useState('');
-    const [videoGroupId, setVideoGroupId] = useState('');
+    const [formData, setFormData] = useState({
+        title: '',
+        videoGroupId: null,
+        positionInQueue: 1
+    });
+    const [file, setFile] = useState(null);
+    const [videoGroupName, setVideoGroupName] = useState('');
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
     const navigate = useNavigate();
+    const location = useLocation();
 
-    // Funkcja do obs³ugi wysy³ania formularza
-    async function handleSubmit(e) {
-        e.preventDefault(); // Zatrzymaj domyœln¹ akcjê formularza
+    useEffect(() => {
+        // Extract videoGroupId from query params
+        const queryParams = new URLSearchParams(location.search);
+        const videoGroupId = queryParams.get('videogroupId');
+        
+        if (!videoGroupId) {
+            setError('Video Group ID is required. Please go back and try again.');
+            return;
+        }
+        
+        setFormData(prev => ({ ...prev, videoGroupId: parseInt(videoGroupId) }));
+        fetchVideoGroupName(parseInt(videoGroupId));
+    }, [location.search]);
 
-        const newVideo = {
-            title,
-            description,
-            videoUrl,
-            videoGroupId,
-        };
+    const fetchVideoGroupName = async (id) => {
+        try {
+            const response = await httpClient.get(`/videogroup/${id}`);
+            setVideoGroupName(response.data.name);
+        } catch (err) {
+            setError('Failed to load video group information.');
+        }
+    };
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: name === 'positionInQueue' ? parseInt(value) : value }));
+    };
+
+    const handleFileChange = (e) => {
+        const selectedFile = e.target.files[0];
+        
+        if (selectedFile) {
+            // Check if the file is a video
+            if (!selectedFile.type.startsWith('video/')) {
+                setError('Please select a valid video file.');
+                setFile(null);
+                e.target.value = null;
+                return;
+            }
+
+            // Check file size (limit to 100MB)
+            if (selectedFile.size > 100 * 1024 * 1024) {
+                setError('File size exceeds 100MB limit.');
+                setFile(null);
+                e.target.value = null;
+                return;
+            }
+
+            setFile(selectedFile);
+            setError('');
+        }
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setError('');
+        setUploadProgress(0);
+
+        // Validate form
+        if (!formData.title || !formData.videoGroupId || !file) {
+            setError('Please fill in all required fields and upload a video file.');
+            setLoading(false);
+            return;
+        }
+
+        // Create FormData to send the file
+        const formDataObj = new FormData();
+        formDataObj.append('Title', formData.title);
+        formDataObj.append('VideoGroupId', formData.videoGroupId);
+        formDataObj.append('PositionInQueue', formData.positionInQueue);
+        formDataObj.append('File', file);
 
         try {
-            const response = await fetch('http://localhost:5000/api/Video', {
-                method: 'POST',
+            await httpClient.post('/video', formDataObj, {
                 headers: {
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'multipart/form-data'
                 },
-                body: JSON.stringify(newVideo),
+                onUploadProgress: progressEvent => {
+                    const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                    setUploadProgress(percentCompleted);
+                }
             });
-
-            if (response.ok) {
-                alert('Video successfully added!');
-                navigate('/videos'); // Przekierowanie do listy wideo po udanym dodaniu
-            } else {
-                throw new Error('Failed to add video');
-            }
-        } catch (error) {
-            console.error('Error adding video:', error);
-            alert('Error adding video');
+            
+            navigate(`/video-groups/${formData.videoGroupId}`);
+        } catch (err) {
+            setError(err.response?.data?.message || 'An error occurred while uploading the video.');
+            setLoading(false);
         }
+    };
+
+    if (!formData.videoGroupId) {
+        return (
+            <div className="container">
+                <div className="content">
+                    <div className="error">{error}</div>
+                    <button 
+                        className="btn btn-secondary"
+                        onClick={() => navigate('/projects')}
+                    >
+                        Back to Projects
+                    </button>
+                </div>
+            </div>
+        );
     }
 
     return (
         <div className="container">
-            <h1 className="heading">Add New Video</h1>
-            <form onSubmit={handleSubmit}>
-                <div className="form-group">
-                    <label htmlFor="title">Title</label>
-                    <input
-                        type="text"
-                        id="title"
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                        required
-                    />
-                </div>
+            <div className="content">
+                <h1>Add New Video</h1>
+                {error && <div className="error">{error}</div>}
+                
+                <form onSubmit={handleSubmit}>
+                    <div className="form-group">
+                        <label htmlFor="title">Title</label>
+                        <input
+                            type="text"
+                            id="title"
+                            name="title"
+                            value={formData.title}
+                            onChange={handleChange}
+                            className="form-control"
+                            required
+                            disabled={loading}
+                        />
+                    </div>
 
-                <div className="form-group">
-                    <label htmlFor="description">Description</label>
-                    <textarea
-                        id="description"
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        required
-                    />
-                </div>
+                    <div className="form-group">
+                        <label htmlFor="file">Video File</label>
+                        <div className="file-input-container">
+                            <input
+                                type="file"
+                                id="file"
+                                name="file"
+                                onChange={handleFileChange}
+                                className="file-input"
+                                accept="video/*"
+                                required
+                                disabled={loading}
+                            />
+                            {file && (
+                                <div className="file-info">
+                                    <p>Selected file: {file.name}</p>
+                                    <p>Size: {(file.size / (1024 * 1024)).toFixed(2)} MB</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
 
-                <div className="form-group">
-                    <label htmlFor="videoUrl">Video URL</label>
-                    <input
-                        type="url"
-                        id="videoUrl"
-                        value={videoUrl}
-                        onChange={(e) => setVideoUrl(e.target.value)}
-                        required
-                    />
-                </div>
+                    <div className="form-group">
+                        <label htmlFor="positionInQueue">Position in Queue</label>
+                        <input
+                            type="number"
+                            id="positionInQueue"
+                            name="positionInQueue"
+                            value={formData.positionInQueue}
+                            onChange={handleChange}
+                            className="form-control"
+                            min="1"
+                            required
+                            disabled={loading}
+                        />
+                    </div>
 
-                <div className="form-group">
-                    <label htmlFor="videoGroupId">Video Group ID</label>
-                    <input
-                        type="text"
-                        id="videoGroupId"
-                        value={videoGroupId}
-                        onChange={(e) => setVideoGroupId(e.target.value)}
-                    />
-                </div>
+                    <div className="form-group">
+                        <label htmlFor="videoGroupId">Video Group</label>
+                        <div className="videogroup-display">
+                            <input
+                                type="text"
+                                value={videoGroupName || `Group ID: ${formData.videoGroupId}`}
+                                className="form-control"
+                                disabled
+                            />
+                            <input
+                                type="hidden"
+                                name="videoGroupId"
+                                value={formData.videoGroupId}
+                            />
+                        </div>
+                    </div>
 
-                <button type="submit" className="submit-btn">Add Video</button>
-            </form>
+                    {loading && (
+                        <div className="progress-container">
+                            <div className="progress-bar-container">
+                                <div
+                                    className="progress-bar"
+                                    style={{ width: `${uploadProgress}%` }}
+                                ></div>
+                            </div>
+                            <div className="progress-text">
+                                Uploading: {uploadProgress}%
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="button-group">
+                        <button 
+                            type="submit" 
+                            className="btn btn-primary"
+                            disabled={loading}
+                        >
+                            {loading ? 'Uploading...' : 'Upload Video'}
+                        </button>
+                        <button 
+                            type="button" 
+                            className="btn btn-secondary"
+                            onClick={() => navigate(`/video-groups/${formData.videoGroupId}`)}
+                            disabled={loading}
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <style jsx>{`
+                .file-input-container {
+                    margin-bottom: 15px;
+                }
+                
+                .file-input {
+                    padding: 10px 0;
+                    width: 100%;
+                }
+                
+                .file-info {
+                    margin-top: 10px;
+                    padding: 10px;
+                    background-color: #f8f8f8;
+                    border-radius: 4px;
+                    border-left: 3px solid #3498db;
+                }
+                
+                .progress-container {
+                    margin: 20px 0;
+                }
+                
+                .progress-bar-container {
+                    height: 20px;
+                    background-color: #f0f0f0;
+                    border-radius: 10px;
+                    overflow: hidden;
+                }
+                
+                .progress-bar {
+                    height: 100%;
+                    background-color: #4CAF50;
+                    transition: width 0.3s ease;
+                }
+                
+                .progress-text {
+                    text-align: center;
+                    margin-top: 5px;
+                    font-weight: bold;
+                }
+                
+                .videogroup-display {
+                    display: flex;
+                    align-items: center;
+                }
+            `}</style>
         </div>
     );
 };

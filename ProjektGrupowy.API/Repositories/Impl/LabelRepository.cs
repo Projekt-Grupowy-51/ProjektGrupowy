@@ -99,4 +99,21 @@ public class LabelRepository(AppDbContext context, ILogger<LabelRepository> logg
             return Optional<IEnumerable<Label>>.Failure(e.Message);
         }
     }
+
+    public async Task<Optional<IEnumerable<Label>>> GetLabelsByScientistIdAsync(int scientistId)
+    {
+        try
+        {
+            var labels = await context.Labels
+                .Where(l => l.Subject.Project.Scientist.Id == scientistId)
+                .ToListAsync();
+            
+            return Optional<IEnumerable<Label>>.Success(labels);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "An error occurred while getting labels by scientist ID");
+            return Optional<IEnumerable<Label>>.Failure(e.Message);
+        }
+    }
 }
