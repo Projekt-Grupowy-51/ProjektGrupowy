@@ -326,7 +326,7 @@ const Videos = () => {
           </div>
           <div className="row">
             <div className="col-12">
-              <div className="pagination">
+              <div className="pagination d-flex justify-content-between">
                 <button
                   className="btn btn-primary"
                   onClick={() => onBatchChangedAsync(currentBatch - 1)}
