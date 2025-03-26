@@ -12,6 +12,6 @@ public class VideoGroupMap : Profile
             .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
             .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
             .ForMember(dest => dest.ProjectId, opt => opt.MapFrom(src => src.Project.Id))
-            .ForMember(dest => dest.VideoCount, opt => opt.MapFrom(src => src.Videos!.Count));
+            .ForMember(dest => dest.VideosAtPositions, opt => opt.MapFrom(src => src.Videos!.GroupBy(v => v.PositionInQueue).ToDictionary(g => g.Key, g => g.Count())));
     }
 }
