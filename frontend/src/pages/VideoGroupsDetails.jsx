@@ -78,7 +78,10 @@ const VideoGroupDetails = () => {
             <div className="alert alert-danger">
                 <i className="fas fa-exclamation-circle me-2"></i>{error}
             </div>
-            <button className="btn btn-secondary" onClick={() => navigate('/projects')}>
+            <button className="btn btn-secondary" 
+                    onClick={() => navigate('/projects')}
+                    style={{height: 'fit-content', margin: '1%'}}
+>
                 <i className="fas fa-arrow-left me-2"></i>Back to Projects
             </button>
         </div>
@@ -91,7 +94,7 @@ const VideoGroupDetails = () => {
             <div className="content">
                 <h1 className="heading mb-4">{videoGroupDetails.name}</h1>
                 
-                <div className="card shadow-sm mb-4">
+                {/* <div className="card shadow-sm mb-4">
                     <div className="card-header bg-primary text-white">
                         <h5 className="card-title mb-0">Video Group Details</h5>
                     </div>
@@ -100,13 +103,15 @@ const VideoGroupDetails = () => {
                             <strong>Description:</strong> {videoGroupDetails.description}
                         </p>
                     </div>
-                </div>
+                </div> */}
 
                 <div className="d-flex justify-content-between mb-4">
                     <button className="btn btn-primary" onClick={addVideo}>
                         <i className="fas fa-plus-circle me-2"></i>Add Video
                     </button>
-                    <Link to={`/projects/${videoGroupDetails.projectId}`} className="btn btn-secondary">
+                    <Link to={`/projects/${videoGroupDetails.projectId}`} 
+                        className="btn btn-secondary"
+                        style={{height: 'fit-content', margin: '1%'}}>
                         <i className="fas fa-arrow-left me-2"></i>Back to Project
                     </Link>
                 </div>
@@ -114,12 +119,12 @@ const VideoGroupDetails = () => {
                 <div className="card shadow-sm">
                     <div className="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                         <h5 className="card-title mb-0">Videos</h5>
-                        <span className="badge bg-light text-dark">{videos.length} Videos</span>
+                        <span className="badge bg-light text-dark">{videos.length} videos</span>
                     </div>
                     <div className="card-body p-0">
                         {videos.length > 0 ? (
                             <div className="table-responsive">
-                                <table className="normal-table">
+                                <table className="normal-table" style={{margin: '0px'}}>
                                     <thead>
                                         <tr>
                                             <th>ID</th>
@@ -137,15 +142,14 @@ const VideoGroupDetails = () => {
                                                 <td>
                                                     <div className="btn-group">
                                                         <button
-                                                            className="btn btn-info"
+                                                            className="btn btn-info btn-sm me-2"
                                                             onClick={() => navigate(`/videos/${video.id}`)}
                                                         >
-                                                            <i className="fas fa-eye me-1"></i>View
+                                                            <i className="fas fa-eye me-1"></i>Details
                                                         </button>
                                                         <button
-                                                            className="btn btn-info"
-                                                            // onClick={() => navigate(`/videdo/${video.id}/stream`)}
-                                                            onClick={() => openVideoStream(video.id)}
+                                                            className="btn btn-danger btn-sm"
+                                                            onClick={() => deleteVideo(video.id)}
                                                         >
                                                             <i className="fas fa-trash me-1"></i>Delete
                                                         </button>

@@ -60,18 +60,20 @@ const LabelerVideoGroups = () => {
                 <div className="d-flex justify-content-between align-items-center mb-4">
                     <h1 className="heading">My Assignments</h1>
                     <div className="join-project-section">
-                        <div className="input-group">
+                        <div className="input-group" style={{ alignItems: "center" }}>
                             <input
                                 type="text"
                                 placeholder="Paste access code"
                                 value={accessCode}
                                 onChange={(e) => setAccessCode(e.target.value)}
                                 className="form-control"
+                                style={{ height: "2.5rem" }}
                             />
                             <button
                                 onClick={handleJoinProject}
                                 className="btn btn-primary"
                                 disabled={loading}
+                                style={{ height: "2.5rem" }}
                             >
                                 <i className="fas fa-plus-circle me-2"></i>Join Project
                             </button>
@@ -106,12 +108,14 @@ const LabelerVideoGroups = () => {
                                     <td>{assignment.subjectId}</td>
                                     <td>{assignment.videoGroupId}</td>
                                     <td>
-                                        <button
-                                            className="btn btn-info"
-                                            onClick={() => navigate(`/video/${assignment.id}`)}
-                                        >
-                                            <i className="fas fa-video me-2"></i>View Videos
-                                        </button>
+                                        <div className="btn-group">
+                                            <button
+                                                className="btn btn-info btn-sm me-2"
+                                                onClick={() => navigate(`/video/${assignment.id}`)}
+                                            >
+                                                <i className="fas fa-eye me-1"></i>Details
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}

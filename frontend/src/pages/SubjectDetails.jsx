@@ -62,7 +62,7 @@ const SubjectDetails = () => {
                 <h1 className="heading mb-4">{subjectDetails.name}</h1>
 
                 <div className="card shadow-sm mb-4">
-                    <div className="card-header bg-info text-white">
+                    <div className="card-header bg-info text-white" style={{background: "var(--gradient-blue)"}}>
                         <h5 className="card-title mb-0">Subject Details</h5>
                     </div>
                     <div className="card-body">
@@ -72,13 +72,14 @@ const SubjectDetails = () => {
                     </div>
                 </div>
 
-                <div className="d-flex justify-content-between mb-4">
+                <div className="d-flex justify-content-between mb-2">
                     <button className="btn btn-primary" onClick={addLabel}>
                         <i className="fas fa-plus-circle me-2"></i>Add New Label
                     </button>
                     <Link
                         className="btn btn-secondary"
                         to={`/projects/${subjectDetails.projectId}`}
+                        style={{height: 'fit-content', margin: '1%'}}
                     >
                         <i className="fas fa-arrow-left me-2"></i>Back to Project
                     </Link>
@@ -115,18 +116,18 @@ const SubjectDetails = () => {
                                     </td>
                                     <td>{label.shortcut}</td>
                                     <td>
-                                        <div className="d-flex">
+                                        <div className="btn-group">
                                             <button
-                                                className="btn btn-primary btn-sm me-2"
+                                                className="btn btn-info btn-sm me-2"
                                                 onClick={() => navigate(`/labels/edit/${label.id}`)}
                                             >
-                                                <i className="fas fa-edit"></i>
+                                                <i className="fas fa-eye me-1"></i>Details
                                             </button>
                                             <button
                                                 className="btn btn-danger btn-sm"
                                                 onClick={() => deleteLabel(label.id)}
                                             >
-                                                <i className="fas fa-trash"></i>
+                                                <i className="fas fa-trash me-1"></i>Delete
                                             </button>
                                         </div>
                                     </td>

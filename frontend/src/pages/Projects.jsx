@@ -13,7 +13,8 @@ const Projects = () => {
     const fetchProjects = async () => {
         try {
             const response = await httpClient.get('/Project');
-            setProjects(response.data);
+            const sortedProjects = response.data.sort((a, b) => a.id - b.id); // Sort by ascending ID
+            setProjects(sortedProjects);
             setError('');
         } catch (error) {
             setError(error.response?.data?.message || 'Failed to load projects');
@@ -78,13 +79,13 @@ const Projects = () => {
                                     <td>
                                         <div className="btn-group">
                                             <button 
-                                                className="btn btn-info" 
+                                                className="btn btn-info btn-sm me-2" 
                                                 onClick={() => navigate(`/projects/${project.id}`)}
                                             >
                                                 <i className="fas fa-eye me-1"></i>Details
                                             </button>
                                             <button 
-                                                className="btn btn-danger" 
+                                                className="btn btn-danger btn-sm" 
                                                 onClick={() => handleDelete(project.id)}
                                             >
                                                 <i className="fas fa-trash me-1"></i>Delete

@@ -126,6 +126,7 @@ const VideoAdd = () => {
                 <button 
                     className="btn btn-secondary"
                     onClick={() => navigate('/projects')}
+                    style={{height: 'fit-content', margin: '1%'}}
                 >
                     <i className="fas fa-arrow-left me-2"></i>Back to Projects
                 </button>

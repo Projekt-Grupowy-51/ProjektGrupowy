@@ -273,18 +273,18 @@ const Videos = () => {
         };
     }, [labels]);
 
-    const handleRewind = () => {
+    const handleRewind = (time) => {
         const video = videoRefs.current[0];
         if (video) {
-            video.currentTime = Math.max(video.currentTime - 5, 0);
+            video.currentTime = Math.max(video.currentTime - time, 0);
             setCurrentTime(video.currentTime);
         }
     };
 
-    const handleFastForward = () => {
+    const handleFastForward = (time) => {
         const video = videoRefs.current[0];
         if (video) {
-            video.currentTime = Math.min(video.currentTime + 5, video.duration);
+            video.currentTime = Math.min(video.currentTime + time, video.duration);
             setCurrentTime(video.currentTime);
         }
     };
@@ -361,9 +361,14 @@ const Videos = () => {
                 </div>
                 <div className="controls">
                     <div className="seek-buttons">
-                        <button className="btn btn-primary seek-btn" onClick={handleRewind}>
+                        <button className="btn btn-primary seek-btn" onClick={() => handleRewind(5)}>
                             <i className="fas fa-backward">
-                                <p>5s</p>
+                                <p>-5s</p>
+                            </i>
+                        </button>
+                        <button className="btn btn-primary seek-btn" onClick={() => handleRewind(1)}>
+                            <i className="fas fa-backward">
+                                <p>-1s</p>
                             </i>
                         </button>
                     </div>
@@ -374,12 +379,20 @@ const Videos = () => {
                         <i className={`fas ${isPlaying ? "fa-stop" : "fa-play"}`}></i>
                     </button>
                     <div className="seek-buttons">
-                        <button
+                    <button
                             className="btn btn-primary seek-btn"
-                            onClick={handleFastForward}
+                            onClick={() => handleFastForward(1)}
                         >
                             <i className="fas fa-forward">
-                                <p>5s</p>
+                                <p>+1s</p>
+                            </i>
+                        </button>
+                        <button
+                            className="btn btn-primary seek-btn"
+                            onClick={() => handleFastForward(5)}
+                        >
+                            <i className="fas fa-forward">
+                                <p>+5s</p>
                             </i>
                         </button>
                     </div>

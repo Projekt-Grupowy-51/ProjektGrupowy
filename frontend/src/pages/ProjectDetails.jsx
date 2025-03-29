@@ -215,7 +215,7 @@ const ProjectDetails = () => {
                 <div className="tab-content mt-4">
                     {activeTab === 'details' && (
                         <div className="card shadow-sm">
-                            <div className="card-header bg-primary text-white">
+                            <div className="card-header text-white" style={{ background: "var(--gradient-blue)" }}>
                                 <h5 className="card-title mb-0">Project Details</h5>
                             </div>
                             <div className="card-body">
@@ -230,6 +230,7 @@ const ProjectDetails = () => {
                                     <button
                                         className="btn btn-secondary"
                                         onClick={() => navigate('/projects')}
+                                        style={{height: 'fit-content', margin: '1%'}}
                                     >
                                         <i className="fas fa-arrow-left me-2"></i>Back to Projects
                                     </button>
@@ -242,7 +243,7 @@ const ProjectDetails = () => {
                         <div className="subjects">
                             <div className="d-flex justify-content-end mb-3">
                                 <Link to={`/subjects/add?projectId=${id}`}>
-                                    <button className="btn btn-primary">
+                                    <button className="btn btn-primary" style={{ minWidth: '200px' }}>
                                         <i className="fas fa-plus-circle me-2"></i>Add Subject
                                     </button>
                                 </Link>
@@ -264,17 +265,20 @@ const ProjectDetails = () => {
                                                 <td>{subject.name}</td>
                                                 <td>{subject.description}</td>
                                                 <td>
-                                                    <Link to={`/subjects/${subject.id}`}>
-                                                        <button className="btn btn-info me-2">
-                                                            <i className="fas fa-eye me-1"></i>View
+                                                    <div className="btn-group">
+                                                        <button
+                                                            className="btn btn-info btn-sm me-2"
+                                                            onClick={() => navigate(`/subjects/${subject.id}`)}
+                                                        >
+                                                            <i className="fas fa-eye me-1"></i>Details
                                                         </button>
-                                                    </Link>
-                                                    <button
-                                                        className="btn btn-danger"
-                                                        onClick={() => handleDeleteItem('subject', subject.id)}
-                                                    >
-                                                        <i className="fas fa-trash me-1"></i>Delete
-                                                    </button>
+                                                        <button
+                                                            className="btn btn-danger btn-sm"
+                                                            onClick={() => handleDeleteItem('subject', subject.id)}
+                                                        >
+                                                            <i className="fas fa-trash me-1"></i>Delete
+                                                        </button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         ))}
@@ -292,7 +296,7 @@ const ProjectDetails = () => {
                         <div className="videos">
                             <div className="d-flex justify-content-end mb-3">
                                 <Link to={`/video-groups/add?projectId=${id}`}>
-                                    <button className="btn btn-primary">
+                                    <button className="btn btn-primary" style={{ minWidth: '200px' }}>
                                         <i className="fas fa-plus-circle me-2"></i>Add Video Group
                                     </button>
                                 </Link>
@@ -314,17 +318,20 @@ const ProjectDetails = () => {
                                                 <td>{video.name}</td>
                                                 <td>{video.description}</td>
                                                 <td>
-                                                    <Link to={`/video-groups/${video.id}`}>
-                                                        <button className="btn btn-info me-2">
-                                                            <i className="fas fa-eye me-1"></i>View
+                                                    <div className="btn-group">
+                                                        <button
+                                                            className="btn btn-info btn-sm me-2"
+                                                            onClick={() => navigate(`/video-groups/${video.id}`)}
+                                                        >
+                                                            <i className="fas fa-eye me-1"></i>Details
                                                         </button>
-                                                    </Link>
-                                                    <button
-                                                        className="btn btn-danger"
-                                                        onClick={() => handleDeleteItem('videogroup', video.id)}
-                                                    >
-                                                        <i className="fas fa-trash me-1"></i>Delete
-                                                    </button>
+                                                        <button
+                                                            className="btn btn-danger btn-sm"
+                                                            onClick={() => handleDeleteItem('videogroup', video.id)}
+                                                        >
+                                                            <i className="fas fa-trash me-1"></i>Delete
+                                                        </button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         ))}
@@ -342,7 +349,7 @@ const ProjectDetails = () => {
                         <div className="assignments">
                             <div className="d-flex justify-content-end mb-3">
                                 <Link to={`/assignments/add?projectId=${id}`}>
-                                    <button className="btn btn-primary">
+                                    <button className="btn btn-primary" style={{ minWidth: '200px' }}>
                                         <i className="fas fa-plus-circle me-2"></i>Add Assignment
                                     </button>
                                 </Link>
@@ -364,17 +371,20 @@ const ProjectDetails = () => {
                                                 <td>{assignment.subjectId}</td>
                                                 <td>{assignment.videoGroupId}</td>
                                                 <td>
-                                                    <Link to={`/assignments/${assignment.id}`}>
-                                                        <button className="btn btn-info me-2">
-                                                            <i className="fas fa-eye me-1"></i>View
+                                                    <div className="btn-group">
+                                                        <button
+                                                            className="btn btn-info btn-sm me-2"
+                                                            onClick={() => navigate(`/assignments/${assignment.id}`)}
+                                                        >
+                                                            <i className="fas fa-eye me-1"></i>Details
                                                         </button>
-                                                    </Link>
-                                                    <button
-                                                        className="btn btn-danger"
-                                                        onClick={() => handleDeleteItem('SubjectVideoGroupAssignment', assignment.id)}
-                                                    >
-                                                        <i className="fas fa-trash me-1"></i>Delete
-                                                    </button>
+                                                        <button
+                                                            className="btn btn-danger btn-sm"
+                                                            onClick={() => handleDeleteItem('SubjectVideoGroupAssignment', assignment.id)}
+                                                        >
+                                                            <i className="fas fa-trash me-1"></i>Delete
+                                                        </button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         ))}
@@ -390,16 +400,20 @@ const ProjectDetails = () => {
 
                     {activeTab === 'labelers' && (
                         <div className="labelers">
-                            <h2 className="mb-3">Labeler Assignments</h2>
-                            <button
-                                className="btn btn-primary mb-4"
-                                onClick={handleDistributeLabelers}
-                            >
-                                <i className="fas fa-random me-2"></i>Distribute Labelers
-                            </button>
-                            
-                            <div className="card shadow-sm mb-4">
-                                <div className="card-header bg-info text-white">
+                            <div className="d-flex justify-content-end mb-3">
+                                <a>
+                                <button
+                                    className="btn btn-primary"
+                                    onClick={handleDistributeLabelers}
+                                    style={{ minWidth: '200px' }}
+                                >
+                                    <i className="fas fa-random me-2"></i>Distribute Labelers
+                                </button>
+                                </a>
+                            </div>
+
+                            <div className="card shadow-sm mb-4" style={{marginTop: '25px'}}>
+                                <div className="card-header bg-info text-white" style={{ background: "var(--gradient-blue)"}}>
                                     <h5 className="card-title mb-0">Assign Labeler to Assignment</h5>
                                 </div>
                                 <div className="card-body">
@@ -436,7 +450,6 @@ const ProjectDetails = () => {
                                                 >
                                                     <option value="">-- Select Assignment --</option>
                                                     {assignments.map(assignment => {
-                                                        // Find subject and video group names for better display
                                                         const subject = subjects.find(s => s.id === assignment.subjectId);
                                                         const videoGroup = videoGroups.find(vg => vg.id === assignment.videoGroupId);
                                                         
@@ -452,9 +465,10 @@ const ProjectDetails = () => {
                                             </div>
                                         </div>
                                         <button 
-                                            className="btn btn-success" 
+                                            className="btn btn-success"
                                             disabled={!selectedLabeler || !selectedAssignment}
                                             onClick={handleAssignLabeler}
+                                            style={{ minWidth: '200px' }}
                                         >
                                             <i className="fas fa-user-plus me-2"></i>Assign Labeler
                                         </button>
@@ -462,7 +476,7 @@ const ProjectDetails = () => {
                                 </div>
                             </div>
 
-                            <h3 className="mb-3">Project Labelers</h3>
+                            <h3 className="mb-4">Project Labelers</h3>
                             {labelers.length > 0 ? (
                                 <table className="normal-table">
                                     <thead>
@@ -486,7 +500,7 @@ const ProjectDetails = () => {
                                 </div>
                             )}
 
-                            <h3 className="mt-4 mb-3">Assignment Labelers</h3>
+                            <h3 className="mt-4 mb-4">Assignment Labelers</h3>
                             {assignments.some(assignment => assignment.labelers && assignment.labelers.length > 0) ? (
                                 <table className="normal-table">
                                     <thead>
@@ -540,11 +554,11 @@ const ProjectDetails = () => {
                     {activeTab === 'accessCodes' && (
                         <div className="access-codes">
                             <div className="card shadow-sm mb-4">
-                                <div className="card-header bg-primary text-white">
+                                <div className="card-header bg-primary text-white" style={{ background: "var(--gradient-blue)" }}>
                                     <h5 className="card-title mb-0">Generate Access Codes</h5>
                                 </div>
                                 <div className="card-body">
-                                    <div className="duration-options d-flex align-items-center gap-3 mb-3">
+                                    <div className="duration-options d-inline-grid align-items-center gap-3 mb-3">
                                         <div className="btn-group">
                                             <button
                                                 className={`btn ${selectedDuration === '14days' ? 'btn-primary' : 'btn-outline-primary'}`}

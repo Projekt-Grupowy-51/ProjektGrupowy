@@ -76,6 +76,7 @@ const LabelAdd = () => {
                 <button 
                     className="btn btn-secondary"
                     onClick={() => navigate('/projects')}
+                    style={{height: 'fit-content', margin: '1%'}}
                 >
                     <i className="fas fa-arrow-left me-2"></i>Back to Projects
                 </button>
@@ -130,7 +131,7 @@ const LabelAdd = () => {
                                         />
                                         <input
                                             type="text"
-                                            className="form-control"
+                                            className="form-control form-control-color"
                                             value={formData.colorHex}
                                             onChange={(e) => setFormData({...formData, colorHex: e.target.value})}
                                             pattern="#[0-9A-Fa-f]{6}"

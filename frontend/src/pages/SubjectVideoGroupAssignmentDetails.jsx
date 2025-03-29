@@ -294,6 +294,7 @@ const SubjectVideoGroupAssignmentDetails = () => {
                 <Link 
                     to={videoGroup ? `/projects/${videoGroup.projectId}` : "/projects"}
                     className="back-btn"
+                    style={{height: 'fit-content', margin: '1%'}}
                 >
                     <i className="fas fa-arrow-left me-2"></i> Back to Project
                 </Link>
