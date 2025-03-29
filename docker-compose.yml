@@ -1,0 +1,54 @@
+﻿version: '3.8'
+
+services:
+  db:
+    build:
+      context: ./ProjektGrupowy.API/db
+      dockerfile: Dockerfile
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: mydatabase
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - mynetwork
+
+  app:
+    build:
+      context: ./ProjektGrupowy.API
+      dockerfile: Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Host=db;Database=mydatabase;UserName=myuser;Password=mypassword
+      - ASPNETCORE_URLS=http://+:80
+    ports:
+      - "5000:80"
+    networks:
+      - mynetwork
+    depends_on:
+      - db
+    volumes:
+      - videos_data:/app/videos
+
+  # frontend:
+  #   build:
+  #       context: ./frontend
+  #       dockerfile: Dockerfile
+  #   ports:
+  #       - "3000:3000"
+  #   networks:
+  #       - mynetwork
+  #   depends_on:
+  #       - app
+
+
+
+volumes:
+  postgres_data:
+  videos_data:
+
+networks:
+  mynetwork:
