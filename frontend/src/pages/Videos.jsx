@@ -50,14 +50,14 @@ const Videos = () => {
     };
 
     const onBatchChangedAsync = async (newBatch) => {
-        setCurrentBatch(newBatch); // Update the state
+        setCurrentBatch(newBatch); 
         console.log("Current batch set to: ", newBatch);
-        await fetchVideos(newBatch); // Pass the new batch directly
+        await fetchVideos(newBatch); 
     };
 
     const fetchVideos = async (batch) => {
         try {
-            const batchToFetch = batch || currentBatch; // Use the passed batch or fallback to the current state
+            const batchToFetch = batch || currentBatch; 
             console.log("Fetching Current batch: ", batchToFetch);
             const response = await httpClient.get(
                 `/Video/batch/${id}/${batchToFetch}`,
@@ -157,11 +157,15 @@ const Videos = () => {
 
         const time = video.currentTime;
 
-        const labelState = labelStateRef.current[labelId] || {};
-
         setLabelTimestamps((prevTimestamps) => {
-            const newTimestamps = { ...prevTimestamps };
-            const currentLabel = newTimestamps[labelId] || {};
+            const newTimestamps = {};
+            Object.keys(prevTimestamps).forEach((key) => {
+                if (parseInt(key) !== labelId) {
+                    delete labelStateRef.current[key];
+                }
+            });
+
+            const currentLabel = prevTimestamps[labelId] || {};
             if (!currentLabel.start) {
                 newTimestamps[labelId] = { start: time, sent: false };
             } else if (!currentLabel.sent) {
@@ -170,12 +174,10 @@ const Videos = () => {
             return newTimestamps;
         });
 
-        if (labelState.start && !labelState.sent) {
-            sendLabelData(labelId, labelState.start, time);
-            console.log("jestem tu teraz, " + time);
-        } else if (!labelState.start) {
+        if (labelStateRef.current[labelId]?.start && !labelStateRef.current[labelId]?.sent) {
+            sendLabelData(labelId, labelStateRef.current[labelId].start, time);
+        } else {
             labelStateRef.current[labelId] = { start: time, sent: false };
-            console.log("Starting to measure: ", labelId, time);
         }
     };
 
@@ -203,33 +205,32 @@ const Videos = () => {
             subjectVideoGroupAssignmentId: subjectId,
             labelerId,
             start: startFormatted,
-            end: endFormatted,
+            end: endFormatted
         };
 
         const newAssignedLabel = {
             labelId,
             start: startFormatted,
             end: endFormatted,
-            colorHex:
-                labels.find((label) => label.id === labelId)?.colorHex || "#000000",
+            colorHex: labels.find((label) => label.id === labelId)?.colorHex || '#000000',
         };
 
         try {
-            await httpClient.post("/AssignedLabel", data);
+            await httpClient.post('/AssignedLabel', data);
 
             setAssignedLabels((prevLabels) => [newAssignedLabel, ...prevLabels]);
 
             setLabelTimestamps((prev) => {
                 const newTimestamps = { ...prev };
-                if (newTimestamps[labelId]) {
-                    newTimestamps[labelId].sent = true;
-                }
+                delete newTimestamps[labelId]; 
                 return newTimestamps;
             });
 
+            labelStateRef.current[labelId] = { start: null, sent: false }; 
+
             fetchAssignedLabels();
         } catch (error) {
-            console.error("Error assigning label:", error);
+            console.error('Error assigning label:', error);
         }
     };
 
@@ -292,7 +293,6 @@ const Videos = () => {
     return (
         <div className="container">
             <div className="content">
-                {/* <h2>Video Stream Preview</h2> */}
                 <div className="container" id="video-container">
                     <div className="row" id="video-row">
                         {streams.length > 0 ? (
@@ -353,8 +353,9 @@ const Videos = () => {
                         onChange={(e) => {
                             const video = videoRefs.current[0];
                             if (video) {
-                                video.currentTime = e.target.value;
-                                setCurrentTime(e.target.value);
+                                const newTime = parseFloat(e.target.value);
+                                video.currentTime = newTime;
+                                setCurrentTime(newTime);
                             }
                         }}
                     />
@@ -396,9 +397,8 @@ const Videos = () => {
                             </i>
                         </button>
                     </div>
-                    <span>
-                        {currentTime.toFixed(2)} /{" "}
-                        {(isNaN(duration) ? 0 : duration).toFixed(2)} s
+                    <span className="time-display">
+                        {formatTime(currentTime)} / {formatTime(isNaN(duration) ? 0 : duration)}
                     </span>
                 </div>
 
@@ -414,7 +414,7 @@ const Videos = () => {
                                     onClick={() => handleLabelClick(label.id)}
                                 >
                                     {label.name + " [" + label.shortcut + "]"}{" "}
-                                    {measuring ? "STOP" : "start"}
+                                    {measuring ? "STOP" : "START"}
                                 </button>
                             );
                         })
