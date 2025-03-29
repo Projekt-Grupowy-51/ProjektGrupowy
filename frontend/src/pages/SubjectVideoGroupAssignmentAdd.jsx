@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import httpClient from '../httpClient';
-import './css/ScientistProjects.css';
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import httpClient from "../httpClient";
+import "./css/ScientistProjects.css";
 
 const SubjectVideoGroupAssignmentAdd = () => {
     const [formData, setFormData] = useState({
@@ -17,14 +17,14 @@ const SubjectVideoGroupAssignmentAdd = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
-    useEffect(() => {
-        const queryParams = new URLSearchParams(location.search);
-        const projectIdParam = queryParams.get('projectId');
-        if (projectIdParam) {
-            setProjectId(parseInt(projectIdParam));
-            fetchSubjectsAndVideoGroups(parseInt(projectIdParam));
-        }
-    }, [location.search]);
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const projectIdParam = queryParams.get("projectId");
+    if (projectIdParam) {
+      setProjectId(parseInt(projectIdParam));
+      fetchSubjectsAndVideoGroups(parseInt(projectIdParam));
+    }
+  }, [location.search]);
 
     const fetchSubjectsAndVideoGroups = async (projectId) => {
         setDataLoading(true);
@@ -43,33 +43,35 @@ const SubjectVideoGroupAssignmentAdd = () => {
         }
     };
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
-    };
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        setError('');
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
 
-        if (!formData.subjectId || !formData.videoGroupId) {
-            setError('Please select both a subject and a video group.');
-            setLoading(false);
-            return;
-        }
+    if (!formData.subjectId || !formData.videoGroupId) {
+      setError("Please select both a subject and a video group.");
+      setLoading(false);
+      return;
+    }
 
-        try {
-            await httpClient.post('/SubjectVideoGroupAssignment', {
-                subjectId: parseInt(formData.subjectId),
-                videoGroupId: parseInt(formData.videoGroupId)
-            });
-            navigate(`/projects/${projectId}`);
-        } catch (err) {
-            setError(err.response?.data?.message || 'An error occurred. Please try again.');
-            setLoading(false);
-        }
-    };
+    try {
+      await httpClient.post("/SubjectVideoGroupAssignment", {
+        subjectId: parseInt(formData.subjectId),
+        videoGroupId: parseInt(formData.videoGroupId),
+      });
+      navigate(`/projects/${projectId}`);
+    } catch (err) {
+      setError(
+        err.response?.data?.message || "An error occurred. Please try again."
+      );
+      setLoading(false);
+    }
+  };
 
     if (dataLoading) {
         return (

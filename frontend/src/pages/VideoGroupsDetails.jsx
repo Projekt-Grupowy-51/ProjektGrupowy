@@ -1,63 +1,69 @@
-﻿import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import httpClient from '../httpClient';
-import './css/ScientistProjects.css';
+﻿import React, { useState, useEffect } from "react";
+import { useParams, useNavigate, Link } from "react-router-dom";
+import httpClient, { API_BASE_URL } from "../httpClient";
+import "./css/ScientistProjects.css";
 
 const VideoGroupDetails = () => {
-    const { id } = useParams();
-    const [videoGroupDetails, setVideoGroupDetails] = useState(null);
-    const [videos, setVideos] = useState([]);
-    const [error, setError] = useState('');
-    const [loading, setLoading] = useState(true);
-    const navigate = useNavigate();
+  const { id } = useParams();
+  const [videoGroupDetails, setVideoGroupDetails] = useState(null);
+  const [videos, setVideos] = useState([]);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
-    // Fetch video group details
-    async function fetchVideoGroupDetails() {
-        setLoading(true);
-        setError('');
-        try {
-            const response = await httpClient.get(`/videogroup/${id}`);
-            setVideoGroupDetails(response.data);
-            fetchVideos();
-        } catch (error) {
-            setError(error.response?.data?.message || 'Failed to fetch video group details');
-            setLoading(false);
-        }
+  // Fetch video group details
+  async function fetchVideoGroupDetails() {
+    setLoading(true);
+    setError("");
+    try {
+      const response = await httpClient.get(`/videogroup/${id}`);
+      setVideoGroupDetails(response.data);
+      fetchVideos();
+    } catch (error) {
+      setError(
+        error.response?.data?.message || "Failed to fetch video group details"
+      );
+      setLoading(false);
     }
+  }
 
-    // Fetch the list of videos
-    async function fetchVideos() {
-        try {
-            const response = await httpClient.get(`/VideoGroup/${id}/videos`);
-            setVideos(response.data);
-        } catch (error) {
-            setError(error.response?.data?.message || 'Failed to fetch videos');
-        } finally {
-            setLoading(false);
-        }
+  // Fetch the list of videos
+  async function fetchVideos() {
+    try {
+      const response = await httpClient.get(`/VideoGroup/${id}/videos`);
+      setVideos(response.data);
+    } catch (error) {
+      setError(error.response?.data?.message || "Failed to fetch videos");
+    } finally {
+      setLoading(false);
     }
+  }
 
-    useEffect(() => {
-        if (id) fetchVideoGroupDetails();
-    }, [id]);
+  function openVideoStream(videoId) {
+    window.open(`${API_BASE_URL}/video/${videoId}/stream`);
+  }
 
-    // Redirect to "Add Video" form
-    function addVideo() {
-        navigate(`/videos/add?videogroupId=${id}`);
+  useEffect(() => {
+    if (id) fetchVideoGroupDetails();
+  }, [id]);
+
+  // Redirect to "Add Video" form
+  function addVideo() {
+    navigate(`/videos/add?videogroupId=${id}`);
+  }
+
+  // Delete a video
+  async function deleteVideo(videoId) {
+    if (!window.confirm("Are you sure you want to delete this video?")) return;
+
+    try {
+      await httpClient.delete(`/video/${videoId}`);
+      setVideos(videos.filter((video) => video.id !== videoId));
+      alert("Video deleted successfully");
+    } catch (error) {
+      setError(error.response?.data?.message || "Failed to delete video");
     }
-
-    // Delete a video
-    async function deleteVideo(videoId) {
-        if (!window.confirm('Are you sure you want to delete this video?')) return;
-
-        try {
-            await httpClient.delete(`/video/${videoId}`);
-            setVideos(videos.filter((video) => video.id !== videoId));
-            alert('Video deleted successfully');
-        } catch (error) {
-            setError(error.response?.data?.message || 'Failed to delete video');
-        }
-    }
+  }
 
     if (loading) return (
         <div className="container d-flex justify-content-center align-items-center py-5">
@@ -78,7 +84,7 @@ const VideoGroupDetails = () => {
         </div>
     );
 
-    if (!videoGroupDetails) return null;
+  if (!videoGroupDetails) return null;
 
     return (
         <div className="container">
@@ -137,8 +143,9 @@ const VideoGroupDetails = () => {
                                                             <i className="fas fa-eye me-1"></i>View
                                                         </button>
                                                         <button
-                                                            className="btn btn-danger"
-                                                            onClick={() => deleteVideo(video.id)}
+                                                            className="btn btn-info"
+                                                            // onClick={() => navigate(`/videdo/${video.id}/stream`)}
+                                                            onClick={() => openVideoStream(video.id)}
                                                         >
                                                             <i className="fas fa-trash me-1"></i>Delete
                                                         </button>

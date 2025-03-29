@@ -1,55 +1,58 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import httpClient from '../httpClient';
-import './css/ScientistProjects.css';
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import httpClient from "../httpClient";
+import "./css/ScientistProjects.css";
 
 const LabelerVideoGroups = () => {
-    const { labelerId } = useParams();
-    const [assignments, setAssignments] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
-    const [accessCode, setAccessCode] = useState('');
-    const [joinError, setJoinError] = useState('');
-    const navigate = useNavigate();
+  const { labelerId } = useParams();
+  const [assignments, setAssignments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [accessCode, setAccessCode] = useState("");
+  const [joinError, setJoinError] = useState("");
+  const navigate = useNavigate();
 
-    const handleJoinProject = async () => {
-        setJoinError('');
-        if (!accessCode.trim()) {
-            setJoinError('Please enter an access code');
-            return;
-        }
+  const handleJoinProject = async () => {
+    setJoinError("");
+    if (!accessCode.trim()) {
+      setJoinError("Please enter an access code");
+      return;
+    }
 
-        try {
-            await httpClient.post('/project/join', {
-                AccessCode: accessCode.trim()
-            });
-            alert('Successfully joined the project!');
-            setAccessCode('');
-            fetchAssignments();
-        } catch (error) {
-            setJoinError(error.response?.data?.message || 'Invalid or expired access code');
-        }
-    };
+    try {
+      await httpClient.post("/project/join", {
+        AccessCode: accessCode.trim(),
+      });
+      alert("Successfully joined the project!");
+      setAccessCode("");
+      fetchAssignments();
+    } catch (error) {
+      setJoinError(
+        error.response?.data?.message || "Invalid or expired access code"
+      );
+    }
+  };
 
-    const fetchAssignments = async () => {
-        try {
-            const response = await httpClient.get(`/SubjectVideoGroupAssignment`);
-            setAssignments(response.data);
-            setError('');
-        } catch (error) {
-            console.log(error);
-            setError(error.response?.data?.message || 'Failed to load assignments');
-        } finally {
-            setLoading(false);
-        }
-    };
+  const fetchAssignments = async () => {
+    try {
+      const response = await httpClient.get(`/SubjectVideoGroupAssignment`);
+      setAssignments(response.data);
+      setError("");
+    } catch (error) {
+      console.log(error);
+      setError(error.response?.data?.message || "Failed to load assignments");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    useEffect(() => {
-        fetchAssignments();
-    }, [labelerId]);
+  useEffect(() => {
+    fetchAssignments();
+  }, [labelerId]);
 
-    if (loading) return <p>Loading...</p>;
-    if (error) return <p className="error">{error}</p>;
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p className="error">{error}</p>;
 
     return (
         <div className="container">
@@ -77,7 +80,7 @@ const LabelerVideoGroups = () => {
                     </div>
                 </div>
 
-                {error && <div className="error">{error}</div>}
+        {error && <div className="error">{error}</div>}
 
                 {loading ? (
                     <div className="text-center py-5">

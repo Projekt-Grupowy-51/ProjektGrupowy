@@ -1,112 +1,120 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import httpClient from '../httpClient';
-import './css/ScientistProjects.css';
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import httpClient from "../httpClient";
+import "./css/ScientistProjects.css";
 
 const VideoAdd = () => {
-    const [formData, setFormData] = useState({
-        title: '',
-        videoGroupId: null,
-        positionInQueue: 1
-    });
-    const [file, setFile] = useState(null);
-    const [videoGroupName, setVideoGroupName] = useState('');
-    const [error, setError] = useState('');
-    const [loading, setLoading] = useState(false);
-    const [uploadProgress, setUploadProgress] = useState(0);
-    const navigate = useNavigate();
-    const location = useLocation();
+  const [formData, setFormData] = useState({
+    title: "",
+    videoGroupId: null,
+    positionInQueue: 1,
+  });
+  const [file, setFile] = useState(null);
+  const [videoGroupName, setVideoGroupName] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const navigate = useNavigate();
+  const location = useLocation();
 
-    useEffect(() => {
-        // Extract videoGroupId from query params
-        const queryParams = new URLSearchParams(location.search);
-        const videoGroupId = queryParams.get('videogroupId');
-        
-        if (!videoGroupId) {
-            setError('Video Group ID is required. Please go back and try again.');
-            return;
-        }
-        
-        setFormData(prev => ({ ...prev, videoGroupId: parseInt(videoGroupId) }));
-        fetchVideoGroupName(parseInt(videoGroupId));
-    }, [location.search]);
+  useEffect(() => {
+    // Extract videoGroupId from query params
+    const queryParams = new URLSearchParams(location.search);
+    const videoGroupId = queryParams.get("videogroupId");
 
-    const fetchVideoGroupName = async (id) => {
-        try {
-            const response = await httpClient.get(`/videogroup/${id}`);
-            setVideoGroupName(response.data.name);
-        } catch (err) {
-            setError('Failed to load video group information.');
-        }
-    };
+    if (!videoGroupId) {
+      setError("Video Group ID is required. Please go back and try again.");
+      return;
+    }
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: name === 'positionInQueue' ? parseInt(value) : value }));
-    };
+    setFormData((prev) => ({ ...prev, videoGroupId: parseInt(videoGroupId) }));
+    fetchVideoGroupName(parseInt(videoGroupId));
+  }, [location.search]);
 
-    const handleFileChange = (e) => {
-        const selectedFile = e.target.files[0];
-        
-        if (selectedFile) {
-            // Check if the file is a video
-            if (!selectedFile.type.startsWith('video/')) {
-                setError('Please select a valid video file.');
-                setFile(null);
-                e.target.value = null;
-                return;
-            }
+  const fetchVideoGroupName = async (id) => {
+    try {
+      const response = await httpClient.get(`/videogroup/${id}`);
+      setVideoGroupName(response.data.name);
+    } catch (err) {
+      setError("Failed to load video group information.");
+    }
+  };
 
-            // Check file size (limit to 100MB)
-            if (selectedFile.size > 100 * 1024 * 1024) {
-                setError('File size exceeds 100MB limit.');
-                setFile(null);
-                e.target.value = null;
-                return;
-            }
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: name === "positionInQueue" ? parseInt(value) : value,
+    }));
+  };
 
-            setFile(selectedFile);
-            setError('');
-        }
-    };
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        setError('');
-        setUploadProgress(0);
+    if (selectedFile) {
+      // Check if the file is a video
+      if (!selectedFile.type.startsWith("video/")) {
+        setError("Please select a valid video file.");
+        setFile(null);
+        e.target.value = null;
+        return;
+      }
 
-        // Validate form
-        if (!formData.title || !formData.videoGroupId || !file) {
-            setError('Please fill in all required fields and upload a video file.');
-            setLoading(false);
-            return;
-        }
+      // Check file size (limit to 100MB)
+      if (selectedFile.size > 100 * 1024 * 1024) {
+        setError("File size exceeds 100MB limit.");
+        setFile(null);
+        e.target.value = null;
+        return;
+      }
 
-        // Create FormData to send the file
-        const formDataObj = new FormData();
-        formDataObj.append('Title', formData.title);
-        formDataObj.append('VideoGroupId', formData.videoGroupId);
-        formDataObj.append('PositionInQueue', formData.positionInQueue);
-        formDataObj.append('File', file);
+      setFile(selectedFile);
+      setError("");
+    }
+  };
 
-        try {
-            await httpClient.post('/video', formDataObj, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                },
-                onUploadProgress: progressEvent => {
-                    const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-                    setUploadProgress(percentCompleted);
-                }
-            });
-            
-            navigate(`/video-groups/${formData.videoGroupId}`);
-        } catch (err) {
-            setError(err.response?.data?.message || 'An error occurred while uploading the video.');
-            setLoading(false);
-        }
-    };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    setUploadProgress(0);
+
+    // Validate form
+    if (!formData.title || !formData.videoGroupId || !file) {
+      setError("Please fill in all required fields and upload a video file.");
+      setLoading(false);
+      return;
+    }
+
+    // Create FormData to send the file
+    const formDataObj = new FormData();
+    formDataObj.append("Title", formData.title);
+    formDataObj.append("VideoGroupId", formData.videoGroupId);
+    formDataObj.append("PositionInQueue", formData.positionInQueue);
+    formDataObj.append("File", file);
+
+    try {
+      await httpClient.post("/video", formDataObj, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        onUploadProgress: (progressEvent) => {
+          const percentCompleted = Math.round(
+            (progressEvent.loaded * 100) / progressEvent.total
+          );
+          setUploadProgress(percentCompleted);
+        },
+      });
+
+      navigate(`/video-groups/${formData.videoGroupId}`);
+    } catch (err) {
+      setError(
+        err.response?.data?.message ||
+          "An error occurred while uploading the video."
+      );
+      setLoading(false);
+    }
+  };
 
     if (!formData.videoGroupId) {
         return (
