@@ -125,6 +125,11 @@ public class ProjectService(
 
     private async Task<Optional<bool>> AssignEquallyAsync(int projectId, IReadOnlyCollection<Labeler> labelers)
     {
+        if (labelers.Count == 0)
+        {
+            return Optional<bool>.Success(true);
+        }
+
         var countResult = await projectRepository.GetLabelerCountForAssignments(projectId);
         if (countResult.IsFailure)
         {
@@ -135,7 +140,7 @@ public class ProjectService(
 
         var n = assignmentsCount.Count;
         var totalSize = assignmentsCount.Values.Sum() + labelers.Count;
-        var targetSize = totalSize / n;
+        var targetSize = Math.Max(1, totalSize / n);
 
         var remaining = labelers.Count;
         var assigned = 0;

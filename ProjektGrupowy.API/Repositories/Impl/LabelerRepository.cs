@@ -103,24 +103,14 @@ public class LabelerRepository(AppDbContext context, ILogger<LabelerRepository> 
         try
         {
             const string sql = """
-                               WITH project_labelers AS (
-                                   SELECT pl."ProjectLabelersId"
-                                   FROM "LabelerProject" pl
-                                   WHERE pl."ProjectLabelersId1" = {0}
-                               ),
-                                    assignment_labelers AS (
-                                        SELECT DISTINCT al."LabelerId"
-                                        FROM "SubjectVideoGroupAssignments" svga
-                                                 JOIN "Subjects" s ON svga."SubjectId" = s."Id"
-                                                 JOIN "Projects" p ON s."ProjectId" = p."Id"
-                                                 JOIN "AssignedLabels" al ON svga."Id" = al."SubjectVideoGroupAssignmentId"
-                                        WHERE p."Id" = {0}
-                                    )
-                               SELECT l.*
+                               SELECT l."Id", l."Name", l."UserId"
                                FROM "Labelers" l
-                                        JOIN project_labelers pl ON l."Id" = pl."ProjectLabelersId"
-                                        LEFT JOIN assignment_labelers al ON pl."ProjectLabelersId" = al."LabelerId"
-                               WHERE al."LabelerId" IS NULL;
+                               JOIN "LabelerProject" lp ON l."Id" = lp."ProjectLabelersId"
+                               WHERE lp."ProjectLabelersId1" = {0}
+                                 AND l."Id" NOT IN (
+                                   SELECT lsvg."LabelersId"
+                                   FROM "LabelerSubjectVideoGroupAssignment" lsvg
+                                 );
                                """;
 
             var unassignedLabelers = await context.Labelers
