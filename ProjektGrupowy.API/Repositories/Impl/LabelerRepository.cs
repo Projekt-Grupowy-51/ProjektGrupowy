@@ -110,6 +110,9 @@ public class LabelerRepository(AppDbContext context, ILogger<LabelerRepository> 
                                  AND l."Id" NOT IN (
                                    SELECT lsvg."LabelersId"
                                    FROM "LabelerSubjectVideoGroupAssignment" lsvg
+                                   JOIN "SubjectVideoGroupAssignments" svga ON lsvg."SubjectVideoGroupsId" = svga."Id"
+                                   JOIN "Subjects" s ON svga."SubjectId" = s."Id"
+                                   WHERE s."ProjectId" = lp."ProjectLabelersId1"
                                  );
                                """;
 
