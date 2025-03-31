@@ -37,11 +37,8 @@ const Videos = () => {
             const response = await httpClient.get(`/VideoGroup/${videoId}`, {
                 withCredentials: true,
             });
-            console.log(response.data);
             setVideos(response.data.videos || []);
             setVideoPositions(response.data.videosAtPositions);
-
-            console.log(Object.keys(videoPositions).length);
 
             fetchVideos(currentBatch);
         } catch (error) {

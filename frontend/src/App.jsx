@@ -5,7 +5,8 @@ import Projects from './pages/Projects';
 import SubjectDetails from './pages/SubjectDetails';
 import ProjectDetails from './pages/ProjectDetails';
 import VideoGroupsDetails from './pages/VideoGroupsDetails';
-import Video from './pages/Videos';
+import VideoGroup from './pages/Videos';
+import VideoDetails from './pages/VideoDetails';
 import AddVideo from './pages/VideoAdd';
 import AddSubject from './pages/SubjectAdd';
 import AddVideoGroup from './pages/VideoGroupAdd';
@@ -18,10 +19,8 @@ import LabelerVideoGroups from './pages/LabelerVideoGroups';
 import Login from './pages/Login';
 import SubjectVideoGroupAssignmentAdd from './pages/SubjectVideoGroupAssignmentAdd';
 
-// Utw�rz kontekst uwierzytelnienia
 const AuthContext = createContext();
 
-// Provider kontekstu uwierzytelnienia
 const AuthProvider = ({ children }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(null);
 
@@ -54,7 +53,6 @@ const AuthProvider = ({ children }) => {
     );
 };
 
-// Hook do u�ycia kontekstu uwierzytelnienia
 const useAuth = () => {
     return useContext(AuthContext);
 };
@@ -137,10 +135,10 @@ function App() {
                         <Route path="/video-groups/add" element={<AddVideoGroup />} />
                         <Route path="/video-groups/:id" element={<VideoGroupsDetails />} />
 
-                        <Route path="/videos/:id" element={<Video />} />
+                        <Route path="/videos/:id" element={<VideoDetails />} />
                         <Route path="/videos/add" element={<AddVideo />} />
 
-                        <Route path="/video/:id" element={<Video />} />
+                        <Route path="/video-group/:id" element={<VideoGroup />} />
 
                         <Route path="/assignments/:id" element={<SubjectVideoGroupAssignmentDetails />} />
                         <Route path="/assignments/add" element={<SubjectVideoGroupAssignmentAdd />} />
