@@ -1,10 +1,21 @@
-﻿namespace ProjektGrupowy.API.DTOs.AssignedLabel;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace ProjektGrupowy.API.DTOs.AssignedLabel;
 
 public class AssignedLabelRequest
 {
+    [Required]
     public int LabelId { get; set; } // ID of the label to be assigned
-    public int SubjectVideoGroupAssignmentId { get; set; } // ID of the video group assignment
+
+    [Required]
+    public int VideoId { get; set; } // ID of the video
+
+    [Required]
     public int LabelerId { get; set; } // ID of the labeler (assignee)
-    public TimeSpan Start { get; set; } // Start time for the assigned label
-    public TimeSpan End { get; set; } // End time for the assigned label
+
+    [Required]
+    public string Start { get; set; } // Start time for the assigned label
+
+    [Required]
+    public string End { get; set; } // End time for the assigned label
 }

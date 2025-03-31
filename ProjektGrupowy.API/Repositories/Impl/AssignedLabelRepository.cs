@@ -11,7 +11,9 @@ public class AssignedLabelRepository(AppDbContext context, ILogger<AssignedLabel
     {
         try
         {
-            var assignedLabels = await context.AssignedLabels.ToListAsync();
+            var assignedLabels = await context.AssignedLabels
+                .OrderByDescending(a => a.InsDate)
+                .ToListAsync();
             return Optional<IEnumerable<AssignedLabel>>.Success(assignedLabels);
         }
         catch (Exception e)
@@ -86,7 +88,10 @@ public class AssignedLabelRepository(AppDbContext context, ILogger<AssignedLabel
     {
         try
         {
-            var assignedLabels = await context.AssignedLabels.Where(a => a.Labeler.Id == labelerId).ToListAsync();
+            var assignedLabels = await context.AssignedLabels
+                .Where(a => a.Labeler.Id == labelerId)
+                .OrderByDescending(a => a.InsDate)
+                .ToListAsync();
             return Optional<IEnumerable<AssignedLabel>>.Success(assignedLabels);
         }
         catch (Exception e)
@@ -100,12 +105,32 @@ public class AssignedLabelRepository(AppDbContext context, ILogger<AssignedLabel
     {
         try
         {
-            var assignedLabels = await context.AssignedLabels.Where(a => a.SubjectVideoGroupAssignment.Subject.Project.Scientist.Id == scientistId).ToListAsync();
+            var assignedLabels = await context.AssignedLabels
+                .Where(a => a.Video.VideoGroup.Project.Scientist.Id == scientistId)
+                .OrderByDescending(a => a.InsDate)
+                .ToListAsync();
             return Optional<IEnumerable<AssignedLabel>>.Success(assignedLabels);
         }
         catch (Exception e)
         {
             logger.LogError(e, "An error occurred while getting assigned labels by scientist");
+            return Optional<IEnumerable<AssignedLabel>>.Failure(e.Message);
+        }
+    }
+
+    public async Task<Optional<IEnumerable<AssignedLabel>>> GetAssignedLabelsByVideoIdAsync(int videoId)
+    {
+        try
+        {
+            var assignedLabels = await context.AssignedLabels
+                .Where(a => a.Video.Id == videoId)
+                .OrderByDescending(a => a.InsDate)
+                .ToListAsync();
+            return Optional<IEnumerable<AssignedLabel>>.Success(assignedLabels);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "An error occurred while getting assigned labels by video");
             return Optional<IEnumerable<AssignedLabel>>.Failure(e.Message);
         }
     }

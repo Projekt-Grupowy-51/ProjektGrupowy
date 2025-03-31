@@ -9,26 +9,30 @@ public class AssignedLabel
 {
     [Key]
     public int Id { get; set; }
-    
-    public TimeSpan Start { get; set; }
-    
-    public TimeSpan End { get; set; }
 
     [Required]
     public virtual Label Label { get; set; }
 
     [Required]
-    public virtual SubjectVideoGroupAssignment SubjectVideoGroupAssignment { get; set; }
+    public virtual Labeler Labeler { get; set; }
 
     [Required]
-    public virtual Labeler Labeler { get; set; }
-    
+    public virtual Video Video { get; set; }
+
+    [Required]
+    public string Start { get; set; }
+
+    [Required]
+    public string End { get; set; }
+
+    public DateTime InsDate { get; set; } = DateTime.UtcNow;
+
     public string ToJson()
     {
         var jsonObject = new
         {
-            start = Start.ToString(@"hh\:mm\:ss\.fff"),
-            end = End.ToString(@"hh\:mm\:ss\.fff"),
+            start = Start,
+            end = End,
             label = JsonSerializer.Deserialize<Label>(Label.ToJson())
         };
 

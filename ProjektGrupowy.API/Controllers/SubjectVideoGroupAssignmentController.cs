@@ -102,44 +102,6 @@ public class SubjectVideoGroupAssignmentController(
             : NotFound(labelers.GetErrorOrThrow());
     }
 
-    [HttpGet("{id:int}/AssignedLabels")]
-    public async Task<ActionResult<IEnumerable<AssignedLabelResponse>>> GetSubjectVideoGroupAssignmentAsignedLabelsAsync(int id)
-    {
-        if (User.IsInRole(RoleConstants.Labeler))
-        {
-            var authResult = await authHelper.EnsureLabelerCanAccessAssignmentAsync(User, id);
-            if (authResult != null)
-                return authResult;
-            
-            var labelerResult = await authHelper.GetLabelerFromUserAsync(User);
-            if (labelerResult.Error != null)
-                return labelerResult.Error;
-            
-            var labelerLabels = await subjectVideoGroupAssignmentService.GetLabelerAssignedLabelsAsync(id, labelerResult.Labeler!.Id);
-            return labelerLabels.IsSuccess
-                ? Ok(mapper.Map<IEnumerable<AssignedLabelResponse>>(labelerLabels.GetValueOrThrow()))
-                : NotFound(labelerLabels.GetErrorOrThrow());
-        }
-        else
-        {
-            var checkResult = await authHelper.CheckGeneralAccessAsync(User);
-            if (checkResult.Error != null)
-                return checkResult.Error;
-
-            if (checkResult.IsScientist)
-            {
-                var authResult = await authHelper.EnsureScientistOwnsSubjectVideoGroupAssignmentAsync(User, id);
-                if (authResult != null)
-                    return authResult;
-            }
-        }
-
-        var labels = await subjectVideoGroupAssignmentService.GetSubjectVideoGroupAssignmentAsignedLabelsAsync(id);
-        return labels.IsSuccess
-            ? Ok(mapper.Map<IEnumerable<AssignedLabelResponse>>(labels.GetValueOrThrow()))
-            : NotFound(labels.GetErrorOrThrow());
-    }
-
     [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
     [HttpPost]
     public async Task<ActionResult<SubjectVideoGroupAssignmentResponse>> AddSubjectVideoGroupAssignmentAsync(SubjectVideoGroupAssignmentRequest subjectVideoGroupAssignmentRequest)
