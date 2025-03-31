@@ -9,10 +9,10 @@ function ProjectEdit() {
     const [formData, setFormData] = useState({
         name: "",
         description: "",
-        scientistId: "",
         finished: false
     });
     const [error, setError] = useState("");
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchProject = async () => {
@@ -22,12 +22,13 @@ function ProjectEdit() {
                 setFormData({
                     name: data.name,
                     description: data.description,
-                    scientistId: data.scientistId.toString(),
                     finished: data.finished
                 });
             } catch (error) {
                 console.error("Error fetching project:", error);
                 setError(error.response?.data?.message || "Failed to load project data");
+            } finally {
+                setLoading(false);
             }
         };
         fetchProject();
@@ -37,18 +38,11 @@ function ProjectEdit() {
         e.preventDefault();
         setError("");
 
-        if (!Number.isInteger(Number(formData.scientistId))) {
-            setError("Scientist ID must be a valid number");
-            return;
-        }
-
         try {
-            await httpClient.put(`/Project/${id}`, {
-                ...formData,
-                scientistId: parseInt(formData.scientistId)
+            await httpClient.put(`/Project/${id}`, formData);
+            navigate(`/projects/${id}`, {
+                state: { successMessage: "Project updated successfully!" }
             });
-            alert("Project updated successfully!");
-            navigate(`/projects/${id}`);
         } catch (error) {
             console.error("Error updating project:", error);
             setError(error.response?.data?.message || "Failed to update project");
@@ -63,75 +57,85 @@ function ProjectEdit() {
         });
     };
 
+    if (loading) {
+        return (
+            <div className="container d-flex justify-content-center align-items-center py-5">
+                <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        );
+    }
+
     return (
-        <div className="container">
-            <h1 className="heading">Edit Project</h1>
-            {error && <div className="error">{error}</div>}
+        <div className="container py-4">
+            <div className="row justify-content-center">
+                <div className="col-lg-8">
+                    <div className="card shadow-sm">
+                        <div className="card-header bg-primary text-white">
+                            <h1 className="heading mb-0">Edit Project</h1>
+                        </div>
+                        <div className="card-body">
+                            {error && <div className="alert alert-danger mb-4">{error}</div>}
 
-            <form onSubmit={handleSubmit} className="auth-form">
-                <div className="form-group">
-                    <label>Project Name:</label>
-                    <input
-                        type="text"
-                        name="name"
-                        className="form-input"
-                        value={formData.name}
-                        onChange={handleChange}
-                        required
-                    />
-                </div>
+                            <form onSubmit={handleSubmit}>
+                                <div className="mb-3">
+                                    <label htmlFor="name" className="form-label">Project Name</label>
+                                    <input
+                                        type="text"
+                                        id="name"
+                                        name="name"
+                                        className="form-control"
+                                        value={formData.name}
+                                        onChange={handleChange}
+                                        required
+                                    />
+                                </div>
 
-                <div className="form-group">
-                    <label>Description:</label>
-                    <textarea
-                        name="description"
-                        className="form-input"
-                        value={formData.description}
-                        onChange={handleChange}
-                        required
-                        rows="4"
-                    />
-                </div>
+                                <div className="mb-3">
+                                    <label htmlFor="description" className="form-label">Description</label>
+                                    <textarea
+                                        id="description"
+                                        name="description"
+                                        className="form-control"
+                                        value={formData.description}
+                                        onChange={handleChange}
+                                        required
+                                        rows="4"
+                                    />
+                                </div>
 
-                <div className="form-group">
-                    <label>Scientist ID:</label>
-                    <input
-                        type="number"
-                        name="scientistId"
-                        className="form-input"
-                        value={formData.scientistId}
-                        onChange={handleChange}
-                        required
-                        min="1"
-                    />
-                </div>
+                                <div className="mb-4">
+                                    <label htmlFor="finished" className="form-label">Status</label>
+                                    <select
+                                        id="finished"
+                                        name="finished"
+                                        className="form-select"
+                                        value={formData.finished}
+                                        onChange={handleChange}
+                                    >
+                                        <option value={false}>Active</option>
+                                        <option value={true}>Completed</option>
+                                    </select>
+                                </div>
 
-                <div className="form-group">
-                    <label>Status:</label>
-                    <select
-                        name="finished"
-                        className="form-select"
-                        value={formData.finished}
-                        onChange={handleChange}
-                    >
-                        <option value={false}>Active</option>
-                        <option value={true}>Completed</option>
-                    </select>
+                                <div className="d-flex">
+                                    <button type="submit" className="btn btn-primary me-2">
+                                        <i className="fas fa-save me-2"></i>Save Changes
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="btn btn-secondary"
+                                        onClick={() => navigate(`/projects/${id}`)}
+                                    >
+                                        <i className="fas fa-times me-2"></i>Cancel
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
                 </div>
-
-                <div className="button-group">
-                    <button type="submit" className="auth-btn edit-btn">
-                        Save Changes
-                    </button>
-                    <button
-                        type="button"
-                        className="auth-btn back-btn"
-                        onClick={() => navigate(`/projects/${id}`)}
-                    >
-                        Cancel
-                    </button>
-                </div>
-            </form>
+            </div>
         </div>
     );
 }

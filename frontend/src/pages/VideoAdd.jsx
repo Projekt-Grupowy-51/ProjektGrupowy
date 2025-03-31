@@ -106,7 +106,9 @@ const VideoAdd = () => {
         },
       });
 
-      navigate(`/video-groups/${formData.videoGroupId}`);
+        navigate(`/video-groups/${formData.videoGroupId}`, {
+            state: { successMessage: "Video added successfully!" }
+        });
     } catch (err) {
       setError(
         err.response?.data?.message ||
@@ -116,181 +118,162 @@ const VideoAdd = () => {
     }
   };
 
-  if (!formData.videoGroupId) {
-    return (
-      <div className="container">
-        <div className="content">
-          <div className="error">{error}</div>
-          <button
-            className="btn btn-secondary"
-            onClick={() => navigate("/projects")}
-          >
-            Back to Projects
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="container">
-      <div className="content">
-        <h1>Add New Video</h1>
-        {error && <div className="error">{error}</div>}
-
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="title">Title</label>
-            <input
-              type="text"
-              id="title"
-              name="title"
-              value={formData.title}
-              onChange={handleChange}
-              className="form-control"
-              required
-              disabled={loading}
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="file">Video File</label>
-            <div className="file-input-container">
-              <label className={`btn btn-primary ${loading ? "disabled" : ""}`}>
-                Choose File
-                <input
-                  type="file"
-                  id="file"
-                  name="file"
-                  onChange={handleFileChange}
-                  className="file-input"
-                  accept="video/*"
-                  required
-                  disabled={loading}
-                  style={{ display: "none" }} // Hide the default file input
-                />
-              </label>
-              {file && (
-                <div className="file-info mt-2">
-                  <p>Selected file: {file.name}</p>
-                  <p>Size: {(file.size / (1024 * 1024)).toFixed(2)} MB</p>
+    if (!formData.videoGroupId) {
+        return (
+            <div className="container">
+                <div className="alert alert-danger">
+                    <i className="fas fa-exclamation-triangle me-2"></i>
+                    {error || 'Missing Video Group ID parameter'}
                 </div>
-              )}
+                <button 
+                    className="btn btn-secondary"
+                    onClick={() => navigate('/projects')}
+                    style={{height: 'fit-content', margin: '1%'}}
+                >
+                    <i className="fas fa-arrow-left me-2"></i>Back to Projects
+                </button>
             </div>
-          </div>
+        );
+    }
 
-          <div className="form-group">
-            <label htmlFor="positionInQueue">Position in Queue</label>
-            <input
-              type="number"
-              id="positionInQueue"
-              name="positionInQueue"
-              value={formData.positionInQueue}
-              onChange={handleChange}
-              className="form-control"
-              min="1"
-              required
-              disabled={loading}
-            />
-          </div>
+    return (
+        <div className="container py-4">
+            <div className="row justify-content-center">
+                <div className="col-lg-8">
+                    <div className="card shadow-sm">
+                        <div className="card-header bg-primary text-white">
+                            <h1 className="heading mb-0">Add New Video</h1>
+                        </div>
+                        <div className="card-body">
+                            {error && (
+                                <div className="alert alert-danger mb-4">
+                                    <i className="fas fa-exclamation-triangle me-2"></i>
+                                    {error}
+                                </div>
+                            )}
+                            
+                            <form onSubmit={handleSubmit}>
+                                <div className="mb-3">
+                                    <label htmlFor="title" className="form-label">Video Title</label>
+                                    <input
+                                        type="text"
+                                        id="title"
+                                        name="title"
+                                        value={formData.title}
+                                        onChange={handleChange}
+                                        className="form-control"
+                                        required
+                                        disabled={loading}
+                                    />
+                                </div>
 
-          <div className="form-group">
-            <label htmlFor="videoGroupId">Video Group</label>
-            <div className="videogroup-display">
-              <input
-                type="text"
-                value={videoGroupName || `Group ID: ${formData.videoGroupId}`}
-                className="form-control"
-                disabled
-              />
-              <input
-                type="hidden"
-                name="videoGroupId"
-                value={formData.videoGroupId}
-              />
+                                <div className="mb-3">
+                                    <label htmlFor="file" className="form-label">Video File</label>
+                                    <input
+                                        type="file"
+                                        id="file"
+                                        name="file"
+                                        onChange={handleFileChange}
+                                        className="form-control"
+                                        accept="video/*"
+                                        required
+                                        disabled={loading}
+                                    />
+                                    
+                                    {file && (
+                                        <div className="alert alert-info mt-2">
+                                            <div className="d-flex align-items-center">
+                                                <i className="fas fa-file-video me-2"></i>
+                                                <div>
+                                                    <strong>{file.name}</strong>
+                                                    <div className="text-muted">Size: {(file.size / (1024 * 1024)).toFixed(2)} MB</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="mb-3">
+                                    <label htmlFor="positionInQueue" className="form-label">Position in Queue</label>
+                                    <input
+                                        type="number"
+                                        id="positionInQueue"
+                                        name="positionInQueue"
+                                        value={formData.positionInQueue}
+                                        onChange={handleChange}
+                                        className="form-control"
+                                        min="1"
+                                        required
+                                        disabled={loading}
+                                    />
+                                </div>
+
+                                <div className="mb-4">
+                                    <label htmlFor="videoGroupId" className="form-label">Video Group</label>
+                                    <div className="input-group">
+                                        <span className="input-group-text">
+                                            <i className="fas fa-film"></i>
+                                        </span>
+                                        <input
+                                            type="text"
+                                            value={videoGroupName || `Group ID: ${formData.videoGroupId}`}
+                                            className="form-control"
+                                            disabled
+                                        />
+                                    </div>
+                                    <input
+                                        type="hidden"
+                                        name="videoGroupId"
+                                        value={formData.videoGroupId}
+                                    />
+                                </div>
+
+                                {loading && (
+                                    <div className="mb-4">
+                                        <label className="form-label">Upload Progress</label>
+                                        <div className="progress">
+                                            <div 
+                                                className="progress-bar progress-bar-striped progress-bar-animated" 
+                                                role="progressbar" 
+                                                style={{ width: `${uploadProgress}%` }} 
+                                                aria-valuenow={uploadProgress} 
+                                                aria-valuemin="0" 
+                                                aria-valuemax="100"
+                                            >
+                                                {uploadProgress}%
+                                            </div>
+                                        </div>
+                                        <div className="text-center mt-2">
+                                            <small>Please wait while your video is being uploaded...</small>
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="d-flex">
+                                    <button 
+                                        type="submit" 
+                                        className="btn btn-primary me-2"
+                                        disabled={loading}
+                                    >
+                                        <i className="fas fa-cloud-upload-alt me-2"></i>
+                                        {loading ? "Uploading..." : "Upload Video"}
+                                    </button>
+                                    <button 
+                                        type="button" 
+                                        className="btn btn-secondary"
+                                        onClick={() => navigate(`/video-groups/${formData.videoGroupId}`)}
+                                        disabled={loading}
+                                    >
+                                        <i className="fas fa-times me-2"></i>Cancel
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
-
-          {loading && (
-            <div className="progress-container">
-              <div className="progress-bar-container">
-                <div
-                  className="progress-bar"
-                  style={{ width: `${uploadProgress}%` }}
-                ></div>
-              </div>
-              <div className="progress-text">Uploading: {uploadProgress}%</div>
-            </div>
-          )}
-
-          <div className="button-group">
-            <button
-              type="submit"
-              className="btn btn-primary"
-              disabled={loading}
-            >
-              {loading ? "Uploading..." : "Upload Video"}
-            </button>
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={() => navigate(`/video-groups/${formData.videoGroupId}`)}
-              disabled={loading}
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
-      </div>
-
-      <style jsx>{`
-        .file-input-container {
-          margin-bottom: 15px;
-        }
-
-        .file-input {
-          padding: 10px 0;
-          width: 100%;
-        }
-
-        .file-info {
-          margin-top: 10px;
-          padding: 10px;
-          background-color: #f8f8f8;
-          border-radius: 4px;
-          border-left: 3px solid #3498db;
-        }
-
-        .progress-container {
-          margin: 20px 0;
-        }
-
-        .progress-bar-container {
-          height: 20px;
-          background-color: #f0f0f0;
-          border-radius: 10px;
-          overflow: hidden;
-        }
-
-        .progress-bar {
-          height: 100%;
-          background-color: #4caf50;
-          transition: width 0.3s ease;
-        }
-
-        .progress-text {
-          text-align: center;
-          margin-top: 5px;
-          font-weight: bold;
-        }
-
-        .videogroup-display {
-          display: flex;
-          align-items: center;
-        }
-      `}</style>
-    </div>
-  );
+        </div>
+    );
 };
 
 export default VideoAdd;

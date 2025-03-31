@@ -31,7 +31,7 @@ public class AuthController(UserManager<User> userManager, RoleManager<IdentityR
     {
         var userExists = await userManager.FindByNameAsync(model.UserName);
         if (userExists != null)
-            return StatusCode(500, new { Status = "Error", Message = "User already exists!" });
+            return StatusCode(500, new { status = "Error", message = "User already exists!" });
 
         var user = new User
         {
@@ -45,15 +45,15 @@ public class AuthController(UserManager<User> userManager, RoleManager<IdentityR
         if (!result.Succeeded)
         {
             var errors = result.Errors.Select(e => e.Description).ToList();
-            return StatusCode(500, new { Status = "Error", Message = "User creation failed!", Errors = errors });
+            return StatusCode(500, new { status = "Error", message = "User creation failed!", Errors = errors });
         }
 
         if (!await roleManager.RoleExistsAsync(model.Role))
-            return StatusCode(500, new { Status = "Error", Message = "Role does not exist!" });
+            return StatusCode(500, new { status = "Error", message = "Role does not exist!" });
 
         var roleResult = await userManager.AddToRoleAsync(user, model.Role);
         if (!roleResult.Succeeded)
-            return StatusCode(500, new { Status = "Error", Message = "Failed to assign role to user." });
+            return StatusCode(500, new { status = "Error", message = "Failed to assign role to user." });
 
         if (model.Role == RoleConstants.Scientist)
         {
@@ -93,7 +93,7 @@ public class AuthController(UserManager<User> userManager, RoleManager<IdentityR
 
         await transaction.CommitAsync();
 
-        return Ok(new { Status = "Success", Message = "User created and assigned to role successfully!" });
+        return Ok(new { status = "Success", message = "User created and assigned to role successfully!" });
     }
 
     [HttpPost("Login")]
@@ -102,7 +102,7 @@ public class AuthController(UserManager<User> userManager, RoleManager<IdentityR
     {
         var user = await userManager.FindByNameAsync(model.UserName);
         if (user == null || !await userManager.CheckPasswordAsync(user, model.Password))
-            return Unauthorized(new { Status = "Error", Message = "Invalid UserName or password!" });
+            return Unauthorized(new { status = "Error", message = "Invalid UserName or password!" });
 
         var authClaims = new List<Claim>
             {
@@ -145,7 +145,7 @@ public class AuthController(UserManager<User> userManager, RoleManager<IdentityR
     {
         var jwtToken = Request.Cookies[JwtCookieName];
         if (string.IsNullOrEmpty(jwtToken))
-            return Unauthorized(new { Status = "Error", Message = "No token provided." });
+            return Unauthorized(new { status = "Error", message = "No token provided." });
 
         var tokenHandler = new JwtSecurityTokenHandler();
         var validationParameters = GetTokenValidationParameters();
@@ -155,12 +155,12 @@ public class AuthController(UserManager<User> userManager, RoleManager<IdentityR
         if (!(validatedToken is JwtSecurityToken jwtSecurityToken) ||
             !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
         {
-            return Unauthorized(new { Status = "Error", Message = "Invalid token." });
+            return Unauthorized(new { status = "Error", message = "Invalid token." });
         }
 
         var user = await userManager.FindByNameAsync(principal.Identity.Name);
         if (user == null)
-            return Unauthorized(new { Status = "Error", Message = "User not found." });
+            return Unauthorized(new { status = "Error", message = "User not found." });
 
         var authClaims = new List<Claim>
             {
@@ -184,7 +184,7 @@ public class AuthController(UserManager<User> userManager, RoleManager<IdentityR
 
         return Ok(new
         {
-            Message = "Token refreshed successfully!",
+            message = "Token refreshed successfully!",
             ExpiresAt = newToken.ValidTo
         });
     }
