@@ -219,11 +219,9 @@ button {
 .tab-button.active {
   color: var(--primary-blue);
   border-bottom-color: var(--primary-blue);
-  background: linear-gradient(
-    to bottom,
-    rgba(2, 136, 209, 0.05) 0%,
-    rgba(0, 0, 0, 0) 100%
-  );
+  background: linear-gradient(to bottom,
+      rgba(2, 136, 209, 0.05) 0%,
+      rgba(0, 0, 0, 0) 100%);
 }
 
 .tab-button:hover {
@@ -397,31 +395,50 @@ video {
 
 .controls {
   display: flex;
+  flex-direction: column;
   align-items: center;
 }
 
-.progress-bar {
-  width: 100%;
-}
-
-.play-stop-btn {
-  padding: 10px;
-  height: 55px;
-  margin: 5px;
-  width: 55px;
-}
-
-.seek-buttons {
+.controls-row {
   display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
 }
 
-.seek-btn {
-  padding: 10px;
-  width: fit-content;
+.seek-btn,
+.play-stop-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 15px;
+  font-size: 1rem;
+  border-radius: var(--border-radius);
+  width: 60px;
+  height: 60px;
+  text-align: center;
+  background-color: var(--primary-blue);
+  color: var(--text-light);
+  border: none;
+  transition: var(--transition);
 }
 
-.controls span {
-  margin: 5px 20px;
+.seek-btn:hover,
+.play-stop-btn:hover {
+  background-color: var(--secondary-blue);
+  transform: scale(1.1);
+}
+
+.seek-btn i,
+.play-stop-btn i {
+  font-size: 1.2rem;
+}
+
+.seek-btn span {
+  font-size: 1rem;
+  margin-top: 5px;
+  font-weight: bold;
 }
 
 .fa-backward p,
@@ -550,7 +567,8 @@ video {
 #video-container {
   margin: 0px auto;
   padding-top: 0;
-  min-height: calc(90vh - 140px);
+  min-height: calc(70vh);
+  margin-bottom: 20px;
 }
 
 #video-row {
@@ -625,4 +643,32 @@ video {
 
 .is-invalid {
   border-color: red;
+}
+
+.controls-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 5px;
+}
+
+.time-display {
+  font-size: 1.2em;
+  font-weight: bold;
+}
+
+.pagination-button {
+  width: 120px;
+}
+
+.play-stop-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 60px;
+  width: 60px;
+}
+
+.fa-play {
+  margin-right: 6%;
 }

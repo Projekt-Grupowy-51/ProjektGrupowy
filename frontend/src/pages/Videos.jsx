@@ -50,14 +50,14 @@ const Videos = () => {
     };
 
     const onBatchChangedAsync = async (newBatch) => {
-        setCurrentBatch(newBatch); 
+        setCurrentBatch(newBatch);
         console.log("Current batch set to: ", newBatch);
-        await fetchVideos(newBatch); 
+        await fetchVideos(newBatch);
     };
 
     const fetchVideos = async (batch) => {
         try {
-            const batchToFetch = batch || currentBatch; 
+            const batchToFetch = batch || currentBatch;
             console.log("Fetching Current batch: ", batchToFetch);
             const response = await httpClient.get(
                 `/Video/batch/${id}/${batchToFetch}`,
@@ -222,11 +222,11 @@ const Videos = () => {
 
             setLabelTimestamps((prev) => {
                 const newTimestamps = { ...prev };
-                delete newTimestamps[labelId]; 
+                delete newTimestamps[labelId];
                 return newTimestamps;
             });
 
-            labelStateRef.current[labelId] = { start: null, sent: false }; 
+            labelStateRef.current[labelId] = { start: null, sent: false };
 
             fetchAssignedLabels();
         } catch (error) {
@@ -260,6 +260,11 @@ const Videos = () => {
 
     useEffect(() => {
         const handleKeyPress = (event) => {
+            if (event.key === " ") {
+                event.preventDefault();
+                handlePlayStop();
+            }
+
             const label = labels.find(
                 (l) => l.shortcut.toLowerCase() === event.key.toLowerCase()
             );
@@ -272,7 +277,7 @@ const Videos = () => {
         return () => {
             window.removeEventListener("keydown", handleKeyPress);
         };
-    }, [labels]);
+    }, [labels, isPlaying]);
 
     const handleRewind = (time) => {
         const video = videoRefs.current[0];
@@ -290,6 +295,16 @@ const Videos = () => {
         }
     };
 
+    const getTextColor = (backgroundColor) => {
+        // Calculate brightness using the YIQ formula
+        const rgb = parseInt(backgroundColor.slice(1), 16); // Convert hex to integer
+        const r = (rgb >> 16) & 0xff; // Extract red
+        const g = (rgb >> 8) & 0xff; // Extract green
+        const b = rgb & 0xff; // Extract blue
+        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+        return brightness > 128 ? "#000000" : "#ffffff"; // Return black or white
+    };
+
     return (
         <div className="container">
             <div className="content">
@@ -299,10 +314,10 @@ const Videos = () => {
                             streams.map((streamUrl, index) => (
                                 <div
                                     className={`col-12 ${streams.length === 1
-                                            ? ""
-                                            : streams.length <= 4
-                                                ? "col-md-5"
-                                                : "col-md-4"
+                                        ? ""
+                                        : streams.length <= 4
+                                            ? "col-md-5"
+                                            : "col-md-4"
                                         }`}
                                     key={index}
                                 >
@@ -323,28 +338,8 @@ const Videos = () => {
                             <p>Loading video streams...</p>
                         )}
                     </div>
-                    <div className="row">
-                        <div className="col-12">
-                            <div className="pagination d-flex justify-content-between">
-                                <button
-                                    className="btn btn-primary"
-                                    onClick={() => onBatchChangedAsync(currentBatch - 1)}
-                                    disabled={currentBatch <= 1}
-                                >
-                                    Previous
-                                </button>
-                                <button
-                                    className="btn btn-primary"
-                                    onClick={() => onBatchChangedAsync(currentBatch + 1)}
-                                    disabled={currentBatch === Object.keys(videoPositions).length}
-                                >
-                                    Next
-                                </button>
-                            </div>
-                        </div>
-                    </div>
                 </div>
-                <div className="progress-bar">
+                <div className="progress-bar text-center">
                     <input
                         type="range"
                         min="0"
@@ -360,57 +355,65 @@ const Videos = () => {
                         }}
                     />
                 </div>
-                <div className="controls">
-                    <div className="seek-buttons">
-                        <button className="btn btn-primary seek-btn" onClick={() => handleRewind(5)}>
-                            <i className="fas fa-backward">
-                                <p>-5s</p>
-                            </i>
-                        </button>
-                        <button className="btn btn-primary seek-btn" onClick={() => handleRewind(1)}>
-                            <i className="fas fa-backward">
-                                <p>-1s</p>
-                            </i>
-                        </button>
+                <div className="row">
+                    <div className="col-12">
+                        <div className="pagination d-flex justify-content-between">
+                            <button
+                                className="btn btn-primary pagination-button"
+                                onClick={() => onBatchChangedAsync(currentBatch - 1)}
+                                disabled={currentBatch <= 1}
+                            >
+                                Previous
+                            </button>
+                            <div className="controls">
+                                <div className="controls-row time-display">
+                                    {formatTime(currentTime)} / {formatTime(isNaN(duration) ? 0 : duration)}
+                                </div>
+                                <div className="controls-row">
+                                    <button className="btn btn-primary seek-btn" onClick={() => handleRewind(5)}>
+                                        <i className="fas fa-backward"></i>
+                                        <span>-5s</span>
+                                    </button>
+                                    <button className="btn btn-primary seek-btn" onClick={() => handleRewind(1)}>
+                                        <i className="fas fa-backward"></i>
+                                        <span>-1s</span>
+                                    </button>
+                                    <button className="btn btn-primary play-stop-btn" onClick={handlePlayStop}>
+                                        <i className={`fas ${isPlaying ? "fa-stop" : "fa-play"}`}></i>
+                                    </button>
+                                    <button className="btn btn-primary seek-btn" onClick={() => handleFastForward(1)}>
+                                        <i className="fas fa-forward"></i>
+                                        <span>+1s</span>
+                                    </button>
+                                    <button className="btn btn-primary seek-btn" onClick={() => handleFastForward(5)}>
+                                        <i className="fas fa-forward"></i>
+                                        <span>+5s</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <button
+                                className="btn btn-primary pagination-button"
+                                onClick={() => onBatchChangedAsync(currentBatch + 1)}
+                                disabled={currentBatch === Object.keys(videoPositions).length}
+                            >
+                                Next
+                            </button>
+                        </div>
                     </div>
-                    <button
-                        className="btn btn-primary play-stop-btn"
-                        onClick={handlePlayStop}
-                    >
-                        <i className={`fas ${isPlaying ? "fa-stop" : "fa-play"}`}></i>
-                    </button>
-                    <div className="seek-buttons">
-                    <button
-                            className="btn btn-primary seek-btn"
-                            onClick={() => handleFastForward(1)}
-                        >
-                            <i className="fas fa-forward">
-                                <p>+1s</p>
-                            </i>
-                        </button>
-                        <button
-                            className="btn btn-primary seek-btn"
-                            onClick={() => handleFastForward(5)}
-                        >
-                            <i className="fas fa-forward">
-                                <p>+5s</p>
-                            </i>
-                        </button>
-                    </div>
-                    <span className="time-display">
-                        {formatTime(currentTime)} / {formatTime(isNaN(duration) ? 0 : duration)}
-                    </span>
                 </div>
-
                 <div className="labels-container">
                     {labels.length > 0 ? (
                         labels.map((label, index) => {
                             const measuring = isMeasuring(label.id);
+                            const textColor = getTextColor(label.colorHex);
                             return (
                                 <button
                                     key={index}
                                     className="btn label-btn"
-                                    style={{ backgroundColor: label.colorHex }}
+                                    style={{
+                                        backgroundColor: label.colorHex,
+                                        color: textColor,
+                                    }}
                                     onClick={() => handleLabelClick(label.id)}
                                 >
                                     {label.name + " [" + label.shortcut + "]"}{" "}
