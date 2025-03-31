@@ -18,6 +18,7 @@ const AuthPage = () => {
         role: 'Labeler'
     });
     const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
@@ -28,6 +29,7 @@ const AuthPage = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
+        setSuccess('');
         setLoading(true);
 
         if (!isLoginView && formData.password !== formData.confirmPassword) {
@@ -89,6 +91,12 @@ const AuthPage = () => {
                         </button>
                     </li>
                 </ul>
+                {success && (
+                    <div className="alert alert-success mb-3">
+                        <i className="fas fa-check-circle me-2"></i>
+                        {success}
+                    </div>
+                )}
 
                 {error && (
                     <div className="alert alert-danger mb-3">

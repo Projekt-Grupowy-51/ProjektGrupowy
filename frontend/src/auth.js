@@ -40,8 +40,7 @@ class AuthService {
             const response = await httpClient.post('/Auth/Register', userData);
             return response.data;
         } catch (error) {
-            console.log(error);
-            throw new Error(error.message);
+            throw new Error(error.response.data?.message.toString() ?? error.message);
         }
     }
 

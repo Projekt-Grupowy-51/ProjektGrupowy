@@ -8,7 +8,6 @@ function ProjectAdd() {
     const [formData, setFormData] = useState({
         name: "",
         description: "",
-        scientistId: "",
         finished: false
     });
     const [loading, setLoading] = useState(false);
@@ -19,22 +18,11 @@ function ProjectAdd() {
         setError("");
         setLoading(true);
 
-        // Validate scientistId
-        if (!Number.isInteger(Number(formData.scientistId))) {
-            setError("Scientist ID must be a valid number");
-            setLoading(false);
-            return;
-        }
-
         try {
-            const response = await httpClient.post("/Project", {
-                ...formData,
-                scientistId: parseInt(formData.scientistId)
-            });
+            const response = await httpClient.post("/Project", formData);
 
             if (response.status === 201) {
-                alert("Project added successfully!");
-                navigate("/projects");
+                navigate("/projects", { state: { successMessage: "Project added successfully!" } });
             }
         } catch (error) {
             console.error("Error adding project:", error);
@@ -89,23 +77,9 @@ function ProjectAdd() {
                                     />
                                 </div>
 
-                                <div className="mb-4">
-                                    <label htmlFor="scientistId" className="form-label">Scientist ID</label>
-                                    <input
-                                        type="number"
-                                        id="scientistId"
-                                        name="scientistId"
-                                        className="form-control"
-                                        value={formData.scientistId}
-                                        onChange={handleChange}
-                                        required
-                                        min="1"
-                                    />
-                                </div>
-
                                 <div className="d-flex">
-                                    <button 
-                                        type="submit" 
+                                    <button
+                                        type="submit"
                                         className="btn btn-primary me-2"
                                         disabled={loading}
                                     >

@@ -106,7 +106,9 @@ const VideoAdd = () => {
         },
       });
 
-      navigate(`/video-groups/${formData.videoGroupId}`);
+        navigate(`/video-groups/${formData.videoGroupId}`, {
+            state: { successMessage: "Video added successfully!" }
+        });
     } catch (err) {
       setError(
         err.response?.data?.message ||

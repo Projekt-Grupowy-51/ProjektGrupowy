@@ -5,34 +5,36 @@ import httpClient from "../httpClient";
 import "./css/ScientistProjects.css";
 
 const LabelerVideoGroups = () => {
-  const { labelerId } = useParams();
-  const [assignments, setAssignments] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [accessCode, setAccessCode] = useState("");
-  const [joinError, setJoinError] = useState("");
-  const navigate = useNavigate();
+    const { labelerId } = useParams();
+    const [assignments, setAssignments] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+    const [accessCode, setAccessCode] = useState("");
+    const [joinError, setJoinError] = useState("");
+    const [successMessage, setSuccessMessage] = useState("");
+    const navigate = useNavigate();
 
-  const handleJoinProject = async () => {
-    setJoinError("");
-    if (!accessCode.trim()) {
-      setJoinError("Please enter an access code");
-      return;
-    }
+    const handleJoinProject = async () => {
+        setJoinError("");
+        setSuccessMessage("");
+        if (!accessCode.trim()) {
+            setJoinError("Please enter an access code");
+            return;
+        }
 
-    try {
-      await httpClient.post("/project/join", {
-        AccessCode: accessCode.trim(),
-      });
-      alert("Successfully joined the project!");
-      setAccessCode("");
-      fetchAssignments();
-    } catch (error) {
-      setJoinError(
-        error.response?.data?.message || "Invalid or expired access code"
-      );
-    }
-  };
+        try {
+            await httpClient.post("/project/join", {
+                AccessCode: accessCode.trim(),
+            });
+            setSuccessMessage("Successfully joined the project!");
+            setAccessCode("");
+            fetchAssignments();
+        } catch (error) {
+            setJoinError(
+                error.response?.data?.message || "Invalid or expired access code"
+            );
+        }
+    };
 
   const fetchAssignments = async () => {
     try {
@@ -78,11 +80,26 @@ const LabelerVideoGroups = () => {
                                 <i className="fas fa-plus-circle me-2"></i>Join Project
                             </button>
                         </div>
-                        {joinError && <div className="error mt-2">{joinError}</div>}
                     </div>
                 </div>
-
-        {error && <div className="error">{error}</div>}
+                {joinError && (
+                    <div className="alert alert-danger mt-2 mb-0">
+                        <i className="fas fa-exclamation-triangle me-2"></i>
+                        {joinError}
+                    </div>
+                )}
+                {successMessage && (
+                    <div className="alert alert-success mt-2 mb-0">
+                        <i className="fas fa-check-circle me-2"></i>
+                        {successMessage}
+                    </div>
+                )}
+                {error && (
+                    <div className="alert alert-danger mb-4">
+                        <i className="fas fa-exclamation-circle me-2"></i>
+                        {error}
+                    </div>
+                )}
 
                 {loading ? (
                     <div className="text-center py-5">
@@ -94,31 +111,31 @@ const LabelerVideoGroups = () => {
                 ) : assignments.length > 0 ? (
                     <table className="normal-table">
                         <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Subject ID</th>
-                                <th>Video Group ID</th>
-                                <th>Actions</th>
-                            </tr>
+                        <tr>
+                            <th>ID</th>
+                            <th>Subject ID</th>
+                            <th>Video Group ID</th>
+                            <th>Actions</th>
+                        </tr>
                         </thead>
                         <tbody>
-                            {assignments.map((assignment) => (
-                                <tr key={assignment.id}>
-                                    <td>{assignment.id}</td>
-                                    <td>{assignment.subjectId}</td>
-                                    <td>{assignment.videoGroupId}</td>
-                                    <td>
-                                        <div className="btn-group">
-                                            <button
-                                                className="btn btn-info btn-sm me-2"
-                                                onClick={() => navigate(`/video/${assignment.id}`)}
-                                            >
-                                                <i className="fas fa-eye me-1"></i>Details
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
+                        {assignments.map((assignment) => (
+                            <tr key={assignment.id}>
+                                <td>{assignment.id}</td>
+                                <td>{assignment.subjectId}</td>
+                                <td>{assignment.videoGroupId}</td>
+                                <td>
+                                    <div className="btn-group">
+                                        <button
+                                            className="btn btn-info btn-sm me-2"
+                                            onClick={() => navigate(`/video/${assignment.id}`)}
+                                        >
+                                            <i className="fas fa-eye me-1"></i>Details
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        ))}
                         </tbody>
                     </table>
                 ) : (

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import httpClient from '../httpClient';
+import DeleteConfirmationModal from '../components/DeleteConfirmationModal'; // Import the external modal
 import './css/ScientistProjects.css';
 
 const ProjectDetails = () => {
@@ -15,11 +17,21 @@ const ProjectDetails = () => {
     const [accessCodes, setAccessCodes] = useState([]);
     const [creationError, setCreationError] = useState('');
     const [selectedDuration, setSelectedDuration] = useState('');
-    // New state variables for labeler assignment
     const [selectedLabeler, setSelectedLabeler] = useState('');
     const [selectedAssignment, setSelectedAssignment] = useState('');
     const [assignmentError, setAssignmentError] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
+    const [visibleCodes, setVisibleCodes] = useState({});
     const navigate = useNavigate();
+    const location = useLocation();
+    const [deleteModal, setDeleteModal] = useState({
+        show: false,
+        itemType: '',
+        endpoint: '',
+        itemId: null,
+        assignmentId: null,
+        labelerId: null
+    });
 
     const fetchData = async () => {
         try {
@@ -38,34 +50,45 @@ const ProjectDetails = () => {
             setLabelers(labelersRes.data);
             setAccessCodes(accessCodesRes.data);
         } catch (error) {
-            console.error('Error fetching data:', error);
             setError(error.response?.data?.message || 'Failed to load project data');
         }
     };
 
-    const handleDeleteItem = async (endpoint, itemId) => {
-        if (!window.confirm('Are you sure you want to delete this item?')) return;
-
+    const handleConfirmDelete = async () => {
         try {
-            await httpClient.delete(`/${endpoint}/${itemId}`);
-            await fetchData();
-            alert('Item deleted successfully');
+            if (deleteModal.endpoint === 'unassign-labeler') {
+                await httpClient.delete(`/SubjectVideoGroupAssignment/${deleteModal.assignmentId}/unassign-labeler/${deleteModal.labelerId}`);
+                await fetchData();
+                setSuccessMessage('Labeler assignment removed successfully!');
+            } else {
+                await httpClient.delete(`/${deleteModal.endpoint}/${deleteModal.itemId}`);
+                await fetchData();
+                setSuccessMessage(`${deleteModal.itemType.charAt(0).toUpperCase() + deleteModal.itemType.slice(1)} deleted successfully!`);
+            }
         } catch (error) {
-            console.error('Error deleting item:', error);
-            setError(error.response?.data?.message || 'Deletion failed');
+            setError(error.response?.data?.message || 'Operation failed');
+        } finally {
+            setDeleteModal({
+                show: false,
+                itemType: '',
+                endpoint: '',
+                itemId: null,
+                assignmentId: null,
+                labelerId: null
+            });
         }
+    };
+
+    const handleCancelDelete = () => {
+        setDeleteModal({ show: false, itemType: '', endpoint: '', itemId: null });
     };
 
     const handleCreateAccessCode = async () => {
         setCreationError('');
 
         let expiresAt = null;
-
-        if (selectedDuration === 'unlimited') {
-            expiresAt = null;
-        } else {
+        if (selectedDuration === '14days' || selectedDuration === '30days') {
             const days = selectedDuration === '14days' ? 14 : 30;
-            
             const now = new Date();
             expiresAt = new Date(Date.UTC(
                 now.getUTCFullYear(),
@@ -74,9 +97,7 @@ const ProjectDetails = () => {
                 now.getUTCHours(),
                 now.getUTCMinutes(),
                 now.getUTCSeconds()
-            ));
-            
-            expiresAt = expiresAt.toISOString().split('.')[0] + 'Z';
+            )).toISOString().split('.')[0] + 'Z';
         }
 
         try {
@@ -84,10 +105,9 @@ const ProjectDetails = () => {
                 projectId: parseInt(id),
                 expiresAtUtc: expiresAt
             });
-
             setSelectedDuration('');
             await fetchData();
-            alert('Access code created successfully!');
+            setSuccessMessage('Access code created successfully!');
         } catch (error) {
             setCreationError(error.response?.data?.message || 'Failed to create code');
         }
@@ -96,10 +116,10 @@ const ProjectDetails = () => {
     const handleCopyCode = (code) => {
         navigator.clipboard.writeText(code)
             .then(() => {
-                alert('Code copied to clipboard!');
+                setSuccessMessage('Code copied to clipboard!');
             })
             .catch(() => {
-                alert('Failed to copy code. Please try again.');
+                setError('Failed to copy code. Please try again.');
             });
     };
 
@@ -107,7 +127,7 @@ const ProjectDetails = () => {
         try {
             await httpClient.post(`/project/${id}/distribute`);
             await fetchData();
-            alert('Labelers distributed successfully!');
+            setSuccessMessage('Labelers distributed successfully!');
         } catch (error) {
             setError(error.response?.data?.message || 'Distribution failed');
         }
@@ -125,35 +145,35 @@ const ProjectDetails = () => {
             setSelectedAssignment('');
             setAssignmentError('');
             await fetchData();
-            alert('Labeler assigned successfully!');
+            setSuccessMessage('Labeler assigned successfully!');
         } catch (error) {
-            console.error('Error assigning labeler:', error);
             setAssignmentError(error.response?.data?.message || 'Failed to assign labeler');
         }
     };
 
-    const handleUnassignLabeler = async (assignmentId, labelerId) => {
-        if (!window.confirm('Are you sure you want to remove this labeler assignment?')) return;
-
-        try {
-            // First find the assignment that has this labeler
-            const targetAssignment = assignments.find(
-                assignment => assignment.id === assignmentId && 
-                assignment.labelers?.some(l => l.id === labelerId)
-            );
-            
-            if (targetAssignment) {
-                await httpClient.delete(`/SubjectVideoGroupAssignment/${assignmentId}/unassign-labeler/${labelerId}`);
-                await fetchData();
-                alert('Labeler assignment removed successfully!');
-            } else {
-                setAssignmentError('Assignment not found');
-            }
-        } catch (error) {
-            console.error('Error unassigning labeler:', error);
-            setAssignmentError(error.response?.data?.message || 'Failed to unassign labeler');
-        }
+    const handleUnassignLabeler = (assignmentId, labelerId) => {
+        setDeleteModal({
+            show: true,
+            itemType: 'labeler assignment',
+            endpoint: 'unassign-labeler',
+            assignmentId: assignmentId,
+            labelerId: labelerId
+        });
     };
+
+    const toggleCodeVisibility = (code) => {
+        setVisibleCodes(prev => ({
+            ...prev,
+            [code]: !prev[code]
+        }));
+    };
+
+    useEffect(() => {
+        if (location.state?.successMessage) {
+            setSuccessMessage(location.state.successMessage);
+            window.history.replaceState({}, document.title);
+        }
+    }, [location.state]);
 
     useEffect(() => {
         fetchData();
@@ -171,43 +191,31 @@ const ProjectDetails = () => {
         <div className="container">
             <div className="content">
                 <h1 className="heading mb-4">{project.name}</h1>
+                {successMessage && (
+                    <div className="alert alert-success mb-3">
+                        <i className="fas fa-check-circle me-2"></i>
+                        {successMessage}
+                    </div>
+                )}
                 {error && <div className="alert alert-danger mb-3">{error}</div>}
-                
+
                 <div className="tab-navigation">
-                    <button
-                        className={`tab-button ${activeTab === 'details' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('details')}
-                    >
+                    <button className={`tab-button ${activeTab === 'details' ? 'active' : ''}`} onClick={() => setActiveTab('details')}>
                         <i className="fas fa-info-circle me-2"></i>Details
                     </button>
-                    <button
-                        className={`tab-button ${activeTab === 'subjects' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('subjects')}
-                    >
+                    <button className={`tab-button ${activeTab === 'subjects' ? 'active' : ''}`} onClick={() => setActiveTab('subjects')}>
                         <i className="fas fa-folder me-2"></i>Subjects
                     </button>
-                    <button
-                        className={`tab-button ${activeTab === 'videos' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('videos')}
-                    >
+                    <button className={`tab-button ${activeTab === 'videos' ? 'active' : ''}`} onClick={() => setActiveTab('videos')}>
                         <i className="fas fa-film me-2"></i>Video Groups
                     </button>
-                    <button
-                        className={`tab-button ${activeTab === 'assignments' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('assignments')}
-                    >
+                    <button className={`tab-button ${activeTab === 'assignments' ? 'active' : ''}`} onClick={() => setActiveTab('assignments')}>
                         <i className="fas fa-tasks me-2"></i>Assignments
                     </button>
-                    <button
-                        className={`tab-button ${activeTab === 'labelers' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('labelers')}
-                    >
+                    <button className={`tab-button ${activeTab === 'labelers' ? 'active' : ''}`} onClick={() => setActiveTab('labelers')}>
                         <i className="fas fa-users me-2"></i>Labelers
                     </button>
-                    <button
-                        className={`tab-button ${activeTab === 'accessCodes' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('accessCodes')}
-                    >
+                    <button className={`tab-button ${activeTab === 'accessCodes' ? 'active' : ''}`} onClick={() => setActiveTab('accessCodes')}>
                         <i className="fas fa-key me-2"></i>Access Codes
                     </button>
                 </div>
@@ -221,17 +229,10 @@ const ProjectDetails = () => {
                             <div className="card-body">
                                 <p className="card-text"><strong>Description:</strong> {project.description}</p>
                                 <div className="d-flex mt-3">
-                                    <button
-                                        className="btn btn-primary me-2"
-                                        onClick={() => navigate(`/projects/edit/${project.id}`)}
-                                    >
+                                    <button className="btn btn-primary me-2" onClick={() => navigate(`/projects/edit/${project.id}`)}>
                                         <i className="fas fa-edit me-2"></i>Edit Project
                                     </button>
-                                    <button
-                                        className="btn btn-secondary"
-                                        onClick={() => navigate('/projects')}
-                                        style={{height: 'fit-content', margin: '1%'}}
-                                    >
+                                    <button className="btn btn-secondary" onClick={() => navigate('/projects')} style={{height: 'fit-content', margin: '1%'}}>
                                         <i className="fas fa-arrow-left me-2"></i>Back to Projects
                                     </button>
                                 </div>
@@ -251,37 +252,39 @@ const ProjectDetails = () => {
                             {subjects.length > 0 ? (
                                 <table className="normal-table">
                                     <thead>
-                                        <tr>
-                                            <th>ID</th>
-                                            <th>Name</th>
-                                            <th>Description</th>
-                                            <th>Actions</th>
-                                        </tr>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>Description</th>
+                                        <th>Actions</th>
+                                    </tr>
                                     </thead>
                                     <tbody>
-                                        {subjects.map((subject) => (
-                                            <tr key={subject.id}>
-                                                <td>{subject.id}</td>
-                                                <td>{subject.name}</td>
-                                                <td>{subject.description}</td>
-                                                <td>
-                                                    <div className="btn-group">
-                                                        <button
-                                                            className="btn btn-info btn-sm me-2"
-                                                            onClick={() => navigate(`/subjects/${subject.id}`)}
-                                                        >
-                                                            <i className="fas fa-eye me-1"></i>Details
-                                                        </button>
-                                                        <button
-                                                            className="btn btn-danger btn-sm"
-                                                            onClick={() => handleDeleteItem('subject', subject.id)}
-                                                        >
-                                                            <i className="fas fa-trash me-1"></i>Delete
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))}
+                                    {subjects.map((subject) => (
+                                        <tr key={subject.id}>
+                                            <td>{subject.id}</td>
+                                            <td>{subject.name}</td>
+                                            <td>{subject.description}</td>
+                                            <td>
+                                                <div className="btn-group">
+                                                    <button className="btn btn-info btn-sm me-2" onClick={() => navigate(`/subjects/${subject.id}`)}>
+                                                        <i className="fas fa-eye me-1"></i>Details
+                                                    </button>
+                                                    <button
+                                                        className="btn btn-danger btn-sm"
+                                                        onClick={() => setDeleteModal({
+                                                            show: true,
+                                                            itemType: 'subject',
+                                                            endpoint: 'subject',
+                                                            itemId: subject.id
+                                                        })}
+                                                    >
+                                                        <i className="fas fa-trash me-1"></i>Delete
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
                                     </tbody>
                                 </table>
                             ) : (
@@ -304,37 +307,39 @@ const ProjectDetails = () => {
                             {videoGroups.length > 0 ? (
                                 <table className="normal-table">
                                     <thead>
-                                        <tr>
-                                            <th>ID</th>
-                                            <th>Name</th>
-                                            <th>Description</th>
-                                            <th>Actions</th>
-                                        </tr>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>Description</th>
+                                        <th>Actions</th>
+                                    </tr>
                                     </thead>
                                     <tbody>
-                                        {videoGroups.map((video) => (
-                                            <tr key={video.id}>
-                                                <td>{video.id}</td>
-                                                <td>{video.name}</td>
-                                                <td>{video.description}</td>
-                                                <td>
-                                                    <div className="btn-group">
-                                                        <button
-                                                            className="btn btn-info btn-sm me-2"
-                                                            onClick={() => navigate(`/video-groups/${video.id}`)}
-                                                        >
-                                                            <i className="fas fa-eye me-1"></i>Details
-                                                        </button>
-                                                        <button
-                                                            className="btn btn-danger btn-sm"
-                                                            onClick={() => handleDeleteItem('videogroup', video.id)}
-                                                        >
-                                                            <i className="fas fa-trash me-1"></i>Delete
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))}
+                                    {videoGroups.map((video) => (
+                                        <tr key={video.id}>
+                                            <td>{video.id}</td>
+                                            <td>{video.name}</td>
+                                            <td>{video.description}</td>
+                                            <td>
+                                                <div className="btn-group">
+                                                    <button className="btn btn-info btn-sm me-2" onClick={() => navigate(`/video-groups/${video.id}`)}>
+                                                        <i className="fas fa-eye me-1"></i>Details
+                                                    </button>
+                                                    <button
+                                                        className="btn btn-danger btn-sm"
+                                                        onClick={() => setDeleteModal({
+                                                            show: true,
+                                                            itemType: 'video group',
+                                                            endpoint: 'videogroup',
+                                                            itemId: video.id
+                                                        })}
+                                                    >
+                                                        <i className="fas fa-trash me-1"></i>Delete
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
                                     </tbody>
                                 </table>
                             ) : (
@@ -357,37 +362,39 @@ const ProjectDetails = () => {
                             {assignments.length > 0 ? (
                                 <table className="normal-table">
                                     <thead>
-                                        <tr>
-                                            <th>ID</th>
-                                            <th>Subject ID</th>
-                                            <th>Video Group ID</th>
-                                            <th>Actions</th>
-                                        </tr>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Subject ID</th>
+                                        <th>Video Group ID</th>
+                                        <th>Actions</th>
+                                    </tr>
                                     </thead>
                                     <tbody>
-                                        {assignments.map((assignment) => (
-                                            <tr key={assignment.id}>
-                                                <td>{assignment.id}</td>
-                                                <td>{assignment.subjectId}</td>
-                                                <td>{assignment.videoGroupId}</td>
-                                                <td>
-                                                    <div className="btn-group">
-                                                        <button
-                                                            className="btn btn-info btn-sm me-2"
-                                                            onClick={() => navigate(`/assignments/${assignment.id}`)}
-                                                        >
-                                                            <i className="fas fa-eye me-1"></i>Details
-                                                        </button>
-                                                        <button
-                                                            className="btn btn-danger btn-sm"
-                                                            onClick={() => handleDeleteItem('SubjectVideoGroupAssignment', assignment.id)}
-                                                        >
-                                                            <i className="fas fa-trash me-1"></i>Delete
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))}
+                                    {assignments.map((assignment) => (
+                                        <tr key={assignment.id}>
+                                            <td>{assignment.id}</td>
+                                            <td>{assignment.subjectId}</td>
+                                            <td>{assignment.videoGroupId}</td>
+                                            <td>
+                                                <div className="btn-group">
+                                                    <button className="btn btn-info btn-sm me-2" onClick={() => navigate(`/assignments/${assignment.id}`)}>
+                                                        <i className="fas fa-eye me-1"></i>Details
+                                                    </button>
+                                                    <button
+                                                        className="btn btn-danger btn-sm"
+                                                        onClick={() => setDeleteModal({
+                                                            show: true,
+                                                            itemType: 'assignment',
+                                                            endpoint: 'SubjectVideoGroupAssignment',
+                                                            itemId: assignment.id
+                                                        })}
+                                                    >
+                                                        <i className="fas fa-trash me-1"></i>Delete
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
                                     </tbody>
                                 </table>
                             ) : (
@@ -401,15 +408,9 @@ const ProjectDetails = () => {
                     {activeTab === 'labelers' && (
                         <div className="labelers">
                             <div className="d-flex justify-content-end mb-3">
-                                <a>
-                                <button
-                                    className="btn btn-primary"
-                                    onClick={handleDistributeLabelers}
-                                    style={{ minWidth: '200px' }}
-                                >
+                                <button className="btn btn-primary" onClick={handleDistributeLabelers} style={{ minWidth: '200px' }}>
                                     <i className="fas fa-random me-2"></i>Distribute Labelers
                                 </button>
-                                </a>
                             </div>
 
                             <div className="card shadow-sm mb-4" style={{marginTop: '25px'}}>
@@ -426,12 +427,7 @@ const ProjectDetails = () => {
                                         <div className="row mb-3">
                                             <div className="col-md-6">
                                                 <label htmlFor="labelerSelect" className="form-label">Select Labeler:</label>
-                                                <select 
-                                                    id="labelerSelect"
-                                                    className="form-select"
-                                                    value={selectedLabeler} 
-                                                    onChange={(e) => setSelectedLabeler(e.target.value)}
-                                                >
+                                                <select id="labelerSelect" className="form-select" value={selectedLabeler} onChange={(e) => setSelectedLabeler(e.target.value)}>
                                                     <option value="">-- Select Labeler --</option>
                                                     {labelers.map(labeler => (
                                                         <option key={labeler.id} value={labeler.id}>
@@ -442,21 +438,15 @@ const ProjectDetails = () => {
                                             </div>
                                             <div className="col-md-6">
                                                 <label htmlFor="assignmentSelect" className="form-label">Select Assignment:</label>
-                                                <select 
-                                                    id="assignmentSelect"
-                                                    className="form-select"
-                                                    value={selectedAssignment} 
-                                                    onChange={(e) => setSelectedAssignment(e.target.value)}
-                                                >
+                                                <select id="assignmentSelect" className="form-select" value={selectedAssignment} onChange={(e) => setSelectedAssignment(e.target.value)}>
                                                     <option value="">-- Select Assignment --</option>
                                                     {assignments.map(assignment => {
                                                         const subject = subjects.find(s => s.id === assignment.subjectId);
                                                         const videoGroup = videoGroups.find(vg => vg.id === assignment.videoGroupId);
-                                                        
                                                         return (
                                                             <option key={assignment.id} value={assignment.id}>
-                                                                Assignment #{assignment.id} - 
-                                                                Subject: {subject?.name || "Unknown"} (ID: {assignment.subjectId}), 
+                                                                Assignment #{assignment.id} -
+                                                                Subject: {subject?.name || "Unknown"} (ID: {assignment.subjectId}),
                                                                 Video Group: {videoGroup?.name || "Unknown"} (ID: {assignment.videoGroupId})
                                                             </option>
                                                         );
@@ -464,12 +454,7 @@ const ProjectDetails = () => {
                                                 </select>
                                             </div>
                                         </div>
-                                        <button 
-                                            className="btn btn-success"
-                                            disabled={!selectedLabeler || !selectedAssignment}
-                                            onClick={handleAssignLabeler}
-                                            style={{ minWidth: '200px' }}
-                                        >
+                                        <button className="btn btn-success" disabled={!selectedLabeler || !selectedAssignment} onClick={handleAssignLabeler} style={{ minWidth: '200px' }}>
                                             <i className="fas fa-user-plus me-2"></i>Assign Labeler
                                         </button>
                                     </div>
@@ -480,18 +465,18 @@ const ProjectDetails = () => {
                             {labelers.length > 0 ? (
                                 <table className="normal-table">
                                     <thead>
-                                        <tr>
-                                            <th>Labeler ID</th>
-                                            <th>Username</th>
-                                        </tr>
+                                    <tr>
+                                        <th>Labeler ID</th>
+                                        <th>Username</th>
+                                    </tr>
                                     </thead>
                                     <tbody>
-                                        {labelers.map((labeler) => (
-                                            <tr key={labeler.id}>
-                                                <td>{labeler.id}</td>
-                                                <td>{labeler.name}</td>
-                                            </tr>
-                                        ))}
+                                    {labelers.map((labeler) => (
+                                        <tr key={labeler.id}>
+                                            <td>{labeler.id}</td>
+                                            <td>{labeler.name}</td>
+                                        </tr>
+                                    ))}
                                     </tbody>
                                 </table>
                             ) : (
@@ -504,43 +489,43 @@ const ProjectDetails = () => {
                             {assignments.some(assignment => assignment.labelers && assignment.labelers.length > 0) ? (
                                 <table className="normal-table">
                                     <thead>
-                                        <tr>
-                                            <th>Labeler ID</th>
-                                            <th>Username</th>
-                                            <th>Video Group ID</th>
-                                            <th>Subject ID</th>
-                                            <th>Assignment ID</th>
-                                            <th>Actions</th>
-                                        </tr>
+                                    <tr>
+                                        <th>Labeler ID</th>
+                                        <th>Username</th>
+                                        <th>Video Group ID</th>
+                                        <th>Subject ID</th>
+                                        <th>Assignment ID</th>
+                                        <th>Actions</th>
+                                    </tr>
                                     </thead>
                                     <tbody>
-                                        {assignments
-                                            .filter(assignment => assignment.labelers && assignment.labelers.length > 0)
-                                            .flatMap(assignment => 
-                                                assignment.labelers.map(labeler => ({
-                                                    labeler,
-                                                    videoGroupId: assignment.videoGroupId,
-                                                    subjectId: assignment.subjectId,
-                                                    assignmentId: assignment.id
-                                                }))
-                                            )
-                                            .map((item, index) => (
-                                                <tr key={`${item.labeler.id}-${item.videoGroupId}-${index}`}>
-                                                    <td>{item.labeler.id}</td>
-                                                    <td>{item.labeler.name}</td>
-                                                    <td>{item.videoGroupId}</td>
-                                                    <td>{item.subjectId}</td>
-                                                    <td>{item.assignmentId}</td>
-                                                    <td>
-                                                        <button
-                                                            className="btn btn-danger btn-sm"
-                                                            onClick={() => handleUnassignLabeler(item.assignmentId, item.labeler.id)}
-                                                        >
-                                                            <i className="fas fa-user-minus me-1"></i>Unassign
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            ))}
+                                    {assignments
+                                        .filter(assignment => assignment.labelers && assignment.labelers.length > 0)
+                                        .flatMap(assignment =>
+                                            assignment.labelers.map(labeler => ({
+                                                labeler,
+                                                videoGroupId: assignment.videoGroupId,
+                                                subjectId: assignment.subjectId,
+                                                assignmentId: assignment.id
+                                            }))
+                                        )
+                                        .map((item, index) => (
+                                            <tr key={`${item.labeler.id}-${item.videoGroupId}-${index}`}>
+                                                <td>{item.labeler.id}</td>
+                                                <td>{item.labeler.name}</td>
+                                                <td>{item.videoGroupId}</td>
+                                                <td>{item.subjectId}</td>
+                                                <td>{item.assignmentId}</td>
+                                                <td>
+                                                    <button
+                                                        className="btn btn-danger btn-sm"
+                                                        onClick={() => handleUnassignLabeler(item.assignmentId, item.labeler.id)}
+                                                    >
+                                                        <i className="fas fa-user-minus me-1"></i>Unassign
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
                                     </tbody>
                                 </table>
                             ) : (
@@ -560,30 +545,17 @@ const ProjectDetails = () => {
                                 <div className="card-body">
                                     <div className="duration-options d-inline-grid align-items-center gap-3 mb-3">
                                         <div className="btn-group">
-                                            <button
-                                                className={`btn ${selectedDuration === '14days' ? 'btn-primary' : 'btn-outline-primary'}`}
-                                                onClick={() => setSelectedDuration('14days')}
-                                            >
+                                            <button className={`btn ${selectedDuration === '14days' ? 'btn-primary' : 'btn-outline-primary'}`} onClick={() => setSelectedDuration('14days')}>
                                                 14 Days
                                             </button>
-                                            <button
-                                                className={`btn ${selectedDuration === '30days' ? 'btn-primary' : 'btn-outline-primary'}`}
-                                                onClick={() => setSelectedDuration('30days')}
-                                            >
+                                            <button className={`btn ${selectedDuration === '30days' ? 'btn-primary' : 'btn-outline-primary'}`} onClick={() => setSelectedDuration('30days')}>
                                                 30 Days
                                             </button>
-                                            <button
-                                                className={`btn ${selectedDuration === 'unlimited' ? 'btn-primary' : 'btn-outline-primary'}`}
-                                                onClick={() => setSelectedDuration('unlimited')}
-                                            >
+                                            <button className={`btn ${selectedDuration === 'unlimited' ? 'btn-primary' : 'btn-outline-primary'}`} onClick={() => setSelectedDuration('unlimited')}>
                                                 Unlimited
                                             </button>
                                         </div>
-                                        <button
-                                            className="btn btn-success"
-                                            onClick={handleCreateAccessCode}
-                                            disabled={!selectedDuration}
-                                        >
+                                        <button className="btn btn-success" onClick={handleCreateAccessCode} disabled={!selectedDuration}>
                                             <i className="fas fa-key me-2"></i>Generate Access Code
                                         </button>
                                     </div>
@@ -598,44 +570,60 @@ const ProjectDetails = () => {
                             {accessCodes.length > 0 ? (
                                 <table className="normal-table">
                                     <thead>
-                                        <tr>
-                                            <th>Code</th>
-                                            <th>Created At</th>
-                                            <th>Expires At</th>
-                                            <th>Valid</th>
-                                            <th>Actions</th>
-                                        </tr>
+                                    <tr>
+                                        <th>Code</th>
+                                        <th>Created At</th>
+                                        <th>Expires At</th>
+                                        <th>Valid</th>
+                                        <th>Actions</th>
+                                    </tr>
                                     </thead>
                                     <tbody>
-                                        {accessCodes
-                                            .slice()
-                                            .sort((a, b) => {
-                                                if (!a.expiresAtUtc && !b.expiresAtUtc) return 0;
-                                                if (!a.expiresAtUtc) return -1;
-                                                if (!b.expiresAtUtc) return 1;
-                                                
-                                                return new Date(b.expiresAtUtc) - new Date(a.expiresAtUtc);
-                                            })
-                                            .map((code) => (
-                                                <tr key={code.code}>
-                                                    <td><code>{code.code}</code></td>
-                                                    <td>{new Date(code.createdAtUtc).toLocaleString()}</td>
-                                                    <td>
-                                                        {code.expiresAtUtc
-                                                            ? new Date(code.expiresAtUtc).toLocaleString()
-                                                            : 'Never'}
-                                                    </td>
-                                                    <td>{code.isValid ? <span className="badge bg-success">✓ Valid</span> : <span className="badge bg-danger">✗ Invalid</span>}</td>
-                                                    <td>
+                                    {accessCodes
+                                        .slice()
+                                        .sort((a, b) => {
+                                            if (!a.expiresAtUtc && !b.expiresAtUtc) return 0;
+                                            if (!a.expiresAtUtc) return -1;
+                                            if (!b.expiresAtUtc) return 1;
+                                            return new Date(b.expiresAtUtc) - new Date(a.expiresAtUtc);
+                                        })
+                                        .map((code) => (
+                                            <tr key={code.code}>
+                                                <td>
+                                                    <div className="d-flex align-items-center gap-2">
+                                                        <span>
+                                                            {visibleCodes[code.code] ? code.code : '*******'}
+                                                        </span>
                                                         <button
-                                                            className="btn btn-outline-primary btn-sm"
-                                                            onClick={() => handleCopyCode(code.code)}
+                                                            className="btn btn-link p-0"
+                                                            onClick={() => toggleCodeVisibility(code.code)}
+                                                            title={visibleCodes[code.code] ? "Hide code" : "Show code"}
                                                         >
-                                                            <i className="fas fa-copy me-1"></i>Copy
+                                                            <i className={`fas fa-eye${visibleCodes[code.code] ? '-slash' : ''}`} />
                                                         </button>
-                                                    </td>
-                                                </tr>
-                                            ))}
+                                                    </div>
+                                                </td>
+                                                <td>{new Date(code.createdAtUtc).toLocaleString()}</td>
+                                                <td>
+                                                    {code.expiresAtUtc
+                                                        ? new Date(code.expiresAtUtc).toLocaleString()
+                                                        : 'Never'}
+                                                </td>
+                                                <td>
+                                                    {code.isValid ?
+                                                        <span className="badge bg-success">✓ Valid</span> :
+                                                        <span className="badge bg-danger">✗ Invalid</span>}
+                                                </td>
+                                                <td>
+                                                    <button
+                                                        className="btn btn-outline-primary btn-sm"
+                                                        onClick={() => handleCopyCode(code.code)}
+                                                    >
+                                                        <i className="fas fa-copy me-1"></i>Copy
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
                                     </tbody>
                                 </table>
                             ) : (
@@ -647,6 +635,13 @@ const ProjectDetails = () => {
                     )}
                 </div>
             </div>
+
+            <DeleteConfirmationModal
+                show={deleteModal.show}
+                itemType={deleteModal.itemType}
+                onConfirm={handleConfirmDelete}
+                onCancel={handleCancelDelete}
+            />
         </div>
     );
 };
