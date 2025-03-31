@@ -58,7 +58,9 @@ const LabelAdd = () => {
 
         try {
             await httpClient.post('/label', formData);
-            navigate(`/subjects/${formData.subjectId}`);
+            navigate(`/subjects/${formData.subjectId}`, {
+                state: { successMessage: 'Label created successfully!' }
+            });
         } catch (err) {
             setError(err.response?.data?.message || 'An error occurred. Please try again.');
         } finally {

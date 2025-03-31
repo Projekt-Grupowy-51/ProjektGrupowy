@@ -9,7 +9,6 @@ function ProjectEdit() {
     const [formData, setFormData] = useState({
         name: "",
         description: "",
-        scientistId: "",
         finished: false
     });
     const [error, setError] = useState("");
@@ -23,7 +22,6 @@ function ProjectEdit() {
                 setFormData({
                     name: data.name,
                     description: data.description,
-                    scientistId: data.scientistId.toString(),
                     finished: data.finished
                 });
             } catch (error) {
@@ -40,18 +38,11 @@ function ProjectEdit() {
         e.preventDefault();
         setError("");
 
-        if (!Number.isInteger(Number(formData.scientistId))) {
-            setError("Scientist ID must be a valid number");
-            return;
-        }
-
         try {
-            await httpClient.put(`/Project/${id}`, {
-                ...formData,
-                scientistId: parseInt(formData.scientistId)
+            await httpClient.put(`/Project/${id}`, formData);
+            navigate(`/projects/${id}`, {
+                state: { successMessage: "Project updated successfully!" }
             });
-            alert("Project updated successfully!");
-            navigate(`/projects/${id}`);
         } catch (error) {
             console.error("Error updating project:", error);
             setError(error.response?.data?.message || "Failed to update project");
@@ -111,20 +102,6 @@ function ProjectEdit() {
                                         onChange={handleChange}
                                         required
                                         rows="4"
-                                    />
-                                </div>
-
-                                <div className="mb-3">
-                                    <label htmlFor="scientistId" className="form-label">Scientist ID</label>
-                                    <input
-                                        type="number"
-                                        id="scientistId"
-                                        name="scientistId"
-                                        className="form-control"
-                                        value={formData.scientistId}
-                                        onChange={handleChange}
-                                        required
-                                        min="1"
                                     />
                                 </div>
 

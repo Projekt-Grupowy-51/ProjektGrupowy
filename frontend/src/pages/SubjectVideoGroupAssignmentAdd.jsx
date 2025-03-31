@@ -64,7 +64,9 @@ const SubjectVideoGroupAssignmentAdd = () => {
         subjectId: parseInt(formData.subjectId),
         videoGroupId: parseInt(formData.videoGroupId),
       });
-      navigate(`/projects/${projectId}`);
+      navigate(`/projects/${projectId}`, {
+          state: { successMessage: "Assignment added successfully!" }
+      });
     } catch (err) {
       setError(
         err.response?.data?.message || "An error occurred. Please try again."

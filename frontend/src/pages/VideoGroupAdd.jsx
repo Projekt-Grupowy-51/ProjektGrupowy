@@ -42,7 +42,9 @@ const VideoGroupAdd = () => {
 
         try {
             await httpClient.post('/videogroup', formData);
-            navigate(`/projects/${formData.projectId}`);
+            navigate(`/projects/${formData.projectId}`, {
+                state: { successMessage: "Video group added successfully!" }
+            });
         } catch (err) {
             setError(err.response?.data?.message || 'An error occurred. Please try again.');
             setLoading(false);
@@ -90,16 +92,6 @@ const VideoGroupAdd = () => {
                                         rows="5"
                                         required
                                     ></textarea>
-                                </div>
-
-                                <div className="mb-4">
-                                    <label htmlFor="projectId" className="form-label">Project ID</label>
-                                    <input
-                                        type="number" 
-                                        className="form-control"
-                                        value={formData.projectId}
-                                        disabled
-                                    />
                                 </div>
 
                                 <div className="d-flex">
