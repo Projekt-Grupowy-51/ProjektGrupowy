@@ -296,13 +296,12 @@ const Videos = () => {
     };
 
     const getTextColor = (backgroundColor) => {
-        // Calculate brightness using the YIQ formula
-        const rgb = parseInt(backgroundColor.slice(1), 16); // Convert hex to integer
-        const r = (rgb >> 16) & 0xff; // Extract red
-        const g = (rgb >> 8) & 0xff; // Extract green
-        const b = rgb & 0xff; // Extract blue
+        const rgb = parseInt(backgroundColor.slice(1), 16); 
+        const r = (rgb >> 16) & 0xff; 
+        const g = (rgb >> 8) & 0xff; 
+        const b = rgb & 0xff; 
         const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-        return brightness > 128 ? "#000000" : "#ffffff"; // Return black or white
+        return brightness > 128 ? "#000000" : "#ffffff"; 
     };
 
     return (
