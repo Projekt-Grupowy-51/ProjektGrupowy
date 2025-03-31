@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using EFCore.BulkExtensions;
+using Microsoft.EntityFrameworkCore;
 using ProjektGrupowy.API.Data;
 using ProjektGrupowy.API.Models;
 using ProjektGrupowy.API.Utils;
@@ -102,26 +103,12 @@ public class LabelerRepository(AppDbContext context, ILogger<LabelerRepository> 
     {
         try
         {
-            const string sql = """
-                               SELECT l."Id", l."Name", l."UserId"
-                               FROM "Labelers" l
-                               JOIN "LabelerProject" lp ON l."Id" = lp."ProjectLabelersId"
-                               WHERE lp."ProjectLabelersId1" = {0}
-                                 AND l."Id" NOT IN (
-                                   SELECT lsvg."LabelersId"
-                                   FROM "LabelerSubjectVideoGroupAssignment" lsvg
-                                   JOIN "SubjectVideoGroupAssignments" svga ON lsvg."SubjectVideoGroupsId" = svga."Id"
-                                   JOIN "Subjects" s ON svga."SubjectId" = s."Id"
-                                   WHERE s."ProjectId" = lp."ProjectLabelersId1"
-                                 );
-                               """;
-
-            var unassignedLabelers = await context.Labelers
-                .FromSqlRaw(sql, projectId)
-                .AsNoTracking()
+            var labelers = await context.Labelers
+                .Where(l => l.ProjectLabelers.Any(p => p.Id == projectId))
+                .Where(l => !l.SubjectVideoGroups.Any(svg => svg.Subject.Project.Id == projectId))
                 .ToListAsync();
 
-            return Optional<IEnumerable<Labeler>>.Success(unassignedLabelers);
+            return Optional<IEnumerable<Labeler>>.Success(labelers);
         }
         catch (Exception e)
         {
