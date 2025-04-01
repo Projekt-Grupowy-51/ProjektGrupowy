@@ -500,6 +500,15 @@ video {
   font-size: 15px;
 }
 
+#access-codes-table tbody tr td:nth-child(1) {
+  width: 20%;
+}
+
+  #access-codes-table tbody tr td:nth-child(1) div {
+    justify-content: space-between;
+    width: 100%;
+  }
+
 .assigned-labels h3 {
   background: var(--gradient-blue);
   border-top: 1px solid #026aa7;

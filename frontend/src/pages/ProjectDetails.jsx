@@ -568,7 +568,7 @@ const ProjectDetails = () => {
                             </div>
 
                             {accessCodes.length > 0 ? (
-                                <table className="normal-table">
+                                <table className="normal-table" id="access-codes-table">
                                     <thead>
                                     <tr>
                                         <th>Code</th>
