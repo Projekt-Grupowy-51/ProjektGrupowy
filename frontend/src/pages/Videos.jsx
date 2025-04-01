@@ -80,8 +80,21 @@ const Videos = () => {
                     withCredentials: true,
                     responseType: "blob",
                 });
-                return URL.createObjectURL(response.data);
+
+                if (response.status === 200 && response.data) {
+                    return URL.createObjectURL(response.data);
+                } else {
+                    console.error(`Failed to fetch stream for video ID ${videoId}:`, response);
+                    return null;
+                }
             } catch (error) {
+                if (error.response) {
+                    console.error(`Server responded with an error for video ID ${videoId}:`, error.response);
+                } else if (error.request) {
+                    console.error(`No response received for video ID ${videoId}. Possible network error:`, error.request);
+                } else {
+                    console.error(`Error setting up request for video ID ${videoId}:`, error.message);
+                }
                 return null;
             }
         });
@@ -90,7 +103,7 @@ const Videos = () => {
             const streamUrls = await Promise.all(streamsPromises);
             setStreams(streamUrls.filter((url) => url !== null));
         } catch (error) {
-            console.error("Error fetching video streams:", error);
+            console.error("Error processing video streams:", error);
         }
     }
 

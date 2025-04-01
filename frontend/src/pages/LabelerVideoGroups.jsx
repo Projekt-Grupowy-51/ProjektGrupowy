@@ -128,7 +128,7 @@ const LabelerVideoGroups = () => {
                                     <div className="btn-group">
                                         <button
                                             className="btn btn-info btn-sm me-2"
-                                            onClick={() => navigate(`/video/${assignment.id}`)}
+                                            onClick={() => navigate(`/video-group/${assignment.videoGroupId}`)}
                                         >
                                             <i className="fas fa-eye me-1"></i>Details
                                         </button>

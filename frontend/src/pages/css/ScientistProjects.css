@@ -381,11 +381,6 @@ button {
 
 .video-grid {
   display: none;
-  /* No longer needed */
-}
-
-.video-container {
-  height: 25vh;
 }
 
 video {
@@ -527,6 +522,7 @@ video {
 
 .assigned-labels-table .normal-table {
   margin: 0 !important;
+  border-radius: 0;
 }
 
 .assigned-labels-table::-webkit-scrollbar {
@@ -536,11 +532,6 @@ video {
 .assigned-labels-table::-webkit-scrollbar-thumb {
   background: rgba(3, 155, 229);
   border-radius: 3px;
-}
-
-.assigned-labels-table table thead th,
-.assigned-labels-table table tbody td {
-  border-bottom: 1px solid #026aa7;
 }
 
 .labels-container {
@@ -683,7 +674,6 @@ video {
 }
 
 .video-container {
-  max-width: 800px;
   margin: 0 auto;
   border: 1px solid #dee2e6;
   border-radius: var(--border-radius);
@@ -695,7 +685,6 @@ video {
   max-height: 400px;
   overflow-y: auto;
   border: 1px solid #dee2e6;
-  border-radius: var(--border-radius);
 }
 
 .assigned-labels-table::-webkit-scrollbar {
