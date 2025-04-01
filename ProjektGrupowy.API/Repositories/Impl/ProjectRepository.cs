@@ -76,7 +76,7 @@ public class ProjectRepository(AppDbContext context, ILogger<ProjectRepository> 
         try
         {
             var result = await context.SubjectVideoGroupAssignments
-                //.Where(svga => svga.VideoGroup.Project.Id == 1)
+                .Where(svga => svga.VideoGroup.Project.Id == projectId)
                 .GroupBy(svga => svga.Id)
                 .Select(g => new
                 {
