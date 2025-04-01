@@ -62,6 +62,16 @@ const ProjectDetails = () => {
     }
   };
 
+  const handleUnassignAllLabelers = async () => {
+    try {
+      await httpClient.post(`/project/${id}/unassign-all`);
+      await fetchData();
+      setSuccessMessage("All labelers unassigned successfully!");
+    } catch (error) {
+      setError(error.response?.data?.message || "Failed to unassign labelers");
+    }
+  };
+
   const handleConfirmDelete = async () => {
     try {
       if (deleteModal.endpoint === "unassign-labeler") {
@@ -633,7 +643,21 @@ const ProjectDetails = () => {
                 </div>
               )}
 
-              <h3 className="mt-4 mb-4">Assignment Labelers</h3>
+              <div className="row align-items-center mb-3 mt-4">
+                <div className="col">
+                  <h3 className="mb-0">Assignment Labelers</h3>
+                </div>
+                <div className="col-auto">
+                  <button
+                    className="btn btn-danger text-nowrap"
+                    onClick={handleUnassignAllLabelers}
+                  >
+                    <i className="fa-solid fa-user-xmark me-1"></i>
+                    Unassign All Labelers
+                  </button>
+                </div>
+              </div>
+
               {assignments.some(
                 (assignment) =>
                   assignment.labelers && assignment.labelers.length > 0

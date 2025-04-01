@@ -103,6 +103,28 @@ public class ProjectService(
         }
     }
 
+    public async Task<Optional<bool>> UnassignLabelersFromProjectAsync(int projectId)
+    {
+        var projectOpt = await projectRepository.GetProjectAsync(projectId);
+        if (projectOpt.IsFailure)
+        {
+            return Optional<bool>.Failure("No project found!");
+        }
+
+        var project = projectOpt.GetValueOrThrow();
+        var assignments = project.Subjects
+            .SelectMany(s => s.SubjectVideoGroupAssignments)
+            .ToList();
+
+        foreach (var assignment in assignments)
+        {
+            assignment.Labelers.Clear();
+            await subjectVideoGroupAssignmentRepository.UpdateSubjectVideoGroupAssignmentAsync(assignment);
+        }
+
+        return Optional<bool>.Success(true);
+    }
+
     public async Task<Optional<bool>> DistributeLabelersEquallyAsync(int projectId)
     {
         var projectOptional = await projectRepository.GetProjectAsync(projectId);

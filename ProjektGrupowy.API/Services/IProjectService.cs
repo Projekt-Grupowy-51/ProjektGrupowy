@@ -1,4 +1,5 @@
-﻿using ProjektGrupowy.API.DTOs.LabelerAssignment;
+﻿using Microsoft.CodeAnalysis.Options;
+using ProjektGrupowy.API.DTOs.LabelerAssignment;
 using ProjektGrupowy.API.DTOs.Project;
 using ProjektGrupowy.API.Models;
 using ProjektGrupowy.API.Utils;
@@ -16,6 +17,8 @@ public interface IProjectService
     Task<Optional<bool>> AddLabelerToProjectAsync(LabelerAssignmentDto labelerAssignmentDto);
 
     Task DeleteProjectAsync(int id);
+
+    Task<Optional<bool>> UnassignLabelersFromProjectAsync(int projectId);
 
     Task<Optional<bool>> DistributeLabelersEquallyAsync(int projectId);
 }
