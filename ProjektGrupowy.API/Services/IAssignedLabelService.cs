@@ -16,7 +16,5 @@ public interface IAssignedLabelService
 
     Task<Optional<IEnumerable<AssignedLabel>>> GetAssignedLabelsByScientistIdAsync(int scientistId);
     Task<Optional<IEnumerable<AssignedLabel>>> GetAssignedLabelsByLabelerIdAsync(int labelerId);
-
-    Task<bool> IsAssignedToLabelerAsync(int subjectVideoGroupAssignmentId, int labelerId);
-    Task<bool> IsAssignedToScientistAsync(int subjectVideoGroupAssignmentId, int scientistId);
+    Task<Optional<IEnumerable<AssignedLabel>>> GetAssignedLabelsByVideoIdAsync(int videoId);
 }
