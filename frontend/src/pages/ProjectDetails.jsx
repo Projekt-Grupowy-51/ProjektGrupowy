@@ -62,6 +62,16 @@ const ProjectDetails = () => {
     }
   };
 
+  const handleUnassignAllLabelers = async () => {
+    try {
+      await httpClient.post(`/project/${id}/unassign-all`);
+      await fetchData();
+      setSuccessMessage("All labelers unassigned successfully!");
+    } catch (error) {
+      setError(error.response?.data?.message || "Failed to unassign labelers");
+    }
+  };
+
   const handleConfirmDelete = async () => {
     try {
       if (deleteModal.endpoint === "unassign-labeler") {
@@ -633,7 +643,21 @@ const ProjectDetails = () => {
                 </div>
               )}
 
-              <h3 className="mt-4 mb-4">Assignment Labelers</h3>
+              <div className="row align-items-center mb-3 mt-4">
+                <div className="col">
+                  <h3 className="mb-0">Assignment Labelers</h3>
+                </div>
+                <div className="col-auto">
+                  <button
+                    className="btn btn-danger text-nowrap"
+                    onClick={handleUnassignAllLabelers}
+                  >
+                    <i className="fa-solid fa-user-xmark me-1"></i>
+                    Unassign All Labelers
+                  </button>
+                </div>
+              </div>
+
               {assignments.some(
                 (assignment) =>
                   assignment.labelers && assignment.labelers.length > 0
@@ -758,91 +782,74 @@ const ProjectDetails = () => {
                 </div>
               </div>
 
-              {accessCodes.length > 0 ? (
-                <table className="normal-table">
-                  <thead>
-                    <tr>
-                      <th>Code</th>
-                      <th>Created At</th>
-                      <th>Expires At</th>
-                      <th>Valid</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {accessCodes
-                      .slice()
-                      .sort((a, b) => {
-                        if (!a.expiresAtUtc && !b.expiresAtUtc) return 0;
-                        if (!a.expiresAtUtc) return -1;
-                        if (!b.expiresAtUtc) return 1;
-                        return (
-                          new Date(b.expiresAtUtc) - new Date(a.expiresAtUtc)
-                        );
-                      })
-                      .map((code) => (
-                        <tr key={code.code}>
-                          <td>
-                            <div className="d-flex align-items-center gap-2">
-                              <span>
-                                {visibleCodes[code.code]
-                                  ? code.code
-                                  : "*******"}
-                              </span>
-                              <button
-                                className="btn btn-link p-0"
-                                onClick={() => toggleCodeVisibility(code.code)}
-                                title={
-                                  visibleCodes[code.code]
-                                    ? "Hide code"
-                                    : "Show code"
-                                }
-                              >
-                                <i
-                                  className={`fas fa-eye${
-                                    visibleCodes[code.code] ? "-slash" : ""
-                                  }`}
-                                />
-                              </button>
-                            </div>
-                          </td>
-                          <td>
-                            {new Date(code.createdAtUtc).toLocaleString()}
-                          </td>
-                          <td>
-                            {code.expiresAtUtc
-                              ? new Date(code.expiresAtUtc).toLocaleString()
-                              : "Never"}
-                          </td>
-                          <td>
-                            {code.isValid ? (
-                              <span className="badge bg-success">✓ Valid</span>
+                            {accessCodes.length > 0 ? (
+                                <table className="normal-table" id="access-codes-table">
+                                    <thead>
+                                    <tr>
+                                        <th>Code</th>
+                                        <th>Created At</th>
+                                        <th>Expires At</th>
+                                        <th>Valid</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {accessCodes
+                                        .slice()
+                                        .sort((a, b) => {
+                                            if (!a.expiresAtUtc && !b.expiresAtUtc) return 0;
+                                            if (!a.expiresAtUtc) return -1;
+                                            if (!b.expiresAtUtc) return 1;
+                                            return new Date(b.expiresAtUtc) - new Date(a.expiresAtUtc);
+                                        })
+                                        .map((code) => (
+                                            <tr key={code.code}>
+                                                <td>
+                                                    <div className="d-flex align-items-center gap-2">
+                                                        <span>
+                                                            {visibleCodes[code.code] ? code.code : '*******'}
+                                                        </span>
+                                                        <button
+                                                            className="btn btn-link p-0"
+                                                            onClick={() => toggleCodeVisibility(code.code)}
+                                                            title={visibleCodes[code.code] ? "Hide code" : "Show code"}
+                                                        >
+                                                            <i className={`fas fa-eye${visibleCodes[code.code] ? '-slash' : ''}`} />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                                <td>{new Date(code.createdAtUtc).toLocaleString()}</td>
+                                                <td>
+                                                    {code.expiresAtUtc
+                                                        ? new Date(code.expiresAtUtc).toLocaleString()
+                                                        : 'Never'}
+                                                </td>
+                                                <td>
+                                                    {code.isValid ?
+                                                        <span className="badge bg-success">✓ Valid</span> :
+                                                        <span className="badge bg-danger">✗ Invalid</span>}
+                                                </td>
+                                                <td>
+                                                    <button
+                                                        className="btn btn-outline-primary btn-sm"
+                                                        onClick={() => handleCopyCode(code.code)}
+                                                    >
+                                                        <i className="fas fa-copy me-1"></i>Copy
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
                             ) : (
-                              <span className="badge bg-danger">✗ Invalid</span>
+                                <div className="alert alert-info text-center">
+                                    <i className="fas fa-info-circle me-2"></i>No access codes found
+                                </div>
                             )}
-                          </td>
-                          <td>
-                            <button
-                              className="btn btn-outline-primary btn-sm"
-                              onClick={() => handleCopyCode(code.code)}
-                            >
-                              <i className="fas fa-copy me-1"></i>Copy
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                  </tbody>
-                </table>
-              ) : (
-                <div className="alert alert-info text-center">
-                  <i className="fas fa-info-circle me-2"></i>No access codes
-                  found
+                        </div>
+                    )}
                 </div>
-              )}
             </div>
-          )}
-        </div>
-      </div>
 
       <DeleteConfirmationModal
         show={deleteModal.show}

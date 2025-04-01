@@ -148,6 +148,32 @@ public class ProjectController(
     }
 
     [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
+    [HttpPost("{projectId:int}/unassign-all")]
+    public async Task<IActionResult> UnassignAllLabelers(int projectId)
+    {
+        var checkResult = await authHelper.CheckGeneralAccessAsync(User);
+        if (checkResult.Error != null)
+        {
+            return checkResult.Error;
+        }
+
+        if (checkResult.IsScientist)
+        {
+            var authResult = await authHelper.EnsureScientistOwnsProjectAsync(User, projectId);
+            if (authResult != null)
+            {
+                return authResult;
+            }
+        }
+
+        var result = await projectService.UnassignLabelersFromProjectAsync(projectId);
+        return result.IsSuccess
+            ? Ok()
+            : BadRequest(result.GetErrorOrThrow());
+    }
+
+
+    [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
     [HttpPost("{projectId:int}/distribute")]
     public async Task<IActionResult> DistributeLabelersEqually(int projectId)
     {
