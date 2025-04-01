@@ -28,16 +28,19 @@ const Videos = () => {
     useEffect(() => {
         if (subjectId !== null) {
             fetchLabels();
-            fetchAssignedLabels();
         }
     }, [subjectId]);
+
+    useEffect(() => {
+        fetchAssignedLabels();
+    }, [videos, subjectId]);
 
     const fetchVideoGroupDetails = async (videoId) => {
         try {
             const response = await httpClient.get(`/VideoGroup/${videoId}`, {
                 withCredentials: true,
             });
-            setVideos(response.data.videos || []);
+            console.log(response.data);
             setVideoPositions(response.data.videosAtPositions);
 
             fetchVideos(currentBatch);
@@ -117,15 +120,23 @@ const Videos = () => {
     };
 
     const fetchAssignedLabels = async () => {
-        if (subjectId === null) return;
-
         try {
-            const response = await httpClient.get(`/AssignedLabel`, {
-                withCredentials: true,
-            });
-            setAssignedLabels(response.data || []);
+            const fetchPromises = videos.map(video => 
+                httpClient.get(`/video/${video.id}/assignedlabels`, {
+                    withCredentials: true
+                }).then(response => ({
+                    videoId: video.id,
+                    labels: response.data
+                }))
+            );
+
+            const results = await Promise.all(fetchPromises);
+            
+            const allLabels = results.flatMap(result => result.labels);
+            setAssignedLabels(allLabels);
         } catch (error) {
-            console.error("Error fetching assigned labels:", error);
+            console.error('Error fetching assigned labels:', error);
+            setError('Failed to load assigned labels');
         }
     };
 
@@ -193,31 +204,39 @@ const Videos = () => {
     const padZero = (num) => num.toString().padStart(2, "0");
 
     const sendLabelData = async (labelId, start, end) => {
-        const labelerId = 1;
+        const labelerId = -1;
         const startFormatted = formatTime(start);
         const endFormatted = formatTime(end);
 
-        const data = {
-            labelId,
-            subjectVideoGroupAssignmentId: subjectId,
-            labelerId,
-            start: startFormatted,
-            end: endFormatted
-        };
-
-        const newAssignedLabel = {
-            labelId,
-            start: startFormatted,
-            end: endFormatted,
-            colorHex: labels.find((label) => label.id === labelId)?.colorHex || '#000000',
-        };
+        if (videos.length === 0) {
+            console.error('No videos available to assign labels to');
+            return;
+        }
 
         try {
-            await httpClient.post('/AssignedLabel', data);
+            const assignPromises = videos.map(video => {
+                const data = {
+                    labelId,
+                    videoId: video.id,
+                    labelerId,
+                    start: startFormatted,
+                    end: endFormatted
+                };
+                return httpClient.post('/AssignedLabel', data);
+            });
 
-            setAssignedLabels((prevLabels) => [newAssignedLabel, ...prevLabels]);
+            await Promise.all(assignPromises);
 
-            setLabelTimestamps((prev) => {
+            const newAssignedLabel = {
+                labelId,
+                start: startFormatted,
+                end: endFormatted,
+                colorHex: labels.find((label) => label.id === labelId)?.colorHex || '#000000',
+            };
+
+            setAssignedLabels(prevLabels => [newAssignedLabel, ...prevLabels]);
+
+            setLabelTimestamps(prev => {
                 const newTimestamps = { ...prev };
                 delete newTimestamps[labelId];
                 return newTimestamps;
@@ -248,10 +267,10 @@ const Videos = () => {
             setAssignedLabels((prev) =>
                 prev.filter((assignedLabel) => assignedLabel.id !== id)
             );
+            
+            fetchAssignedLabels();
         } catch (error) {
-            setError(
-                error.response?.data?.message || "Failed to delete assigned label"
-            );
+            setError('Failed to delete label');
         }
     };
 
@@ -430,15 +449,39 @@ const Videos = () => {
                                 <thead className="table-dark">
                                     <tr>
                                         <th>Label ID</th>
+                                        <th>Video ID</th>
                                         <th>Start Time</th>
                                         <th>End Time</th>
+                                        <th>Ins Date</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {assignedLabels
                                         .slice()
-                                        .reverse()
+                                        .sort((a, b) => {
+                                            if (!a.insDate && !b.insDate) {
+                                                return a.videoId - b.videoId;
+                                            }
+
+                                            if (!a.insDate) return -1;
+                                            if (!b.insDate) return 1;
+                                            
+                                            const dateA = new Date(a.insDate);
+                                            const dateB = new Date(b.insDate);
+                                            
+                                            if (dateA.getFullYear() === dateB.getFullYear() &&
+                                                dateA.getMonth() === dateB.getMonth() &&
+                                                dateA.getDate() === dateB.getDate() &&
+                                                dateA.getHours() === dateB.getHours() &&
+                                                dateA.getMinutes() === dateB.getMinutes() &&
+                                                dateA.getSeconds() === dateB.getSeconds()) {
+
+                                                return a.videoId - b.videoId;
+                                            }
+                                            
+                                            return dateB - dateA;
+                                        })
                                         .map((label, index) => {
                                             const matchingLabel = labels.find(
                                                 (l) => l.id === label.labelId
@@ -448,8 +491,10 @@ const Videos = () => {
                                                     <td>
                                                         {matchingLabel ? matchingLabel.name : "Unknown"}
                                                     </td>
+                                                    <td>{label.videoId}</td>
                                                     <td>{label.start}</td>
                                                     <td>{label.end}</td>
+                                                    <td>{new Date(label.insDate).toLocaleString()}</td>
                                                     <td>
                                                         <button
                                                             className="btn btn-danger"

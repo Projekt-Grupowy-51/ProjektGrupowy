@@ -92,11 +92,6 @@ public class SubjectVideoGroupAssignmentService(ISubjectVideoGroupAssignmentRepo
         return await subjectVideoGroupAssignmentRepository.GetSubjectVideoGroupAssignmentsLabelersAsync(id);
     }
 
-    public async Task<Optional<IEnumerable<AssignedLabel>>> GetSubjectVideoGroupAssignmentAsignedLabelsAsync(int id)
-    {
-        return await subjectVideoGroupAssignmentRepository.GetSubjectVideoGroupAssignmentAsignedLabelsAsync(id);
-    }
-
     public async Task<Optional<SubjectVideoGroupAssignment>> AssignLabelerToAssignmentAsync(int assignmentId, int labelerId)
     {
         return await subjectVideoGroupAssignmentRepository.AssignLabelerToAssignmentAsync(assignmentId, labelerId);
@@ -115,17 +110,6 @@ public class SubjectVideoGroupAssignmentService(ISubjectVideoGroupAssignmentRepo
     public async Task<Optional<IEnumerable<SubjectVideoGroupAssignment>>> GetAssignmentsForLabelerAsync(int labelerId)
     {
         return await subjectVideoGroupAssignmentRepository.GetAssignmentsForLabelerAsync(labelerId);
-    }
-
-    public async Task<Optional<IEnumerable<AssignedLabel>>> GetLabelerAssignedLabelsAsync(int assignmentId, int labelerId)
-    {
-        var assignmentResult = await subjectVideoGroupAssignmentRepository.GetSubjectVideoGroupAssignmentAsync(assignmentId);
-        if (assignmentResult.IsFailure)
-        {
-            return Optional<IEnumerable<AssignedLabel>>.Failure(assignmentResult.GetErrorOrThrow());
-        }
-
-        return await subjectVideoGroupAssignmentRepository.GetLabelerAssignedLabelsAsync(assignmentId, labelerId);
     }
 
     public async Task<Optional<IEnumerable<SubjectVideoGroupAssignment>>> GetSubjectVideoGroupAssignmentsBySubjectIdAsync(int subjectId)

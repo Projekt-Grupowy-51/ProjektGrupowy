@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ProjektGrupowy.API.DTOs.AssignedLabel;
 using ProjektGrupowy.API.DTOs.Video;
 using ProjektGrupowy.API.Filters;
 using ProjektGrupowy.API.Services;
@@ -14,6 +15,7 @@ namespace ProjektGrupowy.API.Controllers;
 [Authorize]
 public class VideoController(
     IVideoService videoService,
+    IAssignedLabelService assignedLabelService,
     IAuthorizationHelper authHelper,
     IMapper mapper) : ControllerBase
 {
@@ -219,5 +221,48 @@ public class VideoController(
 
         await videoService.DeleteVideoAsync(id);
         return NoContent();
+    }
+
+    [HttpGet("{id:int}/assignedlabels")]
+    public async Task<ActionResult<IEnumerable<AssignedLabelResponse>>> GetAssignedLabelsByVideoIdAsync(int id)
+    {
+        if (User.IsInRole(RoleConstants.Labeler))
+        {
+            var labelerResult = await authHelper.GetLabelerFromUserAsync(User);
+            if (labelerResult.Error != null)
+                return labelerResult.Error;
+
+            var authResult = await authHelper.EnsureLabelerCanAccessVideoAsync(User, id);
+            if (authResult != null)
+                return authResult;
+
+            var labelerAssignedLabels = await assignedLabelService.GetAssignedLabelsByLabelerIdAsync(labelerResult.Labeler!.Id);
+            var filteredLabels = labelerAssignedLabels.GetValueOrThrow().Where(al => al.Video.Id == id);
+            
+            return Ok(mapper.Map<IEnumerable<AssignedLabelResponse>>(filteredLabels));
+        }
+        else
+        {
+            var checkResult = await authHelper.CheckGeneralAccessAsync(User);
+            if (checkResult.Error != null)
+                return checkResult.Error;
+
+            if (checkResult.IsScientist)
+            {
+                var authResult = await authHelper.EnsureScientistOwnsVideoAsync(User, id);
+                if (authResult != null)
+                    return authResult;
+            }
+
+            var video = await videoService.GetVideoAsync(id);
+            if (!video.IsSuccess)
+                return NotFound(video.GetErrorOrThrow());
+
+            var assignedLabels = await assignedLabelService.GetAssignedLabelsByVideoIdAsync(id);
+            
+            return assignedLabels.IsSuccess
+                ? Ok(mapper.Map<IEnumerable<AssignedLabelResponse>>(assignedLabels.GetValueOrThrow()))
+                : NotFound(assignedLabels.GetErrorOrThrow());
+        }
     }
 }

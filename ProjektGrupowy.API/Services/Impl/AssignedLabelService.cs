@@ -9,7 +9,8 @@ public class AssignedLabelService(
     IAssignedLabelRepository assignedLabelRepository,
     ILabelRepository labelRepository,
     ILabelerRepository labelerRepository,
-    ISubjectVideoGroupAssignmentRepository subjectVideoGroupAssignmentRepository) : IAssignedLabelService
+    ISubjectVideoGroupAssignmentRepository subjectVideoGroupAssignmentRepository,
+    IVideoRepository videoRepository) : IAssignedLabelService
 
 {
     public async Task<Optional<IEnumerable<AssignedLabel>>> GetAssignedLabelsAsync()
@@ -37,19 +38,17 @@ public class AssignedLabelService(
             return Optional<AssignedLabel>.Failure("No labeler found");
         }
 
-        var subjectVideoGroupAssignmentOptional = await subjectVideoGroupAssignmentRepository.GetSubjectVideoGroupAssignmentAsync(assignedLabelRequest.SubjectVideoGroupAssignmentId);
+        var subjectVideoGroupAssignmentOptional = await videoRepository.GetVideoAsync(assignedLabelRequest.VideoId);
         if (subjectVideoGroupAssignmentOptional.IsFailure)
         {
             return Optional<AssignedLabel>.Failure("No subject video group assignment found");
         }
-        
-        
 
         var assignedLabel = new AssignedLabel
         {
             Label = labelOptional.GetValueOrThrow(),
             Labeler = labelerOptional.GetValueOrThrow(),
-            SubjectVideoGroupAssignment = subjectVideoGroupAssignmentOptional.GetValueOrThrow(),
+            Video = subjectVideoGroupAssignmentOptional.GetValueOrThrow(),
             Start = assignedLabelRequest.Start,
             End = assignedLabelRequest.End
         };
@@ -78,19 +77,19 @@ public class AssignedLabelService(
             return Optional<AssignedLabel>.Failure("No labeler found");
         }
 
-        var subjectVideoGroupAssignmentOptional = await subjectVideoGroupAssignmentRepository.GetSubjectVideoGroupAssignmentAsync(assignedLabelRequest.SubjectVideoGroupAssignmentId);
-        if (subjectVideoGroupAssignmentOptional.IsFailure)
+        var videoOptional = await videoRepository.GetVideoAsync(assignedLabelRequest.VideoId);
+        if (videoOptional.IsFailure)
         {
             return Optional<AssignedLabel>.Failure("No subject video group assignment found");
         }
 
         var label = labelOptional.GetValueOrThrow();
         var labeler = labelerOptional.GetValueOrThrow();
-        var subjectVideoGroupAssignment = subjectVideoGroupAssignmentOptional.GetValueOrThrow();
+        var video = videoOptional.GetValueOrThrow();
 
         assignedLabel.Label = label;
         assignedLabel.Labeler = labeler;
-        assignedLabel.SubjectVideoGroupAssignment = subjectVideoGroupAssignment;
+        assignedLabel.Video = video;
         assignedLabel.Start = assignedLabelRequest.Start;
         assignedLabel.End = assignedLabelRequest.End;
 
@@ -114,15 +113,8 @@ public class AssignedLabelService(
         return await assignedLabelRepository.GetAssignedLabelsByLabelerIdAsync(labelerId);
     }
 
-    public async Task<bool> IsAssignedToLabelerAsync(int subjectVideoGroupAssignmentId, int labelerId)
+    public async Task<Optional<IEnumerable<AssignedLabel>>> GetAssignedLabelsByVideoIdAsync(int videoId)
     {
-        var assignedLabels = await assignedLabelRepository.GetAssignedLabelsByLabelerIdAsync(labelerId);
-        return assignedLabels.GetValueOrThrow().Any(al => al.SubjectVideoGroupAssignment.Id == subjectVideoGroupAssignmentId);
-    }
-
-    public async Task<bool> IsAssignedToScientistAsync(int subjectVideoGroupAssignmentId, int scientistId)
-    {
-        var assignedLabels = await assignedLabelRepository.GetAssignedLabelsByScientistIdAsync(scientistId);
-        return assignedLabels.GetValueOrThrow().Any(al => al.SubjectVideoGroupAssignment.Id == subjectVideoGroupAssignmentId);
+        return await assignedLabelRepository.GetAssignedLabelsByVideoIdAsync(videoId);
     }
 }
