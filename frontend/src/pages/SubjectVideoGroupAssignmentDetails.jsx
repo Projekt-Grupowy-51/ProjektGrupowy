@@ -10,24 +10,20 @@ const SubjectVideoGroupAssignmentDetails = () => {
     const [subject, setSubject] = useState(null);
     const [videoGroup, setVideoGroup] = useState(null);
     const [labelers, setLabelers] = useState([]);
-    const [assignedLabels, setAssignedLabels] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState({
         main: '',
-        labelers: '',
-        labels: ''
+        labelers: ''
     });
 
     const fetchData = async () => {
         try {
             setLoading(true);
-            setError({ main: '', labelers: '', labels: '' });
+            setError({ main: '', labelers: '' });
 
-            // Pobierz podstawowe dane przypisania
             const assignmentResponse = await httpClient.get(`/SubjectVideoGroupAssignment/${id}`);
             setAssignmentDetails(assignmentResponse.data);
 
-            // Pobierz dane subject i videoGroup r�wnolegle
             const [subjectResponse, videoGroupResponse] = await Promise.all([
                 httpClient.get(`/subject/${assignmentResponse.data.subjectId}`),
                 httpClient.get(`/videogroup/${assignmentResponse.data.videoGroupId}`)
@@ -36,20 +32,13 @@ const SubjectVideoGroupAssignmentDetails = () => {
             setSubject(subjectResponse.data);
             setVideoGroup(videoGroupResponse.data);
 
-            // Pobierz dane labelers i assignedLabels
             try {
-                const [labelersResponse, labelsResponse] = await Promise.all([
-                    httpClient.get(`/SubjectVideoGroupAssignment/${id}/labelers`),
-                    httpClient.get(`/SubjectVideoGroupAssignment/${id}/assignedlabels`)
-                ]);
+                const labelersResponse = await httpClient.get(`/SubjectVideoGroupAssignment/${id}/labelers`);
                 setLabelers(labelersResponse.data);
-                setAssignedLabels(labelsResponse.data);
-                console.log(labelsResponse.data);
             } catch (err) {
                 setError(prev => ({
                     ...prev,
-                    labelers: 'Error loading labelers',
-                    labels: 'Error loading labels'
+                    labelers: 'Error loading labelers'
                 }));
             }
 
@@ -108,11 +97,10 @@ const SubjectVideoGroupAssignmentDetails = () => {
                 </div>
             </div>
 
-            {(error.labelers || error.labels) && (
+            {error.labelers && (
                 <div className="row mb-3">
                     <div className="col">
                         {error.labelers && <div className="error">{error.labelers}</div>}
-                        {error.labels && <div className="error">{error.labels}</div>}
                     </div>
                 </div>
             )}
@@ -240,48 +228,6 @@ const SubjectVideoGroupAssignmentDetails = () => {
                                     <i className="fas fa-user-slash fs-1 text-muted"></i>
                                     <p className="text-muted mt-2">
                                         {error.labelers ? 'Error loading labelers' : 'No labelers assigned'}
-                                    </p>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Assigned Labels Table */}
-            <div className="row mb-4">
-                <div className="col-12">
-                    <div className="assigned-labels">
-                        <h3>Assigned Labels</h3>
-                        <div className="assigned-labels-table">
-                            {assignedLabels.length > 0 ? (
-                                <table className="normal-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Label ID</th>
-                                            <th>Name</th>
-                                            <th>Start Time</th>
-                                            <th>End Time</th>
-                                            <th>Labeler</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {assignedLabels.map(label => (
-                                            <tr key={label.id}>
-                                                <td>{label.id}</td>
-                                                <td>{label.labelName}</td>
-                                                <td>{label.start}</td>
-                                                <td>{label.end}</td>
-                                                <td>{label.labelerName}</td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            ) : (
-                                <div className="text-center py-4">
-                                    <i className="fas fa-tags fs-1 text-muted"></i>
-                                    <p className="text-muted mt-2">
-                                        {error.labels ? 'Error loading labels' : 'No labels assigned'}
                                     </p>
                                 </div>
                             )}
