@@ -73,6 +73,31 @@ public class ProjectController(
     }
 
     [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
+    [HttpGet("{id:int}/unassigned-labelers")]
+    public async Task<ActionResult<ProjectResponse>> GetUnassignedLabelers(int id)
+    {
+        var checkResult = await authHelper.CheckGeneralAccessAsync(User);
+        if (checkResult.Error != null)
+        {
+            return checkResult.Error;
+        }
+
+        if (checkResult.IsScientist)
+        {
+            var authResult = await authHelper.EnsureScientistOwnsProjectAsync(User, id);
+            if (authResult != null)
+            {
+                return authResult;
+            }
+        }
+
+        var result = await projectService.GetUnassignedLabelersOfProjectAsync(id);
+        return result.IsSuccess
+            ? Ok(mapper.Map<IEnumerable<LabelerResponse>>(result.GetValueOrThrow()))
+            : NotFound(result.GetErrorOrThrow());
+    }
+
+    [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
     [HttpPut("{id:int}")]
     public async Task<IActionResult> PutProjectAsync(int id, ProjectRequest projectRequest)
     {

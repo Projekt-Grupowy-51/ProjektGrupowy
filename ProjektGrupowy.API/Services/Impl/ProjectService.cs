@@ -94,6 +94,11 @@ public class ProjectService(
         return Optional<bool>.Success(true);
     }
 
+    public async Task<Optional<IEnumerable<Labeler>>> GetUnassignedLabelersOfProjectAsync(int id)
+    {
+        return await labelerRepository.GetUnassignedLabelersOfProjectAsync(id);
+    }
+
     public async Task DeleteProjectAsync(int id)
     {
         var project = await projectRepository.GetProjectAsync(id);

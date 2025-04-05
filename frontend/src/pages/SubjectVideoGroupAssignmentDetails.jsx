@@ -219,7 +219,7 @@ const SubjectVideoGroupAssignmentDetails = () => {
       <div className="row mb-4">
         <div className="col-12">
           <div className="assigned-labels">
-            <h3>Assigned Labelers</h3>
+            <h3 className="p-2">Assigned Labelers</h3>
             <div className="assigned-labels-table">
               {labelers.length > 0 ? (
                 <table className="normal-table">
