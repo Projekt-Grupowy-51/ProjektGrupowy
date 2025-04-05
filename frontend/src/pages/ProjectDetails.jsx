@@ -16,8 +16,8 @@ const ProjectDetails = () => {
   const [labelers, setLabelers] = useState([]);
   const [accessCodes, setAccessCodes] = useState([]);
   const [creationError, setCreationError] = useState("");
-  //const [selectedDuration, setSelectedDuration] = useState('');
   const [codeExpiration, setCodeExpiration] = useState(0);
+  const [customCodeExpiration, setCustomCodeExpiration] = useState(0);
   const [selectedLabeler, setSelectedLabeler] = useState("");
   const [selectedAssignment, setSelectedAssignment] = useState("");
   const [assignmentError, setAssignmentError] = useState("");
@@ -113,38 +113,14 @@ const ProjectDetails = () => {
   const handleCreateAccessCode = async () => {
     setCreationError("");
 
-    // let expiresAt = null;
-    // if (selectedDuration === "14days" || selectedDuration === "30days") {
-    //   const days = selectedDuration === "14days" ? 14 : 30;
-    //   const now = new Date();
-    //   expiresAt =
-    //     new Date(
-    //       Date.UTC(
-    //         now.getUTCFullYear(),
-    //         now.getUTCMonth(),
-    //         now.getUTCDate() + days,
-    //         now.getUTCHours(),
-    //         now.getUTCMinutes(),
-    //         now.getUTCSeconds()
-    //       )
-    //     )
-    //       .toISOString()
-    //       .split(".")[0] + "Z";
-    // }
-
-    // console.log("Code expiration:", {
-    //   projectId: parseInt(id),
-    //   accessCodeExpiration: codeExpiration,
-    // });
-
-    // return;
-
     try {
-      await httpClient.post("/AccessCode/project", {
+      var json = {
         projectId: parseInt(id),
-        expiration: codeExpiration,
-      });
-      //setSelectedDuration('');
+        expiration: parseInt(codeExpiration),
+        customExpiration: parseInt(customCodeExpiration),
+      };
+      console.log(json);
+      await httpClient.post("/AccessCode/project", json);
       setCodeExpiration(0);
       await fetchData();
       setSuccessMessage("Access code created successfully!");
@@ -152,6 +128,17 @@ const ProjectDetails = () => {
       setCreationError(
         error.response?.data?.message || "Failed to create code"
       );
+    }
+  };
+
+  const handleCustomCodeExpirationChange = (e) => {
+    console.log(e.target.value);
+    if (e.target.value < 0) {
+      setCustomCodeExpiration(0);
+    } else if (e.target.value > 3600) {
+      setCustomCodeExpiration(3600);
+    } else {
+      setCustomCodeExpiration(e.target.value);
     }
   };
 
@@ -173,6 +160,16 @@ const ProjectDetails = () => {
       setSuccessMessage("Labelers distributed successfully!");
     } catch (error) {
       setError(error.response?.data?.message || "Distribution failed");
+    }
+  };
+
+  const handleRetireCode = async (code) => {
+    try {
+      await httpClient.put(`/AccessCode/${code}/retire`);
+      await fetchData();
+      setSuccessMessage("Access code retired successfully!");
+    } catch (error) {
+      setError(error.response?.data?.message || "Failed to retire code");
     }
   };
 
@@ -756,6 +753,16 @@ const ProjectDetails = () => {
                       </button>
                       <button
                         className={`btn ${
+                          codeExpiration === 3
+                            ? "btn-primary"
+                            : "btn-outline-primary"
+                        }`}
+                        onClick={() => setCodeExpiration(3)}
+                      >
+                        Custom
+                      </button>
+                      <button
+                        className={`btn ${
                           codeExpiration === 2
                             ? "btn-primary"
                             : "btn-outline-primary"
@@ -765,10 +772,28 @@ const ProjectDetails = () => {
                         Unlimited
                       </button>
                     </div>
+                    {codeExpiration === 3 && (
+                      <div className="input-group">
+                        <span
+                          className="input-group-text"
+                          style={{ height: "calc(1.5em + 0.75rem + 2px)" }} // Matches Bootstrap input height
+                        >
+                          Days
+                        </span>
+                        <input
+                          type="number"
+                          min="0"
+                          onInput={handleCustomCodeExpirationChange}
+                          max="3600"
+                          step="1"
+                          className="form-control"
+                          style={{ height: "calc(1.5em + 0.75rem + 2px)" }} // Matches Bootstrap input height
+                        />
+                      </div>
+                    )}
                     <button
                       className="btn btn-success"
                       onClick={handleCreateAccessCode}
-                      //   disabled={!codeExpiration}
                     >
                       <i className="fas fa-key me-2"></i>Generate Access Code
                     </button>
@@ -845,9 +870,11 @@ const ProjectDetails = () => {
                             {new Date(code.createdAtUtc).toLocaleString()}
                           </td>
                           <td>
-                            {code.expiresAtUtc
-                              ? new Date(code.expiresAtUtc).toLocaleString()
-                              : "Never"}
+                            {code.isValid
+                              ? code.expiresAtUtc
+                                ? new Date(code.expiresAtUtc).toLocaleString()
+                                : "Never"
+                              : "Expired"}
                           </td>
                           <td>
                             {code.isValid ? (
@@ -858,11 +885,20 @@ const ProjectDetails = () => {
                           </td>
                           <td>
                             <button
-                              className="btn btn-outline-primary btn-sm"
+                              className="btn btn-outline-primary"
                               onClick={() => handleCopyCode(code.code)}
                             >
                               <i className="fas fa-copy me-1"></i>Copy
                             </button>
+                            {code.isValid && (
+                              <button
+                                className="btn btn-outline-danger"
+                                onClick={() => handleRetireCode(code.code)}
+                              >
+                                <i className="fa-solid fa-trash-can me-1"></i>
+                                Retire
+                              </button>
+                            )}
                           </td>
                         </tr>
                       ))}

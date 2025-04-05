@@ -55,7 +55,7 @@ public class ProjectAccessCodeService(
             if (accessCodeOpt.IsFailure)
             {
                 // 3. If there isn't a valid access code, create a new one
-                var expirationDate = GetExpirationDate(createCodeRequest.Expiration);
+                var expirationDate = GetExpirationDate(createCodeRequest.Expiration, createCodeRequest.CustomExpiration);
 
                 var newAccessCode = AccessCodeGenerator.Create(project, expirationDate);
                 var newAddedAccessCodeOpt = await repository.AddAccessCodeAsync(newAccessCode);
@@ -84,7 +84,7 @@ public class ProjectAccessCodeService(
                     return Optional<ProjectAccessCode>.Failure(updatedAccessCodeOpt.GetErrorOrThrow());
                 }
 
-                var expirationDate = GetExpirationDate(createCodeRequest.Expiration);
+                var expirationDate = GetExpirationDate(createCodeRequest.Expiration, createCodeRequest.CustomExpiration);
                 var newAccessCode = AccessCodeGenerator.Create(project, expirationDate);
 
                 var newAddedAccessCodeOpt = await repository.AddAccessCodeAsync(newAccessCode);
@@ -107,11 +107,31 @@ public class ProjectAccessCodeService(
         }
     }
 
-    private static DateTime? GetExpirationDate(AccessCodeExpiration expiration) =>
+    public async Task<Optional<ProjectAccessCode>> RetireAccessCodeAsync(string code)
+    {
+        var result = await repository.GetAccessCodeByCodeAsync(code);
+        if (result.IsFailure)
+            return Optional<ProjectAccessCode>.Failure("Access code not found");
+
+        var accessCode = result.GetValueOrThrow();
+
+        if (!accessCode.IsValid)
+            return Optional<ProjectAccessCode>.Failure("Access code is already retired");
+
+        accessCode.Retire();
+        var updatedAccessCodeOpt = await repository.UpdateAccessCodeAsync(accessCode);
+        return updatedAccessCodeOpt.IsFailure
+            ? Optional<ProjectAccessCode>.Failure(updatedAccessCodeOpt.GetErrorOrThrow())
+            : updatedAccessCodeOpt;
+    }
+
+    private static DateTime? GetExpirationDate(AccessCodeExpiration expiration, int days = -1) =>
         expiration switch
         {
             AccessCodeExpiration.In14Days => DateTime.Today.AddDays(14).ToUniversalTime(),
             AccessCodeExpiration.In30Days => DateTime.Today.AddDays(30).ToUniversalTime(),
-            _ => null
+            AccessCodeExpiration.Never => null,
+            AccessCodeExpiration.Custom when days > 0 => DateTime.Today.AddDays(days).ToUniversalTime(),
+            _ => throw new ArgumentException("Invalid expiration or days value")
         };
 }
