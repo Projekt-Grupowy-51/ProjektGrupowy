@@ -351,9 +351,9 @@ const ProjectDetails = () => {
                         <td>{subject.name}</td>
                         <td>{subject.description}</td>
                         <td>
-                          <div className="btn-group">
+                          <div className="d-flex justify-content-start">
                             <button
-                              className="btn btn-info btn-sm me-2"
+                              className="btn btn-info me-2"
                               onClick={() =>
                                 navigate(`/subjects/${subject.id}`)
                               }
@@ -361,7 +361,7 @@ const ProjectDetails = () => {
                               <i className="fas fa-eye me-1"></i>Details
                             </button>
                             <button
-                              className="btn btn-danger btn-sm"
+                              className="btn btn-danger"
                               onClick={() =>
                                 setDeleteModal({
                                   show: true,
@@ -416,9 +416,9 @@ const ProjectDetails = () => {
                         <td>{video.name}</td>
                         <td>{video.description}</td>
                         <td>
-                          <div className="btn-group">
+                          <div className="d-flex justify-content-start">
                             <button
-                              className="btn btn-info btn-sm me-2"
+                              className="btn btn-info me-2"
                               onClick={() =>
                                 navigate(`/video-groups/${video.id}`)
                               }
@@ -426,7 +426,7 @@ const ProjectDetails = () => {
                               <i className="fas fa-eye me-1"></i>Details
                             </button>
                             <button
-                              className="btn btn-danger btn-sm"
+                              className="btn btn-danger"
                               onClick={() =>
                                 setDeleteModal({
                                   show: true,
@@ -482,9 +482,9 @@ const ProjectDetails = () => {
                         <td>{assignment.subjectId}</td>
                         <td>{assignment.videoGroupId}</td>
                         <td>
-                          <div className="btn-group">
+                          <div className="d-flex justify-content-start">
                             <button
-                              className="btn btn-info btn-sm me-2"
+                              className="btn btn-info me-2"
                               onClick={() =>
                                 navigate(`/assignments/${assignment.id}`)
                               }
@@ -492,7 +492,7 @@ const ProjectDetails = () => {
                               <i className="fas fa-eye me-1"></i>Details
                             </button>
                             <button
-                              className="btn btn-danger btn-sm"
+                              className="btn btn-danger"
                               onClick={() =>
                                 setDeleteModal({
                                   show: true,
@@ -782,74 +782,102 @@ const ProjectDetails = () => {
                 </div>
               </div>
 
-                            {accessCodes.length > 0 ? (
-                                <table className="normal-table" id="access-codes-table">
-                                    <thead>
-                                    <tr>
-                                        <th>Code</th>
-                                        <th>Created At</th>
-                                        <th>Expires At</th>
-                                        <th>Valid</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    {accessCodes
-                                        .slice()
-                                        .sort((a, b) => {
-                                            if (!a.expiresAtUtc && !b.expiresAtUtc) return 0;
-                                            if (!a.expiresAtUtc) return -1;
-                                            if (!b.expiresAtUtc) return 1;
-                                            return new Date(b.expiresAtUtc) - new Date(a.expiresAtUtc);
-                                        })
-                                        .map((code) => (
-                                            <tr key={code.code}>
-                                                <td>
-                                                    <div className="d-flex align-items-center gap-2">
-                                                        <span>
-                                                            {visibleCodes[code.code] ? code.code : '*******'}
-                                                        </span>
-                                                        <button
-                                                            className="btn btn-link p-0"
-                                                            onClick={() => toggleCodeVisibility(code.code)}
-                                                            title={visibleCodes[code.code] ? "Hide code" : "Show code"}
-                                                        >
-                                                            <i className={`fas fa-eye${visibleCodes[code.code] ? '-slash' : ''}`} />
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                                <td>{new Date(code.createdAtUtc).toLocaleString()}</td>
-                                                <td>
-                                                    {code.expiresAtUtc
-                                                        ? new Date(code.expiresAtUtc).toLocaleString()
-                                                        : 'Never'}
-                                                </td>
-                                                <td>
-                                                    {code.isValid ?
-                                                        <span className="badge bg-success">✓ Valid</span> :
-                                                        <span className="badge bg-danger">✗ Invalid</span>}
-                                                </td>
-                                                <td>
-                                                    <button
-                                                        className="btn btn-outline-primary btn-sm"
-                                                        onClick={() => handleCopyCode(code.code)}
-                                                    >
-                                                        <i className="fas fa-copy me-1"></i>Copy
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+              {accessCodes.length > 0 ? (
+                <table className="normal-table" id="access-codes-table">
+                  <thead>
+                    <tr>
+                      <th>Code</th>
+                      <th>Created At</th>
+                      <th>Expires At</th>
+                      <th>Valid</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {accessCodes
+                      .slice()
+                      .sort((a, b) => {
+                        if (!a.expiresAtUtc && !b.expiresAtUtc) return 0;
+                        if (!a.expiresAtUtc) return -1;
+                        if (!b.expiresAtUtc) return 1;
+                        return (
+                          new Date(b.expiresAtUtc) - new Date(a.expiresAtUtc)
+                        );
+                      })
+                      .map((code) => (
+                        <tr key={code.code}>
+                          <td>
+                            <div className="d-flex align-items-center gap-2">
+                              <code
+                                style={{
+                                  filter: visibleCodes[code.code]
+                                    ? "blur(0px)"
+                                    : "blur(6px)",
+                                  transition: "filter 0.3s ease",
+                                  userSelect: visibleCodes[code.code]
+                                    ? "auto"
+                                    : "none",
+                                  pointerEvents: visibleCodes[code.code]
+                                    ? "auto"
+                                    : "none",
+                                }}
+                              >
+                                {code.code}
+                              </code>
+                              <button
+                                className="btn btn-link p-0"
+                                onClick={() => toggleCodeVisibility(code.code)}
+                                title={
+                                  visibleCodes[code.code]
+                                    ? "Hide code"
+                                    : "Show code"
+                                }
+                              >
+                                <i
+                                  className={`fas fa-eye${
+                                    visibleCodes[code.code] ? "-slash" : ""
+                                  }`}
+                                />
+                              </button>
+                            </div>
+                          </td>
+                          <td>
+                            {new Date(code.createdAtUtc).toLocaleString()}
+                          </td>
+                          <td>
+                            {code.expiresAtUtc
+                              ? new Date(code.expiresAtUtc).toLocaleString()
+                              : "Never"}
+                          </td>
+                          <td>
+                            {code.isValid ? (
+                              <span className="badge bg-success">✓ Valid</span>
                             ) : (
-                                <div className="alert alert-info text-center">
-                                    <i className="fas fa-info-circle me-2"></i>No access codes found
-                                </div>
+                              <span className="badge bg-danger">✗ Invalid</span>
                             )}
-                        </div>
-                    )}
+                          </td>
+                          <td>
+                            <button
+                              className="btn btn-outline-primary btn-sm"
+                              onClick={() => handleCopyCode(code.code)}
+                            >
+                              <i className="fas fa-copy me-1"></i>Copy
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              ) : (
+                <div className="alert alert-info text-center">
+                  <i className="fas fa-info-circle me-2"></i>No access codes
+                  found
                 </div>
+              )}
             </div>
+          )}
+        </div>
+      </div>
 
       <DeleteConfirmationModal
         show={deleteModal.show}
