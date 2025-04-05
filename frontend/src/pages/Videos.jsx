@@ -315,6 +315,16 @@ const Videos = () => {
         handlePlayStop();
       }
 
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        handleRewind(1);
+      }
+
+      if (event.key === "ArrowRight") {
+        event.preventDefault();
+        handleFastForward(1);
+      }
+
       const label = labels.find(
         (l) => l.shortcut.toLowerCase() === event.key.toLowerCase()
       );
