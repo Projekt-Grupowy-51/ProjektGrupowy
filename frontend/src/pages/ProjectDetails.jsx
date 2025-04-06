@@ -691,7 +691,10 @@ const ProjectDetails = () => {
                 </div>
               </div>
 
-              <div className="d-flex justify-content-between align-items-center m-3">
+              <div
+                className="d-flex justify-content-between align-items-center m-3"
+                style={{ minHeight: "56px" }}
+              >
                 <h3 className="mb-0">Unassigned Labelers</h3>
                 <div className="d-flex align-items-center gap-2">
                   {labelers.length > 0 && (

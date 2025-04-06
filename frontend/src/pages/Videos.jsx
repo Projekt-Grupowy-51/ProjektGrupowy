@@ -16,6 +16,8 @@ const Videos = () => {
   const [duration, setDuration] = useState(0);
   const [currentBatch, setCurrentBatch] = useState(1);
   const [videoPositions, setVideoPositions] = useState({});
+  const [timeLeft, setTimeLeft] = useState(0);
+  const [playbackSpeed, setPlaybackSpeed] = useState(1.0);
   const videoRefs = useRef([]);
 
   useEffect(() => {
@@ -57,6 +59,7 @@ const Videos = () => {
 
   const fetchVideos = async (batch) => {
     try {
+      videoRefs.current = [];
       const batchToFetch = batch || currentBatch;
       console.log("Fetching Current batch: ", batchToFetch);
       const response = await httpClient.get(
@@ -70,6 +73,15 @@ const Videos = () => {
     } catch (error) {
       console.error("Failed to load video list");
     }
+  };
+
+  const handlePlaybackSpeedChange = (speed) => {
+    setPlaybackSpeed(speed);
+    videoRefs.current.forEach((video) => {
+      if (video) {
+        video.playbackRate = speed;
+      }
+    });
   };
 
   async function fetchVideoStreams(videos) {
@@ -118,6 +130,15 @@ const Videos = () => {
       console.error("Error processing video streams:", error);
     }
   }
+
+  useEffect(() => {
+    // Apply playbackRate to all video elements whenever streams change
+    videoRefs.current.forEach((video) => {
+      if (video) {
+        video.playbackRate = playbackSpeed;
+      }
+    });
+  }, [streams, playbackSpeed]);
 
   const fetchSubjectId = async () => {
     try {
@@ -286,6 +307,7 @@ const Videos = () => {
 
   const handleTimeUpdate = () => {
     const video = videoRefs.current[0];
+    setTimeLeft(Math.round(video.duration - video.currentTime));
     if (video) {
       setCurrentTime(video.currentTime);
       setDuration(video.duration);
@@ -338,6 +360,59 @@ const Videos = () => {
       window.removeEventListener("keydown", handleKeyPress);
     };
   }, [labels, isPlaying]);
+
+  const endedVideosCount = useRef(0);
+  const endedIndexes = useRef(new Set());
+  const shouldAutoplayRef = useRef(false);
+
+  useEffect(() => {
+    if (shouldAutoplayRef.current && streams.length > 0) {
+      // Wait a moment to ensure video refs are mounted
+      setTimeout(() => {
+        videoRefs.current.forEach((video) => {
+          if (video) {
+            video.currentTime = 0;
+            video.play();
+          }
+        });
+        setIsPlaying(true);
+        shouldAutoplayRef.current = false; // reset the flag
+      }, 300); // a small delay helps ensure videos are ready
+    }
+  }, [streams]);
+
+  const handleVideoEnd = async (index) => {
+    // Prevent duplicate handling for the same video
+    if (endedIndexes.current.has(index)) return;
+
+    endedIndexes.current.add(index);
+    endedVideosCount.current += 1;
+
+    console.log(
+      `Video ${index} ended. Total ended: ${endedVideosCount.current}/${streams.length}`
+    );
+
+    // Check if all videos in the current batch have ended
+    if (endedVideosCount.current === streams.length) {
+      console.log("All videos in the current batch have ended.");
+
+      // Reset state for next batch
+      endedVideosCount.current = 0;
+      endedIndexes.current.clear();
+      setIsPlaying(false);
+
+      const totalBatches = Object.keys(videoPositions).length;
+
+      // If there is a next batch
+      if (currentBatch < totalBatches) {
+        shouldAutoplayRef.current = true; // ✅ Set flag for autoplay
+        await onBatchChangedAsync(currentBatch + 1);
+
+        // Clear any existing refs
+        videoRefs.current = [];
+      }
+    }
+  };
 
   const handleRewind = (time) => {
     videoRefs.current.forEach((video) => {
@@ -392,6 +467,7 @@ const Videos = () => {
                       type="video/mp4"
                       controls
                       onTimeUpdate={handleTimeUpdate}
+                      onEnded={() => handleVideoEnd(index)}
                     />
                   </div>
                 </div>
@@ -478,7 +554,11 @@ const Videos = () => {
                 onClick={() => onBatchChangedAsync(currentBatch + 1)}
                 disabled={currentBatch === Object.keys(videoPositions).length}
               >
-                Next
+                Next{" "}
+                {timeLeft > 0 &&
+                  timeLeft < 6 &&
+                  currentBatch !== Object.keys(videoPositions).length &&
+                  `(${timeLeft}s)`}
               </button>
             </div>
           </div>
@@ -490,14 +570,9 @@ const Videos = () => {
           <select
             className="form-select w-25 d-inline-block" // Bootstrap classes
             id="playbackSpeedSelect"
-            onChange={(e) => {
-              const selectedSpeed = parseFloat(e.target.value);
-              videoRefs.current.forEach((video) => {
-                if (video) {
-                  video.playbackRate = selectedSpeed;
-                }
-              });
-            }}
+            onChange={(e) =>
+              handlePlaybackSpeedChange(parseFloat(e.target.value))
+            }
             defaultValue="1.0"
           >
             <option value="0.25">0.25x</option>
