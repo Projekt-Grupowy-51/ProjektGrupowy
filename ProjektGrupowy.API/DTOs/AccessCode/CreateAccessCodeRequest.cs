@@ -11,4 +11,7 @@ public class CreateAccessCodeRequest
 
     [Required]
     public AccessCodeExpiration Expiration { get; set; }
+
+    [Required]
+    public int CustomExpiration { get; set; }
 }

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis;
 using ProjektGrupowy.API.DTOs.AccessCode;
 using ProjektGrupowy.API.Filters;
 using ProjektGrupowy.API.Services;
@@ -40,6 +41,22 @@ public class AccessCodeController(
         return accessCodes.IsSuccess
             ? Ok(mapper.Map<IEnumerable<AccessCodeResponse>>(accessCodes.GetValueOrThrow()))
             : NotFound(accessCodes.GetErrorOrThrow());
+    }
+
+    [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
+    [HttpPut("{code:required}/retire")]
+    public async Task<IActionResult> RetireCodeAsync(string code)
+    {
+        var checkResult = await authHelper.CheckGeneralAccessAsync(User);
+        if (checkResult.Error != null)
+        {
+            return checkResult.Error;
+        }
+
+        var result = await service.RetireAccessCodeAsync(code);
+        return result.IsSuccess
+            ? Ok()
+            : NotFound(result.GetErrorOrThrow());
     }
 
     [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]

@@ -15,7 +15,7 @@ public interface IProjectService
 
     Task<Optional<IEnumerable<Project>>> GetProjectsOfScientist(int scientistId);
     Task<Optional<bool>> AddLabelerToProjectAsync(LabelerAssignmentDto labelerAssignmentDto);
-
+    Task<Optional<IEnumerable<Labeler>>> GetUnassignedLabelersOfProjectAsync(int id);
     Task DeleteProjectAsync(int id);
 
     Task<Optional<bool>> UnassignLabelersFromProjectAsync(int projectId);

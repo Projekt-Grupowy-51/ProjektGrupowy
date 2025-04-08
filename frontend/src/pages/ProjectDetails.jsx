@@ -16,10 +16,11 @@ const ProjectDetails = () => {
   const [labelers, setLabelers] = useState([]);
   const [accessCodes, setAccessCodes] = useState([]);
   const [creationError, setCreationError] = useState("");
-  //const [selectedDuration, setSelectedDuration] = useState('');
   const [codeExpiration, setCodeExpiration] = useState(0);
+  const [customCodeExpiration, setCustomCodeExpiration] = useState(0);
   const [selectedLabeler, setSelectedLabeler] = useState("");
   const [selectedAssignment, setSelectedAssignment] = useState("");
+  const [selectedCustomAssignments, setSelectedCustomAssignment] = useState({});
   const [assignmentError, setAssignmentError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [visibleCodes, setVisibleCodes] = useState({});
@@ -33,6 +34,26 @@ const ProjectDetails = () => {
     assignmentId: null,
     labelerId: null,
   });
+
+  const handleCustomLabelerAssignmentChange = (labelerId, assignmentId) => {
+    if (!Number.isInteger(Number(labelerId))) {
+      return;
+    }
+
+    console.log(labelerId, assignmentId);
+
+    setSelectedCustomAssignment((prev) => {
+      const updated = { ...prev };
+
+      if (!assignmentId || !Number.isInteger(Number(assignmentId))) {
+        delete updated[labelerId];
+      } else {
+        updated[labelerId] = assignmentId;
+      }
+
+      return updated;
+    });
+  };
 
   const fetchData = async () => {
     try {
@@ -48,7 +69,7 @@ const ProjectDetails = () => {
         httpClient.get(`/project/${id}/subjects`),
         httpClient.get(`/project/${id}/videogroups`),
         httpClient.get(`/project/${id}/SubjectVideoGroupAssignments`),
-        httpClient.get(`/project/${id}/Labelers`),
+        httpClient.get(`/project/${id}/unassigned-labelers`),
         httpClient.get(`/AccessCode/project/${id}`),
       ]);
       setProject(projectRes.data);
@@ -113,38 +134,14 @@ const ProjectDetails = () => {
   const handleCreateAccessCode = async () => {
     setCreationError("");
 
-    // let expiresAt = null;
-    // if (selectedDuration === "14days" || selectedDuration === "30days") {
-    //   const days = selectedDuration === "14days" ? 14 : 30;
-    //   const now = new Date();
-    //   expiresAt =
-    //     new Date(
-    //       Date.UTC(
-    //         now.getUTCFullYear(),
-    //         now.getUTCMonth(),
-    //         now.getUTCDate() + days,
-    //         now.getUTCHours(),
-    //         now.getUTCMinutes(),
-    //         now.getUTCSeconds()
-    //       )
-    //     )
-    //       .toISOString()
-    //       .split(".")[0] + "Z";
-    // }
-
-    // console.log("Code expiration:", {
-    //   projectId: parseInt(id),
-    //   accessCodeExpiration: codeExpiration,
-    // });
-
-    // return;
-
     try {
-      await httpClient.post("/AccessCode/project", {
+      var json = {
         projectId: parseInt(id),
-        expiration: codeExpiration,
-      });
-      //setSelectedDuration('');
+        expiration: parseInt(codeExpiration),
+        customExpiration: parseInt(customCodeExpiration),
+      };
+      console.log(json);
+      await httpClient.post("/AccessCode/project", json);
       setCodeExpiration(0);
       await fetchData();
       setSuccessMessage("Access code created successfully!");
@@ -152,6 +149,17 @@ const ProjectDetails = () => {
       setCreationError(
         error.response?.data?.message || "Failed to create code"
       );
+    }
+  };
+
+  const handleCustomCodeExpirationChange = (e) => {
+    console.log(e.target.value);
+    if (e.target.value < 0) {
+      setCustomCodeExpiration(0);
+    } else if (e.target.value > 3600) {
+      setCustomCodeExpiration(3600);
+    } else {
+      setCustomCodeExpiration(e.target.value);
     }
   };
 
@@ -166,13 +174,53 @@ const ProjectDetails = () => {
       });
   };
 
+  const handleAllSelectedAssignments = async () => {
+    const entries = Object.entries(selectedCustomAssignments); // [ [labelerId, assignmentId], ... ]
+
+    if (entries.length === 0) {
+      setAssignmentError("No labelers have been assigned to any assignment.");
+      return;
+    }
+
+    try {
+      await Promise.all(
+        entries.map(([labelerId, assignmentId]) => {
+          return httpClient.post(
+            `/SubjectVideoGroupAssignment/${assignmentId}/assign-labeler/${labelerId}`
+          );
+        })
+      );
+
+      // Clear errors, reload data, reset dictionary and show success
+      setAssignmentError("");
+      await fetchData();
+      setSelectedCustomAssignment({});
+      setSuccessMessage("All labelers assigned successfully!");
+    } catch (error) {
+      setAssignmentError(
+        error.response?.data?.message || "One or more assignments failed."
+      );
+    }
+  };
+
   const handleDistributeLabelers = async () => {
     try {
       await httpClient.post(`/project/${id}/distribute`);
       await fetchData();
       setSuccessMessage("Labelers distributed successfully!");
+      setSelectedCustomAssignment({});
     } catch (error) {
       setError(error.response?.data?.message || "Distribution failed");
+    }
+  };
+
+  const handleRetireCode = async (code) => {
+    try {
+      await httpClient.put(`/AccessCode/${code}/retire`);
+      await fetchData();
+      setSuccessMessage("Access code retired successfully!");
+    } catch (error) {
+      setError(error.response?.data?.message || "Failed to retire code");
     }
   };
 
@@ -190,6 +238,41 @@ const ProjectDetails = () => {
       setSelectedAssignment("");
       setAssignmentError("");
       await fetchData();
+      setSuccessMessage("Labeler assigned successfully!");
+    } catch (error) {
+      setAssignmentError(
+        error.response?.data?.message || "Failed to assign labeler"
+      );
+    }
+  };
+
+  const handleAssignCustomLabeler = async (labelerId) => {
+    if (!labelerId || !(labelerId in selectedCustomAssignments)) {
+      setAssignmentError("Please select both a labeler and an assignment");
+      return;
+    }
+
+    const assignmentId = selectedCustomAssignments[labelerId];
+
+    if (!assignmentId) {
+      setAssignmentError("Please select both a labeler and an assignment");
+      return;
+    }
+
+    try {
+      await httpClient.post(
+        `/SubjectVideoGroupAssignment/${assignmentId}/assign-labeler/${labelerId}`
+      );
+
+      setAssignmentError("");
+      await fetchData();
+
+      setSelectedCustomAssignment((prev) => {
+        const updated = { ...prev };
+        delete updated[labelerId];
+        return updated;
+      });
+
       setSuccessMessage("Labeler assigned successfully!");
     } catch (error) {
       setAssignmentError(
@@ -351,9 +434,9 @@ const ProjectDetails = () => {
                         <td>{subject.name}</td>
                         <td>{subject.description}</td>
                         <td>
-                          <div className="btn-group">
+                          <div className="d-flex justify-content-start">
                             <button
-                              className="btn btn-info btn-sm me-2"
+                              className="btn btn-info me-2"
                               onClick={() =>
                                 navigate(`/subjects/${subject.id}`)
                               }
@@ -361,7 +444,7 @@ const ProjectDetails = () => {
                               <i className="fas fa-eye me-1"></i>Details
                             </button>
                             <button
-                              className="btn btn-danger btn-sm"
+                              className="btn btn-danger"
                               onClick={() =>
                                 setDeleteModal({
                                   show: true,
@@ -416,9 +499,9 @@ const ProjectDetails = () => {
                         <td>{video.name}</td>
                         <td>{video.description}</td>
                         <td>
-                          <div className="btn-group">
+                          <div className="d-flex justify-content-start">
                             <button
-                              className="btn btn-info btn-sm me-2"
+                              className="btn btn-info me-2"
                               onClick={() =>
                                 navigate(`/video-groups/${video.id}`)
                               }
@@ -426,7 +509,7 @@ const ProjectDetails = () => {
                               <i className="fas fa-eye me-1"></i>Details
                             </button>
                             <button
-                              className="btn btn-danger btn-sm"
+                              className="btn btn-danger"
                               onClick={() =>
                                 setDeleteModal({
                                   show: true,
@@ -482,9 +565,9 @@ const ProjectDetails = () => {
                         <td>{assignment.subjectId}</td>
                         <td>{assignment.videoGroupId}</td>
                         <td>
-                          <div className="btn-group">
+                          <div className="d-flex justify-content-start">
                             <button
-                              className="btn btn-info btn-sm me-2"
+                              className="btn btn-info me-2"
                               onClick={() =>
                                 navigate(`/assignments/${assignment.id}`)
                               }
@@ -492,7 +575,7 @@ const ProjectDetails = () => {
                               <i className="fas fa-eye me-1"></i>Details
                             </button>
                             <button
-                              className="btn btn-danger btn-sm"
+                              className="btn btn-danger"
                               onClick={() =>
                                 setDeleteModal({
                                   show: true,
@@ -521,16 +604,6 @@ const ProjectDetails = () => {
 
           {activeTab === "labelers" && (
             <div className="labelers">
-              <div className="d-flex justify-content-end mb-3">
-                <button
-                  className="btn btn-primary"
-                  onClick={handleDistributeLabelers}
-                  style={{ minWidth: "200px" }}
-                >
-                  <i className="fas fa-random me-2"></i>Distribute Labelers
-                </button>
-              </div>
-
               <div
                 className="card shadow-sm mb-4"
                 style={{ marginTop: "25px" }}
@@ -618,13 +691,41 @@ const ProjectDetails = () => {
                 </div>
               </div>
 
-              <h3 className="mb-4">Project Labelers</h3>
+              <div
+                className="d-flex justify-content-between align-items-center m-3"
+                style={{ minHeight: "56px" }}
+              >
+                <h3 className="mb-0">Unassigned Labelers</h3>
+                <div className="d-flex align-items-center gap-2">
+                  {labelers.length > 0 && (
+                    <button
+                      className="btn btn-primary px-3 text-nowrap"
+                      onClick={handleDistributeLabelers}
+                    >
+                      <i className="fa-solid fa-wand-magic-sparkles me-2"></i>
+                      Distribute Labelers
+                    </button>
+                  )}
+
+                  {Object.keys(selectedCustomAssignments).length !== 0 && (
+                    <button
+                      className="btn btn-success px-3 text-nowrap"
+                      onClick={handleAllSelectedAssignments}
+                    >
+                      <i className="fas fa-user-plus me-2"></i>
+                      Assign all selected
+                    </button>
+                  )}
+                </div>
+              </div>
+
               {labelers.length > 0 ? (
                 <table className="normal-table">
                   <thead>
                     <tr>
                       <th>Labeler ID</th>
                       <th>Username</th>
+                      <th>Assign labeler</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -632,29 +733,86 @@ const ProjectDetails = () => {
                       <tr key={labeler.id}>
                         <td>{labeler.id}</td>
                         <td>{labeler.name}</td>
+                        <td className="align-middle d-flex p-2 justify-content-between align-items-center">
+                          <select
+                            id="assignmentSelect"
+                            className="form-select w-auto m-0"
+                            value={
+                              labeler.id in selectedCustomAssignments
+                                ? selectedCustomAssignments[labeler.id]
+                                : ""
+                            }
+                            onChange={(e) =>
+                              handleCustomLabelerAssignmentChange(
+                                labeler.id,
+                                e.target.value
+                              )
+                            }
+                          >
+                            <option value="">-- Select Assignment --</option>
+                            {assignments.map((assignment) => {
+                              const subject = subjects.find(
+                                (s) => s.id === assignment.subjectId
+                              );
+                              const videoGroup = videoGroups.find(
+                                (vg) => vg.id === assignment.videoGroupId
+                              );
+                              return (
+                                <option
+                                  key={assignment.id}
+                                  value={assignment.id}
+                                >
+                                  Assignment #{assignment.id} - Subject:{" "}
+                                  {subject?.name || "Unknown"} (ID:{" "}
+                                  {assignment.subjectId}), Video Group:{" "}
+                                  {videoGroup?.name || "Unknown"} (ID:{" "}
+                                  {assignment.videoGroupId})
+                                </option>
+                              );
+                            })}
+                          </select>
+
+                          <button
+                            className="btn btn-success ms-2"
+                            onClick={() =>
+                              handleAssignCustomLabeler(labeler.id)
+                            }
+                            disabled={
+                              !(labeler.id in selectedCustomAssignments)
+                            }
+                          >
+                            <i className="fas fa-user-plus me-2"></i> Assign
+                            labeler
+                          </button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               ) : (
                 <div className="alert alert-info">
-                  <i className="fas fa-info-circle me-2"></i>No labelers found
-                  in this project
+                  <i className="fas fa-info-circle me-2"></i>There are either no
+                  labelers awaiting assignment
                 </div>
               )}
 
               <div className="row align-items-center mb-3 mt-4">
                 <div className="col">
-                  <h3 className="mb-0">Assignment Labelers</h3>
+                  <h3 className="mb-0">Assigned Labelers</h3>
                 </div>
                 <div className="col-auto">
-                  <button
-                    className="btn btn-danger text-nowrap"
-                    onClick={handleUnassignAllLabelers}
-                  >
-                    <i className="fa-solid fa-user-xmark me-1"></i>
-                    Unassign All Labelers
-                  </button>
+                  {assignments.some(
+                    (assignment) =>
+                      assignment.labelers && assignment.labelers.length > 0
+                  ) && (
+                    <button
+                      className="btn btn-danger text-nowrap"
+                      onClick={handleUnassignAllLabelers}
+                    >
+                      <i className="fa-solid fa-user-xmark me-1"></i>
+                      Unassign All Labelers
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -756,6 +914,16 @@ const ProjectDetails = () => {
                       </button>
                       <button
                         className={`btn ${
+                          codeExpiration === 3
+                            ? "btn-primary"
+                            : "btn-outline-primary"
+                        }`}
+                        onClick={() => setCodeExpiration(3)}
+                      >
+                        Custom
+                      </button>
+                      <button
+                        className={`btn ${
                           codeExpiration === 2
                             ? "btn-primary"
                             : "btn-outline-primary"
@@ -765,10 +933,28 @@ const ProjectDetails = () => {
                         Unlimited
                       </button>
                     </div>
+                    {codeExpiration === 3 && (
+                      <div className="input-group">
+                        <span
+                          className="input-group-text"
+                          style={{ height: "calc(1.5em + 0.75rem + 2px)" }} // Matches Bootstrap input height
+                        >
+                          Days
+                        </span>
+                        <input
+                          type="number"
+                          min="0"
+                          onInput={handleCustomCodeExpirationChange}
+                          max="3600"
+                          step="1"
+                          className="form-control"
+                          style={{ height: "calc(1.5em + 0.75rem + 2px)" }} // Matches Bootstrap input height
+                        />
+                      </div>
+                    )}
                     <button
                       className="btn btn-success"
                       onClick={handleCreateAccessCode}
-                      //   disabled={!codeExpiration}
                     >
                       <i className="fas fa-key me-2"></i>Generate Access Code
                     </button>
@@ -782,74 +968,113 @@ const ProjectDetails = () => {
                 </div>
               </div>
 
-                            {accessCodes.length > 0 ? (
-                                <table className="normal-table" id="access-codes-table">
-                                    <thead>
-                                    <tr>
-                                        <th>Code</th>
-                                        <th>Created At</th>
-                                        <th>Expires At</th>
-                                        <th>Valid</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    {accessCodes
-                                        .slice()
-                                        .sort((a, b) => {
-                                            if (!a.expiresAtUtc && !b.expiresAtUtc) return 0;
-                                            if (!a.expiresAtUtc) return -1;
-                                            if (!b.expiresAtUtc) return 1;
-                                            return new Date(b.expiresAtUtc) - new Date(a.expiresAtUtc);
-                                        })
-                                        .map((code) => (
-                                            <tr key={code.code}>
-                                                <td>
-                                                    <div className="d-flex align-items-center gap-2">
-                                                        <span>
-                                                            {visibleCodes[code.code] ? code.code : '*******'}
-                                                        </span>
-                                                        <button
-                                                            className="btn btn-link p-0"
-                                                            onClick={() => toggleCodeVisibility(code.code)}
-                                                            title={visibleCodes[code.code] ? "Hide code" : "Show code"}
-                                                        >
-                                                            <i className={`fas fa-eye${visibleCodes[code.code] ? '-slash' : ''}`} />
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                                <td>{new Date(code.createdAtUtc).toLocaleString()}</td>
-                                                <td>
-                                                    {code.expiresAtUtc
-                                                        ? new Date(code.expiresAtUtc).toLocaleString()
-                                                        : 'Never'}
-                                                </td>
-                                                <td>
-                                                    {code.isValid ?
-                                                        <span className="badge bg-success">✓ Valid</span> :
-                                                        <span className="badge bg-danger">✗ Invalid</span>}
-                                                </td>
-                                                <td>
-                                                    <button
-                                                        className="btn btn-outline-primary btn-sm"
-                                                        onClick={() => handleCopyCode(code.code)}
-                                                    >
-                                                        <i className="fas fa-copy me-1"></i>Copy
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+              {accessCodes.length > 0 ? (
+                <table className="normal-table" id="access-codes-table">
+                  <thead>
+                    <tr>
+                      <th>Code</th>
+                      <th>Created At</th>
+                      <th>Expires At</th>
+                      <th>Valid</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {accessCodes
+                      .slice()
+                      .sort((a, b) => {
+                        if (!a.expiresAtUtc && !b.expiresAtUtc) return 0;
+                        if (!a.expiresAtUtc) return -1;
+                        if (!b.expiresAtUtc) return 1;
+                        return (
+                          new Date(b.expiresAtUtc) - new Date(a.expiresAtUtc)
+                        );
+                      })
+                      .map((code) => (
+                        <tr key={code.code}>
+                          <td>
+                            <div className="d-flex align-items-center gap-2">
+                              <code
+                                style={{
+                                  filter: visibleCodes[code.code]
+                                    ? "blur(0px)"
+                                    : "blur(6px)",
+                                  transition: "filter 0.3s ease",
+                                  userSelect: visibleCodes[code.code]
+                                    ? "auto"
+                                    : "none",
+                                  pointerEvents: visibleCodes[code.code]
+                                    ? "auto"
+                                    : "none",
+                                }}
+                              >
+                                {code.code}
+                              </code>
+                              <button
+                                className="btn btn-link p-0"
+                                onClick={() => toggleCodeVisibility(code.code)}
+                                title={
+                                  visibleCodes[code.code]
+                                    ? "Hide code"
+                                    : "Show code"
+                                }
+                              >
+                                <i
+                                  className={`fas fa-eye${
+                                    visibleCodes[code.code] ? "-slash" : ""
+                                  }`}
+                                />
+                              </button>
+                            </div>
+                          </td>
+                          <td>
+                            {new Date(code.createdAtUtc).toLocaleString()}
+                          </td>
+                          <td>
+                            {code.isValid
+                              ? code.expiresAtUtc
+                                ? new Date(code.expiresAtUtc).toLocaleString()
+                                : "Never"
+                              : "Expired"}
+                          </td>
+                          <td>
+                            {code.isValid ? (
+                              <span className="badge bg-success">✓ Valid</span>
                             ) : (
-                                <div className="alert alert-info text-center">
-                                    <i className="fas fa-info-circle me-2"></i>No access codes found
-                                </div>
+                              <span className="badge bg-danger">✗ Invalid</span>
                             )}
-                        </div>
-                    )}
+                          </td>
+                          <td>
+                            <button
+                              className="btn btn-outline-primary"
+                              onClick={() => handleCopyCode(code.code)}
+                            >
+                              <i className="fas fa-copy me-1"></i>Copy
+                            </button>
+                            {code.isValid && (
+                              <button
+                                className="btn btn-outline-danger"
+                                onClick={() => handleRetireCode(code.code)}
+                              >
+                                <i className="fa-solid fa-trash-can me-1"></i>
+                                Retire
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              ) : (
+                <div className="alert alert-info text-center">
+                  <i className="fas fa-info-circle me-2"></i>No access codes
+                  found
                 </div>
+              )}
             </div>
+          )}
+        </div>
+      </div>
 
       <DeleteConfirmationModal
         show={deleteModal.show}

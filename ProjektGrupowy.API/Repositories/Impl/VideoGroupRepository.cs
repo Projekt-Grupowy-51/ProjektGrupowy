@@ -110,6 +110,7 @@ public class VideoGroupRepository(AppDbContext context, ILogger<VideoGroupReposi
         try
         {
             var videoGroup = await context.VideoGroups
+                .AsNoTracking()
                 .Include(vg => vg.Videos)
                 .FirstOrDefaultAsync(vg => vg.Id == id);
 
@@ -119,7 +120,7 @@ public class VideoGroupRepository(AppDbContext context, ILogger<VideoGroupReposi
                 return Optional<IEnumerable<Video>>.Failure("Video group not found");
             }
 
-            return Optional<IEnumerable<Video>>.Success(videoGroup.Videos);
+            return Optional<IEnumerable<Video>>.Success(videoGroup.Videos.OrderByDescending(v => v.Id));
         }
         catch (Exception e)
         {
