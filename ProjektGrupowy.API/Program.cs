@@ -34,7 +34,7 @@ builder.Host.UseSerilog();
 var app = builder.Build();
 
 // Seed the database and create roles
-await SeedDatabase(app.Services);
+await MigrateDatabase(app.Services);
 await CreateRoles(app.Services);
 
 // Configure the HTTP request pipeline.
@@ -237,7 +237,7 @@ static void AddServices(WebApplicationBuilder builder)
     });
 }
 
-static async Task SeedDatabase(IServiceProvider serviceProvider)
+static async Task MigrateDatabase(IServiceProvider serviceProvider)
 {
     using var scope = serviceProvider.CreateScope();
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
