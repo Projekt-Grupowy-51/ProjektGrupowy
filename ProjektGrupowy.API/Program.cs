@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using ProjektGrupowy.API.Data;
-using ProjektGrupowy.API.DB;
 using ProjektGrupowy.API.Filters;
 using ProjektGrupowy.API.Models;
 using ProjektGrupowy.API.Repositories;
@@ -242,7 +241,7 @@ static async Task SeedDatabase(IServiceProvider serviceProvider)
 {
     using var scope = serviceProvider.CreateScope();
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    await DbSeeder.SeedAsync(context);
+    await context.Database.MigrateAsync();
 }
 
 static async Task CreateRoles(IServiceProvider serviceProvider)
