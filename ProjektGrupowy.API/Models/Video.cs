@@ -22,6 +22,8 @@ public class Video
 
     public int PositionInQueue { get; set; }
 
+    public string ContentType { get; set; }
+
     public int VideoGroupId { get; set; }
     public virtual ICollection<AssignedLabel>? AssignedLabels { get; set; }
 

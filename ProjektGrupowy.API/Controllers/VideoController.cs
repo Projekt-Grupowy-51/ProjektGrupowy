@@ -195,9 +195,17 @@ public class VideoController(
         }
 
         var videoOptional = await videoService.GetVideoAsync(id);
-        return videoOptional.IsSuccess
-            ? File(videoOptional.GetValueOrThrow().ToStream(), "video/mp4", enableRangeProcessing: true)
-            : NotFound(videoOptional.GetErrorOrThrow());
+        if (videoOptional.IsFailure)
+        {
+            return NotFound(videoOptional.GetErrorOrThrow());
+        }
+
+        var video = videoOptional.GetValueOrThrow();
+        return File(
+            video.ToStream(),
+            video.ContentType, 
+            Path.GetFileName(video.Path), 
+            enableRangeProcessing: true);
     }
 
     [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
