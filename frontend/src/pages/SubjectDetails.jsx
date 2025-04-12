@@ -2,6 +2,8 @@
 import { useParams, useNavigate, Link, useLocation } from "react-router-dom";
 import httpClient from "../httpClient";
 import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
+import ViewDetailsButton from "../components/ViewDetailsButton";
+import DeleteButton from "../components/DeleteButton";
 import "./css/ScientistProjects.css";
 
 const SubjectDetails = () => {
@@ -163,24 +165,8 @@ const SubjectDetails = () => {
                   <td>{label.shortcut}</td>
                   <td>
                     <div className="d-flex justify-content-start">
-                      <button
-                        className="btn btn-info me-2"
-                        onClick={() => navigate(`/labels/edit/${label.id}`)}
-                      >
-                        <i className="fas fa-eye me-1"></i>Details
-                      </button>
-                      <button
-                        className="btn btn-danger"
-                        onClick={() =>
-                          setDeleteModal({
-                            show: true,
-                            itemType: "label",
-                            itemId: label.id,
-                          })
-                        }
-                      >
-                        <i className="fas fa-trash me-1"></i>Delete
-                      </button>
+                      <ViewDetailsButton path={`/labels/edit/${label.id}`} />
+                      <DeleteButton onClick={() => setDeleteModal({ show: true, itemType: "label", itemId: label.id })} />
                     </div>
                   </td>
                 </tr>

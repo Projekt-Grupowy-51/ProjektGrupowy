@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import httpClient from "../httpClient";
 import "./css/ScientistProjects.css";
+import ViewDetailsButton from "../components/ViewDetailsButton";
 
 const LabelerVideoGroups = () => {
   const { labelerId } = useParams();
@@ -126,14 +127,7 @@ const LabelerVideoGroups = () => {
                   <td>{assignment.videoGroupId}</td>
                   <td>
                     <div className="d-flex justify-content-start">
-                      <button
-                        className="btn btn-info me-2"
-                        onClick={() =>
-                          navigate(`/video-group/${assignment.videoGroupId}`)
-                        }
-                      >
-                        <i className="fas fa-eye me-1"></i>Details
-                      </button>
+                      <ViewDetailsButton path={`/video-group/${assignment.videoGroupId}`} />
                     </div>
                   </td>
                 </tr>

@@ -86,7 +86,6 @@ const VideoAdd = () => {
     }
 
     try {
-      // Track individual upload progress
       const progressPerVideo = Array(videos.length).fill(0);
 
       const uploadPromises = videos.map((video, index) => {
@@ -159,13 +158,13 @@ const VideoAdd = () => {
 
           {videos.length > 0 && (
             <form onSubmit={handleSubmit}>
-              <table className="table table-bordered">
+              <table className="normal-table">
                 <thead className="table-light">
                   <tr>
                     <th>Title</th>
                     <th>File Size</th>
                     <th>Position in Queue</th>
-                    <th>Actions</th> {/* 👈 New column header */}
+                    <th>Actions</th> 
                   </tr>
                 </thead>
                 <tbody>

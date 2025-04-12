@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import httpClient from "../httpClient";
 import DeleteConfirmationModal from "../components/DeleteConfirmationModal"; // Add import
+import DeleteButton from "../components/DeleteButton";
 import "./css/ScientistProjects.css";
 
 const Projects = () => {
@@ -120,8 +121,7 @@ const Projects = () => {
                       >
                         <i className="fas fa-eye me-1"></i>Details
                       </button>
-                      <button
-                        className="btn btn-danger"
+                      <DeleteButton
                         onClick={() =>
                           setDeleteModal({
                             show: true,
@@ -129,9 +129,7 @@ const Projects = () => {
                             itemId: project.id,
                           })
                         }
-                      >
-                        <i className="fas fa-trash me-1"></i>Delete
-                      </button>
+                      />
                     </div>
                   </td>
                 </tr>

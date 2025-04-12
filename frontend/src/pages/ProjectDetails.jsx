@@ -2,8 +2,10 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import httpClient from "../httpClient";
-import DeleteConfirmationModal from "../components/DeleteConfirmationModal"; // Import the external modal
+import DeleteConfirmationModal from "../components/DeleteConfirmationModal"; 
 import "./css/ScientistProjects.css";
+import ViewDetailsButton from "../components/ViewDetailsButton"; 
+import DeleteButton from "../components/DeleteButton";
 
 const ProjectDetails = () => {
   const { id } = useParams();
@@ -435,14 +437,7 @@ const ProjectDetails = () => {
                         <td>{subject.description}</td>
                         <td>
                           <div className="d-flex justify-content-start">
-                            <button
-                              className="btn btn-info me-2"
-                              onClick={() =>
-                                navigate(`/subjects/${subject.id}`)
-                              }
-                            >
-                              <i className="fas fa-eye me-1"></i>Details
-                            </button>
+                          <ViewDetailsButton path={`/subjects/${subject.id}`} />
                             <button
                               className="btn btn-danger"
                               onClick={() =>
@@ -500,14 +495,7 @@ const ProjectDetails = () => {
                         <td>{video.description}</td>
                         <td>
                           <div className="d-flex justify-content-start">
-                            <button
-                              className="btn btn-info me-2"
-                              onClick={() =>
-                                navigate(`/video-groups/${video.id}`)
-                              }
-                            >
-                              <i className="fas fa-eye me-1"></i>Details
-                            </button>
+                          <ViewDetailsButton path={`/video-groups/${video.id}`} />
                             <button
                               className="btn btn-danger"
                               onClick={() =>
@@ -566,14 +554,7 @@ const ProjectDetails = () => {
                         <td>{assignment.videoGroupId}</td>
                         <td>
                           <div className="d-flex justify-content-start">
-                            <button
-                              className="btn btn-info me-2"
-                              onClick={() =>
-                                navigate(`/assignments/${assignment.id}`)
-                              }
-                            >
-                              <i className="fas fa-eye me-1"></i>Details
-                            </button>
+                          <ViewDetailsButton path={`/assignments/${assignment.id}`} />
                             <button
                               className="btn btn-danger"
                               onClick={() =>
@@ -823,11 +804,10 @@ const ProjectDetails = () => {
                 <table className="normal-table">
                   <thead>
                     <tr>
-                      <th>Labeler ID</th>
                       <th>Username</th>
-                      <th>Video Group ID</th>
-                      <th>Subject ID</th>
-                      <th>Assignment ID</th>
+                      <th>Video Group</th>
+                      <th>Subject</th>
+                      <th>Assignment Details</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
@@ -840,32 +820,23 @@ const ProjectDetails = () => {
                       .flatMap((assignment) =>
                         assignment.labelers.map((labeler) => ({
                           labeler,
-                          videoGroupId: assignment.videoGroupId,
-                          subjectId: assignment.subjectId,
+                          videoGroup: videoGroups.find((vg) => vg.id === assignment.videoGroupId),
+                          subject: subjects.find((s) => s.id === assignment.subjectId),
                           assignmentId: assignment.id,
                         }))
                       )
                       .map((item, index) => (
                         <tr
-                          key={`${item.labeler.id}-${item.videoGroupId}-${index}`}
+                          key={`${item.labeler.id}-${item.assignmentId}-${index}`}
                         >
-                          <td>{item.labeler.id}</td>
                           <td>{item.labeler.name}</td>
-                          <td>{item.videoGroupId}</td>
-                          <td>{item.subjectId}</td>
-                          <td>{item.assignmentId}</td>
+                          <td>{item.videoGroup?.name || "Unknown"}</td>
+                          <td>{item.subject?.name || "Unknown"}</td>
                           <td>
-                            <button
-                              className="btn btn-danger btn-sm"
-                              onClick={() =>
-                                handleUnassignLabeler(
-                                  item.assignmentId,
-                                  item.labeler.id
-                                )
-                              }
-                            >
-                              <i className="fas fa-user-minus me-1"></i>Unassign
-                            </button>
+                            <ViewDetailsButton path={`/assignments/${item.assignmentId}`} />
+                          </td>
+                          <td>
+                            <DeleteButton onClick={() => handleUnassignLabeler(item.assignmentId, item.labeler.id)} />
                           </td>
                         </tr>
                       ))}

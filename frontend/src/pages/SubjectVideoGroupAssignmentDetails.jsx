@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import httpClient from "../httpClient";
 import "./css/ScientistProjects.css";
+import DeleteButton from "../components/DeleteButton";
 
 const SubjectVideoGroupAssignmentDetails = () => {
   const { id } = useParams();
@@ -91,20 +92,9 @@ const SubjectVideoGroupAssignmentDetails = () => {
       <div className="row mb-4">
         <div className="col">
           <div className="d-flex justify-content-between align-items-center">
-            <h1 className="heading mb-0">Assignment Details</h1>
+            <h1 className="heading mb-0">Assignment #{assignmentDetails.id} Details</h1>
             <div className="d-flex justify-content-end">
-              <button
-                className="btn btn-primary me-2 text-nowrap"
-                onClick={() => navigate(`/assignments/edit/${id}`)}
-              >
-                <i className="fas fa-edit me-1"></i> Edit
-              </button>
-              <button
-                className="btn btn-danger me-2 text-nowrap text-nowrap"
-                onClick={handleDelete}
-              >
-                <i className="fas fa-trash-alt me-1"></i> Delete
-              </button>
+              <DeleteButton onClick={handleDelete} />
               <button
                 className="btn btn-secondary me-2 text-nowrap"
                 onClick={fetchData}
@@ -125,42 +115,15 @@ const SubjectVideoGroupAssignmentDetails = () => {
       )}
 
       <div className="row g-4 mb-4">
-        {/* Basic Assignment Info */}
-        <div className="col-md-4">
-          <div className="card shadow-sm h-100">
-            <div className="card-header bg-primary text-white">
-              <h5 className="card-title mb-0">Basic Information</h5>
-            </div>
-            <div className="card-body">
-              <table className="normal-table w-100">
-                <tbody>
-                  <tr>
-                    <th scope="row">Assignment ID</th>
-                    <td>{assignmentDetails.id}</td>
-                  </tr>
-                  <tr>
-                    <th scope="row">Subject ID</th>
-                    <td>{assignmentDetails.subjectId}</td>
-                  </tr>
-                  <tr>
-                    <th scope="row">Video Group ID</th>
-                    <td>{assignmentDetails.videoGroupId}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
         {/* Subject Details */}
-        <div className="col-md-4">
+        <div className="col-md-6">
           <div className="card shadow-sm h-100">
-            <div className="card-header bg-info text-white">
+            <div className="card-header bg-gradient-blue text-white">
               <h5 className="card-title mb-0">Subject Details</h5>
             </div>
             <div className="card-body">
               {subject ? (
-                <table className="normal-table w-100">
+                <table className="w-100">
                   <tbody>
                     <tr>
                       <th scope="row">Name</th>
@@ -169,10 +132,6 @@ const SubjectVideoGroupAssignmentDetails = () => {
                     <tr>
                       <th scope="row">Description</th>
                       <td>{subject.description}</td>
-                    </tr>
-                    <tr>
-                      <th scope="row">Project ID</th>
-                      <td>{subject.projectId}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -184,14 +143,14 @@ const SubjectVideoGroupAssignmentDetails = () => {
         </div>
 
         {/* Video Group Details */}
-        <div className="col-md-4">
+        <div className="col-md-6">
           <div className="card shadow-sm h-100">
-            <div className="card-header bg-success text-white">
+            <div className="card-header bg-gradient-blue text-white">
               <h5 className="card-title mb-0">Video Group Details</h5>
             </div>
             <div className="card-body">
               {videoGroup ? (
-                <table className="normal-table w-100">
+                <table className="w-100">
                   <tbody>
                     <tr>
                       <th scope="row">Name</th>
@@ -200,10 +159,6 @@ const SubjectVideoGroupAssignmentDetails = () => {
                     <tr>
                       <th scope="row">Description</th>
                       <td>{videoGroup.description}</td>
-                    </tr>
-                    <tr>
-                      <th scope="row">Project ID</th>
-                      <td>{videoGroup.projectId}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -225,27 +180,22 @@ const SubjectVideoGroupAssignmentDetails = () => {
                 <table className="normal-table">
                   <thead>
                     <tr>
-                      <th>ID</th>
                       <th>Name</th>
                       <th>Email</th>
-                      <th>Role</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {labelers.map((labeler) => (
-                      <tr key={labeler.id}>
-                        <td>{labeler.id}</td>
-                        <td>
-                          {labeler.name} {labeler.surname}
-                        </td>
-                        <td>{labeler.email}</td>
-                        <td>
-                          <span className="badge bg-primary">
-                            {labeler.role}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
+                    {labelers.map((labeler) => {
+                      console.log(labeler); // Możesz logować tutaj
+                      return (
+                        <tr key={labeler.id}>
+                          <td>
+                            {labeler.name} {labeler.surname}
+                          </td>
+                          <td>{labeler.email}</td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               ) : (
