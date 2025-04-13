@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import httpClient from '../httpClient';
 import './css/ScientistProjects.css';
+import NavigateButton from '../components/NavigateButton';
+import { useNotification } from "../context/NotificationContext";
 
 const LabelAdd = () => {
     const [formData, setFormData] = useState({
@@ -12,18 +14,17 @@ const LabelAdd = () => {
         subjectId: null
     });
     const [subjectName, setSubjectName] = useState('');
-    const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
+    const { addNotification } = useNotification();
 
     useEffect(() => {
-        // Extract subjectId from query params
         const queryParams = new URLSearchParams(location.search);
         const subjectId = queryParams.get('subjectId');
         
         if (!subjectId) {
-            setError('Subject ID is required. Please go back and try again.');
+            addNotification('Subject ID is required. Please go back and try again.', 'error');
             return;
         }
         
@@ -36,7 +37,7 @@ const LabelAdd = () => {
             const response = await httpClient.get(`/subject/${id}`);
             setSubjectName(response.data.name);
         } catch (err) {
-            setError('Failed to load subject information.');
+            addNotification('Failed to load subject information.', 'error');
         }
     };
 
@@ -48,21 +49,19 @@ const LabelAdd = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-        setError('');
-
+        
         if (!formData.name || !formData.colorHex || !formData.type || !formData.subjectId) {
-            setError('Please fill in all required fields.');
+            addNotification('Please fill in all required fields.', 'error');
             setLoading(false);
             return;
         }
 
         try {
             await httpClient.post('/label', formData);
-            navigate(`/subjects/${formData.subjectId}`, {
-                state: { successMessage: 'Label created successfully!' }
-            });
+            addNotification('Label created successfully!', 'success');
+            navigate(`/subjects/${formData.subjectId}`);
         } catch (err) {
-            setError(err.response?.data?.message || 'An error occurred. Please try again.');
+            addNotification(err.response?.data?.message || 'An error occurred. Please try again.', 'error');
         } finally {
             setLoading(false);
         }
@@ -73,15 +72,9 @@ const LabelAdd = () => {
             <div className="container py-4">
                 <div className="alert alert-danger">
                     <i className="fas fa-exclamation-triangle me-2"></i>
-                    {error || 'Missing Subject ID parameter'}
+                    Missing Subject ID parameter
                 </div>
-                <button 
-                    className="btn btn-secondary"
-                    onClick={() => navigate('/projects')}
-                    style={{height: 'fit-content', margin: '1%'}}
-                >
-                    <i className="fas fa-arrow-left me-2"></i>Back to Projects
-                </button>
+                <NavigateButton actionType="Back" />
             </div>
         );
     }
@@ -95,12 +88,6 @@ const LabelAdd = () => {
                             <h1 className="heading mb-0">Add New Label</h1>
                         </div>
                         <div className="card-body">
-                            {error && (
-                                <div className="alert alert-danger mb-4">
-                                    <i className="fas fa-exclamation-triangle me-2"></i>
-                                    {error}
-                                </div>
-                            )}
                             
                             <form onSubmit={handleSubmit}>
                                 <div className="mb-3">
@@ -209,14 +196,7 @@ const LabelAdd = () => {
                                             </>
                                         )}
                                     </button>
-                                    <button 
-                                        type="button" 
-                                        className="btn btn-secondary"
-                                        onClick={() => navigate(`/subjects/${formData.subjectId}`)}
-                                        disabled={loading}
-                                    >
-                                        <i className="fas fa-times me-2"></i>Cancel
-                                    </button>
+                                    <NavigateButton actionType="Back" value="Cancel" />
                                 </div>
                             </form>
                         </div>

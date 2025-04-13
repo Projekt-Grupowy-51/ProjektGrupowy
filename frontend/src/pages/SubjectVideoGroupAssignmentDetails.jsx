@@ -3,6 +3,9 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import httpClient from "../httpClient";
 import "./css/ScientistProjects.css";
 import DeleteButton from "../components/DeleteButton";
+import DataTable from "../components/DataTable";
+import NavigateButton from "../components/NavigateButton";
+import { useNotification } from "../context/NotificationContext";
 
 const SubjectVideoGroupAssignmentDetails = () => {
   const { id } = useParams();
@@ -12,15 +15,11 @@ const SubjectVideoGroupAssignmentDetails = () => {
   const [videoGroup, setVideoGroup] = useState(null);
   const [labelers, setLabelers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState({
-    main: "",
-    labelers: "",
-  });
+  const { addNotification } = useNotification();
 
   const fetchData = async () => {
     try {
       setLoading(true);
-      setError({ main: "", labelers: "" });
 
       const assignmentResponse = await httpClient.get(
         `/SubjectVideoGroupAssignment/${id}`
@@ -41,16 +40,10 @@ const SubjectVideoGroupAssignmentDetails = () => {
         );
         setLabelers(labelersResponse.data);
       } catch (err) {
-        setError((prev) => ({
-          ...prev,
-          labelers: "Error loading labelers",
-        }));
+        addNotification("Error loading labelers", "error");
       }
     } catch (error) {
-      setError((prev) => ({
-        ...prev,
-        main: "Failed to load assignment details",
-      }));
+      addNotification("Failed to load assignment details", "error");
     } finally {
       setLoading(false);
     }
@@ -66,11 +59,18 @@ const SubjectVideoGroupAssignmentDetails = () => {
 
     try {
       await httpClient.delete(`/SubjectVideoGroupAssignment/${id}`);
+      addNotification("Assignment successfully deleted", "success");
       navigate("/assignments");
     } catch (error) {
-      setError((prev) => ({ ...prev, main: "Deletion failed" }));
+      addNotification("Deletion failed", "error");
     }
   };
+
+  // Define columns for labelers table
+  const labelerColumns = [
+    { field: "name", header: "Name", render: (labeler) => `${labeler.name} ${labeler.surname}` },
+    { field: "email", header: "Email" }
+  ];
 
   if (loading)
     return (
@@ -80,10 +80,12 @@ const SubjectVideoGroupAssignmentDetails = () => {
         </div>
       </div>
     );
-  if (error.main)
+  
+  // Remove error.main condition check - use notifications instead
+  if (!assignmentDetails)
     return (
       <div className="container mt-4">
-        <div className="alert alert-danger">{error.main}</div>
+        <div className="alert alert-danger">Assignment not found</div>
       </div>
     );
 
@@ -101,18 +103,13 @@ const SubjectVideoGroupAssignmentDetails = () => {
               >
                 <i className="fas fa-sync-alt me-1"></i> Refresh
               </button>
+              <NavigateButton actionType="Back" />
             </div>
           </div>
         </div>
       </div>
 
-      {error.labelers && (
-        <div className="row mb-3">
-          <div className="col">
-            {error.labelers && <div className="error">{error.labelers}</div>}
-          </div>
-        </div>
-      )}
+      {/* No need for error display - using notifications instead */}
 
       <div className="row g-4 mb-4">
         {/* Subject Details */}
@@ -177,50 +174,21 @@ const SubjectVideoGroupAssignmentDetails = () => {
             <h3 className="p-2">Assigned Labelers</h3>
             <div className="assigned-labels-table">
               {labelers.length > 0 ? (
-                <table className="normal-table">
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Email</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {labelers.map((labeler) => {
-                      console.log(labeler); // Możesz logować tutaj
-                      return (
-                        <tr key={labeler.id}>
-                          <td>
-                            {labeler.name} {labeler.surname}
-                          </td>
-                          <td>{labeler.email}</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                <DataTable 
+                  columns={labelerColumns}
+                  data={labelers}
+                />
               ) : (
                 <div className="text-center py-4">
                   <i className="fas fa-user-slash fs-1 text-muted"></i>
                   <p className="text-muted mt-2">
-                    {error.labelers
-                      ? "Error loading labelers"
-                      : "No labelers assigned"}
+                    No labelers assigned
                   </p>
                 </div>
               )}
             </div>
           </div>
         </div>
-      </div>
-
-      <div className="d-flex justify-content-center mt-4">
-        <Link
-          to={videoGroup ? `/projects/${videoGroup.projectId}` : "/projects"}
-          className="back-btn"
-          style={{ height: "fit-content", margin: "1%" }}
-        >
-          <i className="fas fa-arrow-left me-2"></i> Back to Project
-        </Link>
       </div>
     </div>
   );

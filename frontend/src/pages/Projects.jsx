@@ -1,25 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import httpClient from "../httpClient";
-import DeleteConfirmationModal from "../components/DeleteConfirmationModal"; // Add import
 import DeleteButton from "../components/DeleteButton";
+import DataTable from "../components/DataTable";
 import "./css/ScientistProjects.css";
+import NavigateButton from "../components/NavigateButton";
 
 const Projects = () => {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [projectToDelete, setProjectToDelete] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Modified delete state
-  const [deleteModal, setDeleteModal] = useState({
-    show: false,
-    itemType: "project",
-    itemId: null,
-  });
+  // Remove deleteModal state since it's now handled by the global context
 
   useEffect(() => {
     if (location.state?.success) {
@@ -40,22 +35,17 @@ const Projects = () => {
     }
   };
 
-  const handleConfirmDelete = async () => {
+  // Simplified delete handler - will be passed to DeleteButton
+  const handleDeleteProject = async (projectId) => {
     try {
-      await httpClient.delete(`/Project/${deleteModal.itemId}`);
+      await httpClient.delete(`/Project/${projectId}`);
       setProjects((prev) =>
-        prev.filter((project) => project.id !== deleteModal.itemId)
+        prev.filter((project) => project.id !== projectId)
       );
       setSuccess("Project deleted successfully");
     } catch (error) {
       setError(error.response?.data?.message || "Failed to delete project");
-    } finally {
-      setDeleteModal({ show: false, itemType: "project", itemId: null });
     }
-  };
-
-  const handleCancelDelete = () => {
-    setDeleteModal({ show: false, itemType: "project", itemId: null });
   };
 
   useEffect(() => {
@@ -69,17 +59,19 @@ const Projects = () => {
     fetchProjects();
   }, []);
 
+  // Define columns configuration
+  const columns = [
+    { field: "id", header: "ID" },
+    { field: "name", header: "Name" },
+    { field: "description", header: "Description" }
+  ];
+
   return (
     <div className="container">
       <div className="content">
         <div className="d-flex justify-content-between align-items-center mb-4">
           <h1 className="heading">Projects</h1>
-          <button
-            className="btn btn-primary"
-            onClick={() => navigate("/projects/add")}
-          >
-            <i className="fas fa-plus-circle me-2"></i>Add New Project
-          </button>
+          <NavigateButton path={`/projects/add`} actionType="Add" />
         </div>
 
         {success && (
@@ -98,57 +90,25 @@ const Projects = () => {
             <p className="mt-3">Loading projects...</p>
           </div>
         ) : projects.length > 0 ? (
-          <table className="normal-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Description</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {projects.map((project) => (
-                <tr key={project.id}>
-                  <td>{project.id}</td>
-                  <td>{project.name}</td>
-                  <td>{project.description}</td>
-                  <td>
-                    <div className="d-flex justify-content-start">
-                      <button
-                        className="btn btn-info me-2"
-                        onClick={() => navigate(`/projects/${project.id}`)}
-                      >
-                        <i className="fas fa-eye me-1"></i>Details
-                      </button>
-                      <DeleteButton
-                        onClick={() =>
-                          setDeleteModal({
-                            show: true,
-                            itemType: "project",
-                            itemId: project.id,
-                          })
-                        }
-                      />
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <DataTable
+            columns={columns}
+            data={projects}
+            navigateButton={(project) => (
+              <NavigateButton path={`/projects/${project.id}`} actionType="Details"  />
+            )}
+            deleteButton={(project) => (
+              <DeleteButton
+                onClick={() => handleDeleteProject(project.id)}
+                itemType={`project "${project.name}"`}
+              />
+            )}
+          />
         ) : (
           <div className="alert alert-info text-center">
             <i className="fas fa-info-circle me-2"></i>No projects found
           </div>
         )}
       </div>
-
-      <DeleteConfirmationModal
-        show={deleteModal.show}
-        itemType={deleteModal.itemType}
-        onConfirm={handleConfirmDelete}
-        onCancel={handleCancelDelete}
-      />
     </div>
   );
 };

@@ -2,24 +2,26 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import httpClient from "../httpClient";
 import "./css/ScientistProjects.css";
+import { useNotification } from "../context/NotificationContext";
+import DeleteButton from "../components/DeleteButton";
 
 const VideoAdd = () => {
   const [videoGroupId, setVideoGroupId] = useState(null);
   const [videoGroupName, setVideoGroupName] = useState("");
   const [videos, setVideos] = useState([]);
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const navigate = useNavigate();
   const location = useLocation();
   const dropRef = useRef(null);
+  const { addNotification } = useNotification();
 
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
     const groupId = queryParams.get("videogroupId");
 
     if (!groupId) {
-      setError("Video Group ID is required. Please go back and try again.");
+      addNotification("Video Group ID is required. Please go back and try again.", "error");
       return;
     }
 
@@ -33,7 +35,7 @@ const VideoAdd = () => {
       const response = await httpClient.get(`/videogroup/${id}`);
       setVideoGroupName(response.data.name);
     } catch {
-      setError("Failed to load video group information.");
+      addNotification("Failed to load video group information.", "error");
     }
   };
 
@@ -59,7 +61,9 @@ const VideoAdd = () => {
     });
 
     setVideos((prev) => [...prev, ...accepted]);
-    if (rejected.length > 0) setError(rejected.join("\n"));
+    if (rejected.length > 0) {
+      addNotification(rejected.join("\n"), "error");
+    }
   };
 
   const handleDragOver = (e) => e.preventDefault();
@@ -76,11 +80,10 @@ const VideoAdd = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
     setUploadProgress(0);
 
     if (videos.length === 0) {
-      setError("Please drag and drop at least one video.");
+      addNotification("Please drag and drop at least one video.", "error");
       setLoading(false);
       return;
     }
@@ -118,9 +121,10 @@ const VideoAdd = () => {
         state: { successMessage: "All videos uploaded successfully!" },
       });
     } catch (err) {
-      setError(
+      addNotification(
         err.response?.data?.message ||
-          "An error occurred while uploading the videos."
+          "An error occurred while uploading the videos.",
+        "error"
       );
       setLoading(false);
     }
@@ -137,13 +141,6 @@ const VideoAdd = () => {
           <h1 className="heading mb-0">Upload Multiple Videos</h1>
         </div>
         <div className="card-body">
-          {error && (
-            <div className="alert alert-danger">
-              <i className="fas fa-exclamation-triangle me-2"></i>
-              {error}
-            </div>
-          )}
-
           <div
             ref={dropRef}
             className="drop-area border border-primary rounded mb-4 p-4 text-center"
@@ -202,14 +199,7 @@ const VideoAdd = () => {
                       </td>
                       <td>
                         <div className="d-flex justify-content-center">
-                          <button
-                            type="button"
-                            className="btn btn-danger"
-                            onClick={() => handleRemove(index)}
-                            disabled={loading}
-                          >
-                            <i className="fas fa-trash-alt"></i>
-                          </button>
+                          <DeleteButton onClick={() => handleRemove(index)} />
                         </div>
                       </td>
                     </tr>

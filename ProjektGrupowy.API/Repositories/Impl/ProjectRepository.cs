@@ -96,6 +96,23 @@ public class ProjectRepository(AppDbContext context, ILogger<ProjectRepository> 
         }
     }
 
+    public async Task<Optional<IEnumerable<Project>>> GetProjectsForLabelerAsync(int labelerId)
+    {
+        try
+        {
+            var projects = await context.Projects
+                .Where(p => p.ProjectLabelers.Any(l => l.Id == labelerId))
+                .ToListAsync();
+
+            return Optional<IEnumerable<Project>>.Success(projects);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "An error occurred while getting projects for labeler");
+            return Optional<IEnumerable<Project>>.Failure(e.Message);
+        }
+    }
+
     public async Task DeleteScientistAsync(Scientist scientist)
     {
         try

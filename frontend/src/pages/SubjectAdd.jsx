@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import httpClient from '../httpClient';
 import './css/ScientistProjects.css';
+import NavigateButton from '../components/NavigateButton';
+import { useNotification } from "../context/NotificationContext";
 
 const AddSubject = () => {
     const location = useLocation();
@@ -12,7 +14,7 @@ const AddSubject = () => {
         description: '',
         projectId: new URLSearchParams(location.search).get('projectId'),
     });
-    const [error, setError] = useState('');
+    const { addNotification } = useNotification();
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -21,11 +23,10 @@ const AddSubject = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError('');
         setLoading(true);
 
         if (!subjectData.name.trim() || !subjectData.description.trim()) {
-            setError('All fields are required');
+            addNotification('All fields are required', 'error');
             setLoading(false);
             return;
         }
@@ -36,8 +37,7 @@ const AddSubject = () => {
                 state: { successMessage: "Subject added successfully!" }
             });
         } catch (error) {
-            console.error('Error adding subject:', error);
-            setError(error.response?.data?.message || 'Failed to add subject');
+            addNotification(error.response?.data?.message || 'Failed to add subject', 'error');
         } finally {
             setLoading(false);
         }
@@ -52,8 +52,6 @@ const AddSubject = () => {
                             <h1 className="heading mb-0">Add New Subject</h1>
                         </div>
                         <div className="card-body">
-                            {error && <div className="alert alert-danger mb-4">{error}</div>}
-
                             <form onSubmit={handleSubmit}>
                                 <div className="mb-3">
                                     <label htmlFor="name" className="form-label">Subject Name</label>
@@ -90,14 +88,7 @@ const AddSubject = () => {
                                         <i className="fas fa-plus-circle me-2"></i>
                                         {loading ? "Adding..." : "Add Subject"}
                                     </button>
-                                    <button
-                                        type="button"
-                                        className="btn btn-secondary"
-                                        onClick={() => navigate(`/projects/${subjectData.projectId}`)}
-                                        disabled={loading}
-                                    >
-                                        <i className="fas fa-times me-2"></i>Cancel
-                                    </button>
+                                    <NavigateButton actionType='Back' value='Cancel'/>
                                 </div>
                             </form>
                         </div>

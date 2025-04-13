@@ -108,6 +108,7 @@ public class SubjectVideoGroupAssignmentRepository(
         try
         {
             var labelers = await context.SubjectVideoGroupAssignments
+                .Where(x => x.Id == id)
                 .SelectMany(x => x.Labelers)
                 .ToListAsync();
 

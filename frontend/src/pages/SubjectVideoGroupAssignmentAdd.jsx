@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import httpClient from "../httpClient";
 import "./css/ScientistProjects.css";
+import NavigateButton from "../components/NavigateButton";
+import { useNotification } from "../context/NotificationContext";
 
 const SubjectVideoGroupAssignmentAdd = () => {
     const [formData, setFormData] = useState({
@@ -11,11 +13,11 @@ const SubjectVideoGroupAssignmentAdd = () => {
     const [subjects, setSubjects] = useState([]);
     const [videoGroups, setVideoGroups] = useState([]);
     const [projectId, setProjectId] = useState(null);
-    const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [dataLoading, setDataLoading] = useState(true);
     const navigate = useNavigate();
     const location = useLocation();
+    const { addNotification } = useNotification();
 
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
@@ -37,7 +39,7 @@ const SubjectVideoGroupAssignmentAdd = () => {
             setSubjects(subjectsRes.data);
             setVideoGroups(videoGroupsRes.data);
         } catch (err) {
-            setError(err.response?.data?.message || 'Failed to load data');
+            addNotification(err.response?.data?.message || 'Failed to load data', "error");
         } finally {
             setDataLoading(false);
         }
@@ -51,10 +53,9 @@ const SubjectVideoGroupAssignmentAdd = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
 
     if (!formData.subjectId || !formData.videoGroupId) {
-      setError("Please select both a subject and a video group.");
+      addNotification("Please select both a subject and a video group.", "error");
       setLoading(false);
       return;
     }
@@ -68,8 +69,9 @@ const SubjectVideoGroupAssignmentAdd = () => {
           state: { successMessage: "Assignment added successfully!" }
       });
     } catch (err) {
-      setError(
-        err.response?.data?.message || "An error occurred. Please try again."
+      addNotification(
+        err.response?.data?.message || "An error occurred. Please try again.",
+        "error"
       );
       setLoading(false);
     }
@@ -144,14 +146,7 @@ const SubjectVideoGroupAssignmentAdd = () => {
                                         <i className="fas fa-plus-circle me-2"></i>
                                         {loading ? "Creating..." : "Create Assignment"}
                                     </button>
-                                    <button 
-                                        type="button" 
-                                        className="btn btn-secondary"
-                                        onClick={() => navigate(`/projects/${projectId}`)}
-                                        disabled={loading}
-                                    >
-                                        <i className="fas fa-times me-2"></i>Cancel
-                                    </button>
+                                    <NavigateButton actionType='Back' value='Cancel'/>
                                 </div>
                             </form>
                         </div>

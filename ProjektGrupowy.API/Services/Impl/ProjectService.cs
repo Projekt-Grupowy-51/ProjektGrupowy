@@ -66,6 +66,9 @@ public class ProjectService(
 
     public async Task<Optional<IEnumerable<Project>>> GetProjectsOfScientist(int scientistId)
         => await projectRepository.GetProjectsOfScientist(scientistId);
+        
+    public async Task<Optional<IEnumerable<Project>>> GetProjectsForLabelerAsync(int labelerId)
+        => await projectRepository.GetProjectsForLabelerAsync(labelerId);
 
     public async Task<Optional<bool>> AddLabelerToProjectAsync(LabelerAssignmentDto labelerAssignmentDto)
     {

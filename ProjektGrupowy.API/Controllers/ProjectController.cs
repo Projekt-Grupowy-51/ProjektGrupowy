@@ -28,10 +28,22 @@ public class ProjectController(
     IAuthorizationHelper authHelper,
     IMapper mapper) : ControllerBase
 {
-    [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<ProjectResponse>>> GetProjectsAsync()
     {
+        if (User.IsInRole(RoleConstants.Labeler))
+        {
+            var labelerResult = await authHelper.GetLabelerFromUserAsync(User);
+            if (labelerResult.Error != null)
+                return labelerResult.Error;
+
+            var projectsLabeler = await projectService.GetProjectsForLabelerAsync(labelerResult.Labeler!.Id);
+            
+            return projectsLabeler.IsSuccess
+                ? Ok(mapper.Map<IEnumerable<ProjectResponse>>(projectsLabeler.GetValueOrThrow()))
+                : NotFound(projectsLabeler.GetErrorOrThrow());
+        }
+        
         var checkResult = await authHelper.CheckGeneralAccessAsync(User);
         if (checkResult.Error != null)
         {

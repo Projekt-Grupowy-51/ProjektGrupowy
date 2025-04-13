@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import authService from "../auth";
 import "./css/ScientistProjects.css";
 import { useAuth } from "../App"; // Import the AuthContext
+import { useNotification } from "../context/NotificationContext";
 
 const roleMap = {
   Labeler: "Labeler",
@@ -18,10 +19,9 @@ const AuthPage = () => {
     confirmPassword: "",
     role: "Labeler",
   });
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { addNotification } = useNotification();
 
   const { handleLogin, roles } = useAuth();
   const [loginSuccess, setLoginSuccess] = useState(false); // state to track post-login effect
@@ -33,12 +33,13 @@ const AuthPage = () => {
   // Inside your component:
   useEffect(() => {
     if (loginSuccess) {
+      addNotification("Successfully logged in!", "success");
       if (roles.includes("Scientist")) {
         navigate("/projects");
       } else if (roles.includes("Labeler")) {
         navigate("/labeler-video-groups/1");
       } else {
-        setError("You do not have access to this page.");
+        addNotification("You do not have access to this page.", "error");
       }
       setLoginSuccess(false); // reset flag
     }
@@ -46,12 +47,10 @@ const AuthPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-    setSuccess("");
     setLoading(true);
 
     if (!isLoginView && formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match");
+      addNotification("Passwords do not match", "error");
       setLoading(false);
       return;
     }
@@ -70,12 +69,13 @@ const AuthPage = () => {
         });
         setIsLoginView(true);
         setFormData({ ...formData, password: "", confirmPassword: "" });
-        alert("Registration successful! Please log in.");
+        addNotification("Registration successful! Please log in.", "success");
       }
     } catch (err) {
-      setError(
+      addNotification(
         err.message ||
-          (isLoginView ? "Invalid credentials" : "Registration failed")
+          (isLoginView ? "Invalid credentials" : "Registration failed"),
+        "error"
       );
     } finally {
       setLoading(false);
@@ -112,19 +112,6 @@ const AuthPage = () => {
             </button>
           </li>
         </ul>
-        {success && (
-          <div className="alert alert-success mb-3">
-            <i className="fas fa-check-circle me-2"></i>
-            {success}
-          </div>
-        )}
-
-        {error && (
-          <div className="alert alert-danger mb-3">
-            <i className="fas fa-exclamation-circle me-2"></i>
-            {error}
-          </div>
-        )}
 
         <form onSubmit={handleSubmit}>
           <div className="mb-3">

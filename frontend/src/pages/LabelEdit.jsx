@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import httpClient from '../httpClient';
+import NavigateButton from '../components/NavigateButton';
+import { useNotification } from "../context/NotificationContext";
 
 const LabelEdit = () => {
     const { id } = useParams();
@@ -12,9 +14,9 @@ const LabelEdit = () => {
         subjectId: null,
     });
     const [subjectName, setSubjectName] = useState('');
-    const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+    const { addNotification } = useNotification();
     
     useEffect(() => {
         const fetchLabelData = async () => {
@@ -23,7 +25,7 @@ const LabelEdit = () => {
                 setLabelData(response.data);
                 fetchSubjectName(response.data.subjectId);
             } catch (error) {
-                setError(error.response?.data?.message || 'Failed to load label data');
+                addNotification(error.response?.data?.message || 'Failed to load label data', 'error');
             }
         };
 
@@ -32,7 +34,7 @@ const LabelEdit = () => {
                 const response = await httpClient.get(`/subject/${subjectId}`);
                 setSubjectName(response.data.name);
             } catch (error) {
-                setError('Failed to load subject information.');
+                addNotification('Failed to load subject information.', 'error');
             }
         };
 
@@ -46,14 +48,13 @@ const LabelEdit = () => {
 
     const validateForm = () => {
         if (labelData.shortcut.length !== 1) {
-            setError('Shortcut must be exactly one character.');
+            addNotification('Shortcut must be exactly one character.', 'error');
             return false;
         }
         if (!/^#[0-9A-Fa-f]{6}$/.test(labelData.colorHex)) {
-            setError('Color must be in the format #RRGGBB.');
+            addNotification('Color must be in the format #RRGGBB.', 'error');
             return false;
         }
-        setError('');
         return true;
     };
 
@@ -64,9 +65,10 @@ const LabelEdit = () => {
         setLoading(true);
         try {
             await httpClient.put(`/Label/${id}`, labelData);
+            addNotification('Label updated successfully!', 'success');
             navigate(`/subjects/${labelData.subjectId}`);
         } catch (error) {
-            setError(error.response?.data?.message || 'Failed to update label');
+            addNotification(error.response?.data?.message || 'Failed to update label', 'error');
         } finally {
             setLoading(false);
         }
@@ -81,12 +83,6 @@ const LabelEdit = () => {
                             <h1 className="heading mb-0">Edit Label</h1>
                         </div>
                         <div className="card-body">
-                            {error && (
-                                <div className="alert alert-danger mb-4">
-                                    <i className="fas fa-exclamation-triangle me-2"></i>
-                                    {error}
-                                </div>
-                            )}
 
                             <form onSubmit={handleSubmit}>
                                 <div className="mb-3">
@@ -195,14 +191,7 @@ const LabelEdit = () => {
                                             </>
                                         )}
                                     </button>
-                                    <button
-                                        type="button"
-                                        className="btn btn-secondary"
-                                        onClick={() => navigate(`/subjects/${labelData.subjectId}`)}
-                                        disabled={loading}
-                                    >
-                                        <i className="fas fa-times me-2"></i>Cancel
-                                    </button>
+                                    <NavigateButton actionType="Back" value='Cancel' />
                                 </div>
                             </form>
                         </div>

@@ -1,24 +1,19 @@
 ﻿import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, Link, useLocation } from "react-router-dom";
 import httpClient from "../httpClient";
-import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
-import ViewDetailsButton from "../components/ViewDetailsButton";
+import NavigateButton from "../components/NavigateButton";
 import DeleteButton from "../components/DeleteButton";
+import DataTable from "../components/DataTable";
 import "./css/ScientistProjects.css";
+import { useNotification } from "../context/NotificationContext";
 
 const SubjectDetails = () => {
   const { id } = useParams();
   const [subjectDetails, setSubjectDetails] = useState(null);
   const [labels, setLabels] = useState([]);
   const navigate = useNavigate();
-  const [successMessage, setSuccessMessage] = useState("");
-  const [error, setError] = useState("");
   const location = useLocation();
-  const [deleteModal, setDeleteModal] = useState({
-    show: false,
-    itemType: "label",
-    itemId: null,
-  });
+  const { addNotification } = useNotification();
 
   const fetchSubjectDetails = async () => {
     try {
@@ -26,8 +21,7 @@ const SubjectDetails = () => {
       setSubjectDetails(response.data);
       await fetchLabels();
     } catch (error) {
-      console.error("Error fetching subject details:", error);
-      setError("Failed to load subject details");
+      addNotification("Failed to load subject details", "error");
     }
   };
 
@@ -39,14 +33,13 @@ const SubjectDetails = () => {
         .sort((a, b) => a.id - b.id);
       setLabels(filteredLabels);
     } catch (error) {
-      console.error("Error fetching labels:", error);
-      setError("Failed to load labels");
+      addNotification("Failed to load labels", "error");
     }
   };
 
   useEffect(() => {
     if (location.state?.successMessage) {
-      setSuccessMessage(location.state.successMessage);
+      addNotification(location.state.successMessage, "success");
       window.history.replaceState({}, document.title);
     }
   }, [location.state]);
@@ -55,28 +48,38 @@ const SubjectDetails = () => {
     if (id) fetchSubjectDetails();
   }, [id]);
 
-  const handleConfirmDelete = async () => {
+  const handleDeleteLabel = async (labelId) => {
     try {
-      await httpClient.delete(`/label/${deleteModal.itemId}`);
-      setLabels(labels.filter((label) => label.id !== deleteModal.itemId));
-      setSuccessMessage("Label deleted successfully!");
-      setError("");
+      await httpClient.delete(`/label/${labelId}`);
+      await fetchSubjectDetails();
     } catch (error) {
-      console.error("Error deleting label:", error);
-      setError("Failed to delete label. Please try again.");
-      setSuccessMessage("");
-    } finally {
-      setDeleteModal({ show: false, itemType: "label", itemId: null });
+      addNotification("Failed to delete label. Please try again.", "error");
     }
   };
+  
+  // Define columns for labels table
+  const labelColumns = [
+    { field: "id", header: "ID" },
+    { field: "name", header: "Name" },
+    { field: "shortcut", header: "Shortcut" },
+    { field: "colorHex", header: "Color", render: (label) => (
+      <div style={{ 
+        backgroundColor: label.colorHex, 
+        width: '20px', 
+        height: '20px', 
+        display: 'inline-block',
+        marginRight: '5px',
+        borderRadius: '3px'
+      }}></div>
+    )},
+  ];
 
-  const handleCancelDelete = () => {
-    setDeleteModal({ show: false, itemType: "label", itemId: null });
-  };
-
-  const addLabel = () => {
-    navigate(`/labels/add?subjectId=${id}`);
-  };
+  const assignmentsColumns = [
+    { field: "id", header: "ID" },
+    { field: "videoGroupId", header: "Video Group ID" },
+    { field: "videoGroupName", header: "Video Group", render: (item) => item.videoGroupName || "Unknown" },
+    // Add other relevant fields
+  ];
 
   if (!subjectDetails)
     return (
@@ -91,20 +94,6 @@ const SubjectDetails = () => {
     <div className="container">
       <div className="content">
         <h1 className="heading mb-4">{subjectDetails.name}</h1>
-
-        {error && (
-          <div className="alert alert-danger mb-4">
-            <i className="fas fa-exclamation-triangle me-2"></i>
-            {error}
-          </div>
-        )}
-
-        {successMessage && (
-          <div className="alert alert-success mb-4">
-            <i className="fas fa-check-circle me-2"></i>
-            {successMessage}
-          </div>
-        )}
 
         <div className="card shadow-sm mb-4">
           <div
@@ -121,58 +110,26 @@ const SubjectDetails = () => {
         </div>
 
         <div className="d-flex justify-content-between mb-2">
-          <button className="btn btn-primary" onClick={addLabel}>
-            <i className="fas fa-plus-circle me-2"></i>Add New Label
-          </button>
-          <Link
-            className="btn btn-secondary"
-            to={`/projects/${subjectDetails.projectId}`}
-            style={{ height: "fit-content", margin: "1%" }}
-          >
-            <i className="fas fa-arrow-left me-2"></i>Back to Project
-          </Link>
+          <NavigateButton path={`/labels/add?subjectId=${id}`} actionType="Add" />
+          <NavigateButton actionType="Back" />
         </div>
 
         <h2 className="section-title">Labels</h2>
 
         {labels.length > 0 ? (
-          <table className="normal-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Type</th>
-                <th>Color</th>
-                <th>Shortcut</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {labels.map((label) => (
-                <tr key={label.id}>
-                  <td>{label.id}</td>
-                  <td>{label.name}</td>
-                  <td>{label.type}</td>
-                  <td>
-                    <div className="d-flex align-items-center">
-                      <div
-                        className="color-preview me-2"
-                        style={{ backgroundColor: label.colorHex }}
-                      />
-                      <span>{label.colorHex}</span>
-                    </div>
-                  </td>
-                  <td>{label.shortcut}</td>
-                  <td>
-                    <div className="d-flex justify-content-start">
-                      <ViewDetailsButton path={`/labels/edit/${label.id}`} />
-                      <DeleteButton onClick={() => setDeleteModal({ show: true, itemType: "label", itemId: label.id })} />
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <DataTable
+            columns={labelColumns}
+            data={labels}
+            navigateButton={(label) => (
+              <NavigateButton path={`/labels/edit/${label.id}`} actionType="Edit" />
+            )}
+            deleteButton={(label) => (
+              <DeleteButton 
+                onClick={() => handleDeleteLabel(label.id)}
+                itemType={`label "${label.name}"`}
+              />
+            )}
+          />
         ) : (
           <div className="alert alert-info">
             <i className="fas fa-info-circle me-2"></i>No labels found for this
@@ -180,13 +137,6 @@ const SubjectDetails = () => {
           </div>
         )}
       </div>
-
-      <DeleteConfirmationModal
-        show={deleteModal.show}
-        itemType={deleteModal.itemType}
-        onConfirm={handleConfirmDelete}
-        onCancel={handleCancelDelete}
-      />
     </div>
   );
 };

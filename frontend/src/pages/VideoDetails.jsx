@@ -2,6 +2,9 @@ import React, { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import httpClient from "../httpClient";
 import "./css/ScientistProjects.css";
+import DataTable from "../components/DataTable";
+import NavigateButton from "../components/NavigateButton";
+import { useNotification } from "../context/NotificationContext";
 
 const VideoDetails = () => {
   const { id: videoId } = useParams();
@@ -11,6 +14,7 @@ const VideoDetails = () => {
   const videoRef = useRef(null);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editedTitle, setEditedTitle] = useState("");
+  const { addNotification } = useNotification();
 
   useEffect(() => {
     fetchVideoDetails(videoId);
@@ -27,10 +31,10 @@ const VideoDetails = () => {
       if (response.status === 200) {
         setVideoData(response.data);
       } else {
-        console.warn(`Unexpected response status: ${response.status}`);
+        addNotification(`Unexpected response status: ${response.status}`, "error");
       }
     } catch (error) {
-      console.error("Failed to load video details:", error.message || error);
+      addNotification("Failed to load video details", "error");
     }
   };
 
@@ -44,7 +48,7 @@ const VideoDetails = () => {
       const streamUrl = URL.createObjectURL(response.data);
       setVideoStream(streamUrl);
     } catch (error) {
-      console.error("Error fetching video stream:", error);
+      addNotification("Error fetching video stream", "error");
       setVideoStream(null);
     }
   }
@@ -57,7 +61,7 @@ const VideoDetails = () => {
       });
       setLabels(response.data);
     } catch (error) {
-      console.error("Failed to load assigned labels:", error);
+      addNotification("Failed to load assigned labels", "error");
     }
   };
 
@@ -77,11 +81,12 @@ const VideoDetails = () => {
       if (response.status === 200) {
         setVideoData((prevData) => ({ ...prevData, title: editedTitle }));
         setIsEditingTitle(false);
+        addNotification("Title updated successfully", "success");
       } else {
-        console.warn(`Failed to update title: ${response.status}`);
+        addNotification(`Failed to update title: ${response.status}`, "error");
       }
     } catch (error) {
-      console.error("Error updating title:", error);
+      addNotification("Error updating title", "error");
     }
   };
 
@@ -90,12 +95,26 @@ const VideoDetails = () => {
     setEditedTitle("");
   };
 
+  // Define columns for the assigned labels table
+  const labelColumns = [
+    { field: "id", header: "#", render: (_, index) => index + 1 },
+    { field: "labelId", header: "Label Id" },
+    { field: "labelerId", header: "Labeler Id" },
+    { field: "start", header: "Start" },
+    { field: "end", header: "End" },
+    { field: "insDate", header: "Ins Date", render: (label) => new Date(label.insDate).toLocaleString() }
+  ];
+
   if (!videoData) {
     return <div className="container text-center">Loading...</div>;
   }
 
   return (
     <div className="container">
+      <div className="d-flex justify-content-end mb-3">
+        <NavigateButton actionType="Back" />
+      </div>
+      
       {isEditingTitle ? (
         <div className="edit-title-container text-center mb-4">
           <input
@@ -142,56 +161,10 @@ const VideoDetails = () => {
       <div className="assigned-labels">
         <h3 className="">Assigned Labels</h3>
         <div className="assigned-labels-table">
-
-          <table className="normal-table">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Label Id</th>
-                <th>Labeler Id</th>
-                <th>Start</th>
-                <th>End</th>
-                <th>Ins Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              {labels
-                .slice()
-                .sort((a, b) => {
-                  if (!a.insDate && !b.insDate) {
-                    return a.videoId - b.videoId;
-                  }
-
-                  if (!a.insDate) return -1;
-                  if (!b.insDate) return 1;
-
-                  const dateA = new Date(a.insDate);
-                  const dateB = new Date(b.insDate);
-
-                  if (dateA.getFullYear() === dateB.getFullYear() &&
-                    dateA.getMonth() === dateB.getMonth() &&
-                    dateA.getDate() === dateB.getDate() &&
-                    dateA.getHours() === dateB.getHours() &&
-                    dateA.getMinutes() === dateB.getMinutes() &&
-                    dateA.getSeconds() === dateB.getSeconds()) {
-
-                    return a.videoId - b.videoId;
-                  }
-
-                  return dateB - dateA;
-                })
-                .map((label, index) => (
-                  <tr key={label.id}>
-                    <td>{index + 1}</td>
-                    <td>{label.labelId}</td>
-                    <td>{label.labelerId}</td>
-                    <td>{label.start}</td>
-                    <td>{label.end}</td>
-                    <td>{new Date(label.insDate).toLocaleString()}</td>
-                  </tr>
-                ))}
-            </tbody>
-          </table>
+          <DataTable 
+            columns={labelColumns}
+            data={labels}
+          />
         </div>
       </div>
     </div>
