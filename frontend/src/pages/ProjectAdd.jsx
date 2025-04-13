@@ -49,7 +49,6 @@ function ProjectAdd() {
                             <h1 className="heading mb-0">Add New Project</h1>
                         </div>
                         <div className="card-body">
-                            {error && <div className="alert alert-danger mb-4">{error}</div>}
 
                             <form onSubmit={handleSubmit}>
                                 <div className="mb-3">

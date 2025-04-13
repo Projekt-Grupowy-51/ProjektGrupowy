@@ -5,31 +5,30 @@ import DeleteButton from "../components/DeleteButton";
 import DataTable from "../components/DataTable";
 import "./css/ScientistProjects.css";
 import NavigateButton from "../components/NavigateButton";
+import { useNotification } from "../context/NotificationContext";
 
 const Projects = () => {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
+  const { addNotification } = useNotification();
 
   // Remove deleteModal state since it's now handled by the global context
 
   useEffect(() => {
     if (location.state?.success) {
-      setSuccess(location.state.success);
+      addNotification(location.state.success, "success");
     }
-  }, [location.state]);
+  }, [location.state, addNotification]);
 
   const fetchProjects = async () => {
     try {
       const response = await httpClient.get("/Project");
       const sortedProjects = response.data.sort((a, b) => a.id - b.id);
       setProjects(sortedProjects);
-      setError("");
     } catch (error) {
-      setError(error.response?.data?.message || "Failed to load projects");
+      addNotification(error.response?.data?.message || "Failed to load projects", "error");
     } finally {
       setLoading(false);
     }
@@ -42,18 +41,17 @@ const Projects = () => {
       setProjects((prev) =>
         prev.filter((project) => project.id !== projectId)
       );
-      setSuccess("Project deleted successfully");
     } catch (error) {
-      setError(error.response?.data?.message || "Failed to delete project");
+      addNotification(error.response?.data?.message || "Failed to delete project", "error");
     }
   };
 
   useEffect(() => {
     if (location.state?.successMessage) {
-      setSuccess(location.state.successMessage);
+      addNotification(location.state.successMessage, "success");
       window.history.replaceState({}, document.title);
     }
-  }, [location.state]);
+  }, [location.state, addNotification]);
 
   useEffect(() => {
     fetchProjects();
@@ -73,14 +71,6 @@ const Projects = () => {
           <h1 className="heading">Projects</h1>
           <NavigateButton path={`/projects/add`} actionType="Add" />
         </div>
-
-        {success && (
-          <div className="alert alert-success mb-4">
-            <i className="fas fa-check-circle me-2"></i>
-            {success}
-          </div>
-        )}
-        {error && <div className="alert alert-danger mb-4">{error}</div>}
 
         {loading ? (
           <div className="text-center py-5">
