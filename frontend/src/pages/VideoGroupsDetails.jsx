@@ -1,6 +1,6 @@
 ﻿import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, Link, useLocation } from "react-router-dom";
-import httpClient, { API_BASE_URL } from "../httpClient";
+import httpClient, { API_BASE_URL } from "../httpclient";
 import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
 import "./css/ScientistProjects.css";
 

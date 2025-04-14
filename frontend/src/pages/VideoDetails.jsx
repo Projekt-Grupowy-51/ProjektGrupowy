@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
-import httpClient from "../httpClient";
+import httpClient from "../httpclient";
 import "./css/ScientistProjects.css";
 
 const VideoDetails = () => {
@@ -34,7 +34,6 @@ const VideoDetails = () => {
     }
   };
 
-
   async function fetchVideoStream(videoId) {
     try {
       const response = await httpClient.get(`/Video/${videoId}/stream`, {
@@ -49,12 +48,14 @@ const VideoDetails = () => {
     }
   }
 
-
   const fetchAssignedLabels = async (videoId) => {
     try {
-      const response = await httpClient.get(`/Video/${videoId}/assignedlabels`, {
-        withCredentials: true,
-      });
+      const response = await httpClient.get(
+        `/Video/${videoId}/assignedlabels`,
+        {
+          withCredentials: true,
+        }
+      );
       setLabels(response.data);
     } catch (error) {
       console.error("Failed to load assigned labels:", error);
@@ -123,16 +124,19 @@ const VideoDetails = () => {
           </button>
         </h1>
       )}
-      <div className="video-container mb-4" style={{ position: 'relative', paddingTop: '56.25%' }}>
+      <div
+        className="video-container mb-4"
+        style={{ position: "relative", paddingTop: "56.25%" }}
+      >
         <video
           ref={videoRef}
           style={{
-            position: 'absolute',
+            position: "absolute",
             top: 0,
             left: 0,
-            width: '100%',
-            height: '100%',
-            objectFit: 'contain'
+            width: "100%",
+            height: "100%",
+            objectFit: "contain",
           }}
           controls
           src={videoStream}
@@ -142,7 +146,6 @@ const VideoDetails = () => {
       <div className="assigned-labels">
         <h3 className="">Assigned Labels</h3>
         <div className="assigned-labels-table">
-
           <table className="normal-table">
             <thead>
               <tr>
@@ -168,13 +171,14 @@ const VideoDetails = () => {
                   const dateA = new Date(a.insDate);
                   const dateB = new Date(b.insDate);
 
-                  if (dateA.getFullYear() === dateB.getFullYear() &&
+                  if (
+                    dateA.getFullYear() === dateB.getFullYear() &&
                     dateA.getMonth() === dateB.getMonth() &&
                     dateA.getDate() === dateB.getDate() &&
                     dateA.getHours() === dateB.getHours() &&
                     dateA.getMinutes() === dateB.getMinutes() &&
-                    dateA.getSeconds() === dateB.getSeconds()) {
-
+                    dateA.getSeconds() === dateB.getSeconds()
+                  ) {
                     return a.videoId - b.videoId;
                   }
 

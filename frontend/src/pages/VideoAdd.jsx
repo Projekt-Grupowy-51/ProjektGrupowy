@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import httpClient from "../httpClient";
+import httpClient from "../httpclient";
 import "./css/ScientistProjects.css";
 
 const VideoAdd = () => {
@@ -13,6 +13,35 @@ const VideoAdd = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const dropRef = useRef(null);
+  const fileInputRef = useRef(null);
+
+  const handleButtonClick = () => {
+    fileInputRef.current.click();
+  };
+
+  const handleFileSelect = (e) => {
+    const selectedFiles = Array.from(e.target.files);
+
+    const accepted = [];
+    const rejected = [];
+
+    selectedFiles.forEach((file) => {
+      if (!file.type.startsWith("video/")) {
+        rejected.push(`${file.name} is not a valid video.`);
+      } else if (file.size > 100 * 1024 * 1024) {
+        rejected.push(`${file.name} exceeds 100MB limit.`);
+      } else {
+        accepted.push({
+          file,
+          title: file.name.replace(/\.[^/.]+$/, ""),
+          positionInQueue: videos.length + accepted.length + 1,
+        });
+      }
+    });
+
+    setVideos((prev) => [...prev, ...accepted]);
+    if (rejected.length > 0) setError(rejected.join("\n"));
+  };
 
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
@@ -155,6 +184,26 @@ const VideoAdd = () => {
             <i className="fas fa-cloud-upload-alt fa-2x mb-2"></i>
             <p className="mb-0">Drag and drop your videos here</p>
             <small className="text-muted">Maximum size: 100MB each</small>
+
+            {/* Add a div to move the button to a new line */}
+            <div className="mt-3">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={handleButtonClick}
+              >
+                Select Files
+              </button>
+            </div>
+
+            <input
+              type="file"
+              ref={fileInputRef}
+              style={{ display: "none" }}
+              multiple
+              accept="video/*"
+              onChange={handleFileSelect}
+            />
           </div>
 
           {videos.length > 0 && (

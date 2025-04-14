@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import httpClient from "../httpClient";
+import httpClient from "../httpclient";
 import DeleteConfirmationModal from "../components/DeleteConfirmationModal"; // Add import
 import "./css/ScientistProjects.css";
 

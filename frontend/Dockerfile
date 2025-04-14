@@ -4,13 +4,13 @@ FROM node:18 AS builder
 # Ustawienie katalogu roboczego
 WORKDIR /app
 
-# Kopiowanie plików package.json i package-lock.json
+# Kopiowanie plikï¿½w package.json i package-lock.json
 COPY package.json package-lock.json ./
 
-# Instalowanie zale¿noœci
+# Instalowanie zaleï¿½noï¿½ci
 RUN npm install
 
-# Kopiowanie ca³ego projektu
+# Kopiowanie caï¿½ego projektu
 COPY . .
 
 # Budowanie aplikacji
@@ -20,7 +20,7 @@ RUN npm run build
 # Etap serwera produkcyjnego
 FROM nginx:alpine
 
-# Usuniêcie domyœlnych plików Nginx
+# Usuniï¿½cie domyï¿½lnych plikï¿½w Nginx
 RUN rm -rf /usr/share/nginx/html/*
 
 # Kopiowanie zbudowanej aplikacji z pierwszego etapu

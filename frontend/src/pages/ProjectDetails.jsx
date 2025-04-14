@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useLocation } from "react-router-dom";
-import httpClient from "../httpClient";
+import httpClient from "../httpclient";
 import DeleteConfirmationModal from "../components/DeleteConfirmationModal"; // Import the external modal
 import "./css/ScientistProjects.css";
 
