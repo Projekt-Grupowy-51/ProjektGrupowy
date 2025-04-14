@@ -138,6 +138,15 @@ function useVideoControls(videoRefs) {
   const handlePlaybackSpeedChange = (speed) => {
     setPlaybackSpeed(speed);
     syncAllVideos('setSpeed', speed);
+
+    // Trigger a re-render to ensure the progress bar updates
+    setCurrentTime((prevTime) => prevTime);
+
+    // Explicitly trigger the timeupdate event on the first video
+    const video = videoRefs.current[0];
+    if (video) {
+      video.dispatchEvent(new Event('timeupdate'));
+    }
   };
 
   // Update UI based on video time (called continuously during playback)
@@ -339,7 +348,7 @@ function useLabels(videos, subjectId) {
 
   return {
     labels, assignedLabels, labelTimestamps, handleLabelClick,
-    handleDelete, isMeasuring, fetchAssignedLabels
+    handleDelete, isMeasuring, fetchAssignedLabels, sendLabelData
   };
 }
 
@@ -390,7 +399,7 @@ const Videos = () => {
   
   const labelsManager = useLabels(videos, subjectId);
   const { 
-    labels, assignedLabels, labelTimestamps, isMeasuring, handleDelete
+    labels, assignedLabels, labelTimestamps, isMeasuring, handleDelete, sendLabelData 
   } = labelsManager;
   
   // Define columns for the assigned labels table
@@ -554,7 +563,21 @@ const Videos = () => {
   }, [labels, isPlaying]);
 
   const handleLabelClick = (labelId) => {
-    labelsManager.handleLabelClick(labelId, videoRefs);
+    const label = labels.find((l) => l.id === labelId);
+    if (!label) return;
+
+    const video = videoRefs.current[0];
+    if (!video) return;
+
+    const time = video.currentTime;
+
+    if (label.type === "point") {
+      // Handle "point" type labels
+      sendLabelData(labelId, time, time);
+    } else {
+      // Handle "range" type labels
+      labelsManager.handleLabelClick(labelId, videoRefs);
+    }
   };
 
   return (
@@ -581,7 +604,6 @@ const Videos = () => {
                       height="auto"
                       src={streamUrl}
                       type="video/mp4"
-                      controls
                       onTimeUpdate={handleTimeUpdate}
                       onEnded={() => handleVideoEnd(index)}
                     />
@@ -710,7 +732,7 @@ const Videos = () => {
                   onClick={() => handleLabelClick(label.id)}
                 >
                   {label.name + " [" + label.shortcut + "]"}{" "}
-                  {measuring ? "STOP" : "START"}
+                  {label.type === "point" ? "ADD POINT" : measuring ? "STOP" : "START"}
                 </button>
               );
             })
