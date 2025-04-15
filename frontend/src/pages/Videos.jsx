@@ -12,7 +12,7 @@ function useVideoGroup(videoGroupId, currentBatch, setCurrentBatch) {
   const [videoPositions, setVideoPositions] = useState({});
   const [videos, setVideos] = useState([]);
   const [streams, setStreams] = useState([]);
-  
+
   useEffect(() => {
     if (videoGroupId !== null) {
       fetchVideoGroupDetails();
@@ -96,13 +96,13 @@ function useVideoControls(videoRefs) {
   const [duration, setDuration] = useState(0);
   const [timeLeft, setTimeLeft] = useState(0);
   const [playbackSpeed, setPlaybackSpeed] = useState(1.0);
-  
+
   // Enhanced method to synchronize all video elements
   const syncAllVideos = (action, value = null) => {
     videoRefs.current.forEach(video => {
       if (!video) return;
-      
-      switch(action) {
+
+      switch (action) {
         case 'play':
           video.play().catch(err => console.error("Play failed:", err));
           break;
@@ -124,28 +124,77 @@ function useVideoControls(videoRefs) {
       }
     });
   };
-  
+
   // Play/pause toggle with proper state management
   const handlePlayStop = () => {
+    const video = videoRefs.current[0];
+    if (!video) return;
+
     if (isPlaying) {
       syncAllVideos('pause');
+
     } else {
       syncAllVideos('play');
     }
+
     setIsPlaying(!isPlaying);
   };
+
+  useEffect(() => {
+    // Ensure playback state is synchronized with the video element
+    const video = videoRefs.current[0];
+    if (!video) return;
+
+    const handlePlay = () => setIsPlaying(true);
+    const handlePause = () => setIsPlaying(false);
+
+    video.addEventListener('play', handlePlay);
+    video.addEventListener('pause', handlePause);
+
+    return () => {
+      video.removeEventListener('play', handlePlay);
+      video.removeEventListener('pause', handlePause);
+    };
+  }, [videoRefs]);
+
+  useEffect(() => {
+    // Ensure progress bar updates correctly after playback speed change
+    const video = videoRefs.current[0];
+    if (!video) return;
+
+    const handleTimeUpdate = () => {
+      setCurrentTime(video.currentTime);
+      setDuration(video.duration);
+    };
+
+    video.addEventListener('timeupdate', handleTimeUpdate);
+
+    return () => {
+      video.removeEventListener('timeupdate', handleTimeUpdate);
+    };
+  }, [playbackSpeed, videoRefs]);
 
   // Apply playback speed to all videos
   const handlePlaybackSpeedChange = (speed) => {
     setPlaybackSpeed(speed);
     syncAllVideos('setSpeed', speed);
+
+    // Trigger a re-render to ensure the progress bar updates
+    setCurrentTime((prevTime) => prevTime);
+
+    // Explicitly trigger the timeupdate event on all videos
+    videoRefs.current.forEach((video) => {
+      if (video) {
+        video.dispatchEvent(new Event('timeupdate'));
+      }
+    });
   };
 
   // Update UI based on video time (called continuously during playback)
   const handleTimeUpdate = () => {
     const video = videoRefs.current[0];
     if (!video) return;
-    
+
     setTimeLeft(Math.round(video.duration - video.currentTime));
     setCurrentTime(video.currentTime);
     setDuration(video.duration);
@@ -166,7 +215,7 @@ function useVideoControls(videoRefs) {
     const newTime = Math.min(currentTime + time, duration);
     handleSeek(newTime);
   };
-  
+
   // Complete playback reset - important for batch changes
   const resetPlayback = () => {
     setIsPlaying(false);
@@ -174,7 +223,7 @@ function useVideoControls(videoRefs) {
     setTimeLeft(duration);
     syncAllVideos('reset');
   };
-  
+
   // Properly apply speed to newly loaded videos
   useEffect(() => {
     // This ensures new videos get the current playback speed
@@ -182,6 +231,38 @@ function useVideoControls(videoRefs) {
       if (video) video.playbackRate = playbackSpeed;
     });
   }, [videoRefs.current.length, playbackSpeed]);
+
+  useEffect(() => {
+    // Apply playback speed to all videos when it changes
+    videoRefs.current.forEach((video) => {
+      if (video) {
+        video.playbackRate = playbackSpeed;
+        // Force a small seek to trigger timeupdate
+        const currentTime = video.currentTime;
+        video.currentTime = currentTime + 0.001;
+        video.currentTime = currentTime;
+      }
+    });
+  }, [playbackSpeed]);
+
+  useEffect(() => {
+    // Add event listeners for ratechange to ensure progress bar updates
+    videoRefs.current.forEach((video) => {
+      if (video) {
+        const handleRateChange = () => {
+          // Force a state update to refresh the progress bar
+          setCurrentTime(video.currentTime);
+        };
+
+        video.addEventListener('ratechange', handleRateChange);
+
+        // Cleanup listener on unmount
+        return () => {
+          video.removeEventListener('ratechange', handleRateChange);
+        };
+      }
+    });
+  }, [videoRefs]);
 
   return {
     isPlaying, setIsPlaying, currentTime, setCurrentTime, duration, timeLeft,
@@ -195,7 +276,7 @@ function useLabels(videos, subjectId) {
   const [assignedLabels, setAssignedLabels] = useState([]);
   const [labelTimestamps, setLabelTimestamps] = useState({});
   const labelStateRef = useRef({});
-  
+
   useEffect(() => {
     if (subjectId !== null) {
       fetchLabels();
@@ -340,7 +421,7 @@ function useLabels(videos, subjectId) {
 
   return {
     labels, assignedLabels, labelTimestamps, handleLabelClick,
-    handleDelete, isMeasuring, fetchAssignedLabels
+    handleDelete, isMeasuring, fetchAssignedLabels, sendLabelData
   };
 }
 
@@ -372,40 +453,40 @@ const Videos = () => {
   const [videoGroupId, setVideoGroupId] = useState(null);
   const [currentBatch, setCurrentBatch] = useState(1);
   const videoRefs = useRef([]);
-  
+
   // Initialize refs for batch transitions
   const endedVideosCount = useRef(0);
   const endedIndexes = useRef(new Set());
   const shouldAutoplayRef = useRef(false);
-  
+
   // Custom hooks for specific functionality
   const videoControls = useVideoControls(videoRefs);
-  const { 
-    isPlaying, setIsPlaying, currentTime, setCurrentTime, duration, timeLeft, 
+  const {
+    isPlaying, setIsPlaying, currentTime, setCurrentTime, duration, timeLeft,
     playbackSpeed, handlePlayStop, handlePlaybackSpeedChange, handleTimeUpdate,
     handleRewind, handleFastForward, resetPlayback, handleSeek
   } = videoControls;
-  
+
   const videoGroup = useVideoGroup(videoGroupId, currentBatch, setCurrentBatch);
   const { videos, streams, videoPositions, onBatchChangedAsync } = videoGroup;
-  
+
   const labelsManager = useLabels(videos, subjectId);
-  const { 
-    labels, assignedLabels, labelTimestamps, isMeasuring, handleDelete
+  const {
+    labels, assignedLabels, labelTimestamps, isMeasuring, handleDelete, sendLabelData
   } = labelsManager;
-  
+
   // Define columns for the assigned labels table
-  const labelColumns = [
-    { field: "labelName", header: "Label" },
-    { field: "labelerName", header: "Labeler" },
-    { field: "start", header: "Start Time" },
-    { field: "end", header: "End Time" },
-    {
-      field: "insDate",
-      header: "Ins Date",
-      render: (insDate) => formatISODate(insDate)
-    }
-  ];
+    const labelColumns = [
+        { field: "labelName", header: "Label" },
+        { field: "labelerName", header: "Labeler" },
+        { field: "start", header: "Start Time" },
+        { field: "end", header: "End Time" },
+        {
+            field: "insDate",
+            header: "Ins Date",
+            render: (insDate) => formatISODate(insDate)
+        }
+    ];
 
   useEffect(() => {
     if (id) {
@@ -434,7 +515,7 @@ const Videos = () => {
       }
     });
   }, [streams, playbackSpeed]);
-  
+
   useEffect(() => {
     if (shouldAutoplayRef.current && streams.length > 0) {
       setTimeout(() => {
@@ -454,17 +535,17 @@ const Videos = () => {
   const handleBatchChange = async (newBatch) => {
     // Store current speed before reset
     const currentSpeed = playbackSpeed;
-    
+
     // Reset playback before changing batch
     resetPlayback();
     
     // Change batch
     await onBatchChangedAsync(newBatch);
-    
+
     // After batch change, these will be applied when videos load
     shouldAutoplayRef.current = false; // Don't autoplay on manual change
   };
-  
+
   // Automatic batch change when videos end
   const handleVideoEnd = async (index) => {
     if (endedIndexes.current.has(index)) return;
@@ -476,16 +557,16 @@ const Videos = () => {
     if (endedVideosCount.current === streams.length) {
       endedVideosCount.current = 0;
       endedIndexes.current.clear();
-      
+
       const totalBatches = Object.keys(videoPositions).length;
 
       // If there's a next batch available
       if (currentBatch < totalBatches) {
         const currentSpeed = playbackSpeed; // Remember current speed
-        
+
         // Signal that we want to autoplay on the next batch
         shouldAutoplayRef.current = true;
-        
+
         // Reset and navigate
         resetPlayback();
         await onBatchChangedAsync(currentBatch + 1);
@@ -499,12 +580,12 @@ const Videos = () => {
   // Effect to handle autoplay when new videos load
   useEffect(() => {
     if (streams.length === 0) return;
-    
+
     // Apply current playback speed to all videos
     videoRefs.current.forEach(video => {
       if (video) video.playbackRate = playbackSpeed;
     });
-    
+
     // If autoplay is flagged (from automatic batch change)
     if (shouldAutoplayRef.current) {
       // Use timeout to ensure videos are properly loaded
@@ -519,7 +600,7 @@ const Videos = () => {
         setIsPlaying(true);
         shouldAutoplayRef.current = false;
       }, 300);
-      
+
       return () => clearTimeout(timer);
     }
   }, [streams, playbackSpeed]);
@@ -556,7 +637,21 @@ const Videos = () => {
   }, [labels, isPlaying]);
 
   const handleLabelClick = (labelId) => {
-    labelsManager.handleLabelClick(labelId, videoRefs);
+    const label = labels.find((l) => l.id === labelId);
+    if (!label) return;
+
+    const video = videoRefs.current[0];
+    if (!video) return;
+
+    const time = video.currentTime;
+
+    if (label.type === "point") {
+      // Handle "point" type labels
+      sendLabelData(labelId, time, time);
+    } else {
+      // Handle "range" type labels
+      labelsManager.handleLabelClick(labelId, videoRefs);
+    }
   };
 
   return (
@@ -567,13 +662,12 @@ const Videos = () => {
             {streams.length > 0 ? (
               streams.map((streamUrl, index) => (
                 <div
-                  className={`col-12 ${
-                    streams.length === 1
-                      ? ""
-                      : streams.length <= 4
+                  className={`col-12 ${streams.length === 1
+                    ? ""
+                    : streams.length <= 4
                       ? "col-md-5"
                       : "col-md-4"
-                  }`}
+                    }`}
                   key={index}
                 >
                   <div className="video-cell">
@@ -583,7 +677,6 @@ const Videos = () => {
                       height="auto"
                       src={streamUrl}
                       type="video/mp4"
-                      controls
                       onTimeUpdate={handleTimeUpdate}
                       onEnded={() => handleVideoEnd(index)}
                     />
@@ -609,7 +702,7 @@ const Videos = () => {
 
         <div className="row">
           <div className="col-12">
-            <div className="pagination d-flex justify-content-between">
+            <div className="pagination d-flex align-items-center justify-content-between">
               <button
                 className="btn btn-primary pagination-button"
                 onClick={() => handleBatchChange(currentBatch - 1)}
@@ -617,83 +710,73 @@ const Videos = () => {
               >
                 Previous
               </button>
-              <div className="controls">
-                <div className="controls-row time-display">
-                  {formatTime(currentTime)} /{" "}
-                  {formatTime(isNaN(duration) ? 0 : duration)}
-                </div>
-                <div className="controls-row">
-                  <button
-                    className="btn btn-primary seek-btn"
-                    onClick={() => handleRewind(5)}
-                  >
-                    <i className="fas fa-backward"></i>
-                    <span>-5s</span>
-                  </button>
-                  <button
-                    className="btn btn-primary seek-btn"
-                    onClick={() => handleRewind(1)}
-                  >
-                    <i className="fas fa-backward"></i>
-                    <span>-1s</span>
-                  </button>
-                  <button
-                    className="btn btn-primary play-stop-btn"
-                    onClick={handlePlayStop}
-                  >
-                    <i
-                      className={`fas ${isPlaying ? "fa-stop" : "fa-play"}`}
-                    ></i>
-                  </button>
-                  <button
-                    className="btn btn-primary seek-btn"
-                    onClick={() => handleFastForward(1)}
-                  >
-                    <i className="fas fa-forward"></i>
-                    <span>+1s</span>
-                  </button>
-                  <button
-                    className="btn btn-primary seek-btn"
-                    onClick={() => handleFastForward(5)}
-                  >
-                    <i className="fas fa-forward"></i>
-                    <span>+5s</span>
-                  </button>
-                </div>
+              <div className="time-display text-center">
+                {formatTime(currentTime)} / {formatTime(isNaN(duration) ? 0 : duration)}
               </div>
+              <div className="controls d-inline">
+                <button
+                  className="btn btn-primary seek-btn mx-1"
+                  onClick={() => handleRewind(5)}
+                >
+                  <span className="prev-span">-5s</span>
+                  <i className="fas fa-backward"></i>
+                </button>
+                <button
+                  className="btn btn-primary seek-btn mx-1"
+                  onClick={() => handleRewind(1)}
+                >
+                  <span className="prev-span">-1s</span>
+                  <i className="fas fa-backward"></i>
+                </button>
+                <button
+                  className="btn btn-primary play-stop-btn mx-1"
+                  onClick={handlePlayStop}
+                >
+                  <i className={`fas ${isPlaying ? "fa-stop" : "fa-play"}`}></i>
+                </button>
+                <button
+                  className="btn btn-primary seek-btn mx-1"
+                  onClick={() => handleFastForward(1)}
+                >
+                  <i className="fas fa-forward"></i>
+                  <span className="next-span">+1s</span>
+                </button>
+                <button
+                  className="btn btn-primary seek-btn mx-1"
+                  onClick={() => handleFastForward(5)}
+                >
+                  <i className="fas fa-forward"></i>
+                  <span className="next-span">+5s</span>
+                </button>
+              </div>
+              <select
+                className="form-select w-auto mx-3"
+                id="playbackSpeedSelect"
+                onChange={(e) => handlePlaybackSpeedChange(parseFloat(e.target.value))}
+                defaultValue="1.0"
+              >
+                <option value="0.25">0.25x</option>
+                <option value="0.5">0.5x</option>
+                <option value="0.75">0.75x</option>
+                <option value="1.0">1.0x (normal)</option>
+                <option value="1.25">1.25x</option>
+                <option value="1.5">1.5x</option>
+                <option value="1.75">1.75x</option>
+                <option value="2.0">2.0x</option>
+              </select>
               <button
                 className="btn btn-primary pagination-button"
                 onClick={() => handleBatchChange(currentBatch + 1)}
                 disabled={currentBatch === Object.keys(videoPositions).length}
               >
-                Next{" "}
+                Next
                 {timeLeft > 0 &&
                   timeLeft < 6 &&
                   currentBatch !== Object.keys(videoPositions).length &&
-                  `(${timeLeft}s)`}
+                  ` (${timeLeft}s)`}
               </button>
             </div>
           </div>
-        </div>
-
-        <div className="text-center mt-3">
-          <select
-            className="form-select w-25 d-inline-block"
-            id="playbackSpeedSelect"
-            onChange={(e) =>
-              handlePlaybackSpeedChange(parseFloat(e.target.value))
-            }
-            defaultValue="1.0"
-          >
-            <option value="0.25">0.25x</option>
-            <option value="0.5">0.5x</option>
-            <option value="0.75">0.75x</option>
-            <option value="1.0">1.0x (normal)</option>
-            <option value="1.25">1.25x</option>
-            <option value="1.5">1.5x</option>
-            <option value="1.75">1.75x</option>
-            <option value="2.0">2.0x</option>
-          </select>
         </div>
 
         <div className="labels-container">
@@ -712,7 +795,7 @@ const Videos = () => {
                   onClick={() => handleLabelClick(label.id)}
                 >
                   {label.name + " [" + label.shortcut + "]"}{" "}
-                  {measuring ? "STOP" : "START"}
+                  {label.type === "point" ? "ADD POINT" : measuring ? "STOP" : "START"}
                 </button>
               );
             })
@@ -725,13 +808,13 @@ const Videos = () => {
           <h3>Assigned Labels:</h3>
           <div className="assigned-labels-table">
             {assignedLabels.length > 0 ? (
-              <DataTable 
+              <DataTable
                 columns={labelColumns}
                 data={assignedLabels}
                 navigateButton={(label) => {
                   const matchingLabel = labels.find(l => l.id === label.labelId);
                   return (
-                    <DeleteButton 
+                    <DeleteButton
                       onClick={() => handleDelete(label.id)}
                       itemType={`assigned label for "${matchingLabel ? matchingLabel.name : 'Unknown'}"`}
                     />
