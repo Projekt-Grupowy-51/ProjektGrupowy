@@ -73,13 +73,6 @@ const SubjectDetails = () => {
     )},
   ];
 
-  const assignmentsColumns = [
-    { field: "id", header: "ID" },
-    { field: "videoGroupId", header: "Video Group ID" },
-    { field: "videoGroupName", header: "Video Group", render: (item) => item.videoGroupName || "Unknown" },
-    // Add other relevant fields
-  ];
-
   if (!subjectDetails)
     return (
       <div className="container d-flex justify-content-center align-items-center py-5">
@@ -117,6 +110,7 @@ const SubjectDetails = () => {
 
         {labels.length > 0 ? (
           <DataTable
+            showRowNumbers={true}
             columns={labelColumns}
             data={labels}
             navigateButton={(label) => (

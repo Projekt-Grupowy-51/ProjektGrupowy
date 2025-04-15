@@ -39,7 +39,6 @@ const ProjectLabelersTab = ({
   };
 
   const LabelerColumns = [
-    { field: "id", header: "Labeler ID" },
     { field: "name", header: "Username" },
     { field: "assignmentOptions", header: "Assign labeler", render: (labeler) => (
       <div className="d-flex p-2 justify-content-between align-items-center">
@@ -329,7 +328,7 @@ const ProjectLabelersTab = ({
       </div>
 
       {unassignedLabelers.length > 0 ? (
-        <DataTable columns={LabelerColumns} data={unassignedLabelers} />
+        <DataTable showRowNumbers={true} columns={LabelerColumns} data={unassignedLabelers} />
       ) : (
         <div className="alert alert-info">
           <i className="fas fa-info-circle me-2"></i>
@@ -351,7 +350,7 @@ const ProjectLabelersTab = ({
       </div>
 
       {labelers.length > 0 ? (
-        <DataTable columns={LabelerColumns} data={labelers} />
+        <DataTable showRowNumbers={true} columns={LabelerColumns} data={labelers} />
       ) : (
         <div className="alert alert-info">
           <i className="fas fa-info-circle me-2"></i>
@@ -375,7 +374,8 @@ const ProjectLabelersTab = ({
       </div>
 
       {hasAssignedLabelers ? (
-        <DataTable 
+        <DataTable
+          showRowNumbers={true}    
           columns={assignedLabelerColumns} 
           data={assignedLabelerRows} 
         />

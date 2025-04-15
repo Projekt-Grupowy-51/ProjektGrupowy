@@ -106,7 +106,7 @@ const VideoDetails = () => {
     {
       field: "insDate",
       header: "Ins Date",
-      render: (insDate) => formatISODate(insDate)
+      render: (label) => formatISODate(label.insDate),
     }
   ];
 
