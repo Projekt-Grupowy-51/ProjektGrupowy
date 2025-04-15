@@ -38,9 +38,8 @@ const ProjectAssignmentsTab = ({ projectId }) => {
 
   // Define columns for assignments table
   const assignmentColumns = [
-    { field: "id", header: "ID" },
-    { field: "subjectId", header: "Subject ID" },
-    { field: "videoGroupId", header: "Video Group ID" }
+    { field: "subjectName", header: "Subject" },
+    { field: "videoGroupName", header: "Video Group" }
   ];
 
   if (loading) {
@@ -60,6 +59,7 @@ const ProjectAssignmentsTab = ({ projectId }) => {
       </div>
       {assignments.length > 0 ? (
         <DataTable
+          showRowNumbers={true}
           columns={assignmentColumns}
           data={assignments}
           navigateButton={(assignment) => (

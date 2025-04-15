@@ -59,7 +59,6 @@ const SubjectDetails = () => {
   
   // Define columns for labels table
   const labelColumns = [
-    { field: "id", header: "ID" },
     { field: "name", header: "Name" },
     { field: "shortcut", header: "Shortcut" },
     { field: "colorHex", header: "Color", render: (label) => (

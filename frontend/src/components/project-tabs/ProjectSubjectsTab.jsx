@@ -38,7 +38,6 @@ const ProjectSubjectsTab = ({ projectId }) => {
 
   // Define columns for subjects table
   const subjectColumns = [
-    { field: "id", header: "ID" },
     { field: "name", header: "Name" },
     { field: "description", header: "Description" }
   ];
@@ -60,6 +59,7 @@ const ProjectSubjectsTab = ({ projectId }) => {
       </div>
       {subjects.length > 0 ? (
         <DataTable
+          showRowNumbers={true}  
           columns={subjectColumns}
           data={subjects}
           navigateButton={(subject) => (

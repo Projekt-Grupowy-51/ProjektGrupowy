@@ -5,6 +5,7 @@ import "./css/ScientistProjects.css";
 import DeleteButton from "../components/DeleteButton";
 import DataTable from "../components/DataTable";
 import { useNotification } from "../context/NotificationContext";
+import { formatISODate } from '../utils/dateFormatter';
 
 function useVideoGroup(videoGroupId, currentBatch, setCurrentBatch) {
   const { addNotification } = useNotification();
@@ -395,14 +396,15 @@ const Videos = () => {
   
   // Define columns for the assigned labels table
   const labelColumns = [
-    { field: "labelName", header: "Label", render: (label) => {
-      const matchingLabel = labels.find(l => l.id === label.labelId);
-      return matchingLabel ? matchingLabel.name : "Unknown";
-    }},
-    { field: "videoId", header: "Video ID" },
+    { field: "labelName", header: "Label" },
+    { field: "labelerName", header: "Labeler" },
     { field: "start", header: "Start Time" },
     { field: "end", header: "End Time" },
-    { field: "insDate", header: "Ins Date", render: (label) => new Date(label.insDate).toLocaleString() }
+    {
+      field: "insDate",
+      header: "Ins Date",
+      render: (insDate) => formatISODate(insDate)
+    }
   ];
 
   useEffect(() => {

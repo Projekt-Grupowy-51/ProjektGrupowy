@@ -26,6 +26,11 @@ public class LabelService(ILabelRepository labelRepository, ISubjectRepository s
             return Optional<Label>.Failure("No subject found");
         }
 
+        if (!Char.IsLetterOrDigit(labelRequest.Shortcut))
+        {
+            return Optional<Label>.Failure("Shortcut has to be a letter or a number");
+        }
+
         var label = new Label
         {
             Name = labelRequest.Name,

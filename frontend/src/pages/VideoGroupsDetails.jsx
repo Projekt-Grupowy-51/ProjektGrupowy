@@ -70,7 +70,6 @@ const VideoGroupDetails = () => {
 
   // Define columns for videos table
   const videoColumns = [
-    { field: "id", header: "ID" },
     { field: "title", header: "Title" },
     { field: "positionInQueue", header: "Position" }
   ];

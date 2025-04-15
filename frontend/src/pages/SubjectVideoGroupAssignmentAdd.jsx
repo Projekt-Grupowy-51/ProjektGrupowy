@@ -65,9 +65,8 @@ const SubjectVideoGroupAssignmentAdd = () => {
         subjectId: parseInt(formData.subjectId),
         videoGroupId: parseInt(formData.videoGroupId),
       });
-      navigate(`/projects/${projectId}`, {
-          state: { successMessage: "Assignment added successfully!" }
-      });
+      addNotification("Assignment added successfully!", "success");
+      navigate(`/projects/${projectId}`);
     } catch (err) {
       addNotification(
         err.response?.data?.message || "An error occurred. Please try again.",
@@ -96,8 +95,6 @@ const SubjectVideoGroupAssignmentAdd = () => {
                             <h1 className="heading mb-0">Add New Assignment</h1>
                         </div>
                         <div className="card-body">
-                            {error && <div className="alert alert-danger mb-4">{error}</div>}
-
                             <form onSubmit={handleSubmit}>
                                 <div className="mb-3">
                                     <label htmlFor="subjectId" className="form-label">Subject</label>
