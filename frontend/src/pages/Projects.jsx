@@ -59,7 +59,6 @@ const Projects = () => {
 
   // Define columns configuration
   const columns = [
-    { field: "id", header: "ID" },
     { field: "name", header: "Name" },
     { field: "description", header: "Description" }
   ];
@@ -80,7 +79,8 @@ const Projects = () => {
             <p className="mt-3">Loading projects...</p>
           </div>
         ) : projects.length > 0 ? (
-          <DataTable
+          <DataTable 
+            showRowNumbers={true}
             columns={columns}
             data={projects}
             navigateButton={(project) => (

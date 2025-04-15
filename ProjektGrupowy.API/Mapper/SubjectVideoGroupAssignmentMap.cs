@@ -15,6 +15,7 @@ public class SubjectVideoGroupAssignmentMap : Profile
             .ForMember(dest => dest.Labelers, opt => opt.MapFrom(src => src.Labelers))
             .ForMember(dest => dest.ProjectId, opt => opt.MapFrom(src => src.VideoGroup.Project.Id))
             .ForMember(dest => dest.ProjectName, opt => opt.MapFrom(src => src.VideoGroup.Project.Name))
-            .ForMember(dest => dest.SubjectName, opt => opt.MapFrom(src => src.Subject.Name));
+            .ForMember(dest => dest.SubjectName, opt => opt.MapFrom(src => src.Subject.Name))
+            .ForMember(dest => dest.VideoGroupName, opt => opt.MapFrom(src => src.VideoGroup.Name));
     }
 }

@@ -68,8 +68,7 @@ const SubjectVideoGroupAssignmentDetails = () => {
 
   // Define columns for labelers table
   const labelerColumns = [
-    { field: "name", header: "Name", render: (labeler) => `${labeler.name} ${labeler.surname}` },
-    { field: "email", header: "Email" }
+    { field: "name", header: "Name", render: (labeler) => `${labeler.name}` }
   ];
 
   if (loading)
@@ -174,7 +173,8 @@ const SubjectVideoGroupAssignmentDetails = () => {
             <h3 className="p-2">Assigned Labelers</h3>
             <div className="assigned-labels-table">
               {labelers.length > 0 ? (
-                <DataTable 
+                <DataTable
+                  showRowNumbers={true}  
                   columns={labelerColumns}
                   data={labelers}
                 />

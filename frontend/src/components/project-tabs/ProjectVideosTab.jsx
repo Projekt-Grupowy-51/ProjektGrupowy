@@ -12,7 +12,6 @@ const ProjectVideosTab = ({ projectId }) => {
 
   // Define columns for video groups table
   const videoGroupColumns = [
-    { field: "id", header: "ID" },
     { field: "name", header: "Name" },
     { field: "description", header: "Description" }
   ];
@@ -59,6 +58,7 @@ const ProjectVideosTab = ({ projectId }) => {
       </div>
       {videoGroups.length > 0 ? (
         <DataTable
+          showRowNumbers={true}  
           columns={videoGroupColumns}
           data={videoGroups}
           navigateButton={(video) => (

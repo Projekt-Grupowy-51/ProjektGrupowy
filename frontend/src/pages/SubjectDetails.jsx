@@ -59,7 +59,6 @@ const SubjectDetails = () => {
   
   // Define columns for labels table
   const labelColumns = [
-    { field: "id", header: "ID" },
     { field: "name", header: "Name" },
     { field: "shortcut", header: "Shortcut" },
     { field: "colorHex", header: "Color", render: (label) => (
@@ -72,13 +71,6 @@ const SubjectDetails = () => {
         borderRadius: '3px'
       }}></div>
     )},
-  ];
-
-  const assignmentsColumns = [
-    { field: "id", header: "ID" },
-    { field: "videoGroupId", header: "Video Group ID" },
-    { field: "videoGroupName", header: "Video Group", render: (item) => item.videoGroupName || "Unknown" },
-    // Add other relevant fields
   ];
 
   if (!subjectDetails)
@@ -118,6 +110,7 @@ const SubjectDetails = () => {
 
         {labels.length > 0 ? (
           <DataTable
+            showRowNumbers={true}
             columns={labelColumns}
             data={labels}
             navigateButton={(label) => (

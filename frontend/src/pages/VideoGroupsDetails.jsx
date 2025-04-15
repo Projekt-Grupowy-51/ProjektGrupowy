@@ -70,7 +70,6 @@ const VideoGroupDetails = () => {
 
   // Define columns for videos table
   const videoColumns = [
-    { field: "id", header: "ID" },
     { field: "title", header: "Title" },
     { field: "positionInQueue", header: "Position" }
   ];
@@ -98,6 +97,7 @@ const VideoGroupDetails = () => {
 
           {videos.length > 0 ? (
             <DataTable
+              showRowNumbers={true}  
               columns={videoColumns}
               data={videos}
               tableClassName="normal-table table-hover"

@@ -18,7 +18,6 @@ const LabelerVideoGroups = () => {
   const { addNotification } = useNotification();
 
   const assignmentsColumns = [
-    { field: "id", header: "ID" },
     { field: "subjectName", header: "Subject" },
     { field: "videoGroupName", header: "Video Group" }
   ];
@@ -145,6 +144,7 @@ const LabelerVideoGroups = () => {
                     <h2 className="mt-3 mb-2">Assignments:</h2>
                     {getProjectAssignments(project.id).length > 0 ? (
                       <DataTable
+                        showRowNumbers={ true }  
                         columns={assignmentsColumns}
                         data={getProjectAssignments(project.id)}
                         navigateButton={(assignment) => (

@@ -5,6 +5,7 @@ import "./css/ScientistProjects.css";
 import DataTable from "../components/DataTable";
 import NavigateButton from "../components/NavigateButton";
 import { useNotification } from "../context/NotificationContext";
+import {formatISODate} from "../utils/dateFormatter.jsx";
 
 const VideoDetails = () => {
   const { id: videoId } = useParams();
@@ -95,14 +96,18 @@ const VideoDetails = () => {
     setEditedTitle("");
   };
 
+  
   // Define columns for the assigned labels table
   const labelColumns = [
-    { field: "id", header: "#", render: (_, index) => index + 1 },
-    { field: "labelId", header: "Label Id" },
-    { field: "labelerId", header: "Labeler Id" },
+    { field: "labelName", header: "Label" },
+    { field: "labelerName", header: "Labeler" },
     { field: "start", header: "Start" },
     { field: "end", header: "End" },
-    { field: "insDate", header: "Ins Date", render: (label) => new Date(label.insDate).toLocaleString() }
+    {
+      field: "insDate",
+      header: "Ins Date",
+      render: (label) => formatISODate(label.insDate),
+    }
   ];
 
   if (!videoData) {
@@ -161,7 +166,8 @@ const VideoDetails = () => {
       <div className="assigned-labels">
         <h3 className="">Assigned Labels</h3>
         <div className="assigned-labels-table">
-          <DataTable 
+          <DataTable
+            showRowNumbers={true}  
             columns={labelColumns}
             data={labels}
           />
