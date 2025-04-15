@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import httpClient from '../httpClient';
 import "./css/ScientistProjects.css";
+import { useNotification } from "../context/NotificationContext";
+import NavigateButton from "../components/NavigateButton";
 
 function ProjectEdit() {
     const { id } = useParams();
@@ -11,8 +13,8 @@ function ProjectEdit() {
         description: "",
         finished: false
     });
-    const [error, setError] = useState("");
     const [loading, setLoading] = useState(true);
+    const { addNotification } = useNotification();
 
     useEffect(() => {
         const fetchProject = async () => {
@@ -25,8 +27,7 @@ function ProjectEdit() {
                     finished: data.finished
                 });
             } catch (error) {
-                console.error("Error fetching project:", error);
-                setError(error.response?.data?.message || "Failed to load project data");
+                addNotification(error.response?.data?.message || "Failed to load project data", "error");
             } finally {
                 setLoading(false);
             }
@@ -36,16 +37,13 @@ function ProjectEdit() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError("");
 
         try {
             await httpClient.put(`/Project/${id}`, formData);
-            navigate(`/projects/${id}`, {
-                state: { successMessage: "Project updated successfully!" }
-            });
+            addNotification("Project updated successfully!", "success");
+            navigate(`/projects/${id}`);
         } catch (error) {
-            console.error("Error updating project:", error);
-            setError(error.response?.data?.message || "Failed to update project");
+            addNotification(error.response?.data?.message || "Failed to update project", "error");
         }
     };
 
@@ -123,13 +121,7 @@ function ProjectEdit() {
                                     <button type="submit" className="btn btn-primary me-2">
                                         <i className="fas fa-save me-2"></i>Save Changes
                                     </button>
-                                    <button
-                                        type="button"
-                                        className="btn btn-secondary"
-                                        onClick={() => navigate(`/projects/${id}`)}
-                                    >
-                                        <i className="fas fa-times me-2"></i>Cancel
-                                    </button>
+                                    <NavigateButton actionType="Back" value="Cancel"/>
                                 </div>
                             </form>
                         </div>

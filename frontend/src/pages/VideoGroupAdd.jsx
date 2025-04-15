@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import httpClient from '../httpClient';
 import './css/ScientistProjects.css';
+import NavigateButton from '../components/NavigateButton';
+import { useNotification } from "../context/NotificationContext";
 
 const VideoGroupAdd = () => {
     const [formData, setFormData] = useState({
@@ -9,10 +11,10 @@ const VideoGroupAdd = () => {
         description: '',
         projectId: null
     });
-    const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
+    const { addNotification } = useNotification();
 
     useEffect(() => {
         // Extract projectId from query params if available
@@ -31,11 +33,10 @@ const VideoGroupAdd = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-        setError('');
 
         // Validate form
         if (!formData.name || !formData.description || !formData.projectId) {
-            setError('Please fill in all required fields.');
+            addNotification('Please fill in all required fields.', 'error');
             setLoading(false);
             return;
         }
@@ -46,7 +47,7 @@ const VideoGroupAdd = () => {
                 state: { successMessage: "Video group added successfully!" }
             });
         } catch (err) {
-            setError(err.response?.data?.message || 'An error occurred. Please try again.');
+            addNotification(err.response?.data?.message || 'An error occurred. Please try again.', 'error');
             setLoading(false);
         }
     };
@@ -60,13 +61,6 @@ const VideoGroupAdd = () => {
                             <h1 className="heading mb-0">Add New Video Group</h1>
                         </div>
                         <div className="card-body">
-                            {error && (
-                                <div className="alert alert-danger mb-4">
-                                    <i className="fas fa-exclamation-triangle me-2"></i>
-                                    {error}
-                                </div>
-                            )}
-                            
                             <form onSubmit={handleSubmit}>
                                 <div className="mb-3">
                                     <label htmlFor="name" className="form-label">Group Name</label>
@@ -103,14 +97,7 @@ const VideoGroupAdd = () => {
                                         <i className="fas fa-plus-circle me-2"></i>
                                         {loading ? "Adding..." : "Add Video Group"}
                                     </button>
-                                    <button 
-                                        type="button" 
-                                        className="btn btn-secondary"
-                                        onClick={() => navigate(`/projects/${formData.projectId}`)}
-                                        disabled={loading}
-                                    >
-                                        <i className="fas fa-times me-2"></i>Cancel
-                                    </button>
+                                    <NavigateButton actionType='Back' value='Cancel'/>
                                 </div>
                             </form>
                         </div>

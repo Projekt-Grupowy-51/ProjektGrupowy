@@ -32,6 +32,9 @@ import SubjectVideoGroupAssignmentDetails from "./pages/SubjectVideoGroupAssignm
 import LabelerVideoGroups from "./pages/LabelerVideoGroups";
 import Login from "./pages/Login";
 import SubjectVideoGroupAssignmentAdd from "./pages/SubjectVideoGroupAssignmentAdd";
+import { ModalProvider } from './context/ModalContext';
+import { NotificationProvider } from './context/NotificationContext';
+import NotificationSystem from './components/NotificationSystem';
 
 const AuthContext = createContext();
 
@@ -200,55 +203,60 @@ const Navbar = () => {
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <Navbar />
-        <Routes>
-          <Route path="/login" element={<Login />} />
+    <NotificationProvider>
+      <AuthProvider>
+        <Router>
+          <ModalProvider>
+            <Navbar />
+            <Routes>
+              <Route path="/login" element={<Login />} />
 
-          <Route element={<ProtectedRoute />}>
-            <Route path="/projects" element={<Projects />} />
-            <Route path="/projects/:id" element={<ProjectDetails />} />
-            <Route path="/projects/edit/:id" element={<EditProjectPage />} />
-            <Route path="/projects/add" element={<AddProjectPage />} />
+              <Route element={<ProtectedRoute />}>
+                <Route path="/projects" element={<Projects />} />
+                <Route path="/projects/:id" element={<ProjectDetails />} />
+                <Route path="/projects/edit/:id" element={<EditProjectPage />} />
+                <Route path="/projects/add" element={<AddProjectPage />} />
 
-            <Route path="/subjects/:id" element={<SubjectDetails />} />
-            <Route path="/subjects/add" element={<AddSubject />} />
+                <Route path="/subjects/:id" element={<SubjectDetails />} />
+                <Route path="/subjects/add" element={<AddSubject />} />
 
-            <Route path="/video-groups/add" element={<AddVideoGroup />} />
-            <Route path="/video-groups/:id" element={<VideoGroupsDetails />} />
+                <Route path="/video-groups/add" element={<AddVideoGroup />} />
+                <Route path="/video-groups/:id" element={<VideoGroupsDetails />} />
 
-            <Route path="/videos/:id" element={<VideoDetails />} />
-            <Route path="/videos/add" element={<AddVideo />} />
+                <Route path="/videos/:id" element={<VideoDetails />} />
+                <Route path="/videos/add" element={<AddVideo />} />
 
-            <Route path="/video-group/:id" element={<VideoGroup />} />
+                <Route path="/video-group/:id" element={<VideoGroup />} />
 
-            <Route
-              path="/assignments/:id"
-              element={<SubjectVideoGroupAssignmentDetails />}
-            />
-            <Route
-              path="/assignments/add"
-              element={<SubjectVideoGroupAssignmentAdd />}
-            />
+                <Route
+                  path="/assignments/:id"
+                  element={<SubjectVideoGroupAssignmentDetails />}
+                />
+                <Route
+                  path="/assignments/add"
+                  element={<SubjectVideoGroupAssignmentAdd />}
+                />
 
-            <Route
-              path="/subject-video-group-assignments/:id"
-              element={<SubjectVideoGroupAssignmentDetails />}
-            />
-            <Route
-              path="/labeler-video-groups/:id"
-              element={<LabelerVideoGroups />}
-            />
+                <Route
+                  path="/subject-video-group-assignments/:id"
+                  element={<SubjectVideoGroupAssignmentDetails />}
+                />
+                <Route
+                  path="/labeler-video-groups/:id"
+                  element={<LabelerVideoGroups />}
+                />
 
-            <Route path="/labels/add" element={<LabelAdd />} />
-            <Route path="/labels/edit/:id" element={<EditLabel />} />
-          </Route>
+                <Route path="/labels/add" element={<LabelAdd />} />
+                <Route path="/labels/edit/:id" element={<EditLabel />} />
+              </Route>
 
-          <Route path="*" element={<Navigate to="/projects" replace />} />
-        </Routes>
-      </Router>
-    </AuthProvider>
+              <Route path="*" element={<Navigate to="/projects" replace />} />
+            </Routes>
+            <NotificationSystem />
+          </ModalProvider>
+        </Router>
+      </AuthProvider>
+    </NotificationProvider>
   );
 }
 

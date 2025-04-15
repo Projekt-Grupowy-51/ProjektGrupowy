@@ -18,6 +18,8 @@ public interface IProjectService
     Task<Optional<IEnumerable<Labeler>>> GetUnassignedLabelersOfProjectAsync(int id);
     Task DeleteProjectAsync(int id);
 
+    Task<Optional<IEnumerable<Project>>> GetProjectsForLabelerAsync(int labelerId);
+
     Task<Optional<bool>> UnassignLabelersFromProjectAsync(int projectId);
 
     Task<Optional<bool>> DistributeLabelersEquallyAsync(int projectId);

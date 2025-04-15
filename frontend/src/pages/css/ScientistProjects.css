@@ -327,6 +327,8 @@ button {
   background-repeat: no-repeat;
   background-position: right 1rem center;
   background-size: 1em;
+  min-width: 100px;
+  font-size: 0.9rem;
 }
 
 .auth-btn {
@@ -376,7 +378,7 @@ button {
 
 .label-btn {
   width: 10vw;
-  margin: 1% !important;
+  margin: 0 1% !important;
 }
 
 .video-grid {
@@ -392,6 +394,7 @@ video {
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 5px;
 }
 
 .controls-row {
@@ -401,22 +404,30 @@ video {
   gap: 20px;
 }
 
-.seek-btn,
+.seek-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: auto !important;
+  margin-bottom: auto !important;
+  vertical-align: middle;
+}
+
 .play-stop-btn {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 10px 15px;
-  font-size: 1rem;
+  font-size: 1.2rem;
   border-radius: var(--border-radius);
-  width: 60px;
-  height: 60px;
   text-align: center;
   background-color: var(--primary-blue);
   color: var(--text-light);
   border: none;
   transition: var(--transition);
+  font-size: 1.2rem !important;
+  padding: 8px;
 }
 
 .seek-btn:hover,
@@ -427,13 +438,21 @@ video {
 
 .seek-btn i,
 .play-stop-btn i {
-  font-size: 1.2rem;
+  font-size: 1rem;
 }
 
 .seek-btn span {
-  font-size: 1rem;
-  margin-top: 5px;
-  font-weight: bold;
+  font-size: 1.2rem;
+  margin-top: 0px;
+  font-weight: normal;
+}
+
+.seek-btn .next-span {
+  padding-left: 3px;
+}
+
+.seek-btn .prev-span {
+  padding-right: 3px;
 }
 
 .fa-backward p,
@@ -499,10 +518,10 @@ video {
   width: 20%;
 }
 
-  #access-codes-table tbody tr td:nth-child(1) div {
-    justify-content: space-between;
-    width: 100%;
-  }
+#access-codes-table tbody tr td:nth-child(1) div {
+  justify-content: space-between;
+  width: 100%;
+}
 
 .assigned-labels h3 {
   background: var(--gradient-blue);
@@ -537,7 +556,7 @@ video {
 .labels-container {
   justify-content: center;
   display: flex;
-  padding: 10px;
+  padding: 5px 0 10px 0;
 }
 
 .color-preview {
@@ -566,9 +585,9 @@ video {
 
 #video-container {
   margin: 0px auto;
-  padding-top: 0;
+  padding: 0;
   min-height: calc(70vh);
-  margin-bottom: 20px;
+  margin-bottom: 5px;
 }
 
 #video-row {
@@ -649,12 +668,14 @@ video {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: 5px;
+  margin-top: 0px;
 }
 
 .time-display {
   font-size: 1.2em;
   font-weight: bold;
+  font-size: 1rem;
+  font-weight: 500;
 }
 
 .pagination-button {
@@ -665,8 +686,8 @@ video {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 60px;
-  width: 60px;
+  height: 100%;
+  width: fit-content;
 }
 
 .fa-play {
@@ -694,4 +715,14 @@ video {
 .assigned-labels-table::-webkit-scrollbar-thumb {
   background: rgba(3, 155, 229, 0.5);
   border-radius: 3px;
+}
+
+.bg-gradient-blue {
+  background: var(--gradient-blue);
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
