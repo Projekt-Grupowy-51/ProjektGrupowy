@@ -532,7 +532,7 @@ const Videos = () => {
     {
       field: "insDate",
       header: "Ins Date",
-      render: (insDate) => formatISODate(insDate),
+      render: (label) => new Date(label.insDate).toLocaleString(),
     },
   ];
 
