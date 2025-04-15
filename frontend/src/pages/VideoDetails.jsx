@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
-import httpClient from "../httpClient";
+import httpClient from "../httpclient";
 import "./css/ScientistProjects.css";
 import DataTable from "../components/DataTable";
 import NavigateButton from "../components/NavigateButton";
 import { useNotification } from "../context/NotificationContext";
-import {formatISODate} from "../utils/dateFormatter.jsx";
+import { formatISODate } from "../utils/dateFormatter.jsx";
 
 const VideoDetails = () => {
   const { id: videoId } = useParams();
@@ -32,13 +32,15 @@ const VideoDetails = () => {
       if (response.status === 200) {
         setVideoData(response.data);
       } else {
-        addNotification(`Unexpected response status: ${response.status}`, "error");
+        addNotification(
+          `Unexpected response status: ${response.status}`,
+          "error"
+        );
       }
     } catch (error) {
       addNotification("Failed to load video details", "error");
     }
   };
-
 
   async function fetchVideoStream(videoId) {
     try {
@@ -54,12 +56,14 @@ const VideoDetails = () => {
     }
   }
 
-
   const fetchAssignedLabels = async (videoId) => {
     try {
-      const response = await httpClient.get(`/Video/${videoId}/assignedlabels`, {
-        withCredentials: true,
-      });
+      const response = await httpClient.get(
+        `/Video/${videoId}/assignedlabels`,
+        {
+          withCredentials: true,
+        }
+      );
       setLabels(response.data);
     } catch (error) {
       addNotification("Failed to load assigned labels", "error");
@@ -96,7 +100,6 @@ const VideoDetails = () => {
     setEditedTitle("");
   };
 
-  
   // Define columns for the assigned labels table
   const labelColumns = [
     { field: "labelName", header: "Label" },
@@ -107,7 +110,7 @@ const VideoDetails = () => {
       field: "insDate",
       header: "Ins Date",
       render: (label) => formatISODate(label.insDate),
-    }
+    },
   ];
 
   if (!videoData) {
@@ -119,7 +122,7 @@ const VideoDetails = () => {
       <div className="d-flex justify-content-end mb-3">
         <NavigateButton actionType="Back" />
       </div>
-      
+
       {isEditingTitle ? (
         <div className="edit-title-container text-center mb-4">
           <input
@@ -147,16 +150,19 @@ const VideoDetails = () => {
           </button>
         </h1>
       )}
-      <div className="video-container mb-4" style={{ position: 'relative', paddingTop: '56.25%' }}>
+      <div
+        className="video-container mb-4"
+        style={{ position: "relative", paddingTop: "56.25%" }}
+      >
         <video
           ref={videoRef}
           style={{
-            position: 'absolute',
+            position: "absolute",
             top: 0,
             left: 0,
-            width: '100%',
-            height: '100%',
-            objectFit: 'contain'
+            width: "100%",
+            height: "100%",
+            objectFit: "contain",
           }}
           controls
           src={videoStream}
@@ -167,7 +173,7 @@ const VideoDetails = () => {
         <h3 className="">Assigned Labels</h3>
         <div className="assigned-labels-table">
           <DataTable
-            showRowNumbers={true}  
+            showRowNumbers={true}
             columns={labelColumns}
             data={labels}
           />

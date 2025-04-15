@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import httpClient from "../httpClient";
+import httpClient from "../httpclient";
 import "./css/ScientistProjects.css";
 import NavigateButton from "../components/NavigateButton";
 import DataTable from "../components/DataTable";
@@ -19,7 +19,7 @@ const LabelerVideoGroups = () => {
 
   const assignmentsColumns = [
     { field: "subjectName", header: "Subject" },
-    { field: "videoGroupName", header: "Video Group" }
+    { field: "videoGroupName", header: "Video Group" },
   ];
 
   const handleJoinProject = async () => {
@@ -49,13 +49,16 @@ const LabelerVideoGroups = () => {
       const response = await httpClient.get("/project");
       setProjects(response.data);
       const expanded = {};
-      response.data.forEach(project => {
+      response.data.forEach((project) => {
         expanded[project.id] = false;
       });
       setExpandedProjects(expanded);
       await fetchAssignments();
     } catch (error) {
-      addNotification(error.response?.data?.message || "Failed to load projects", "error");
+      addNotification(
+        error.response?.data?.message || "Failed to load projects",
+        "error"
+      );
       setLoading(false);
     }
   };
@@ -65,22 +68,27 @@ const LabelerVideoGroups = () => {
       const response = await httpClient.get(`/SubjectVideoGroupAssignment`);
       setAssignments(response.data);
     } catch (error) {
-      addNotification(error.response?.data?.message || "Failed to load assignments", "error");
+      addNotification(
+        error.response?.data?.message || "Failed to load assignments",
+        "error"
+      );
     } finally {
       setLoading(false);
     }
   };
 
   const toggleProjectExpand = (projectId) => {
-    setExpandedProjects(prev => ({
+    setExpandedProjects((prev) => ({
       ...prev,
-      [projectId]: !prev[projectId]
+      [projectId]: !prev[projectId],
     }));
   };
 
   // Group assignments by project
   const getProjectAssignments = (projectId) => {
-    return assignments.filter(assignment => assignment.projectId === projectId);
+    return assignments.filter(
+      (assignment) => assignment.projectId === projectId
+    );
   };
 
   useEffect(() => {
@@ -127,16 +135,20 @@ const LabelerVideoGroups = () => {
 
         {projects.length > 0 ? (
           <div className="projects-container">
-            {projects.map(project => (
+            {projects.map((project) => (
               <div key={project.id} className="card mb-4">
-                <div 
-                  className="card-header d-flex justify-content-between align-items-center" 
+                <div
+                  className="card-header d-flex justify-content-between align-items-center"
                   style={{ cursor: "pointer" }}
                   onClick={() => toggleProjectExpand(project.id)}
                 >
                   <h5 className="mb-0">{project.name}</h5>
                   <button className="btn btn-sm btn-light">
-                    <i className={`fas fa-chevron-${expandedProjects[project.id] ? 'up' : 'down'}`}></i>
+                    <i
+                      className={`fas fa-chevron-${
+                        expandedProjects[project.id] ? "up" : "down"
+                      }`}
+                    ></i>
                   </button>
                 </div>
                 {expandedProjects[project.id] && (
@@ -144,11 +156,14 @@ const LabelerVideoGroups = () => {
                     <h2 className="mt-3 mb-2">Assignments:</h2>
                     {getProjectAssignments(project.id).length > 0 ? (
                       <DataTable
-                        showRowNumbers={ true }  
+                        showRowNumbers={true}
                         columns={assignmentsColumns}
                         data={getProjectAssignments(project.id)}
                         navigateButton={(assignment) => (
-                          <NavigateButton path={`/video-group/${assignment.id}`} actionType="Details" />
+                          <NavigateButton
+                            path={`/video-group/${assignment.id}`}
+                            actionType="Details"
+                          />
                         )}
                       />
                     ) : (
@@ -164,7 +179,8 @@ const LabelerVideoGroups = () => {
         ) : (
           <div className="alert alert-info text-center">
             <i className="fas fa-info-circle me-2"></i>
-            You haven't joined any projects yet. Join a project using an access code.
+            You haven't joined any projects yet. Join a project using an access
+            code.
           </div>
         )}
       </div>

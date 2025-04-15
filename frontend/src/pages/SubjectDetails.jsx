@@ -1,6 +1,6 @@
 ﻿import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, Link, useLocation } from "react-router-dom";
-import httpClient from "../httpClient";
+import httpClient from "../httpclient";
 import NavigateButton from "../components/NavigateButton";
 import DeleteButton from "../components/DeleteButton";
 import DataTable from "../components/DataTable";
@@ -56,21 +56,27 @@ const SubjectDetails = () => {
       addNotification("Failed to delete label. Please try again.", "error");
     }
   };
-  
+
   // Define columns for labels table
   const labelColumns = [
     { field: "name", header: "Name" },
     { field: "shortcut", header: "Shortcut" },
-    { field: "colorHex", header: "Color", render: (label) => (
-      <div style={{ 
-        backgroundColor: label.colorHex, 
-        width: '20px', 
-        height: '20px', 
-        display: 'inline-block',
-        marginRight: '5px',
-        borderRadius: '3px'
-      }}></div>
-    )},
+    {
+      field: "colorHex",
+      header: "Color",
+      render: (label) => (
+        <div
+          style={{
+            backgroundColor: label.colorHex,
+            width: "20px",
+            height: "20px",
+            display: "inline-block",
+            marginRight: "5px",
+            borderRadius: "3px",
+          }}
+        ></div>
+      ),
+    },
   ];
 
   if (!subjectDetails)
@@ -102,7 +108,10 @@ const SubjectDetails = () => {
         </div>
 
         <div className="d-flex justify-content-between mb-2">
-          <NavigateButton path={`/labels/add?subjectId=${id}`} actionType="Add" />
+          <NavigateButton
+            path={`/labels/add?subjectId=${id}`}
+            actionType="Add"
+          />
           <NavigateButton actionType="Back" />
         </div>
 
@@ -114,10 +123,13 @@ const SubjectDetails = () => {
             columns={labelColumns}
             data={labels}
             navigateButton={(label) => (
-              <NavigateButton path={`/labels/edit/${label.id}`} actionType="Edit" />
+              <NavigateButton
+                path={`/labels/edit/${label.id}`}
+                actionType="Edit"
+              />
             )}
             deleteButton={(label) => (
-              <DeleteButton 
+              <DeleteButton
                 onClick={() => handleDeleteLabel(label.id)}
                 itemType={`label "${label.name}"`}
               />
