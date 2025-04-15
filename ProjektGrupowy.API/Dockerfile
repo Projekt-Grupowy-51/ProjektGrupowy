@@ -26,4 +26,5 @@ RUN dotnet publish "ProjektGrupowy.API.csproj" -c $BUILD_CONFIGURATION -o /app/p
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+RUN apt update && apt install -y curl
 ENTRYPOINT ["dotnet", "ProjektGrupowy.API.dll"]

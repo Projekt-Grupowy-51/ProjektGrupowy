@@ -33,6 +33,8 @@ builder.Host.UseSerilog();
 
 var app = builder.Build();
 
+app.MapHealthChecks("/health");
+
 // Seed the database and create roles
 await MigrateDatabase(app.Services);
 await CreateRoles(app.Services);
@@ -85,6 +87,8 @@ static void AddServices(WebApplicationBuilder builder)
         {
             options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
         });
+
+    builder.Services.AddHealthChecks();
 
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen(c =>

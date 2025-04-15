@@ -1,27 +1,54 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import httpClient from "../httpClient";
+import httpClient from "../httpclient";
 import "./css/ScientistProjects.css";
-import { useNotification } from "../context/NotificationContext";
-import DeleteButton from "../components/DeleteButton";
 
 const VideoAdd = () => {
   const [videoGroupId, setVideoGroupId] = useState(null);
   const [videoGroupName, setVideoGroupName] = useState("");
   const [videos, setVideos] = useState([]);
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const navigate = useNavigate();
   const location = useLocation();
   const dropRef = useRef(null);
-  const { addNotification } = useNotification();
+  const fileInputRef = useRef(null);
+
+  const handleButtonClick = () => {
+    fileInputRef.current.click();
+  };
+
+  const handleFileSelect = (e) => {
+    const selectedFiles = Array.from(e.target.files);
+
+    const accepted = [];
+    const rejected = [];
+
+    selectedFiles.forEach((file) => {
+      if (!file.type.startsWith("video/")) {
+        rejected.push(`${file.name} is not a valid video.`);
+      } else if (file.size > 100 * 1024 * 1024) {
+        rejected.push(`${file.name} exceeds 100MB limit.`);
+      } else {
+        accepted.push({
+          file,
+          title: file.name.replace(/\.[^/.]+$/, ""),
+          positionInQueue: videos.length + accepted.length + 1,
+        });
+      }
+    });
+
+    setVideos((prev) => [...prev, ...accepted]);
+    if (rejected.length > 0) setError(rejected.join("\n"));
+  };
 
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
     const groupId = queryParams.get("videogroupId");
 
     if (!groupId) {
-      addNotification("Video Group ID is required. Please go back and try again.", "error");
+      setError("Video Group ID is required. Please go back and try again.");
       return;
     }
 
@@ -35,7 +62,7 @@ const VideoAdd = () => {
       const response = await httpClient.get(`/videogroup/${id}`);
       setVideoGroupName(response.data.name);
     } catch {
-      addNotification("Failed to load video group information.", "error");
+      setError("Failed to load video group information.");
     }
   };
 
@@ -61,9 +88,7 @@ const VideoAdd = () => {
     });
 
     setVideos((prev) => [...prev, ...accepted]);
-    if (rejected.length > 0) {
-      addNotification(rejected.join("\n"), "error");
-    }
+    if (rejected.length > 0) setError(rejected.join("\n"));
   };
 
   const handleDragOver = (e) => e.preventDefault();
@@ -80,15 +105,17 @@ const VideoAdd = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError("");
     setUploadProgress(0);
 
     if (videos.length === 0) {
-      addNotification("Please drag and drop at least one video.", "error");
+      setError("Please drag and drop at least one video.");
       setLoading(false);
       return;
     }
 
     try {
+      // Track individual upload progress
       const progressPerVideo = Array(videos.length).fill(0);
 
       const uploadPromises = videos.map((video, index) => {
@@ -121,10 +148,9 @@ const VideoAdd = () => {
         state: { successMessage: "All videos uploaded successfully!" },
       });
     } catch (err) {
-      addNotification(
+      setError(
         err.response?.data?.message ||
-          "An error occurred while uploading the videos.",
-        "error"
+          "An error occurred while uploading the videos."
       );
       setLoading(false);
     }
@@ -141,6 +167,13 @@ const VideoAdd = () => {
           <h1 className="heading mb-0">Upload Multiple Videos</h1>
         </div>
         <div className="card-body">
+          {error && (
+            <div className="alert alert-danger">
+              <i className="fas fa-exclamation-triangle me-2"></i>
+              {error}
+            </div>
+          )}
+
           <div
             ref={dropRef}
             className="drop-area border border-primary rounded mb-4 p-4 text-center"
@@ -151,17 +184,37 @@ const VideoAdd = () => {
             <i className="fas fa-cloud-upload-alt fa-2x mb-2"></i>
             <p className="mb-0">Drag and drop your videos here</p>
             <small className="text-muted">Maximum size: 100MB each</small>
+
+            {/* Add a div to move the button to a new line */}
+            <div className="mt-3">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={handleButtonClick}
+              >
+                Select Files
+              </button>
+            </div>
+
+            <input
+              type="file"
+              ref={fileInputRef}
+              style={{ display: "none" }}
+              multiple
+              accept="video/*"
+              onChange={handleFileSelect}
+            />
           </div>
 
           {videos.length > 0 && (
             <form onSubmit={handleSubmit}>
-              <table className="normal-table">
+              <table className="table table-bordered">
                 <thead className="table-light">
                   <tr>
                     <th>Title</th>
                     <th>File Size</th>
                     <th>Position in Queue</th>
-                    <th>Actions</th> 
+                    <th>Actions</th> {/* 👈 New column header */}
                   </tr>
                 </thead>
                 <tbody>
@@ -199,7 +252,14 @@ const VideoAdd = () => {
                       </td>
                       <td>
                         <div className="d-flex justify-content-center">
-                          <DeleteButton onClick={() => handleRemove(index)} />
+                          <button
+                            type="button"
+                            className="btn btn-danger"
+                            onClick={() => handleRemove(index)}
+                            disabled={loading}
+                          >
+                            <i className="fas fa-trash-alt"></i>
+                          </button>
                         </div>
                       </td>
                     </tr>
