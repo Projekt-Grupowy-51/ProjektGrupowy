@@ -62,7 +62,10 @@ const ProjectAssignmentsTab = ({ projectId }) => {
   return (
     <div className="assignments">
       <div className="d-flex justify-content-end mb-3">
-        <NavigateButton actionType="Add" value="Add Assignment" />
+        <NavigateButton 
+          actionType="Add" 
+          path={`/assignments/add?projectId=${projectId}`}
+          value="Add Assignment" />
       </div>
       {assignments.length > 0 ? (
         <DataTable
