@@ -1,8 +1,13 @@
 import React, { useState, useEffect } from "react";
-import httpClient from "../../httpClient";
+import httpClient from "../../httpclient";
 import { useNotification } from "../../context/NotificationContext";
 
-const ProjectAccessCodesTab = ({ projectId, accessCodes = [], onSuccess, onError }) => {
+const ProjectAccessCodesTab = ({
+  projectId,
+  accessCodes = [],
+  onSuccess,
+  onError,
+}) => {
   const [creationError, setCreationError] = useState("");
   const [codeExpiration, setCodeExpiration] = useState(0);
   const [customCodeExpiration, setCustomCodeExpiration] = useState(0);
@@ -10,7 +15,7 @@ const ProjectAccessCodesTab = ({ projectId, accessCodes = [], onSuccess, onError
   const [localAccessCodes, setLocalAccessCodes] = useState([]);
   const [loading, setLoading] = useState(true);
   const { addNotification } = useNotification();
-  
+
   // Fetch access codes if they're not provided via props
   useEffect(() => {
     if (accessCodes && accessCodes.length > 0) {
@@ -20,14 +25,15 @@ const ProjectAccessCodesTab = ({ projectId, accessCodes = [], onSuccess, onError
       fetchAccessCodes();
     }
   }, [projectId]);
-  
+
   const fetchAccessCodes = async () => {
     try {
       setLoading(true);
       const response = await httpClient.get(`/AccessCode/project/${projectId}`);
       setLocalAccessCodes(response.data || []);
     } catch (error) {
-      const errorMessage = error.response?.data?.message || "Failed to load access codes";
+      const errorMessage =
+        error.response?.data?.message || "Failed to load access codes";
       if (onError) {
         onError(error);
       } else {
@@ -50,7 +56,10 @@ const ProjectAccessCodesTab = ({ projectId, accessCodes = [], onSuccess, onError
     if (onError) {
       onError(error);
     } else {
-      addNotification(error.response?.data?.message || "An error occurred", "error");
+      addNotification(
+        error.response?.data?.message || "An error occurred",
+        "error"
+      );
     }
   };
 
@@ -66,7 +75,7 @@ const ProjectAccessCodesTab = ({ projectId, accessCodes = [], onSuccess, onError
       await httpClient.post("/AccessCode/project", json);
       setCodeExpiration(0);
       notifySuccess("Access code created successfully!");
-      
+
       // Refresh the codes list after creating a new one
       fetchAccessCodes();
     } catch (error) {
@@ -129,9 +138,7 @@ const ProjectAccessCodesTab = ({ projectId, accessCodes = [], onSuccess, onError
             <div className="btn-group">
               <button
                 className={`btn ${
-                  codeExpiration === 0
-                    ? "btn-primary"
-                    : "btn-outline-primary"
+                  codeExpiration === 0 ? "btn-primary" : "btn-outline-primary"
                 }`}
                 onClick={() => setCodeExpiration(0)}
               >
@@ -139,9 +146,7 @@ const ProjectAccessCodesTab = ({ projectId, accessCodes = [], onSuccess, onError
               </button>
               <button
                 className={`btn ${
-                  codeExpiration === 1
-                    ? "btn-primary"
-                    : "btn-outline-primary"
+                  codeExpiration === 1 ? "btn-primary" : "btn-outline-primary"
                 }`}
                 onClick={() => setCodeExpiration(1)}
               >
@@ -149,9 +154,7 @@ const ProjectAccessCodesTab = ({ projectId, accessCodes = [], onSuccess, onError
               </button>
               <button
                 className={`btn ${
-                  codeExpiration === 3
-                    ? "btn-primary"
-                    : "btn-outline-primary"
+                  codeExpiration === 3 ? "btn-primary" : "btn-outline-primary"
                 }`}
                 onClick={() => setCodeExpiration(3)}
               >
@@ -159,9 +162,7 @@ const ProjectAccessCodesTab = ({ projectId, accessCodes = [], onSuccess, onError
               </button>
               <button
                 className={`btn ${
-                  codeExpiration === 2
-                    ? "btn-primary"
-                    : "btn-outline-primary"
+                  codeExpiration === 2 ? "btn-primary" : "btn-outline-primary"
                 }`}
                 onClick={() => setCodeExpiration(2)}
               >
@@ -227,9 +228,7 @@ const ProjectAccessCodesTab = ({ projectId, accessCodes = [], onSuccess, onError
                 if (!a.expiresAtUtc && !b.expiresAtUtc) return 0;
                 if (!a.expiresAtUtc) return -1;
                 if (!b.expiresAtUtc) return 1;
-                return (
-                  new Date(b.expiresAtUtc) - new Date(a.expiresAtUtc)
-                );
+                return new Date(b.expiresAtUtc) - new Date(a.expiresAtUtc);
               })
               .map((code) => (
                 <tr key={code.code}>
@@ -241,9 +240,7 @@ const ProjectAccessCodesTab = ({ projectId, accessCodes = [], onSuccess, onError
                             ? "blur(0px)"
                             : "blur(6px)",
                           transition: "filter 0.3s ease",
-                          userSelect: visibleCodes[code.code]
-                            ? "auto"
-                            : "none",
+                          userSelect: visibleCodes[code.code] ? "auto" : "none",
                           pointerEvents: visibleCodes[code.code]
                             ? "auto"
                             : "none",
@@ -255,9 +252,7 @@ const ProjectAccessCodesTab = ({ projectId, accessCodes = [], onSuccess, onError
                         className="btn btn-link p-0"
                         onClick={() => toggleCodeVisibility(code.code)}
                         title={
-                          visibleCodes[code.code]
-                            ? "Hide code"
-                            : "Show code"
+                          visibleCodes[code.code] ? "Hide code" : "Show code"
                         }
                       >
                         <i
@@ -268,9 +263,7 @@ const ProjectAccessCodesTab = ({ projectId, accessCodes = [], onSuccess, onError
                       </button>
                     </div>
                   </td>
-                  <td>
-                    {new Date(code.createdAtUtc).toLocaleString()}
-                  </td>
+                  <td>{new Date(code.createdAtUtc).toLocaleString()}</td>
                   <td>
                     {code.isValid
                       ? code.expiresAtUtc
@@ -308,8 +301,7 @@ const ProjectAccessCodesTab = ({ projectId, accessCodes = [], onSuccess, onError
         </table>
       ) : (
         <div className="alert alert-info text-center">
-          <i className="fas fa-info-circle me-2"></i>No access codes
-          found
+          <i className="fas fa-info-circle me-2"></i>No access codes found
         </div>
       )}
     </div>

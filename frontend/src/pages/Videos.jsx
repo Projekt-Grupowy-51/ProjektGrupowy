@@ -1,11 +1,11 @@
 ﻿import React, { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
-import httpClient from "../httpClient";
+import httpClient from "../httpclient";
 import "./css/ScientistProjects.css";
 import DeleteButton from "../components/DeleteButton";
 import DataTable from "../components/DataTable";
 import { useNotification } from "../context/NotificationContext";
-import { formatISODate } from '../utils/dateFormatter';
+import { formatISODate } from "../utils/dateFormatter";
 
 function useVideoGroup(videoGroupId, currentBatch, setCurrentBatch) {
   const { addNotification } = useNotification();
@@ -62,16 +62,28 @@ function useVideoGroup(videoGroupId, currentBatch, setCurrentBatch) {
         if (response.status === 200 && response.data) {
           return URL.createObjectURL(response.data);
         } else {
-          console.error(`Failed to fetch stream for video ID ${videoId}:`, response);
+          console.error(
+            `Failed to fetch stream for video ID ${videoId}:`,
+            response
+          );
           return null;
         }
       } catch (error) {
         if (error.response) {
-          console.error(`Server responded with an error for video ID ${videoId}:`, error.response);
+          console.error(
+            `Server responded with an error for video ID ${videoId}:`,
+            error.response
+          );
         } else if (error.request) {
-          console.error(`No response received for video ID ${videoId}. Possible network error:`, error.request);
+          console.error(
+            `No response received for video ID ${videoId}. Possible network error:`,
+            error.request
+          );
         } else {
-          console.error(`Error setting up request for video ID ${videoId}:`, error.message);
+          console.error(
+            `Error setting up request for video ID ${videoId}:`,
+            error.message
+          );
         }
         return null;
       }
@@ -86,7 +98,11 @@ function useVideoGroup(videoGroupId, currentBatch, setCurrentBatch) {
   }
 
   return {
-    videos, streams, videoPositions, fetchVideos, onBatchChangedAsync
+    videos,
+    streams,
+    videoPositions,
+    fetchVideos,
+    onBatchChangedAsync,
   };
 }
 
@@ -99,24 +115,24 @@ function useVideoControls(videoRefs) {
 
   // Enhanced method to synchronize all video elements
   const syncAllVideos = (action, value = null) => {
-    videoRefs.current.forEach(video => {
+    videoRefs.current.forEach((video) => {
       if (!video) return;
 
       switch (action) {
-        case 'play':
-          video.play().catch(err => console.error("Play failed:", err));
+        case "play":
+          video.play().catch((err) => console.error("Play failed:", err));
           break;
-        case 'pause':
+        case "pause":
           video.pause();
           break;
-        case 'reset':
+        case "reset":
           video.pause();
           video.currentTime = 0;
           break;
-        case 'setTime':
+        case "setTime":
           video.currentTime = value;
           break;
-        case 'setSpeed':
+        case "setSpeed":
           video.playbackRate = value;
           break;
         default:
@@ -131,10 +147,9 @@ function useVideoControls(videoRefs) {
     if (!video) return;
 
     if (isPlaying) {
-      syncAllVideos('pause');
-
+      syncAllVideos("pause");
     } else {
-      syncAllVideos('play');
+      syncAllVideos("play");
     }
 
     setIsPlaying(!isPlaying);
@@ -148,12 +163,12 @@ function useVideoControls(videoRefs) {
     const handlePlay = () => setIsPlaying(true);
     const handlePause = () => setIsPlaying(false);
 
-    video.addEventListener('play', handlePlay);
-    video.addEventListener('pause', handlePause);
+    video.addEventListener("play", handlePlay);
+    video.addEventListener("pause", handlePause);
 
     return () => {
-      video.removeEventListener('play', handlePlay);
-      video.removeEventListener('pause', handlePause);
+      video.removeEventListener("play", handlePlay);
+      video.removeEventListener("pause", handlePause);
     };
   }, [videoRefs]);
 
@@ -167,17 +182,17 @@ function useVideoControls(videoRefs) {
       setDuration(video.duration);
     };
 
-    video.addEventListener('timeupdate', handleTimeUpdate);
+    video.addEventListener("timeupdate", handleTimeUpdate);
 
     return () => {
-      video.removeEventListener('timeupdate', handleTimeUpdate);
+      video.removeEventListener("timeupdate", handleTimeUpdate);
     };
   }, [playbackSpeed, videoRefs]);
 
   // Apply playback speed to all videos
   const handlePlaybackSpeedChange = (speed) => {
     setPlaybackSpeed(speed);
-    syncAllVideos('setSpeed', speed);
+    syncAllVideos("setSpeed", speed);
 
     // Trigger a re-render to ensure the progress bar updates
     setCurrentTime((prevTime) => prevTime);
@@ -185,7 +200,7 @@ function useVideoControls(videoRefs) {
     // Explicitly trigger the timeupdate event on all videos
     videoRefs.current.forEach((video) => {
       if (video) {
-        video.dispatchEvent(new Event('timeupdate'));
+        video.dispatchEvent(new Event("timeupdate"));
       }
     });
   };
@@ -202,7 +217,7 @@ function useVideoControls(videoRefs) {
 
   // Seek to specific position in all videos
   const handleSeek = (newTime) => {
-    syncAllVideos('setTime', newTime);
+    syncAllVideos("setTime", newTime);
     setCurrentTime(newTime);
   };
 
@@ -221,13 +236,13 @@ function useVideoControls(videoRefs) {
     setIsPlaying(false);
     setCurrentTime(0);
     setTimeLeft(duration);
-    syncAllVideos('reset');
+    syncAllVideos("reset");
   };
 
   // Properly apply speed to newly loaded videos
   useEffect(() => {
     // This ensures new videos get the current playback speed
-    videoRefs.current.forEach(video => {
+    videoRefs.current.forEach((video) => {
       if (video) video.playbackRate = playbackSpeed;
     });
   }, [videoRefs.current.length, playbackSpeed]);
@@ -254,20 +269,31 @@ function useVideoControls(videoRefs) {
           setCurrentTime(video.currentTime);
         };
 
-        video.addEventListener('ratechange', handleRateChange);
+        video.addEventListener("ratechange", handleRateChange);
 
         // Cleanup listener on unmount
         return () => {
-          video.removeEventListener('ratechange', handleRateChange);
+          video.removeEventListener("ratechange", handleRateChange);
         };
       }
     });
   }, [videoRefs]);
 
   return {
-    isPlaying, setIsPlaying, currentTime, setCurrentTime, duration, timeLeft,
-    playbackSpeed, handlePlayStop, handlePlaybackSpeedChange, handleTimeUpdate,
-    handleRewind, handleFastForward, resetPlayback, handleSeek
+    isPlaying,
+    setIsPlaying,
+    currentTime,
+    setCurrentTime,
+    duration,
+    timeLeft,
+    playbackSpeed,
+    handlePlayStop,
+    handlePlaybackSpeedChange,
+    handleTimeUpdate,
+    handleRewind,
+    handleFastForward,
+    resetPlayback,
+    handleSeek,
   };
 }
 
@@ -420,8 +446,14 @@ function useLabels(videos, subjectId) {
   };
 
   return {
-    labels, assignedLabels, labelTimestamps, handleLabelClick,
-    handleDelete, isMeasuring, fetchAssignedLabels, sendLabelData
+    labels,
+    assignedLabels,
+    labelTimestamps,
+    handleLabelClick,
+    handleDelete,
+    isMeasuring,
+    fetchAssignedLabels,
+    sendLabelData,
   };
 }
 
@@ -462,9 +494,20 @@ const Videos = () => {
   // Custom hooks for specific functionality
   const videoControls = useVideoControls(videoRefs);
   const {
-    isPlaying, setIsPlaying, currentTime, setCurrentTime, duration, timeLeft,
-    playbackSpeed, handlePlayStop, handlePlaybackSpeedChange, handleTimeUpdate,
-    handleRewind, handleFastForward, resetPlayback, handleSeek
+    isPlaying,
+    setIsPlaying,
+    currentTime,
+    setCurrentTime,
+    duration,
+    timeLeft,
+    playbackSpeed,
+    handlePlayStop,
+    handlePlaybackSpeedChange,
+    handleTimeUpdate,
+    handleRewind,
+    handleFastForward,
+    resetPlayback,
+    handleSeek,
   } = videoControls;
 
   const videoGroup = useVideoGroup(videoGroupId, currentBatch, setCurrentBatch);
@@ -472,21 +515,26 @@ const Videos = () => {
 
   const labelsManager = useLabels(videos, subjectId);
   const {
-    labels, assignedLabels, labelTimestamps, isMeasuring, handleDelete, sendLabelData
+    labels,
+    assignedLabels,
+    labelTimestamps,
+    isMeasuring,
+    handleDelete,
+    sendLabelData,
   } = labelsManager;
 
   // Define columns for the assigned labels table
-    const labelColumns = [
-        { field: "labelName", header: "Label" },
-        { field: "labelerName", header: "Labeler" },
-        { field: "start", header: "Start Time" },
-        { field: "end", header: "End Time" },
-        {
-            field: "insDate",
-            header: "Ins Date",
-            render: (insDate) => formatISODate(insDate)
-        }
-    ];
+  const labelColumns = [
+    { field: "labelName", header: "Label" },
+    { field: "labelerName", header: "Labeler" },
+    { field: "start", header: "Start Time" },
+    { field: "end", header: "End Time" },
+    {
+      field: "insDate",
+      header: "Ins Date",
+      render: (insDate) => formatISODate(insDate),
+    },
+  ];
 
   useEffect(() => {
     if (id) {
@@ -538,7 +586,7 @@ const Videos = () => {
 
     // Reset playback before changing batch
     resetPlayback();
-    
+
     // Change batch
     await onBatchChangedAsync(newBatch);
 
@@ -582,7 +630,7 @@ const Videos = () => {
     if (streams.length === 0) return;
 
     // Apply current playback speed to all videos
-    videoRefs.current.forEach(video => {
+    videoRefs.current.forEach((video) => {
       if (video) video.playbackRate = playbackSpeed;
     });
 
@@ -590,11 +638,12 @@ const Videos = () => {
     if (shouldAutoplayRef.current) {
       // Use timeout to ensure videos are properly loaded
       const timer = setTimeout(() => {
-        videoRefs.current.forEach(video => {
+        videoRefs.current.forEach((video) => {
           if (video) {
             video.currentTime = 0;
-            video.play()
-              .catch(err => console.error("Failed to autoplay:", err));
+            video
+              .play()
+              .catch((err) => console.error("Failed to autoplay:", err));
           }
         });
         setIsPlaying(true);
@@ -662,12 +711,13 @@ const Videos = () => {
             {streams.length > 0 ? (
               streams.map((streamUrl, index) => (
                 <div
-                  className={`col-12 ${streams.length === 1
-                    ? ""
-                    : streams.length <= 4
+                  className={`col-12 ${
+                    streams.length === 1
+                      ? ""
+                      : streams.length <= 4
                       ? "col-md-5"
                       : "col-md-4"
-                    }`}
+                  }`}
                   key={index}
                 >
                   <div className="video-cell">
@@ -711,7 +761,8 @@ const Videos = () => {
                 Previous
               </button>
               <div className="time-display text-center">
-                {formatTime(currentTime)} / {formatTime(isNaN(duration) ? 0 : duration)}
+                {formatTime(currentTime)} /{" "}
+                {formatTime(isNaN(duration) ? 0 : duration)}
               </div>
               <div className="controls d-inline">
                 <button
@@ -752,7 +803,9 @@ const Videos = () => {
               <select
                 className="form-select w-auto mx-3"
                 id="playbackSpeedSelect"
-                onChange={(e) => handlePlaybackSpeedChange(parseFloat(e.target.value))}
+                onChange={(e) =>
+                  handlePlaybackSpeedChange(parseFloat(e.target.value))
+                }
                 defaultValue="1.0"
               >
                 <option value="0.25">0.25x</option>
@@ -795,7 +848,11 @@ const Videos = () => {
                   onClick={() => handleLabelClick(label.id)}
                 >
                   {label.name + " [" + label.shortcut + "]"}{" "}
-                  {label.type === "point" ? "ADD POINT" : measuring ? "STOP" : "START"}
+                  {label.type === "point"
+                    ? "ADD POINT"
+                    : measuring
+                    ? "STOP"
+                    : "START"}
                 </button>
               );
             })
@@ -812,11 +869,15 @@ const Videos = () => {
                 columns={labelColumns}
                 data={assignedLabels}
                 navigateButton={(label) => {
-                  const matchingLabel = labels.find(l => l.id === label.labelId);
+                  const matchingLabel = labels.find(
+                    (l) => l.id === label.labelId
+                  );
                   return (
                     <DeleteButton
                       onClick={() => handleDelete(label.id)}
-                      itemType={`assigned label for "${matchingLabel ? matchingLabel.name : 'Unknown'}"`}
+                      itemType={`assigned label for "${
+                        matchingLabel ? matchingLabel.name : "Unknown"
+                      }"`}
                     />
                   );
                 }}

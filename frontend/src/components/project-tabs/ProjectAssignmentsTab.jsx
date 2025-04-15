@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import httpClient from '../../httpClient';
-import NavigateButton from '../NavigateButton';
-import DeleteButton from '../DeleteButton';
-import DataTable from '../DataTable';
-import { useNotification } from '../../context/NotificationContext';
+import React, { useState, useEffect } from "react";
+import httpClient from "../../httpclient";
+import NavigateButton from "../NavigateButton";
+import DeleteButton from "../DeleteButton";
+import DataTable from "../DataTable";
+import { useNotification } from "../../context/NotificationContext";
 
 const ProjectAssignmentsTab = ({ projectId }) => {
   const [assignments, setAssignments] = useState([]);
@@ -13,7 +13,9 @@ const ProjectAssignmentsTab = ({ projectId }) => {
   const fetchAssignments = async () => {
     try {
       setLoading(true);
-      const response = await httpClient.get(`/project/${projectId}/SubjectVideoGroupAssignments`);
+      const response = await httpClient.get(
+        `/project/${projectId}/SubjectVideoGroupAssignments`
+      );
       setAssignments(response.data);
     } catch (error) {
       addNotification("Failed to load assignments", "error");
@@ -29,17 +31,22 @@ const ProjectAssignmentsTab = ({ projectId }) => {
   const handleDeleteAssignment = async (assignmentId) => {
     try {
       await httpClient.delete(`/SubjectVideoGroupAssignment/${assignmentId}`);
-      setAssignments(assignments.filter(assignment => assignment.id !== assignmentId));
+      setAssignments(
+        assignments.filter((assignment) => assignment.id !== assignmentId)
+      );
       // DeleteButton will show success notification automatically
     } catch (error) {
-      addNotification(error.response?.data?.message || "Failed to delete assignment", "error");
+      addNotification(
+        error.response?.data?.message || "Failed to delete assignment",
+        "error"
+      );
     }
   };
 
   // Define columns for assignments table
   const assignmentColumns = [
     { field: "subjectName", header: "Subject" },
-    { field: "videoGroupName", header: "Video Group" }
+    { field: "videoGroupName", header: "Video Group" },
   ];
 
   if (loading) {
@@ -63,10 +70,13 @@ const ProjectAssignmentsTab = ({ projectId }) => {
           columns={assignmentColumns}
           data={assignments}
           navigateButton={(assignment) => (
-            <NavigateButton path={`/assignments/${assignment.id}`} actionType="Details" />
+            <NavigateButton
+              path={`/assignments/${assignment.id}`}
+              actionType="Details"
+            />
           )}
           deleteButton={(assignment) => (
-            <DeleteButton 
+            <DeleteButton
               onClick={() => handleDeleteAssignment(assignment.id)}
               itemType="assignment"
             />

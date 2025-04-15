@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useLocation } from "react-router-dom";
-import httpClient from "../httpClient";
+import httpClient from "../httpclient";
 import "./css/ScientistProjects.css";
 import { useNotification } from "../context/NotificationContext";
 
@@ -28,7 +28,10 @@ const ProjectDetails = () => {
       const projectRes = await httpClient.get(`/project/${id}`);
       setProject(projectRes.data);
     } catch (error) {
-      addNotification(error.response?.data?.message || "Failed to load project data", "error");
+      addNotification(
+        error.response?.data?.message || "Failed to load project data",
+        "error"
+      );
     } finally {
       setLoading(false);
     }
@@ -41,9 +44,12 @@ const ProjectDetails = () => {
 
   // Common handler for all errors
   const handleError = (error) => {
-    addNotification(error.response?.data?.message || "Operation failed", "error");
+    addNotification(
+      error.response?.data?.message || "Operation failed",
+      "error"
+    );
   };
-  
+
   useEffect(() => {
     if (location.state?.successMessage) {
       addNotification(location.state.successMessage, "success");
@@ -123,14 +129,10 @@ const ProjectDetails = () => {
         </div>
 
         <div className="tab-content mt-4">
-          {activeTab === "details" && (
-            <ProjectDetailsTab 
-              project={project} 
-            />
-          )}
+          {activeTab === "details" && <ProjectDetailsTab project={project} />}
 
           {activeTab === "subjects" && (
-            <ProjectSubjectsTab 
+            <ProjectSubjectsTab
               projectId={id}
               onSuccess={handleSuccess}
               onError={handleError}
@@ -138,7 +140,7 @@ const ProjectDetails = () => {
           )}
 
           {activeTab === "videos" && (
-            <ProjectVideosTab 
+            <ProjectVideosTab
               projectId={id}
               onSuccess={handleSuccess}
               onError={handleError}
@@ -146,7 +148,7 @@ const ProjectDetails = () => {
           )}
 
           {activeTab === "assignments" && (
-            <ProjectAssignmentsTab 
+            <ProjectAssignmentsTab
               projectId={id}
               onSuccess={handleSuccess}
               onError={handleError}
@@ -154,7 +156,7 @@ const ProjectDetails = () => {
           )}
 
           {activeTab === "labelers" && (
-            <ProjectLabelersTab 
+            <ProjectLabelersTab
               projectId={id}
               onSuccess={handleSuccess}
               onError={handleError}
@@ -162,7 +164,7 @@ const ProjectDetails = () => {
           )}
 
           {activeTab === "accessCodes" && (
-            <ProjectAccessCodesTab 
+            <ProjectAccessCodesTab
               projectId={id}
               onSuccess={handleSuccess}
               onError={handleError}

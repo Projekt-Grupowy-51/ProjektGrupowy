@@ -1,7 +1,7 @@
 ﻿import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, Link, useLocation } from "react-router-dom";
-import httpClient, { API_BASE_URL } from "../httpClient";
-import DeleteButton from '../components/DeleteButton';
+import httpClient, { API_BASE_URL } from "../httpclient";
+import DeleteButton from "../components/DeleteButton";
 import "./css/ScientistProjects.css";
 import NavigateButton from "../components/NavigateButton";
 import DataTable from "../components/DataTable";
@@ -24,7 +24,10 @@ const VideoGroupDetails = () => {
       setVideoGroupDetails(response.data);
       fetchVideos();
     } catch (error) {
-      addNotification(error.response?.data?.message || "Failed to fetch video group details", "error");
+      addNotification(
+        error.response?.data?.message || "Failed to fetch video group details",
+        "error"
+      );
       setLoading(false);
     }
   }
@@ -35,7 +38,10 @@ const VideoGroupDetails = () => {
       const response = await httpClient.get(`/VideoGroup/${id}/videos`);
       setVideos(response.data);
     } catch (error) {
-      addNotification(error.response?.data?.message || "Failed to fetch videos", "error");
+      addNotification(
+        error.response?.data?.message || "Failed to fetch videos",
+        "error"
+      );
     } finally {
       setLoading(false);
     }
@@ -64,14 +70,17 @@ const VideoGroupDetails = () => {
       setVideos(videos.filter((video) => video.id !== videoId));
       addNotification("Video deleted successfully!", "success");
     } catch (error) {
-      addNotification(error.response?.data?.message || "Failed to delete video", "error");
+      addNotification(
+        error.response?.data?.message || "Failed to delete video",
+        "error"
+      );
     }
   };
 
   // Define columns for videos table
   const videoColumns = [
     { field: "title", header: "Title" },
-    { field: "positionInQueue", header: "Position" }
+    { field: "positionInQueue", header: "Position" },
   ];
 
   if (loading)
@@ -91,36 +100,42 @@ const VideoGroupDetails = () => {
         <h1 className="heading mb-4">{videoGroupDetails.name}</h1>
 
         <div className="d-flex justify-content-between mb-4">
-          <NavigateButton path={`/videos/add?videogroupId=${id}`} actionType="Add" />
+          <NavigateButton
+            path={`/videos/add?videogroupId=${id}`}
+            actionType="Add"
+          />
           <NavigateButton actionType="Back" />
         </div>
 
-          {videos.length > 0 ? (
-            <DataTable
-              showRowNumbers={true}  
-              columns={videoColumns}
-              data={videos}
-              tableClassName="normal-table table-hover"
-              navigateButton={(video) => (
-                <NavigateButton path={`/videos/${video.id}`} actionType="Details" />
-              )}
-              deleteButton={(video) => (
-                <DeleteButton
-                  onClick={() => handleDeleteVideo(video.id, video.title)}
-                  itemType={`video "${video.title}"`}
-                />
-              )}
-            />
-          ) : (
-            <div className="card-body text-center py-5">
-              <i className="fas fa-film fs-1 text-muted opacity-50"></i>
-              <p className="text-muted mt-3 mb-0">
-                No videos found in this group. Add some videos to get started.
-              </p>
-            </div>
-          )}
-        </div>
+        {videos.length > 0 ? (
+          <DataTable
+            showRowNumbers={true}
+            columns={videoColumns}
+            data={videos}
+            tableClassName="normal-table table-hover"
+            navigateButton={(video) => (
+              <NavigateButton
+                path={`/videos/${video.id}`}
+                actionType="Details"
+              />
+            )}
+            deleteButton={(video) => (
+              <DeleteButton
+                onClick={() => handleDeleteVideo(video.id, video.title)}
+                itemType={`video "${video.title}"`}
+              />
+            )}
+          />
+        ) : (
+          <div className="card-body text-center py-5">
+            <i className="fas fa-film fs-1 text-muted opacity-50"></i>
+            <p className="text-muted mt-3 mb-0">
+              No videos found in this group. Add some videos to get started.
+            </p>
+          </div>
+        )}
       </div>
+    </div>
   );
 };
 

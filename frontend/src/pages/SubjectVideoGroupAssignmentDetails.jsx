@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import httpClient from "../httpClient";
+import httpClient from "../httpclient";
 import "./css/ScientistProjects.css";
 import DeleteButton from "../components/DeleteButton";
 import DataTable from "../components/DataTable";
@@ -68,7 +68,7 @@ const SubjectVideoGroupAssignmentDetails = () => {
 
   // Define columns for labelers table
   const labelerColumns = [
-    { field: "name", header: "Name", render: (labeler) => `${labeler.name}` }
+    { field: "name", header: "Name", render: (labeler) => `${labeler.name}` },
   ];
 
   if (loading)
@@ -79,7 +79,7 @@ const SubjectVideoGroupAssignmentDetails = () => {
         </div>
       </div>
     );
-  
+
   // Remove error.main condition check - use notifications instead
   if (!assignmentDetails)
     return (
@@ -93,7 +93,9 @@ const SubjectVideoGroupAssignmentDetails = () => {
       <div className="row mb-4">
         <div className="col">
           <div className="d-flex justify-content-between align-items-center">
-            <h1 className="heading mb-0">Assignment #{assignmentDetails.id} Details</h1>
+            <h1 className="heading mb-0">
+              Assignment #{assignmentDetails.id} Details
+            </h1>
             <div className="d-flex justify-content-end">
               <DeleteButton onClick={handleDelete} />
               <button
@@ -174,16 +176,14 @@ const SubjectVideoGroupAssignmentDetails = () => {
             <div className="assigned-labels-table">
               {labelers.length > 0 ? (
                 <DataTable
-                  showRowNumbers={true}  
+                  showRowNumbers={true}
                   columns={labelerColumns}
                   data={labelers}
                 />
               ) : (
                 <div className="text-center py-4">
                   <i className="fas fa-user-slash fs-1 text-muted"></i>
-                  <p className="text-muted mt-2">
-                    No labelers assigned
-                  </p>
+                  <p className="text-muted mt-2">No labelers assigned</p>
                 </div>
               )}
             </div>

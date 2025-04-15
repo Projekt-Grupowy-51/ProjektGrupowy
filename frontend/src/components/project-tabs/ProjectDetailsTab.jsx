@@ -1,10 +1,10 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import NavigateButton from '../NavigateButton';
-import DeleteButton from '../DeleteButton';
-import { useNavigate } from 'react-router-dom';
-import httpClient from '../../httpClient';
-import { useNotification } from '../../context/NotificationContext';
+import React from "react";
+import { Link } from "react-router-dom";
+import NavigateButton from "../NavigateButton";
+import DeleteButton from "../DeleteButton";
+import { useNavigate } from "react-router-dom";
+import httpClient from "../../httpclient";
+import { useNotification } from "../../context/NotificationContext";
 
 const ProjectDetailsTab = ({ project }) => {
   const navigate = useNavigate();
@@ -14,9 +14,12 @@ const ProjectDetailsTab = ({ project }) => {
     try {
       await httpClient.delete(`/Project/${project.id}`);
       // DeleteButton will show success notification automatically
-      navigate('/projects');
+      navigate("/projects");
     } catch (error) {
-      addNotification(error.response?.data?.message || "Failed to delete project", "error");
+      addNotification(
+        error.response?.data?.message || "Failed to delete project",
+        "error"
+      );
     }
   };
 
@@ -33,7 +36,10 @@ const ProjectDetailsTab = ({ project }) => {
           <strong>Description:</strong> {project.description}
         </p>
         <div className="d-flex mt-3">
-          <NavigateButton actionType="Edit" path={`/projects/edit/${project.id}`}/>
+          <NavigateButton
+            actionType="Edit"
+            path={`/projects/edit/${project.id}`}
+          />
           <NavigateButton actionType="Back" />
           <DeleteButton onClick={handleDeleteProject} />
         </div>

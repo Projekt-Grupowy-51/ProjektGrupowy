@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import httpClient from "../httpClient";
+import httpClient from "../httpclient";
 import DeleteButton from "../components/DeleteButton";
 import DataTable from "../components/DataTable";
 import "./css/ScientistProjects.css";
@@ -28,7 +28,10 @@ const Projects = () => {
       const sortedProjects = response.data.sort((a, b) => a.id - b.id);
       setProjects(sortedProjects);
     } catch (error) {
-      addNotification(error.response?.data?.message || "Failed to load projects", "error");
+      addNotification(
+        error.response?.data?.message || "Failed to load projects",
+        "error"
+      );
     } finally {
       setLoading(false);
     }
@@ -38,11 +41,12 @@ const Projects = () => {
   const handleDeleteProject = async (projectId) => {
     try {
       await httpClient.delete(`/Project/${projectId}`);
-      setProjects((prev) =>
-        prev.filter((project) => project.id !== projectId)
-      );
+      setProjects((prev) => prev.filter((project) => project.id !== projectId));
     } catch (error) {
-      addNotification(error.response?.data?.message || "Failed to delete project", "error");
+      addNotification(
+        error.response?.data?.message || "Failed to delete project",
+        "error"
+      );
     }
   };
 
@@ -60,7 +64,7 @@ const Projects = () => {
   // Define columns configuration
   const columns = [
     { field: "name", header: "Name" },
-    { field: "description", header: "Description" }
+    { field: "description", header: "Description" },
   ];
 
   return (
@@ -79,12 +83,15 @@ const Projects = () => {
             <p className="mt-3">Loading projects...</p>
           </div>
         ) : projects.length > 0 ? (
-          <DataTable 
+          <DataTable
             showRowNumbers={true}
             columns={columns}
             data={projects}
             navigateButton={(project) => (
-              <NavigateButton path={`/projects/${project.id}`} actionType="Details"  />
+              <NavigateButton
+                path={`/projects/${project.id}`}
+                actionType="Details"
+              />
             )}
             deleteButton={(project) => (
               <DeleteButton
