@@ -201,11 +201,13 @@ public class VideoController(
         }
 
         var video = videoOptional.GetValueOrThrow();
-        return File(
-            video.ToStream(),
-            video.ContentType, 
-            Path.GetFileName(video.Path), 
-            enableRangeProcessing: true);
+        var path = $"http://localhost:8080/videos/{video.VideoGroup.Project.Id}/{video.VideoGroupId}/{Path.GetFileName(video.Path)}";
+        return Redirect(path);
+        // return File(
+        //     video.ToStream(),
+        //     video.ContentType, 
+        //     Path.GetFileName(video.Path), 
+        //     enableRangeProcessing: true);
     }
 
     [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
