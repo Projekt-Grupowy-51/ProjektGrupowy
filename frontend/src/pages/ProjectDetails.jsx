@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import httpClient from "../httpclient";
 import "./css/ScientistProjects.css";
+import SignalRService from "../services/SignalRService";
 import { useNotification } from "../context/NotificationContext";
 
 // Import tab components

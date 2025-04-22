@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Identity;
@@ -16,6 +16,9 @@ using ProjektGrupowy.API.Utils.Constants;
 using Serilog;
 using System.Text;
 using System.Text.Json.Serialization;
+using ProjektGrupowy.API.SignalR;
+using Azure.Core;
+using Microsoft.AspNetCore.SignalR;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -76,6 +79,8 @@ app.UseExceptionHandler(errorApp =>
         }
     });
 });
+
+app.MapHub<AppHub>("/hub/app");
 
 
 app.Run();
@@ -143,6 +148,14 @@ static void AddServices(WebApplicationBuilder builder)
     builder.Services.AddScoped<IProjectAccessCodeService, ProjectAccessCodeService>();
     builder.Services.AddScoped<IAuthorizationHelper, AuthorizationHelper>();
 
+    builder.Services.AddSingleton<IConnectedClientManager, ConnectedClientManager>();
+    builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
+    builder.Services.AddSignalR(options =>
+    {
+        options.EnableDetailedErrors = true;
+    });
+    builder.Services.AddSingleton<IMessageService, MessageService>();
+
     // AutoMapper
     builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
@@ -203,6 +216,13 @@ static void AddServices(WebApplicationBuilder builder)
                 OnMessageReceived = context =>
                 {
                     var token = context.Request.Cookies[jwtCookieName];
+                    
+                    var path = context.HttpContext.Request.Path;
+                    if (!string.IsNullOrEmpty(token) && path.ToString().Contains("/hub/app"))
+                    {
+                        context.Token = token;
+                    }
+
                     if (!string.IsNullOrEmpty(token))
                     {
                         context.Token = token;

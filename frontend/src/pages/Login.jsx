@@ -37,7 +37,7 @@ const AuthPage = () => {
       if (roles.includes("Scientist")) {
         navigate("/projects");
       } else if (roles.includes("Labeler")) {
-        navigate("/labeler-video-groups/1");
+        navigate("/labeler-video-groups");
       } else {
         addNotification("You do not have access to this page.", "error");
       }

@@ -51,6 +51,17 @@ services:
     depends_on:
       - app
 
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    networks:
+      - mynetwork
+    volumes:
+      - videos_data:/mnt/videos:ro
+
 volumes:
   postgres_data:
   videos_data:

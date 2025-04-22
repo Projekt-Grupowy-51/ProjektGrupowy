@@ -32,9 +32,11 @@ import SubjectVideoGroupAssignmentDetails from "./pages/SubjectVideoGroupAssignm
 import LabelerVideoGroups from "./pages/LabelerVideoGroups";
 import Login from "./pages/Login";
 import SubjectVideoGroupAssignmentAdd from "./pages/SubjectVideoGroupAssignmentAdd";
-import { ModalProvider } from './context/ModalContext';
-import { NotificationProvider } from './context/NotificationContext';
-import NotificationSystem from './components/NotificationSystem';
+import { ModalProvider } from "./context/ModalContext";
+import { NotificationProvider } from "./context/NotificationContext";
+import NotFound from "./pages/errors/NotFound";
+import Forbidden from "./pages/errors/Forbidden";
+import NotificationSystem from "./components/NotificationSystem";
 
 const AuthContext = createContext();
 
@@ -171,7 +173,7 @@ const Navbar = () => {
                 {hasRole("Labeler") && (
                   <li className="nav-item">
                     <Link
-                      to="/labeler-video-groups/1"
+                      to="/labeler-video-groups"
                       className="nav-link text-white text-nowrap"
                     >
                       Labeler Dashboard
@@ -214,14 +216,20 @@ function App() {
               <Route element={<ProtectedRoute />}>
                 <Route path="/projects" element={<Projects />} />
                 <Route path="/projects/:id" element={<ProjectDetails />} />
-                <Route path="/projects/edit/:id" element={<EditProjectPage />} />
+                <Route
+                  path="/projects/edit/:id"
+                  element={<EditProjectPage />}
+                />
                 <Route path="/projects/add" element={<AddProjectPage />} />
 
                 <Route path="/subjects/:id" element={<SubjectDetails />} />
                 <Route path="/subjects/add" element={<AddSubject />} />
 
                 <Route path="/video-groups/add" element={<AddVideoGroup />} />
-                <Route path="/video-groups/:id" element={<VideoGroupsDetails />} />
+                <Route
+                  path="/video-groups/:id"
+                  element={<VideoGroupsDetails />}
+                />
 
                 <Route path="/videos/:id" element={<VideoDetails />} />
                 <Route path="/videos/add" element={<AddVideo />} />
@@ -242,15 +250,16 @@ function App() {
                   element={<SubjectVideoGroupAssignmentDetails />}
                 />
                 <Route
-                  path="/labeler-video-groups/:id"
+                  path="/labeler-video-groups"
                   element={<LabelerVideoGroups />}
                 />
 
                 <Route path="/labels/add" element={<LabelAdd />} />
                 <Route path="/labels/edit/:id" element={<EditLabel />} />
               </Route>
+              <Route path="/forbidden" element={<Forbidden />} />
 
-              <Route path="*" element={<Navigate to="/projects" replace />} />
+              <Route path="*" element={<NotFound />} />
             </Routes>
             <NotificationSystem />
           </ModalProvider>
