@@ -1,16 +1,17 @@
+# ==========================
 # Etap budowy
 FROM node:18 AS builder
 
 # Ustawienie katalogu roboczego
 WORKDIR /app
 
-# Kopiowanie plikÛw package.json i package-lock.json
+# Kopiowanie plik√≥w package.json i package-lock.json
 COPY package.json package-lock.json ./
 
-# Instalowanie zaleønoúci
+# Instalowanie zale≈ºno≈õci
 RUN npm install
 
-# Kopiowanie ca≥ego projektu
+# Kopiowanie ca≈Çego projektu
 COPY . .
 
 # Budowanie aplikacji
@@ -20,11 +21,14 @@ RUN npm run build
 # Etap serwera produkcyjnego
 FROM nginx:alpine
 
-# UsuniÍcie domyúlnych plikÛw Nginx
+# Usuniƒôcie domy≈õlnych plik√≥w Nginx
 RUN rm -rf /usr/share/nginx/html/*
 
 # Kopiowanie zbudowanej aplikacji z pierwszego etapu
 COPY --from=builder /app/dist /usr/share/nginx/html
+
+# Kopiowanie w≈Çasnej konfiguracji Nginx
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Exponowanie portu 80
 EXPOSE 80

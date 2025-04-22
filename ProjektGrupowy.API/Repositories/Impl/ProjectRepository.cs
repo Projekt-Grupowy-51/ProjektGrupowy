@@ -76,7 +76,7 @@ public class ProjectRepository(AppDbContext context, ILogger<ProjectRepository> 
         try
         {
             var result = await context.SubjectVideoGroupAssignments
-                //.Where(svga => svga.VideoGroup.Project.Id == 1)
+                .Where(svga => svga.VideoGroup.Project.Id == projectId)
                 .GroupBy(svga => svga.Id)
                 .Select(g => new
                 {
@@ -93,6 +93,23 @@ public class ProjectRepository(AppDbContext context, ILogger<ProjectRepository> 
         {
             logger.LogError(e, "An error occurred while getting labeler count for assignments");
             return Optional<Dictionary<int, int>>.Failure(e.Message);
+        }
+    }
+
+    public async Task<Optional<IEnumerable<Project>>> GetProjectsForLabelerAsync(int labelerId)
+    {
+        try
+        {
+            var projects = await context.Projects
+                .Where(p => p.ProjectLabelers.Any(l => l.Id == labelerId))
+                .ToListAsync();
+
+            return Optional<IEnumerable<Project>>.Success(projects);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "An error occurred while getting projects for labeler");
+            return Optional<IEnumerable<Project>>.Failure(e.Message);
         }
     }
 

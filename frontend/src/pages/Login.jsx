@@ -1,192 +1,302 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import authService from '../auth';
-import './css/ScientistProjects.css';
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import authService from "../auth";
+import "./css/ScientistProjects.css";
+import { useAuth } from "../App"; // Import the AuthContext
+import { useNotification } from "../context/NotificationContext";
 
 const roleMap = {
-    Labeler: "Labeler",
-    Scientist: "Scientist"
+  Labeler: "Labeler",
+  Scientist: "Scientist",
 };
 
 const AuthPage = () => {
-    const [isLoginView, setIsLoginView] = useState(true);
-    const [formData, setFormData] = useState({
-        username: '',
-        email: '',
-        password: '',
-        confirmPassword: '',
-        role: 'Labeler'
-    });
-    const [error, setError] = useState('');
-    const navigate = useNavigate();
+  const [isLoginView, setIsLoginView] = useState(true);
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    role: "Labeler",
+  });
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const { addNotification } = useNotification();
 
-    const handleInputChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
+  const { handleLogin, roles } = useAuth();
+  const [loginSuccess, setLoginSuccess] = useState(false); // state to track post-login effect
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setError('');
+  const handleInputChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
-        if (!isLoginView && formData.password !== formData.confirmPassword) {
-            setError('Passwords do not match');
-            return;
-        }
+  // Inside your component:
+  useEffect(() => {
+    if (loginSuccess) {
+      addNotification("Successfully logged in!", "success");
+      if (roles.includes("Scientist")) {
+        navigate("/projects");
+      } else if (roles.includes("Labeler")) {
+        navigate("/labeler-video-groups");
+      } else {
+        addNotification("You do not have access to this page.", "error");
+      }
+      setLoginSuccess(false); // reset flag
+    }
+  }, [loginSuccess, roles, navigate]);
 
-        try {
-            if (isLoginView) {
-                await authService.login(formData.username, formData.password);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
 
-                navigate('/projects');
-            } else {
-                await authService.register({
-                    userName: formData.username,
-                    email: formData.email,
-                    password: formData.password,
-                    role: roleMap[formData.role]
-                });
-            }
-        } catch (err) {
-            setError(err.message);
-            // setError(isLoginView
-            //     ? 'Invalid credentials'
-            //     : 'Registration failed. User may already exist.');
-        }
-    };
+    if (!isLoginView && formData.password !== formData.confirmPassword) {
+      addNotification("Passwords do not match", "error");
+      setLoading(false);
+      return;
+    }
 
-    return (
-        <div className="container auth-container">
-            <div className="auth-header">
-                <h1 className="heading">
-                    {isLoginView ? 'Welcome Back!' : 'Create Account'}
-                </h1>
-                <p className="auth-subtitle">
-                    {isLoginView ? 'Sign in to continue' : 'Join our labeling community'}
-                </p>
+    try {
+      if (isLoginView) {
+        // Use the auth context login handler (it also calls verifyToken and sets global state)
+        await handleLogin(formData.username, formData.password);
+        setLoginSuccess(true); // trigger role-based redirect in useEffect
+      } else {
+        await authService.register({
+          userName: formData.username,
+          email: formData.email,
+          password: formData.password,
+          role: roleMap[formData.role],
+        });
+        setIsLoginView(true);
+        setFormData({ ...formData, password: "", confirmPassword: "" });
+        addNotification("Registration successful! Please log in.", "success");
+      }
+    } catch (err) {
+      addNotification(
+        err.message ||
+          (isLoginView ? "Invalid credentials" : "Registration failed"),
+        "error"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="container py-5" style={{ maxWidth: "600px" }}>
+      <div className="bg-primary text-white text-center py-4 rounded-top">
+        <h1 className="heading mb-0 text-white">
+          {isLoginView ? "Welcome Back!" : "Create Account"}
+        </h1>
+        <p className="mt-2 mb-0">
+          {isLoginView ? "Sign in to continue" : "Join our labeling community"}
+        </p>
+      </div>
+
+      <div className="card shadow-sm p-4 rounded-bottom">
+        <ul className="nav nav-pills nav-justified mb-4">
+          <li className="nav-item">
+            <button
+              className={`nav-link w-100 ${isLoginView ? "active" : ""}`}
+              onClick={() => setIsLoginView(true)}
+            >
+              <i className="fas fa-sign-in-alt me-2"></i>Login
+            </button>
+          </li>
+          <li className="nav-item">
+            <button
+              className={`nav-link w-100 ${!isLoginView ? "active" : ""}`}
+              onClick={() => setIsLoginView(false)}
+            >
+              <i className="fas fa-user-plus me-2"></i>Register
+            </button>
+          </li>
+        </ul>
+
+        <form onSubmit={handleSubmit}>
+          <div className="mb-3">
+            <label htmlFor="username" className="form-label">
+              Username
+            </label>
+            <div className="input-group">
+              <span className="input-group-text">
+                <i className="fas fa-user"></i>
+              </span>
+              <input
+                type="text"
+                id="username"
+                name="username"
+                className="form-control"
+                placeholder="Enter your username"
+                value={formData.username}
+                onChange={handleInputChange}
+                required
+                disabled={loading}
+              />
             </div>
+          </div>
 
-            <div className="tab-navigation auth-tabs">
-                <button
-                    className={`tab-button ${isLoginView ? 'active' : ''}`}
-                    onClick={() => setIsLoginView(true)}
-                >
-                    Login
-                </button>
-                <button
-                    className={`tab-button ${!isLoginView ? 'active' : ''}`}
-                    onClick={() => setIsLoginView(false)}
-                >
-                    Register
-                </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="auth-form">
-                <div className="form-group">
-                    <input
-                        type="text"
-                        name="username"
-                        placeholder="Username"
-                        className="form-input"
-                        value={formData.username}
-                        onChange={handleInputChange}
-                        required
-                    />
+          {!isLoginView && (
+            <>
+              <div className="mb-3">
+                <label htmlFor="email" className="form-label">
+                  Email address
+                </label>
+                <div className="input-group">
+                  <span className="input-group-text">
+                    <i className="fas fa-envelope"></i>
+                  </span>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    className="form-control"
+                    placeholder="Enter your email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    required
+                    disabled={loading}
+                  />
                 </div>
-
-                {!isLoginView && (
-                    <>
-                        <div className="form-group">
-                            <input
-                                type="email"
-                                name="email"
-                                placeholder="Email address"
-                                className="form-input"
-                                value={formData.email}
-                                onChange={handleInputChange}
-                                required
-                            />
-                        </div>
-                        <div className="form-group">
-                            <select
-                                name="role"
-                                className="form-select"
-                                value={formData.role}
-                                onChange={handleInputChange}
-                                required
-                            >
-                                <option value="Labeler">Labeler</option>
-                                <option value="Scientist">Scientist</option>
-                            </select>
-                        </div>
-                    </>
-                )}
-
-                <div className="form-group">
-                    <input
-                        type="password"
-                        name="password"
-                        placeholder="Password"
-                        className="form-input"
-                        value={formData.password}
-                        onChange={handleInputChange}
-                        required
-                    />
-                    {!isLoginView && (
-                        <div className="password-hint">
-                            8-255 characters<br/>
-                            Lowercase letter<br/>
-                            Uppercase letter<br/>
-                            Number
-                        </div>
-                    )}
+              </div>
+              <div className="mb-3">
+                <label htmlFor="role" className="form-label">
+                  Role
+                </label>
+                <div className="input-group">
+                  <span className="input-group-text">
+                    <i className="fas fa-user-tag"></i>
+                  </span>
+                  <select
+                    id="role"
+                    name="role"
+                    className="form-select"
+                    value={formData.role}
+                    onChange={handleInputChange}
+                    required
+                    disabled={loading}
+                  >
+                    <option value="Labeler">Labeler</option>
+                    <option value="Scientist">Scientist</option>
+                  </select>
                 </div>
+              </div>
+            </>
+          )}
 
-                {!isLoginView && (
-                    <div className="form-group">
-                        <input
-                            type="password"
-                            name="confirmPassword"
-                            placeholder="Confirm Password"
-                            className="form-input"
-                            value={formData.confirmPassword}
-                            onChange={handleInputChange}
-                            required
-                        />
-                    </div>
-                )}
-
-                {error && <div className="error-message">{error}</div>}
-
-                <button type="submit" className="btn btn-primary auth-btn">
-                    {isLoginView ? 'Sign In' : 'Create Account'}
-                </button>
-            </form>
-
-            <div className="auth-footer">
-                {isLoginView ? (
-                    <p>
-                        Don't have an account?{' '}
-                        <button
-                            className="btn btn-link"
-                            onClick={() => setIsLoginView(false)}
-                        >
-                            Sign up now
-                        </button>
-                    </p>
-                ) : (
-                    <p>
-                        Already registered?{' '}
-                        <button
-                            className="btn btn-link"
-                            onClick={() => setIsLoginView(true)}
-                        >
-                            Sign in here
-                        </button>
-                    </p>
-                )}
+          <div className="mb-3">
+            <label htmlFor="password" className="form-label">
+              Password
+            </label>
+            <div className="input-group">
+              <span className="input-group-text">
+                <i className="fas fa-lock"></i>
+              </span>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                className="form-control"
+                placeholder="Enter your password"
+                value={formData.password}
+                onChange={handleInputChange}
+                required
+                disabled={loading}
+              />
             </div>
+            {!isLoginView && (
+              <div className="form-text text-muted">
+                <small>
+                  Password must be 8-255 characters and include:
+                  <ul className="mb-0 ps-3">
+                    <li>Lowercase letter</li>
+                    <li>Uppercase letter</li>
+                    <li>Number</li>
+                  </ul>
+                </small>
+              </div>
+            )}
+          </div>
+
+          {!isLoginView && (
+            <div className="mb-3">
+              <label htmlFor="confirmPassword" className="form-label">
+                Confirm Password
+              </label>
+              <div className="input-group">
+                <span className="input-group-text">
+                  <i className="fas fa-lock"></i>
+                </span>
+                <input
+                  type="password"
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  className="form-control"
+                  placeholder="Confirm your password"
+                  value={formData.confirmPassword}
+                  onChange={handleInputChange}
+                  required
+                  disabled={loading}
+                />
+              </div>
+            </div>
+          )}
+
+          <button
+            type="submit"
+            className="btn btn-primary w-100 mt-3 py-2"
+            disabled={loading}
+          >
+            {loading ? (
+              <>
+                <span
+                  className="spinner-border spinner-border-sm me-2"
+                  role="status"
+                  aria-hidden="true"
+                ></span>
+                {isLoginView ? "Signing in..." : "Creating account..."}
+              </>
+            ) : (
+              <>
+                <i
+                  className={`fas ${
+                    isLoginView ? "fa-sign-in-alt" : "fa-user-plus"
+                  } me-2`}
+                ></i>
+                {isLoginView ? "Sign In" : "Create Account"}
+              </>
+            )}
+          </button>
+        </form>
+
+        <div className="text-center mt-4">
+          {isLoginView ? (
+            <p className="mb-0">
+              Don't have an account?{" "}
+              <button
+                className="btn btn-link p-0"
+                onClick={() => setIsLoginView(false)}
+                type="button"
+              >
+                Sign up now
+              </button>
+            </p>
+          ) : (
+            <p className="mb-0">
+              Already registered?{" "}
+              <button
+                className="btn btn-link p-0"
+                onClick={() => setIsLoginView(true)}
+                type="button"
+              >
+                Sign in here
+              </button>
+            </p>
+          )}
         </div>
-    );
+      </div>
+    </div>
+  );
 };
 
 export default AuthPage;

@@ -19,7 +19,7 @@ public class AssignedLabelController(
     IAssignedLabelService assignedLabelService,
     ILabelerService labelerService,
     ILabelService labelService,
-    ISubjectVideoGroupAssignmentService subjectVideoGroupAssignmentService,
+    IVideoService videoService,
     IAuthorizationHelper authHelper,
     IMapper mapper) : ControllerBase
 {
@@ -43,7 +43,10 @@ public class AssignedLabelController(
             if (checkResult.Error != null)
                 return checkResult.Error;
 
-            var assignedLabels = await assignedLabelService.GetAssignedLabelsAsync();
+            var assignedLabels = checkResult.IsAdmin
+                ? await assignedLabelService.GetAssignedLabelsAsync()
+                : await assignedLabelService.GetAssignedLabelsByScientistIdAsync(checkResult.Scientist!.Id);
+                
             return assignedLabels.IsSuccess 
                 ? Ok(mapper.Map<IEnumerable<AssignedLabelResponse>>(assignedLabels.GetValueOrThrow())) 
                 : NotFound(assignedLabels.GetErrorOrThrow());
@@ -64,6 +67,19 @@ public class AssignedLabelController(
             var checkResult = await authHelper.CheckGeneralAccessAsync(User);
             if (checkResult.Error != null)
                 return checkResult.Error;
+                
+            if (checkResult.IsScientist)
+            {
+                var assignedLabelResult = await assignedLabelService.GetAssignedLabelAsync(id);
+                if (!assignedLabelResult.IsSuccess)
+                    return NotFound(assignedLabelResult.GetErrorOrThrow());
+                    
+                var assignedLabelValue = assignedLabelResult.GetValueOrThrow();
+                
+                var authResult = await authHelper.EnsureScientistOwnsVideoAsync(User, assignedLabelValue.Video.Id);
+                if (authResult != null)
+                    return authResult;
+            }
         }
 
         var assignedLabel = await assignedLabelService.GetAssignedLabelAsync(id);
@@ -81,7 +97,7 @@ public class AssignedLabelController(
             if (labelerResult.Error != null)
                 return labelerResult.Error;
 
-            var authResult = await authHelper.EnsureLabelerCanAccessAssignmentAsync(User, assignedLabelRequest.SubjectVideoGroupAssignmentId);
+            var authResult = await authHelper.EnsureLabelerCanAccessVideoAsync(User, assignedLabelRequest.VideoId);
             if (authResult != null)
                 return authResult;
 
@@ -92,6 +108,21 @@ public class AssignedLabelController(
             var checkResult = await authHelper.CheckGeneralAccessAsync(User);
             if (checkResult.Error != null)
                 return checkResult.Error;
+                
+            if (checkResult.IsScientist)
+            {
+                var authResult = await authHelper.EnsureScientistOwnsVideoAsync(User, assignedLabelRequest.VideoId);
+                if (authResult != null)
+                    return authResult;
+                    
+                var labelResult = await labelService.GetLabelAsync(assignedLabelRequest.LabelId);
+                if (!labelResult.IsSuccess)
+                    return NotFound("Label not found");
+                    
+                var label = labelResult.GetValueOrThrow();
+                if (label.Subject.Project.Scientist.Id != checkResult.Scientist!.Id)
+                    return Forbid("You don't have permission to use this label");
+            }
         }
 
         var result = await assignedLabelService.AddAssignedLabelAsync(assignedLabelRequest);
@@ -119,6 +150,19 @@ public class AssignedLabelController(
             var checkResult = await authHelper.CheckGeneralAccessAsync(User);
             if (checkResult.Error != null)
                 return checkResult.Error;
+                
+            if (checkResult.IsScientist)
+            {
+                var assignedLabelResult = await assignedLabelService.GetAssignedLabelAsync(id);
+                if (!assignedLabelResult.IsSuccess)
+                    return NotFound(assignedLabelResult.GetErrorOrThrow());
+                    
+                var assignedLabel = assignedLabelResult.GetValueOrThrow();
+                
+                var authResult = await authHelper.EnsureScientistOwnsVideoAsync(User, assignedLabel.Video.Id);
+                if (authResult != null)
+                    return authResult;
+            }
         }
 
         await assignedLabelService.DeleteAssignedLabelAsync(id);

@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ProjektGrupowy.API.Models;
 
-[Table("Vidoes")]
+[Table("Videos")]
 public class Video
 {
     [Key]
@@ -22,8 +22,10 @@ public class Video
 
     public int PositionInQueue { get; set; }
 
-    // Only for indexing purposes
+    public string ContentType { get; set; }
+
     public int VideoGroupId { get; set; }
+    public virtual ICollection<AssignedLabel>? AssignedLabels { get; set; }
 
     public Stream ToStream()
     {

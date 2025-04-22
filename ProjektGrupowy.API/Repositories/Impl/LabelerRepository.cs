@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using EFCore.BulkExtensions;
+using Microsoft.EntityFrameworkCore;
 using ProjektGrupowy.API.Data;
 using ProjektGrupowy.API.Models;
 using ProjektGrupowy.API.Utils;
@@ -102,33 +103,12 @@ public class LabelerRepository(AppDbContext context, ILogger<LabelerRepository> 
     {
         try
         {
-            const string sql = """
-                               WITH project_labelers AS (
-                                   SELECT pl."ProjectLabelersId"
-                                   FROM "LabelerProject" pl
-                                   WHERE pl."ProjectLabelersId1" = {0}
-                               ),
-                                    assignment_labelers AS (
-                                        SELECT DISTINCT al."LabelerId"
-                                        FROM "SubjectVideoGroupAssignments" svga
-                                                 JOIN "Subjects" s ON svga."SubjectId" = s."Id"
-                                                 JOIN "Projects" p ON s."ProjectId" = p."Id"
-                                                 JOIN "AssignedLabels" al ON svga."Id" = al."SubjectVideoGroupAssignmentId"
-                                        WHERE p."Id" = {0}
-                                    )
-                               SELECT l.*
-                               FROM "Labelers" l
-                                        JOIN project_labelers pl ON l."Id" = pl."ProjectLabelersId"
-                                        LEFT JOIN assignment_labelers al ON pl."ProjectLabelersId" = al."LabelerId"
-                               WHERE al."LabelerId" IS NULL;
-                               """;
-
-            var unassignedLabelers = await context.Labelers
-                .FromSqlRaw(sql, projectId)
-                .AsNoTracking()
+            var labelers = await context.Labelers
+                .Where(l => l.ProjectLabelers.Any(p => p.Id == projectId))
+                .Where(l => !l.SubjectVideoGroups.Any(svg => svg.Subject.Project.Id == projectId))
                 .ToListAsync();
 
-            return Optional<IEnumerable<Labeler>>.Success(unassignedLabelers);
+            return Optional<IEnumerable<Labeler>>.Success(labelers);
         }
         catch (Exception e)
         {

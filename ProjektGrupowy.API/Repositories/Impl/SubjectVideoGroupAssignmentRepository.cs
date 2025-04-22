@@ -108,6 +108,7 @@ public class SubjectVideoGroupAssignmentRepository(
         try
         {
             var labelers = await context.SubjectVideoGroupAssignments
+                .Where(x => x.Id == id)
                 .SelectMany(x => x.Labelers)
                 .ToListAsync();
 
@@ -117,23 +118,6 @@ public class SubjectVideoGroupAssignmentRepository(
         {
             logger.LogError(e, "An error occurred while getting subject video group assignments labelers");
             return Optional<IEnumerable<Labeler>>.Failure(e.Message);
-        }
-    }
-
-    public async Task<Optional<IEnumerable<AssignedLabel>>> GetSubjectVideoGroupAssignmentAsignedLabelsAsync(int id)
-    {
-        try
-        {
-            var labels = await context.SubjectVideoGroupAssignments
-                .SelectMany(x => x.AssignedLabels)
-                .ToListAsync();
-
-            return Optional<IEnumerable<AssignedLabel>>.Success(labels);
-        }
-        catch (Exception e)
-        {
-            logger.LogError(e, "An error occurred while getting subject video group assignments labelers");
-            return Optional<IEnumerable<AssignedLabel>>.Failure(e.Message);
         }
     }
 
@@ -258,23 +242,6 @@ public class SubjectVideoGroupAssignmentRepository(
         {
             logger.LogError(e, "An error occurred while getting assignments for labeler");
             return Optional<IEnumerable<SubjectVideoGroupAssignment>>.Failure(e.Message);
-        }
-    }
-
-    public async Task<Optional<IEnumerable<AssignedLabel>>> GetLabelerAssignedLabelsAsync(int assignmentId, int labelerId)
-    {
-        try
-        {
-            var labels = await context.AssignedLabels
-                .Where(x => x.SubjectVideoGroupAssignment.Id == assignmentId && x.Labeler.Id == labelerId)
-                .ToListAsync();
-
-            return Optional<IEnumerable<AssignedLabel>>.Success(labels);
-        }
-        catch (Exception e)
-        {
-            logger.LogError(e, "An error occurred while getting assigned labels for labeler in assignment");
-            return Optional<IEnumerable<AssignedLabel>>.Failure(e.Message);
         }
     }
 

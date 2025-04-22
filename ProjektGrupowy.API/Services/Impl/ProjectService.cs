@@ -66,6 +66,9 @@ public class ProjectService(
 
     public async Task<Optional<IEnumerable<Project>>> GetProjectsOfScientist(int scientistId)
         => await projectRepository.GetProjectsOfScientist(scientistId);
+        
+    public async Task<Optional<IEnumerable<Project>>> GetProjectsForLabelerAsync(int labelerId)
+        => await projectRepository.GetProjectsForLabelerAsync(labelerId);
 
     public async Task<Optional<bool>> AddLabelerToProjectAsync(LabelerAssignmentDto labelerAssignmentDto)
     {
@@ -94,6 +97,11 @@ public class ProjectService(
         return Optional<bool>.Success(true);
     }
 
+    public async Task<Optional<IEnumerable<Labeler>>> GetUnassignedLabelersOfProjectAsync(int id)
+    {
+        return await labelerRepository.GetUnassignedLabelersOfProjectAsync(id);
+    }
+
     public async Task DeleteProjectAsync(int id)
     {
         var project = await projectRepository.GetProjectAsync(id);
@@ -101,6 +109,28 @@ public class ProjectService(
         {
             await projectRepository.DeleteProjectAsync(project.GetValueOrThrow());
         }
+    }
+
+    public async Task<Optional<bool>> UnassignLabelersFromProjectAsync(int projectId)
+    {
+        var projectOpt = await projectRepository.GetProjectAsync(projectId);
+        if (projectOpt.IsFailure)
+        {
+            return Optional<bool>.Failure("No project found!");
+        }
+
+        var project = projectOpt.GetValueOrThrow();
+        var assignments = project.Subjects
+            .SelectMany(s => s.SubjectVideoGroupAssignments)
+            .ToList();
+
+        foreach (var assignment in assignments)
+        {
+            assignment.Labelers.Clear();
+            await subjectVideoGroupAssignmentRepository.UpdateSubjectVideoGroupAssignmentAsync(assignment);
+        }
+
+        return Optional<bool>.Success(true);
     }
 
     public async Task<Optional<bool>> DistributeLabelersEquallyAsync(int projectId)
@@ -125,6 +155,11 @@ public class ProjectService(
 
     private async Task<Optional<bool>> AssignEquallyAsync(int projectId, IReadOnlyCollection<Labeler> labelers)
     {
+        if (labelers.Count == 0)
+        {
+            return Optional<bool>.Success(true);
+        }
+
         var countResult = await projectRepository.GetLabelerCountForAssignments(projectId);
         if (countResult.IsFailure)
         {
@@ -135,7 +170,7 @@ public class ProjectService(
 
         var n = assignmentsCount.Count;
         var totalSize = assignmentsCount.Values.Sum() + labelers.Count;
-        var targetSize = totalSize / n;
+        var targetSize = Math.Max(1, totalSize / n);
 
         var remaining = labelers.Count;
         var assigned = 0;

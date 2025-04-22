@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Identity;
@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using ProjektGrupowy.API.Data;
-using ProjektGrupowy.API.DB;
 using ProjektGrupowy.API.Filters;
 using ProjektGrupowy.API.Models;
 using ProjektGrupowy.API.Repositories;
@@ -17,6 +16,9 @@ using ProjektGrupowy.API.Utils.Constants;
 using Serilog;
 using System.Text;
 using System.Text.Json.Serialization;
+using ProjektGrupowy.API.SignalR;
+using Azure.Core;
+using Microsoft.AspNetCore.SignalR;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,8 +36,10 @@ builder.Host.UseSerilog();
 
 var app = builder.Build();
 
+app.MapHealthChecks("/health");
+
 // Seed the database and create roles
-await SeedDatabase(app.Services);
+await MigrateDatabase(app.Services);
 await CreateRoles(app.Services);
 
 // Configure the HTTP request pipeline.
@@ -76,6 +80,8 @@ app.UseExceptionHandler(errorApp =>
     });
 });
 
+app.MapHub<AppHub>("/hub/app");
+
 
 app.Run();
 
@@ -86,6 +92,8 @@ static void AddServices(WebApplicationBuilder builder)
         {
             options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
         });
+
+    builder.Services.AddHealthChecks();
 
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen(c =>
@@ -139,6 +147,14 @@ static void AddServices(WebApplicationBuilder builder)
     builder.Services.AddScoped<IVideoService, VideoService>();
     builder.Services.AddScoped<IProjectAccessCodeService, ProjectAccessCodeService>();
     builder.Services.AddScoped<IAuthorizationHelper, AuthorizationHelper>();
+
+    builder.Services.AddSingleton<IConnectedClientManager, ConnectedClientManager>();
+    builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
+    builder.Services.AddSignalR(options =>
+    {
+        options.EnableDetailedErrors = true;
+    });
+    builder.Services.AddSingleton<IMessageService, MessageService>();
 
     // AutoMapper
     builder.Services.AddAutoMapper(typeof(Program).Assembly);
@@ -200,6 +216,13 @@ static void AddServices(WebApplicationBuilder builder)
                 OnMessageReceived = context =>
                 {
                     var token = context.Request.Cookies[jwtCookieName];
+                    
+                    var path = context.HttpContext.Request.Path;
+                    if (!string.IsNullOrEmpty(token) && path.ToString().Contains("/hub/app"))
+                    {
+                        context.Token = token;
+                    }
+
                     if (!string.IsNullOrEmpty(token))
                     {
                         context.Token = token;
@@ -238,11 +261,11 @@ static void AddServices(WebApplicationBuilder builder)
     });
 }
 
-static async Task SeedDatabase(IServiceProvider serviceProvider)
+static async Task MigrateDatabase(IServiceProvider serviceProvider)
 {
     using var scope = serviceProvider.CreateScope();
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    await DbSeeder.SeedAsync(context);
+    await context.Database.MigrateAsync();
 }
 
 static async Task CreateRoles(IServiceProvider serviceProvider)

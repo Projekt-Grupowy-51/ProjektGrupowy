@@ -195,8 +195,12 @@ namespace ProjektGrupowy.API.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<TimeSpan>("End")
-                        .HasColumnType("interval");
+                    b.Property<string>("End")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("InsDate")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("LabelId")
                         .HasColumnType("integer");
@@ -204,10 +208,11 @@ namespace ProjektGrupowy.API.Migrations
                     b.Property<int>("LabelerId")
                         .HasColumnType("integer");
 
-                    b.Property<TimeSpan>("Start")
-                        .HasColumnType("interval");
+                    b.Property<string>("Start")
+                        .IsRequired()
+                        .HasColumnType("text");
 
-                    b.Property<int>("SubjectVideoGroupAssignmentId")
+                    b.Property<int>("VideoId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
@@ -216,7 +221,7 @@ namespace ProjektGrupowy.API.Migrations
 
                     b.HasIndex("LabelerId");
 
-                    b.HasIndex("SubjectVideoGroupAssignmentId");
+                    b.HasIndex("VideoId");
 
                     b.ToTable("AssignedLabels");
                 });
@@ -510,6 +515,10 @@ namespace ProjektGrupowy.API.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("Path")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -530,7 +539,7 @@ namespace ProjektGrupowy.API.Migrations
 
                     b.HasIndex("VideoGroupId", "PositionInQueue");
 
-                    b.ToTable("Vidoes");
+                    b.ToTable("Videos");
                 });
 
             modelBuilder.Entity("ProjektGrupowy.API.Models.VideoGroup", b =>
@@ -540,6 +549,10 @@ namespace ProjektGrupowy.API.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -650,9 +663,9 @@ namespace ProjektGrupowy.API.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ProjektGrupowy.API.Models.SubjectVideoGroupAssignment", "SubjectVideoGroupAssignment")
+                    b.HasOne("ProjektGrupowy.API.Models.Video", "Video")
                         .WithMany("AssignedLabels")
-                        .HasForeignKey("SubjectVideoGroupAssignmentId")
+                        .HasForeignKey("VideoId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -660,7 +673,7 @@ namespace ProjektGrupowy.API.Migrations
 
                     b.Navigation("Labeler");
 
-                    b.Navigation("SubjectVideoGroupAssignment");
+                    b.Navigation("Video");
                 });
 
             modelBuilder.Entity("ProjektGrupowy.API.Models.Label", b =>
@@ -799,16 +812,16 @@ namespace ProjektGrupowy.API.Migrations
                     b.Navigation("SubjectVideoGroupAssignments");
                 });
 
-            modelBuilder.Entity("ProjektGrupowy.API.Models.SubjectVideoGroupAssignment", b =>
-                {
-                    b.Navigation("AssignedLabels");
-                });
-
             modelBuilder.Entity("ProjektGrupowy.API.Models.User", b =>
                 {
                     b.Navigation("Labeler");
 
                     b.Navigation("Scientist");
+                });
+
+            modelBuilder.Entity("ProjektGrupowy.API.Models.Video", b =>
+                {
+                    b.Navigation("AssignedLabels");
                 });
 
             modelBuilder.Entity("ProjektGrupowy.API.Models.VideoGroup", b =>

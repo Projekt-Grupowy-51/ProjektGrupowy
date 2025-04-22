@@ -28,10 +28,22 @@ public class ProjectController(
     IAuthorizationHelper authHelper,
     IMapper mapper) : ControllerBase
 {
-    [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<ProjectResponse>>> GetProjectsAsync()
     {
+        if (User.IsInRole(RoleConstants.Labeler))
+        {
+            var labelerResult = await authHelper.GetLabelerFromUserAsync(User);
+            if (labelerResult.Error != null)
+                return labelerResult.Error;
+
+            var projectsLabeler = await projectService.GetProjectsForLabelerAsync(labelerResult.Labeler!.Id);
+            
+            return projectsLabeler.IsSuccess
+                ? Ok(mapper.Map<IEnumerable<ProjectResponse>>(projectsLabeler.GetValueOrThrow()))
+                : NotFound(projectsLabeler.GetErrorOrThrow());
+        }
+        
         var checkResult = await authHelper.CheckGeneralAccessAsync(User);
         if (checkResult.Error != null)
         {
@@ -70,6 +82,31 @@ public class ProjectController(
         return project.IsSuccess
             ? Ok(mapper.Map<ProjectResponse>(project.GetValueOrThrow()))
             : NotFound(project.GetErrorOrThrow());
+    }
+
+    [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
+    [HttpGet("{id:int}/unassigned-labelers")]
+    public async Task<ActionResult<ProjectResponse>> GetUnassignedLabelers(int id)
+    {
+        var checkResult = await authHelper.CheckGeneralAccessAsync(User);
+        if (checkResult.Error != null)
+        {
+            return checkResult.Error;
+        }
+
+        if (checkResult.IsScientist)
+        {
+            var authResult = await authHelper.EnsureScientistOwnsProjectAsync(User, id);
+            if (authResult != null)
+            {
+                return authResult;
+            }
+        }
+
+        var result = await projectService.GetUnassignedLabelersOfProjectAsync(id);
+        return result.IsSuccess
+            ? Ok(mapper.Map<IEnumerable<LabelerResponse>>(result.GetValueOrThrow()))
+            : NotFound(result.GetErrorOrThrow());
     }
 
     [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
@@ -146,6 +183,32 @@ public class ProjectController(
             ? Ok()
             : BadRequest(result.GetErrorOrThrow());
     }
+
+    [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
+    [HttpPost("{projectId:int}/unassign-all")]
+    public async Task<IActionResult> UnassignAllLabelers(int projectId)
+    {
+        var checkResult = await authHelper.CheckGeneralAccessAsync(User);
+        if (checkResult.Error != null)
+        {
+            return checkResult.Error;
+        }
+
+        if (checkResult.IsScientist)
+        {
+            var authResult = await authHelper.EnsureScientistOwnsProjectAsync(User, projectId);
+            if (authResult != null)
+            {
+                return authResult;
+            }
+        }
+
+        var result = await projectService.UnassignLabelersFromProjectAsync(projectId);
+        return result.IsSuccess
+            ? Ok()
+            : BadRequest(result.GetErrorOrThrow());
+    }
+
 
     [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
     [HttpPost("{projectId:int}/distribute")]

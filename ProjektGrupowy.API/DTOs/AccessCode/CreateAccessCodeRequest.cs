@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using ProjektGrupowy.API.Enums;
 
 namespace ProjektGrupowy.API.DTOs.AccessCode;
 
@@ -9,5 +10,8 @@ public class CreateAccessCodeRequest
     public int ProjectId { get; set; }
 
     [Required]
-    public DateTime? ExpiresAtUtc { get; set; }
+    public AccessCodeExpiration Expiration { get; set; }
+
+    [Required]
+    public int CustomExpiration { get; set; }
 }

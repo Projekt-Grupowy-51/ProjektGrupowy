@@ -1,0 +1,71 @@
+services:
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: mydatabase
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - mynetwork
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U myuser -d mydatabase"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: ./ProjektGrupowy.API
+      dockerfile: Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Host=db;Database=mydatabase;UserName=myuser;Password=mypassword
+      - ASPNETCORE_URLS=http://+:80
+    ports:
+      - "5000:80"
+    networks:
+      - mynetwork
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - videos_data:/app/videos
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:80/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    networks:
+      - mynetwork
+    depends_on:
+      - app
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    networks:
+      - mynetwork
+    volumes:
+      - videos_data:/mnt/videos:ro
+
+volumes:
+  postgres_data:
+  videos_data:
+
+networks:
+  mynetwork:
+    driver: bridge

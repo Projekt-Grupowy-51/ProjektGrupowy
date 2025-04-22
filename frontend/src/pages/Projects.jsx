@@ -1,84 +1,113 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import httpClient from '../httpClient';
-import './css/ScientistProjects.css';
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import httpClient from "../httpclient";
+import DeleteButton from "../components/DeleteButton";
+import DataTable from "../components/DataTable";
+import "./css/ScientistProjects.css";
+import NavigateButton from "../components/NavigateButton";
+import { useNotification } from "../context/NotificationContext";
 
 const Projects = () => {
-    const [projects, setProjects] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
-    const navigate = useNavigate();
-    const effectRan = useRef(false);
+  const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { addNotification } = useNotification();
 
-    const fetchProjects = async () => {
-        try {
-            const response = await httpClient.get('/Project');
-            setProjects(response.data);
-            setError('');
-        } catch (error) {
-            setError(error.response?.data?.message || 'Failed to load projects');
-        } finally {
-            setLoading(false);
-        }
-    };
+  // Remove deleteModal state since it's now handled by the global context
 
-    const handleDelete = async (id) => {
-        if (!window.confirm('Are you sure you want to delete this project?')) return;
+  useEffect(() => {
+    if (location.state?.success) {
+      addNotification(location.state.success, "success");
+    }
+  }, [location.state, addNotification]);
 
-        try {
-            await httpClient.delete(`/Project/${id}`);
-            setProjects(prev => prev.filter(project => project.id !== id));
-        } catch (error) {
-            setError(error.response?.data?.message || 'Failed to delete project');
-        }
-    };
+  const fetchProjects = async () => {
+    try {
+      const response = await httpClient.get("/Project");
+      const sortedProjects = response.data.sort((a, b) => a.id - b.id);
+      setProjects(sortedProjects);
+    } catch (error) {
+      addNotification(
+        error.response?.data?.message || "Failed to load projects",
+        "error"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    useEffect(() => {
-        fetchProjects();
-    }, []);
+  // Simplified delete handler - will be passed to DeleteButton
+  const handleDeleteProject = async (projectId) => {
+    try {
+      await httpClient.delete(`/Project/${projectId}`);
+      setProjects((prev) => prev.filter((project) => project.id !== projectId));
+    } catch (error) {
+      addNotification(
+        error.response?.data?.message || "Failed to delete project",
+        "error"
+      );
+    }
+  };
 
-    return (
-        <div className="container">
-            <div className="content">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                    <h1 className="heading">Projects</h1>
-                    <button className="btn add-btn text-white" onClick={() => navigate('/projects/add')}>Add New Project</button>
-                </div>
+  useEffect(() => {
+    if (location.state?.successMessage) {
+      addNotification(location.state.successMessage, "success");
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state, addNotification]);
 
-                {error && <div className="error">{error}</div>}
+  useEffect(() => {
+    fetchProjects();
+  }, []);
 
-                {loading ? (
-                    <div style={{ padding: '20px', textAlign: 'center' }}>Loading projects...</div>
-                ) : projects.length > 0 ? (
-                    <table className="normal-table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Name</th>
-                                <th>Description</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {projects.map((project) => (
-                                <tr key={project.id}>
-                                    <td>{project.id}</td>
-                                    <td>{project.name}</td>
-                                    <td>{project.description}</td>
-                                    <td>
-                                        <button className="btn btn-info" onClick={() => navigate(`/projects/${project.id}`)}>Details</button>
-                                        <button className="btn btn-danger" onClick={() => handleDelete(project.id)}>Delete</button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                ) : (
-                    <p className="error">No projects found</p>
-                )}
-            </div>
+  // Define columns configuration
+  const columns = [
+    { field: "name", header: "Name" },
+    { field: "description", header: "Description" },
+  ];
+
+  return (
+    <div className="container">
+      <div className="content">
+        <div className="d-flex justify-content-between align-items-center mb-4">
+          <h1 className="heading">Projects</h1>
+          <NavigateButton path={`/projects/add`} actionType="Add" />
         </div>
-    );
+
+        {loading ? (
+          <div className="text-center py-5">
+            <div className="spinner-border text-primary" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </div>
+            <p className="mt-3">Loading projects...</p>
+          </div>
+        ) : projects.length > 0 ? (
+          <DataTable
+            showRowNumbers={true}
+            columns={columns}
+            data={projects}
+            navigateButton={(project) => (
+              <NavigateButton
+                path={`/projects/${project.id}`}
+                actionType="Details"
+              />
+            )}
+            deleteButton={(project) => (
+              <DeleteButton
+                onClick={() => handleDeleteProject(project.id)}
+                itemType={`project "${project.name}"`}
+              />
+            )}
+          />
+        ) : (
+          <div className="alert alert-info text-center">
+            <i className="fas fa-info-circle me-2"></i>No projects found
+          </div>
+        )}
+      </div>
+    </div>
+  );
 };
 
 export default Projects;

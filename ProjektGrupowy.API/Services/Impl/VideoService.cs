@@ -33,7 +33,7 @@ public class VideoService(
 
         var videoRootDirectory = configuration["Videos:RootDirectory"] ?? "videos";
 
-        var filename = $"{Guid.NewGuid()}{Path.GetExtension(videoRequest.File.FileName)}";
+        var filename = $"{Guid.NewGuid():N}{Path.GetExtension(videoRequest.File.FileName)}";
 
         var directoryPath = Path.Combine(AppContext.BaseDirectory, videoRootDirectory, videoProjectId, videoGroupId);
         
@@ -56,6 +56,7 @@ public class VideoService(
             Title = videoRequest.Title,
             Path = videoPath,
             VideoGroup = videoGroup,
+            ContentType = videoRequest.File.ContentType,
             PositionInQueue = videoRequest.PositionInQueue
         };
 

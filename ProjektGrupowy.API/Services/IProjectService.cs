@@ -1,4 +1,5 @@
-﻿using ProjektGrupowy.API.DTOs.LabelerAssignment;
+﻿using Microsoft.CodeAnalysis.Options;
+using ProjektGrupowy.API.DTOs.LabelerAssignment;
 using ProjektGrupowy.API.DTOs.Project;
 using ProjektGrupowy.API.Models;
 using ProjektGrupowy.API.Utils;
@@ -14,8 +15,12 @@ public interface IProjectService
 
     Task<Optional<IEnumerable<Project>>> GetProjectsOfScientist(int scientistId);
     Task<Optional<bool>> AddLabelerToProjectAsync(LabelerAssignmentDto labelerAssignmentDto);
-
+    Task<Optional<IEnumerable<Labeler>>> GetUnassignedLabelersOfProjectAsync(int id);
     Task DeleteProjectAsync(int id);
+
+    Task<Optional<IEnumerable<Project>>> GetProjectsForLabelerAsync(int labelerId);
+
+    Task<Optional<bool>> UnassignLabelersFromProjectAsync(int projectId);
 
     Task<Optional<bool>> DistributeLabelersEquallyAsync(int projectId);
 }

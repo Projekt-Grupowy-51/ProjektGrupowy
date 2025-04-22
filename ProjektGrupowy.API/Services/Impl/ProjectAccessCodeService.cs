@@ -1,4 +1,5 @@
 ﻿using ProjektGrupowy.API.DTOs.AccessCode;
+using ProjektGrupowy.API.Enums;
 using ProjektGrupowy.API.Models;
 using ProjektGrupowy.API.Repositories;
 using ProjektGrupowy.API.Utils;
@@ -54,8 +55,9 @@ public class ProjectAccessCodeService(
             if (accessCodeOpt.IsFailure)
             {
                 // 3. If there isn't a valid access code, create a new one
-                
-                var newAccessCode = AccessCodeGenerator.Create(project, createCodeRequest.ExpiresAtUtc);
+                var expirationDate = GetExpirationDate(createCodeRequest.Expiration, createCodeRequest.CustomExpiration);
+
+                var newAccessCode = AccessCodeGenerator.Create(project, expirationDate);
                 var newAddedAccessCodeOpt = await repository.AddAccessCodeAsync(newAccessCode);
 
                 if (newAddedAccessCodeOpt.IsFailure)
@@ -82,7 +84,8 @@ public class ProjectAccessCodeService(
                     return Optional<ProjectAccessCode>.Failure(updatedAccessCodeOpt.GetErrorOrThrow());
                 }
 
-                var newAccessCode = AccessCodeGenerator.Create(project, createCodeRequest.ExpiresAtUtc);
+                var expirationDate = GetExpirationDate(createCodeRequest.Expiration, createCodeRequest.CustomExpiration);
+                var newAccessCode = AccessCodeGenerator.Create(project, expirationDate);
 
                 var newAddedAccessCodeOpt = await repository.AddAccessCodeAsync(newAccessCode);
                 if (newAddedAccessCodeOpt.IsFailure)
@@ -103,4 +106,32 @@ public class ProjectAccessCodeService(
             return Optional<ProjectAccessCode>.Failure(e.Message);
         }
     }
+
+    public async Task<Optional<ProjectAccessCode>> RetireAccessCodeAsync(string code)
+    {
+        var result = await repository.GetAccessCodeByCodeAsync(code);
+        if (result.IsFailure)
+            return Optional<ProjectAccessCode>.Failure("Access code not found");
+
+        var accessCode = result.GetValueOrThrow();
+
+        if (!accessCode.IsValid)
+            return Optional<ProjectAccessCode>.Failure("Access code is already retired");
+
+        accessCode.Retire();
+        var updatedAccessCodeOpt = await repository.UpdateAccessCodeAsync(accessCode);
+        return updatedAccessCodeOpt.IsFailure
+            ? Optional<ProjectAccessCode>.Failure(updatedAccessCodeOpt.GetErrorOrThrow())
+            : updatedAccessCodeOpt;
+    }
+
+    private static DateTime? GetExpirationDate(AccessCodeExpiration expiration, int days = -1) =>
+        expiration switch
+        {
+            AccessCodeExpiration.In14Days => DateTime.Today.AddDays(14).ToUniversalTime(),
+            AccessCodeExpiration.In30Days => DateTime.Today.AddDays(30).ToUniversalTime(),
+            AccessCodeExpiration.Never => null,
+            AccessCodeExpiration.Custom when days > 0 => DateTime.Today.AddDays(days).ToUniversalTime(),
+            _ => throw new ArgumentException("Invalid expiration or days value")
+        };
 }

@@ -1,27 +1,32 @@
 ﻿import React, { useState, useEffect } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
-import httpClient, { API_BASE_URL } from "../httpClient";
+import { useParams, useNavigate, Link, useLocation } from "react-router-dom";
+import httpClient, { API_BASE_URL } from "../httpclient";
+import DeleteButton from "../components/DeleteButton";
 import "./css/ScientistProjects.css";
+import NavigateButton from "../components/NavigateButton";
+import DataTable from "../components/DataTable";
+import { useNotification } from "../context/NotificationContext";
 
 const VideoGroupDetails = () => {
   const { id } = useParams();
   const [videoGroupDetails, setVideoGroupDetails] = useState(null);
   const [videos, setVideos] = useState([]);
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation();
+  const { addNotification } = useNotification();
 
   // Fetch video group details
   async function fetchVideoGroupDetails() {
     setLoading(true);
-    setError("");
     try {
       const response = await httpClient.get(`/videogroup/${id}`);
       setVideoGroupDetails(response.data);
       fetchVideos();
     } catch (error) {
-      setError(
-        error.response?.data?.message || "Failed to fetch video group details"
+      addNotification(
+        error.response?.data?.message || "Failed to fetch video group details",
+        "error"
       );
       setLoading(false);
     }
@@ -33,7 +38,10 @@ const VideoGroupDetails = () => {
       const response = await httpClient.get(`/VideoGroup/${id}/videos`);
       setVideos(response.data);
     } catch (error) {
-      setError(error.response?.data?.message || "Failed to fetch videos");
+      addNotification(
+        error.response?.data?.message || "Failed to fetch videos",
+        "error"
+      );
     } finally {
       setLoading(false);
     }
@@ -47,41 +55,40 @@ const VideoGroupDetails = () => {
     if (id) fetchVideoGroupDetails();
   }, [id]);
 
-  // Redirect to "Add Video" form
-  function addVideo() {
-    navigate(`/videos/add?videogroupId=${id}`);
-  }
+  // Handle location state for success messages
+  useEffect(() => {
+    if (location.state?.successMessage) {
+      addNotification(location.state.successMessage, "success");
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
-  // Delete a video
-  async function deleteVideo(videoId) {
-    if (!window.confirm("Are you sure you want to delete this video?")) return;
-
+  // Simplified delete handler - will be passed to DeleteButton
+  const handleDeleteVideo = async (videoId, videoTitle) => {
     try {
       await httpClient.delete(`/video/${videoId}`);
       setVideos(videos.filter((video) => video.id !== videoId));
-      alert("Video deleted successfully");
+      addNotification("Video deleted successfully!", "success");
     } catch (error) {
-      setError(error.response?.data?.message || "Failed to delete video");
+      addNotification(
+        error.response?.data?.message || "Failed to delete video",
+        "error"
+      );
     }
-  }
+  };
+
+  // Define columns for videos table
+  const videoColumns = [
+    { field: "title", header: "Title" },
+    { field: "positionInQueue", header: "Position" },
+  ];
 
   if (loading)
     return (
-      <div className="container">
-        <div className="loading">Loading video group details...</div>
-      </div>
-    );
-
-  if (error)
-    return (
-      <div className="container">
-        <div className="error">{error}</div>
-        <button
-          className="btn btn-primary"
-          onClick={() => navigate("/projects")}
-        >
-          Back to Projects
-        </button>
+      <div className="container d-flex justify-content-center align-items-center py-5">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
       </div>
     );
 
@@ -90,69 +97,43 @@ const VideoGroupDetails = () => {
   return (
     <div className="container">
       <div className="content">
-        <h1 className="heading">{videoGroupDetails.name}</h1>
+        <h1 className="heading mb-4">{videoGroupDetails.name}</h1>
 
-        <div className="actions-row">
-          <button className="btn add-btn" onClick={addVideo}>
-            Add Video
-          </button>
-          <Link
-            to={`/projects/${videoGroupDetails.projectId}`}
-            className="btn back-btn"
-          >
-            Back to Project
-          </Link>
-          <Link to={`/videos/${id}`} className="btn add-btn ms-3">
-            Play videos
-          </Link>
+        <div className="d-flex justify-content-between mb-4">
+          <NavigateButton
+            path={`/videos/add?videogroupId=${id}`}
+            actionType="Add"
+          />
+          <NavigateButton actionType="Back" />
         </div>
 
-        {/* Videos Table */}
-        <div className="table-container">
-          <h2>Videos</h2>
-          {videos.length > 0 ? (
-            <table className="normal-table">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Title</th>
-                  <th>Position</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {videos.map((video) => (
-                  <tr key={video.id}>
-                    <td>{video.id}</td>
-                    <td>{video.title}</td>
-                    <td>{video.positionInQueue}</td>
-                    <td>
-                      <div className="action-buttons">
-                        <button
-                          className="btn btn-info"
-                          // onClick={() => navigate(`/videdo/${video.id}/stream`)}
-                          onClick={() => openVideoStream(video.id)}
-                        >
-                          View
-                        </button>
-                        <button
-                          className="btn btn-danger"
-                          onClick={() => deleteVideo(video.id)}
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          ) : (
-            <p>
+        {videos.length > 0 ? (
+          <DataTable
+            showRowNumbers={true}
+            columns={videoColumns}
+            data={videos}
+            tableClassName="normal-table table-hover"
+            navigateButton={(video) => (
+              <NavigateButton
+                path={`/videos/${video.id}`}
+                actionType="Details"
+              />
+            )}
+            deleteButton={(video) => (
+              <DeleteButton
+                onClick={() => handleDeleteVideo(video.id, video.title)}
+                itemType={`video "${video.title}"`}
+              />
+            )}
+          />
+        ) : (
+          <div className="card-body text-center py-5">
+            <i className="fas fa-film fs-1 text-muted opacity-50"></i>
+            <p className="text-muted mt-3 mb-0">
               No videos found in this group. Add some videos to get started.
             </p>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
