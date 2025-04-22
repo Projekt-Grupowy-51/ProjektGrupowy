@@ -17,6 +17,7 @@ public class VideoController(
     IVideoService videoService,
     IAssignedLabelService assignedLabelService,
     IAuthorizationHelper authHelper,
+    IConfiguration configuration,
     IMapper mapper) : ControllerBase
 {
     [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
@@ -201,13 +202,9 @@ public class VideoController(
         }
 
         var video = videoOptional.GetValueOrThrow();
-        var path = $"http://localhost:8080/videos/{video.VideoGroup.Project.Id}/{video.VideoGroupId}/{Path.GetFileName(video.Path)}";
+        var baseUrl = configuration["Videos:NginxUrl"];
+        var path = $"{baseUrl}/{video.VideoGroup.Project.Id}/{video.VideoGroupId}/{Path.GetFileName(video.Path)}";
         return Redirect(path);
-        // return File(
-        //     video.ToStream(),
-        //     video.ContentType, 
-        //     Path.GetFileName(video.Path), 
-        //     enableRangeProcessing: true);
     }
 
     [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]

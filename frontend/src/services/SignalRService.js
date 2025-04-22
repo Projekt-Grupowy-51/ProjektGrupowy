@@ -1,10 +1,13 @@
 import * as signalR from "@microsoft/signalr";
+import settings from "../config/settings.json";
 
 class SignalRService {
   connection = null;
-  hubUrl = "http://localhost:5000/hub/app";
+  hubUrl = settings.signalR.url;
 
   constructor() {
+    console.log("SignalRService constructor called");
+    console.log("SignalR hub URL:", this.hubUrl);
     this.connection = new signalR.HubConnectionBuilder()
       .withUrl(this.hubUrl, {
         skipNegotiation: true,
