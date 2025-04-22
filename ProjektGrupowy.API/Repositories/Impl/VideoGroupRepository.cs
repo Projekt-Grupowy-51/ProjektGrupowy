@@ -1,18 +1,20 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ProjektGrupowy.API.Data;
 using ProjektGrupowy.API.Models;
+using ProjektGrupowy.API.Services;
 using ProjektGrupowy.API.Utils;
 
 namespace ProjektGrupowy.API.Repositories.Impl;
 
-public class VideoGroupRepository(AppDbContext context, ILogger<VideoGroupRepository> logger)
+public class VideoGroupRepository(AppDbContext context, ILogger<VideoGroupRepository> logger, ICurrentUserService currentUserService)
     : IVideoGroupRepository
 {
     public async Task<Optional<IEnumerable<VideoGroup>>> GetVideoGroupsAsync()
     {
         try
         {
-            var videoGroups = await context.VideoGroups.ToListAsync();
+            var videoGroups = await context.VideoGroups.FilteredVideoGroups(currentUserService.UserId, currentUserService.IsAdmin)
+                .ToListAsync();
             return Optional<IEnumerable<VideoGroup>>.Success(videoGroups);
         }
         catch (Exception ex)
@@ -26,7 +28,8 @@ public class VideoGroupRepository(AppDbContext context, ILogger<VideoGroupReposi
     {
         try
         {
-            var videoGroup = await context.VideoGroups.FirstOrDefaultAsync(v => v.Id == id);
+            var videoGroup = await context.VideoGroups.FilteredVideoGroups(currentUserService.UserId, currentUserService.IsAdmin)
+                .FirstOrDefaultAsync(v => v.Id == id);
             return videoGroup is null
                 ? Optional<VideoGroup>.Failure("Video group not found")
                 : Optional<VideoGroup>.Success(videoGroup);
@@ -76,7 +79,7 @@ public class VideoGroupRepository(AppDbContext context, ILogger<VideoGroupReposi
         {
             // This is efficient because it uses an indexed column ("IX_VideoGroups_ProjectId" btree ("ProjectId"))
             // Check with psql: mydatabase=# EXPLAIN SELECT * FROM "VideoGroups" WHERE "ProjectId" = ...;
-            var videoGroups = await context.VideoGroups
+            var videoGroups = await context.VideoGroups.FilteredVideoGroups(currentUserService.UserId, currentUserService.IsAdmin)
                 .Where(v => v.Project.Id == projectId)
                 .ToArrayAsync();
 
@@ -88,9 +91,6 @@ public class VideoGroupRepository(AppDbContext context, ILogger<VideoGroupReposi
             return Optional<IEnumerable<VideoGroup>>.Failure(e.Message);
         }
     }
-
-    public async Task<Optional<IEnumerable<VideoGroup>>> GetVideoGroupsByProjectAsync(Project project)
-        => await GetVideoGroupsByProjectAsync(project.Id);
 
     public async Task DeleteVideoGroupAsync(VideoGroup videoGroup)
     {
@@ -109,9 +109,8 @@ public class VideoGroupRepository(AppDbContext context, ILogger<VideoGroupReposi
     {
         try
         {
-            var videoGroup = await context.VideoGroups
+            var videoGroup = await context.VideoGroups.FilteredVideoGroups(currentUserService.UserId, currentUserService.IsAdmin)
                 .AsNoTracking()
-                .Include(vg => vg.Videos)
                 .FirstOrDefaultAsync(vg => vg.Id == id);
 
             if (videoGroup is null)
@@ -126,23 +125,6 @@ public class VideoGroupRepository(AppDbContext context, ILogger<VideoGroupReposi
         {
             logger.LogError(e, "An error occurred while getting videos for video group with ID {VideoGroupId}", id);
             return Optional<IEnumerable<Video>>.Failure("An error occurred while processing your request");
-        }
-    }
-
-    public async Task<Optional<IEnumerable<VideoGroup>>> GetVideoGroupsByScientistIdAsync(int scientistId)
-    {
-        try
-        {
-            var videoGroups = await context.VideoGroups
-                .Where(vg => vg.Project.Scientist.Id == scientistId)
-                .ToListAsync();
-
-            return Optional<IEnumerable<VideoGroup>>.Success(videoGroups);
-        }
-        catch (Exception e)
-        {
-            logger.LogError(e, "An error occurred while getting video groups by scientist ID");
-            return Optional<IEnumerable<VideoGroup>>.Failure(e.Message);
         }
     }
 }

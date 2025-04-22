@@ -5,6 +5,7 @@ using ProjektGrupowy.API.DTOs.Label;
 using ProjektGrupowy.API.Filters;
 using ProjektGrupowy.API.Services;
 using ProjektGrupowy.API.Utils.Constants;
+using ProjektGrupowy.API.Utils.Extensions;
 
 namespace ProjektGrupowy.API.Controllers;
 
@@ -14,20 +15,13 @@ namespace ProjektGrupowy.API.Controllers;
 [Authorize]
 public class LabelController(
     ILabelService labelService,
-    IAuthorizationHelper authHelper,
     IMapper mapper) : ControllerBase
 {
     [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<LabelResponse>>> GetLabelsAsync()
     {
-        var checkResult = await authHelper.CheckGeneralAccessAsync(User);
-        if (checkResult.Error != null)
-            return checkResult.Error;
-
-        var labels = checkResult.IsAdmin
-            ? await labelService.GetLabelsAsync()
-            : await labelService.GetLabelsByScientistIdAsync(checkResult.Scientist!.Id);
+        var labels = await labelService.GetLabelsAsync();
 
         return labels.IsSuccess
             ? Ok(mapper.Map<IEnumerable<LabelResponse>>(labels.GetValueOrThrow()))
@@ -38,17 +32,6 @@ public class LabelController(
     [HttpGet("{id:int}")]
     public async Task<ActionResult<LabelResponse>> GetLabelAsync(int id)
     {
-        var checkResult = await authHelper.CheckGeneralAccessAsync(User);
-        if (checkResult.Error != null)
-            return checkResult.Error;
-
-        if (checkResult.IsScientist)
-        {
-            var authResult = await authHelper.EnsureScientistOwnsLabelAsync(User, id);
-            if (authResult != null)
-                return authResult;
-        }
-
         var label = await labelService.GetLabelAsync(id);
         return label.IsSuccess
             ? Ok(mapper.Map<LabelResponse>(label.GetValueOrThrow()))
@@ -59,16 +42,7 @@ public class LabelController(
     [HttpPost]
     public async Task<ActionResult<LabelResponse>> AddLabelAsync(LabelRequest labelRequest)
     {
-        var checkResult = await authHelper.CheckGeneralAccessAsync(User);
-        if (checkResult.Error != null)
-            return checkResult.Error;
-
-        if (checkResult.IsScientist)
-        {
-            var authResult = await authHelper.EnsureScientistOwnsSubjectAsync(User, labelRequest.SubjectId);
-            if (authResult != null)
-                return authResult;
-        }
+        labelRequest.OwnerId = User.GetUserId();
 
         var result = await labelService.AddLabelAsync(labelRequest);
 
@@ -85,19 +59,12 @@ public class LabelController(
     [HttpPut("{id:int}")]
     public async Task<IActionResult> PutLabelAsync(int id, LabelRequest labelRequest)
     {
-        var checkResult = await authHelper.CheckGeneralAccessAsync(User);
-        if (checkResult.Error != null)
-            return checkResult.Error;
+        labelRequest.OwnerId = User.GetUserId();
 
-        if (checkResult.IsScientist)
+        var labelResult = await labelService.GetLabelAsync(id);
+        if (labelResult.IsFailure)
         {
-            var authResult = await authHelper.EnsureScientistOwnsLabelAsync(User, id);
-            if (authResult != null)
-                return authResult;
-                
-            var subjectAuthResult = await authHelper.EnsureScientistOwnsSubjectAsync(User, labelRequest.SubjectId);
-            if (subjectAuthResult != null)
-                return subjectAuthResult;
+            return NotFound(labelResult.GetErrorOrThrow());
         }
 
         var result = await labelService.UpdateLabelAsync(id, labelRequest);
@@ -111,15 +78,10 @@ public class LabelController(
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteLabelAsync(int id)
     {
-        var checkResult = await authHelper.CheckGeneralAccessAsync(User);
-        if (checkResult.Error != null)
-            return checkResult.Error;
-
-        if (checkResult.IsScientist)
+        var labelResult = await labelService.GetLabelAsync(id);
+        if (labelResult.IsFailure)
         {
-            var authResult = await authHelper.EnsureScientistOwnsLabelAsync(User, id);
-            if (authResult != null)
-                return authResult;
+            return NotFound(labelResult.GetErrorOrThrow());
         }
 
         await labelService.DeleteLabelAsync(id);

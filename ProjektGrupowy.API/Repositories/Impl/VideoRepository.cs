@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ProjektGrupowy.API.Data;
 using ProjektGrupowy.API.Models;
+using ProjektGrupowy.API.Services;
 using ProjektGrupowy.API.Utils;
 
 namespace ProjektGrupowy.API.Repositories.Impl;
@@ -9,18 +10,21 @@ public class VideoRepository : IVideoRepository
 {
     private readonly AppDbContext _context;
     private readonly ILogger<VideoRepository> _logger;
+    private readonly ICurrentUserService _currentUserService;
 
-    public VideoRepository(AppDbContext dbContext, ILogger<VideoRepository> logger)
+    public VideoRepository(AppDbContext dbContext, ILogger<VideoRepository> logger, ICurrentUserService currentUserService)
     {
         _context = dbContext;
         _logger = logger;
+        _currentUserService = currentUserService;
     }
 
     public async Task<Optional<IEnumerable<Video>>> GetVideosAsync()
     {
         try
         {
-            var videos = await _context.Videos.ToListAsync();
+            var videos = await _context.Videos.FilteredVideos(_currentUserService.UserId, _currentUserService.IsAdmin)
+                .ToListAsync();
             return Optional<IEnumerable<Video>>.Success(videos);
         }
         catch (Exception e)
@@ -35,7 +39,7 @@ public class VideoRepository : IVideoRepository
         try
         {
             // Index lookup
-            var videos = await _context.Videos
+            var videos = await _context.Videos.FilteredVideos(_currentUserService.UserId, _currentUserService.IsAdmin)
                 .AsNoTracking()
                 .Where(v => v.VideoGroupId == videoGroupId)
                 .Where(v => v.PositionInQueue == positionInQueue)
@@ -54,7 +58,7 @@ public class VideoRepository : IVideoRepository
     {
         try
         {
-            var video = await _context.Videos.FindAsync(id);
+            var video = await _context.Videos.FilteredVideos(_currentUserService.UserId, _currentUserService.IsAdmin).FirstOrDefaultAsync(x => x.Id == id);
             return video is null
                 ? Optional<Video>.Failure("Video not found")
                 : Optional<Video>.Success(video);
@@ -108,25 +112,6 @@ public class VideoRepository : IVideoRepository
         catch (Exception e)
         {
             _logger.LogError(e, "An error occurred while deleting video");
-        }
-    }
-
-    public async Task<Optional<IEnumerable<Video>>> GetVideosByScientistIdAsync(int scientistId)
-    {
-        try
-        {
-            var videos = await _context.Videos
-                .Include(v => v.VideoGroup)
-                .ThenInclude(vg => vg.Project)
-                .Where(v => v.VideoGroup.Project.Scientist.Id == scientistId)
-                .ToListAsync();
-
-            return Optional<IEnumerable<Video>>.Success(videos);
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "An error occurred while getting videos by scientist ID");
-            return Optional<IEnumerable<Video>>.Failure(e.Message);
         }
     }
 }

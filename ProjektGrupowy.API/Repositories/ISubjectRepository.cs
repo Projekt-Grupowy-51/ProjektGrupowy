@@ -11,10 +11,7 @@ public interface ISubjectRepository
     Task<Optional<Subject>> UpdateSubjectAsync(Subject subject);
 
     Task<Optional<IEnumerable<Subject>>> GetSubjectsByProjectAsync(int projectId);
-    Task<Optional<IEnumerable<Subject>>> GetSubjectsByProjectAsync(Project project);
 
     Task DeleteSubjectAsync(Subject subject);
-
-    Task<Optional<IEnumerable<Subject>>> GetSubjectsByScientistId(int scientistId);
     Task<Optional<IEnumerable<Label>>> GetSubjectLabelsAsync(int subjectId);
 }

@@ -12,14 +12,9 @@ public interface IProjectRepository
     Task<Optional<Project>> UpdateProjectAsync(Project project);
     Task DeleteProjectAsync(Project project);
 
-    Task<Optional<IEnumerable<Project>>> GetProjectsOfScientist(int scientistId);
-    Task<Optional<IEnumerable<Project>>> GetProjectsOfScientist(Scientist scientist);
-
     Task<Optional<Project>> GetProjectByAccessCodeAsync(string code);
 
     Task<Optional<Dictionary<int, int>>> GetLabelerCountForAssignments(int projectId);
-    
-    Task<Optional<IEnumerable<Project>>> GetProjectsForLabelerAsync(int labelerId);
 
     Task<IDbContextTransaction> BeginTransactionAsync();
 }

@@ -1,18 +1,19 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ProjektGrupowy.API.Data;
 using ProjektGrupowy.API.Models;
+using ProjektGrupowy.API.Services;
 using ProjektGrupowy.API.Utils;
 using System.Data.Common;
 
 namespace ProjektGrupowy.API.Repositories.Impl;
 
-public class LabelRepository(AppDbContext context, ILogger<LabelRepository> logger) : ILabelRepository
+public class LabelRepository(AppDbContext context, ILogger<LabelRepository> logger, ICurrentUserService currentUserService) : ILabelRepository
 {
     public async Task<Optional<IEnumerable<Label>>> GetLabelsAsync()
     {
         try
         {
-            var labels = await context.Labels.ToListAsync();
+            var labels = await context.Labels.FilteredLabels(currentUserService.UserId, currentUserService.IsAdmin).ToListAsync();
             return Optional<IEnumerable<Label>>.Success(labels);
         }
         catch (Exception e)
@@ -26,7 +27,7 @@ public class LabelRepository(AppDbContext context, ILogger<LabelRepository> logg
     {
         try
         {
-            var label = await context.Labels.FirstOrDefaultAsync(l => l.Id == id);
+            var label = await context.Labels.FilteredLabels(currentUserService.UserId, currentUserService.IsAdmin).FirstOrDefaultAsync(l => l.Id == id);
             return label is null
                 ? Optional<Label>.Failure("Label not found")
                 : Optional<Label>.Success(label);
@@ -80,40 +81,6 @@ public class LabelRepository(AppDbContext context, ILogger<LabelRepository> logg
         catch (Exception e)
         {
             logger.LogError(e, "An error occurred while deleting label");
-        }
-    }
-
-    public async Task<Optional<IEnumerable<Label>>> GetLabelsBySubjectIdAsync(int subjectId)
-    {
-        try
-        {
-            var labels = await context.Labels
-                .Include(l => l.Subject)
-                .Where(l => l.Subject.Id == subjectId)
-                .ToListAsync();
-            return Optional<IEnumerable<Label>>.Success(labels);
-        }
-        catch (Exception e)
-        {
-            logger.LogError(e, "An error occurred while getting labels");
-            return Optional<IEnumerable<Label>>.Failure(e.Message);
-        }
-    }
-
-    public async Task<Optional<IEnumerable<Label>>> GetLabelsByScientistIdAsync(int scientistId)
-    {
-        try
-        {
-            var labels = await context.Labels
-                .Where(l => l.Subject.Project.Scientist.Id == scientistId)
-                .ToListAsync();
-            
-            return Optional<IEnumerable<Label>>.Success(labels);
-        }
-        catch (Exception e)
-        {
-            logger.LogError(e, "An error occurred while getting labels by scientist ID");
-            return Optional<IEnumerable<Label>>.Failure(e.Message);
         }
     }
 }

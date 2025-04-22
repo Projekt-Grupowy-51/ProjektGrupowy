@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace ProjektGrupowy.API.Models;
 
 [Table("VideoGroups")]
-public class VideoGroup
+public class VideoGroup : IOwnedEntity
 {
     [Key]
     public int Id { get; set; }
@@ -17,4 +17,9 @@ public class VideoGroup
     public virtual Project Project { get; set; }
 
     public virtual ICollection<SubjectVideoGroupAssignment>? SubjectVideoGroupAssignments { get; set; }
+    public string OwnerId { get; set; }
+
+    [ForeignKey(nameof(OwnerId))]
+    public virtual User Owner { get; set; }
+    public DateTime? DelDate { get; set; } = null;
 }

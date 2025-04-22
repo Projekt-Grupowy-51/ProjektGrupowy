@@ -5,7 +5,7 @@ using System.Text.Json;
 namespace ProjektGrupowy.API.Models;
 
 [Table("SubjectVideoGroupAssignments")]
-public class SubjectVideoGroupAssignment
+public class SubjectVideoGroupAssignment : IOwnedEntity
 {
     [Key]
     public int Id { get; set; }
@@ -20,7 +20,12 @@ public class SubjectVideoGroupAssignment
     [Required]
     public virtual VideoGroup VideoGroup { get; set; }
 
-    public virtual ICollection<Labeler>? Labelers { get; set; }
+    public virtual ICollection<User>? Labelers { get; set; }
+    public string OwnerId { get; set; }
+
+    [ForeignKey(nameof(OwnerId))]
+    public virtual User Owner { get; set; }
+    public DateTime? DelDate { get; set; } = null;
 
     //public string ToJson()
     //{

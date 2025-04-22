@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using ProjektGrupowy.API.Data;
@@ -11,9 +12,11 @@ using ProjektGrupowy.API.Data;
 namespace ProjektGrupowy.API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250416202536_dodano-ownerid-deldate")]
+    partial class dodanoowneriddeldate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -155,21 +158,6 @@ namespace ProjektGrupowy.API.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
-                });
-
-            modelBuilder.Entity("ProjectUser", b =>
-                {
-                    b.Property<int>("LabeledProjectsId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("ProjectLabelersId")
-                        .HasColumnType("text");
-
-                    b.HasKey("LabeledProjectsId", "ProjectLabelersId");
-
-                    b.HasIndex("ProjectLabelersId");
-
-                    b.ToTable("ProjectLabelers", (string)null);
                 });
 
             modelBuilder.Entity("ProjektGrupowy.API.Models.AssignedLabel", b =>
@@ -457,11 +445,17 @@ namespace ProjektGrupowy.API.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("boolean");
 
+                    b.Property<int?>("ProjectId")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("RegistrationDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("text");
+
+                    b.Property<int?>("SubjectVideoGroupAssignmentId")
+                        .HasColumnType("integer");
 
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("boolean");
@@ -478,6 +472,10 @@ namespace ProjektGrupowy.API.Migrations
                     b.HasIndex("NormalizedUserName")
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex");
+
+                    b.HasIndex("ProjectId");
+
+                    b.HasIndex("SubjectVideoGroupAssignmentId");
 
                     b.ToTable("AspNetUsers", (string)null);
                 });
@@ -561,21 +559,6 @@ namespace ProjektGrupowy.API.Migrations
                     b.ToTable("VideoGroups");
                 });
 
-            modelBuilder.Entity("SubjectVideoGroupAssignmentUser", b =>
-                {
-                    b.Property<int>("LabeledAssignmentsId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("LabelersId")
-                        .HasColumnType("text");
-
-                    b.HasKey("LabeledAssignmentsId", "LabelersId");
-
-                    b.HasIndex("LabelersId");
-
-                    b.ToTable("LabelersAssignments", (string)null);
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -623,21 +606,6 @@ namespace ProjektGrupowy.API.Migrations
                     b.HasOne("ProjektGrupowy.API.Models.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("ProjectUser", b =>
-                {
-                    b.HasOne("ProjektGrupowy.API.Models.Project", null)
-                        .WithMany()
-                        .HasForeignKey("LabeledProjectsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ProjektGrupowy.API.Models.User", null)
-                        .WithMany()
-                        .HasForeignKey("ProjectLabelersId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -691,9 +659,9 @@ namespace ProjektGrupowy.API.Migrations
             modelBuilder.Entity("ProjektGrupowy.API.Models.Project", b =>
                 {
                     b.HasOne("ProjektGrupowy.API.Models.User", "Owner")
-                        .WithMany("OwnedProjects")
+                        .WithMany()
                         .HasForeignKey("OwnerId")
-                        .OnDelete(DeleteBehavior.SetNull)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Owner");
@@ -740,9 +708,9 @@ namespace ProjektGrupowy.API.Migrations
             modelBuilder.Entity("ProjektGrupowy.API.Models.SubjectVideoGroupAssignment", b =>
                 {
                     b.HasOne("ProjektGrupowy.API.Models.User", "Owner")
-                        .WithMany("OwnedAssignments")
+                        .WithMany()
                         .HasForeignKey("OwnerId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("ProjektGrupowy.API.Models.Subject", "Subject")
@@ -762,6 +730,17 @@ namespace ProjektGrupowy.API.Migrations
                     b.Navigation("Subject");
 
                     b.Navigation("VideoGroup");
+                });
+
+            modelBuilder.Entity("ProjektGrupowy.API.Models.User", b =>
+                {
+                    b.HasOne("ProjektGrupowy.API.Models.Project", null)
+                        .WithMany("ProjectLabelers")
+                        .HasForeignKey("ProjectId");
+
+                    b.HasOne("ProjektGrupowy.API.Models.SubjectVideoGroupAssignment", null)
+                        .WithMany("Labelers")
+                        .HasForeignKey("SubjectVideoGroupAssignmentId");
                 });
 
             modelBuilder.Entity("ProjektGrupowy.API.Models.Video", b =>
@@ -802,21 +781,6 @@ namespace ProjektGrupowy.API.Migrations
                     b.Navigation("Project");
                 });
 
-            modelBuilder.Entity("SubjectVideoGroupAssignmentUser", b =>
-                {
-                    b.HasOne("ProjektGrupowy.API.Models.SubjectVideoGroupAssignment", null)
-                        .WithMany()
-                        .HasForeignKey("LabeledAssignmentsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ProjektGrupowy.API.Models.User", null)
-                        .WithMany()
-                        .HasForeignKey("LabelersId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("ProjektGrupowy.API.Models.Label", b =>
                 {
                     b.Navigation("AssignedLabels");
@@ -825,6 +789,8 @@ namespace ProjektGrupowy.API.Migrations
             modelBuilder.Entity("ProjektGrupowy.API.Models.Project", b =>
                 {
                     b.Navigation("AccessCodes");
+
+                    b.Navigation("ProjectLabelers");
 
                     b.Navigation("Subjects");
                 });
@@ -836,11 +802,9 @@ namespace ProjektGrupowy.API.Migrations
                     b.Navigation("SubjectVideoGroupAssignments");
                 });
 
-            modelBuilder.Entity("ProjektGrupowy.API.Models.User", b =>
+            modelBuilder.Entity("ProjektGrupowy.API.Models.SubjectVideoGroupAssignment", b =>
                 {
-                    b.Navigation("OwnedAssignments");
-
-                    b.Navigation("OwnedProjects");
+                    b.Navigation("Labelers");
                 });
 
             modelBuilder.Entity("ProjektGrupowy.API.Models.Video", b =>

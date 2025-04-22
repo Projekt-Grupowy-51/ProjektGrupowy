@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore.Storage;
 using ProjektGrupowy.API.Data;
 using ProjektGrupowy.API.Models;
+using ProjektGrupowy.API.Services;
 using ProjektGrupowy.API.Utils;
 using System.Linq;
 
@@ -9,14 +10,15 @@ namespace ProjektGrupowy.API.Repositories.Impl;
 
 public class ProjectAccessCodeRepository(
     AppDbContext dbContext,
-    ILogger<ProjectAccessCodeRepository> logger) : IProjectAccessCodeRepository
+    ILogger<ProjectAccessCodeRepository> logger,
+    ICurrentUserService currentUserService) : IProjectAccessCodeRepository
 {
     public async Task<Optional<ProjectAccessCode>> GetAccessCodeByCodeAsync(string code)
     {
         try
         {
             var accessCode = await dbContext
-                .ProjectAccessCodes
+                .ProjectAccessCodes.FilteredProjectAccessCodes(currentUserService.UserId, currentUserService.IsAdmin)
                 .FirstOrDefaultAsync(p => p.Code == code);
 
             return accessCode is null
@@ -35,7 +37,7 @@ public class ProjectAccessCodeRepository(
         try
         {
             var accessCodes = await dbContext
-                .ProjectAccessCodes
+                .ProjectAccessCodes.FilteredProjectAccessCodes(currentUserService.UserId, currentUserService.IsAdmin)
                 .Where(p => p.Project.Id == projectId)
                 .ToArrayAsync();
 
@@ -53,7 +55,7 @@ public class ProjectAccessCodeRepository(
         try
         {
             var validAccessCode = await dbContext
-                .ProjectAccessCodes
+                .ProjectAccessCodes.FilteredProjectAccessCodes(currentUserService.UserId, currentUserService.IsAdmin)
                 .Where(p => p.Project.Id == projectId)
                 .Where(p => (p.ExpiresAtUtc == null || p.ExpiresAtUtc > DateTime.UtcNow))
                 .SingleOrDefaultAsync();

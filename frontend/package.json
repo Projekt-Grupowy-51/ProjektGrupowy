@@ -15,7 +15,8 @@
     "bootstrap": "^5.3.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^7.1.1"
+    "react-router-dom": "^7.1.1",
+    "signalr": "^2.4.3"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.3",

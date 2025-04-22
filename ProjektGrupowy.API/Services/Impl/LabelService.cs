@@ -1,11 +1,12 @@
-﻿using ProjektGrupowy.API.DTOs.Label;
+﻿using Microsoft.AspNetCore.Identity;
+using ProjektGrupowy.API.DTOs.Label;
 using ProjektGrupowy.API.Models;
 using ProjektGrupowy.API.Repositories;
 using ProjektGrupowy.API.Utils;
 
 namespace ProjektGrupowy.API.Services.Impl;
 
-public class LabelService(ILabelRepository labelRepository, ISubjectRepository subjectRepository) : ILabelService
+public class LabelService(ILabelRepository labelRepository, ISubjectRepository subjectRepository, UserManager<User> userManager) : ILabelService
 {
     public async Task<Optional<IEnumerable<Label>>> GetLabelsAsync()
     {
@@ -31,13 +32,20 @@ public class LabelService(ILabelRepository labelRepository, ISubjectRepository s
             return Optional<Label>.Failure("Shortcut has to be a letter or a number");
         }
 
+        var owner = await userManager.FindByIdAsync(labelRequest.OwnerId);
+        if (owner == null)
+        {
+            return Optional<Label>.Failure("No labeler found");
+        }
+
         var label = new Label
         {
             Name = labelRequest.Name,
             Subject = subjectOptional.GetValueOrThrow(),
             ColorHex = labelRequest.ColorHex,
             Type = labelRequest.Type,
-            Shortcut = labelRequest.Shortcut
+            Shortcut = labelRequest.Shortcut,
+            Owner = owner
         };
 
         return await labelRepository.AddLabelAsync(label);
@@ -74,15 +82,5 @@ public class LabelService(ILabelRepository labelRepository, ISubjectRepository s
         var label = await labelRepository.GetLabelAsync(id);
         if (label.IsSuccess)
             await labelRepository.DeleteLabelAsync(label.GetValueOrThrow());
-    }
-
-    public async Task<Optional<IEnumerable<Label>>> GetLabelsBySubjectIdAsync(int subjectId)
-    {
-        return await labelRepository.GetLabelsBySubjectIdAsync(subjectId);
-    }
-
-    public async Task<Optional<IEnumerable<Label>>> GetLabelsByScientistIdAsync(int scientistId)
-    {
-        return await labelRepository.GetLabelsByScientistIdAsync(scientistId);
     }
 }

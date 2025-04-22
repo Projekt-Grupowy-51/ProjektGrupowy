@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace ProjektGrupowy.API.Models;
 
 [Table("Projects")]
-public class Project
+public class Project : IOwnedEntity
 {
     [Key]
     public int Id { get; set; }
@@ -29,8 +29,11 @@ public class Project
     public virtual ICollection<ProjectAccessCode>? AccessCodes { get; set; } = new List<ProjectAccessCode>();
 
     // Many-to-Many Relation
-    public virtual ICollection<Labeler> ProjectLabelers { get; set; } = new List<Labeler>();
+    public virtual ICollection<User> ProjectLabelers { get; set; } = new List<User>();
 
-    [Required]
-    public virtual Scientist Scientist { get; set; }
+    public string OwnerId { get; set; }
+
+    [ForeignKey(nameof(OwnerId))]
+    public virtual User Owner { get; set; }
+    public DateTime? DelDate { get; set; } = null;
 }

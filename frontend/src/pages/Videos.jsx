@@ -381,7 +381,6 @@ function useLabels(videos, subjectId) {
   };
 
   const sendLabelData = async (labelId, start, end) => {
-    const labelerId = -1;
     const startFormatted = formatTime(start);
     const endFormatted = formatTime(end);
 
@@ -395,7 +394,6 @@ function useLabels(videos, subjectId) {
         const data = {
           labelId,
           videoId: video.id,
-          labelerId,
           start: startFormatted,
           end: endFormatted,
         };

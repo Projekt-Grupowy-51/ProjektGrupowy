@@ -123,12 +123,13 @@ static void AddServices(WebApplicationBuilder builder)
         });
     });
 
+    builder.Services.AddHttpContextAccessor();
+    builder.Services.AddTransient<ICurrentUserService, CurrentUserService>();
+
     // Repositories
     builder.Services.AddScoped<IAssignedLabelRepository, AssignedLabelRepository>();
-    builder.Services.AddScoped<ILabelerRepository, LabelerRepository>();
     builder.Services.AddScoped<ILabelRepository, LabelRepository>();
     builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
-    builder.Services.AddScoped<IScientistRepository, ScientistRepository>();
     builder.Services.AddScoped<ISubjectRepository, SubjectRepository>();
     builder.Services.AddScoped<ISubjectVideoGroupAssignmentRepository, SubjectVideoGroupAssignmentRepository>();
     builder.Services.AddScoped<IVideoGroupRepository, VideoGroupRepository>();
@@ -137,16 +138,13 @@ static void AddServices(WebApplicationBuilder builder)
 
     // Services
     builder.Services.AddScoped<IAssignedLabelService, AssignedLabelService>();
-    builder.Services.AddScoped<ILabelerService, LabelerService>();
     builder.Services.AddScoped<ILabelService, LabelService>();
     builder.Services.AddScoped<IProjectService, ProjectService>();
-    builder.Services.AddScoped<IScientistService, ScientistService>();
     builder.Services.AddScoped<ISubjectService, SubjectService>();
     builder.Services.AddScoped<ISubjectVideoGroupAssignmentService, SubjectVideoGroupAssignmentService>();
     builder.Services.AddScoped<IVideoGroupService, VideoGroupService>();
     builder.Services.AddScoped<IVideoService, VideoService>();
     builder.Services.AddScoped<IProjectAccessCodeService, ProjectAccessCodeService>();
-    builder.Services.AddScoped<IAuthorizationHelper, AuthorizationHelper>();
 
     builder.Services.AddSingleton<IConnectedClientManager, ConnectedClientManager>();
     builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();

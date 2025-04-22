@@ -4,11 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using ProjektGrupowy.API.Data;
 using ProjektGrupowy.API.DTOs.Auth;
-using ProjektGrupowy.API.DTOs.Labeler;
-using ProjektGrupowy.API.DTOs.Scientist;
 using ProjektGrupowy.API.Filters;
 using ProjektGrupowy.API.Models;
-using ProjektGrupowy.API.Services;
 using ProjektGrupowy.API.Utils.Constants;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -20,8 +17,11 @@ namespace ProjektGrupowy.API.Controllers;
 [ApiController]
 [ServiceFilter(typeof(ValidateModelStateFilter))] // ValidateModelStateFilter is a custom filter to validate model state
 [Authorize]
-public class AuthController(UserManager<User> userManager, RoleManager<IdentityRole> roleManager,
-                                AppDbContext context, IConfiguration configuration, IScientistService scientistService, ILabelerService labelerService) : ControllerBase
+public class AuthController(
+    UserManager<User> userManager, 
+    RoleManager<IdentityRole> roleManager,
+    AppDbContext context, 
+    IConfiguration configuration) : ControllerBase
 {
     private readonly string JwtCookieName = configuration["JWT:JwtCookieName"];
 
@@ -33,11 +33,17 @@ public class AuthController(UserManager<User> userManager, RoleManager<IdentityR
         if (userExists != null)
             return StatusCode(500, new { status = "Error", message = "User already exists!" });
 
+        if (model.Role == RoleConstants.Admin)
+        {
+            return StatusCode(403, new { status = "Error", message = "Creating users with Admin role is not allowed." });
+        }
+
         var user = new User
         {
             UserName = model.UserName,
             Email = model.Email,
-            SecurityStamp = Guid.NewGuid().ToString()
+            SecurityStamp = Guid.NewGuid().ToString(),
+            RegistrationDate = DateTime.UtcNow
         };
 
         await using var transaction = await context.Database.BeginTransactionAsync();
@@ -54,42 +60,6 @@ public class AuthController(UserManager<User> userManager, RoleManager<IdentityR
         var roleResult = await userManager.AddToRoleAsync(user, model.Role);
         if (!roleResult.Succeeded)
             return StatusCode(500, new { status = "Error", message = "Failed to assign role to user." });
-
-        if (model.Role == RoleConstants.Scientist)
-        {
-            var scientistRequest = new ScientistRequest
-            {
-                FirstName = model.UserName,
-                LastName = model.UserName
-            };
-
-            var scientistResult = await scientistService.AddScientistWithUser(scientistRequest, user);
-
-            if (scientistResult.IsFailure)
-                return BadRequest(scientistResult.GetErrorOrThrow());
-
-            var createdScientist = scientistResult.GetValueOrThrow();
-            user.Scientist = createdScientist;
-
-            await context.SaveChangesAsync();
-        }
-        else if (model.Role == RoleConstants.Labeler)
-        {
-            var labelerRequest = new LabelerRequest
-            {
-                Name = model.UserName
-            };
-
-            var labelerResult = await labelerService.AddLabelerWithUser(labelerRequest, user);
-
-            if (labelerResult.IsFailure)
-                return BadRequest(labelerResult.GetErrorOrThrow());
-
-            var createdLabeler = labelerResult.GetValueOrThrow();
-            user.Labeler = createdLabeler;
-
-            await context.SaveChangesAsync();
-        }
 
         await transaction.CommitAsync();
 
