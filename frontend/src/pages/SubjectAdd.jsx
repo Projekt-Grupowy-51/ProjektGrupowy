@@ -33,14 +33,12 @@ const AddSubject = () => {
 
     try {
       await httpClient.post("/Subject", subjectData);
-      navigate(`/projects/${subjectData.projectId}`, {
-        state: { successMessage: "Subject added successfully!" },
-      });
+      navigate(`/projects/${subjectData.projectId}`);
     } catch (error) {
-      addNotification(
-        error.response?.data?.message || "Failed to add subject",
-        "error"
-      );
+      // addNotification(
+      //   error.response?.data?.message || "Failed to add subject",
+      //   "error"
+      // );
     } finally {
       setLoading(false);
     }

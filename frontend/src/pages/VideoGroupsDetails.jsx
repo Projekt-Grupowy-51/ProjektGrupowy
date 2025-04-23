@@ -24,10 +24,10 @@ const VideoGroupDetails = () => {
       setVideoGroupDetails(response.data);
       fetchVideos();
     } catch (error) {
-      addNotification(
-        error.response?.data?.message || "Failed to fetch video group details",
-        "error"
-      );
+      // addNotification(
+      //   error.response?.data?.message || "Failed to fetch video group details",
+      //   "error"
+      // );
       setLoading(false);
     }
   }
@@ -38,10 +38,10 @@ const VideoGroupDetails = () => {
       const response = await httpClient.get(`/VideoGroup/${id}/videos`);
       setVideos(response.data);
     } catch (error) {
-      addNotification(
-        error.response?.data?.message || "Failed to fetch videos",
-        "error"
-      );
+      // addNotification(
+      //   error.response?.data?.message || "Failed to fetch videos",
+      //   "error"
+      // );
     } finally {
       setLoading(false);
     }
@@ -56,24 +56,24 @@ const VideoGroupDetails = () => {
   }, [id]);
 
   // Handle location state for success messages
-  useEffect(() => {
-    if (location.state?.successMessage) {
-      addNotification(location.state.successMessage, "success");
-      window.history.replaceState({}, document.title);
-    }
-  }, [location.state]);
+  // useEffect(() => {
+  //   if (location.state?.successMessage) {
+  //     addNotification(location.state.successMessage, "success");
+  //     window.history.replaceState({}, document.title);
+  //   }
+  // }, [location.state]);
 
   // Simplified delete handler - will be passed to DeleteButton
   const handleDeleteVideo = async (videoId, videoTitle) => {
     try {
       await httpClient.delete(`/video/${videoId}`);
       setVideos(videos.filter((video) => video.id !== videoId));
-      addNotification("Video deleted successfully!", "success");
+      //addNotification("Video deleted successfully!", "success");
     } catch (error) {
-      addNotification(
-        error.response?.data?.message || "Failed to delete video",
-        "error"
-      );
+      // addNotification(
+      //   error.response?.data?.message || "Failed to delete video",
+      //   "error"
+      // );
     }
   };
 

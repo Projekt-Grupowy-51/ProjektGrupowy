@@ -37,29 +37,29 @@ const ProjectAccessCodesTab = ({
       if (onError) {
         onError(error);
       } else {
-        addNotification(errorMessage, "error");
+        //addNotification(errorMessage, "error");
       }
     } finally {
       setLoading(false);
     }
   };
 
-  const notifySuccess = (message) => {
-    if (onSuccess) {
-      onSuccess(message);
-    } else {
-      addNotification(message, "success");
-    }
-  };
+  // const notifySuccess = (message) => {
+  //   if (onSuccess) {
+  //     onSuccess(message);
+  //   } else {
+  //     addNotification(message, "success");
+  //   }
+  // };
 
   const notifyError = (error) => {
     if (onError) {
       onError(error);
     } else {
-      addNotification(
-        error.response?.data?.message || "An error occurred",
-        "error"
-      );
+      // addNotification(
+      //   error.response?.data?.message || "An error occurred",
+      //   "error"
+      // );
     }
   };
 
@@ -74,7 +74,7 @@ const ProjectAccessCodesTab = ({
       };
       await httpClient.post("/AccessCode/project", json);
       setCodeExpiration(0);
-      notifySuccess("Access code created successfully!");
+      //notifySuccess("Access code created successfully!");
 
       // Refresh the codes list after creating a new one
       fetchAccessCodes();
@@ -96,23 +96,22 @@ const ProjectAccessCodesTab = ({
     }
   };
 
-  const handleCopyCode = (code) => {
-    navigator.clipboard
-      .writeText(code)
-      .then(() => {
-        notifySuccess("Code copied to clipboard!");
-      })
-      .catch(() => {
-        notifyError({ message: "Failed to copy code. Please try again." });
-      });
+  const handleCopyCode = async (code) => {
+    try {
+      await navigator.clipboard.writeText(code);
+      addNotification("Code copied to clipboard!", "success");
+    } catch (err) {
+      console.error("Failed to copy code:", err);
+      addNotification("Failed to copy code. Please try again.", "error");
+    }
   };
 
   const handleRetireCode = async (code) => {
     try {
       await httpClient.put(`/AccessCode/${code}/retire`);
-      notifySuccess("Access code retired successfully!");
-      fetchAccessCodes(); // Refresh the list after retiring a code
+      fetchAccessCodes();
     } catch (error) {
+      console.error("Failed to retire code:", error);
       notifyError(error);
     }
   };

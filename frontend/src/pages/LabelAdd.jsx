@@ -40,7 +40,7 @@ const LabelAdd = () => {
       const response = await httpClient.get(`/subject/${id}`);
       setSubjectName(response.data.name);
     } catch (err) {
-      addNotification("Failed to load subject information.", "error");
+      //addNotification("Failed to load subject information.", "error");
     }
   };
 
@@ -66,13 +66,13 @@ const LabelAdd = () => {
 
     try {
       await httpClient.post("/label", formData);
-      addNotification("Label created successfully!", "success");
+      //addNotification("Label created successfully!", "success");
       navigate(`/subjects/${formData.subjectId}`);
     } catch (err) {
-      addNotification(
-        err.response?.data?.message || "An error occurred. Please try again.",
-        "error"
-      );
+      // addNotification(
+      //   err.response?.data?.message || "An error occurred. Please try again.",
+      //   "error"
+      // );
     } finally {
       setLoading(false);
     }

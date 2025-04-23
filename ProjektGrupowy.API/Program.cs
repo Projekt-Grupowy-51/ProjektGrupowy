@@ -87,7 +87,8 @@ app.Run();
 
 static void AddServices(WebApplicationBuilder builder)
 {
-    builder.Services.AddControllers()
+    builder.Services
+        .AddControllers()
         .AddJsonOptions(options =>
         {
             options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
@@ -151,6 +152,8 @@ static void AddServices(WebApplicationBuilder builder)
     builder.Services.AddSignalR(options =>
     {
         options.EnableDetailedErrors = true;
+        options.KeepAliveInterval = TimeSpan.FromSeconds(15); // Default is 15 seconds
+        options.HandshakeTimeout = TimeSpan.FromSeconds(15);
     });
     builder.Services.AddSingleton<IMessageService, MessageService>();
 
@@ -159,6 +162,7 @@ static void AddServices(WebApplicationBuilder builder)
 
     // Filters
     builder.Services.AddScoped<ValidateModelStateFilter>();
+    builder.Services.AddScoped<NonSuccessGetFilter>();
 
     // Database Context
     builder.Services.AddDbContext<AppDbContext>(options =>

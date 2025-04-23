@@ -29,10 +29,10 @@ const ProjectDetails = () => {
       const projectRes = await httpClient.get(`/project/${id}`);
       setProject(projectRes.data);
     } catch (error) {
-      addNotification(
-        error.response?.data?.message || "Failed to load project data",
-        "error"
-      );
+      // addNotification(
+      //   error.response?.data?.message || "Failed to load project data",
+      //   "error"
+      // );
     } finally {
       setLoading(false);
     }

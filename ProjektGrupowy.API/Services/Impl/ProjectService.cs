@@ -3,12 +3,14 @@ using ProjektGrupowy.API.DTOs.LabelerAssignment;
 using ProjektGrupowy.API.DTOs.Project;
 using ProjektGrupowy.API.Models;
 using ProjektGrupowy.API.Repositories;
+using ProjektGrupowy.API.SignalR;
 using ProjektGrupowy.API.Utils;
 
 namespace ProjektGrupowy.API.Services.Impl;
 
 public class ProjectService(
     IProjectRepository projectRepository,
+    IMessageService messageService,
     ISubjectVideoGroupAssignmentRepository subjectVideoGroupAssignmentRepository,
     UserManager<User> userManager) : IProjectService
 {
@@ -33,8 +35,23 @@ public class ProjectService(
             CreationDate = DateOnly.FromDateTime(DateTime.Today)
         };
 
-        return await projectRepository.AddProjectAsync(project);
-    }
+        // return await projectRepository.AddProjectAsync(project);
+        var projectOptional = await projectRepository.AddProjectAsync(project);
+        if (projectOptional.IsFailure)
+        {
+            await messageService.SendErrorAsync(
+                projectRequest.OwnerId,
+                "Failed to create project");
+            return projectOptional;
+        }
+        else 
+        {
+            await messageService.SendSuccessAsync(
+                projectRequest.OwnerId,
+                $"Project \"{projectRequest.Name}\" created successfully");
+            return projectOptional;
+        } 
+    } 
 
     public async Task<Optional<Project>> UpdateProjectAsync(int projectId, ProjectRequest projectRequest)
     {
@@ -59,17 +76,27 @@ public class ProjectService(
         project.ModificationDate = DateOnly.FromDateTime(DateTime.Today);
         project.EndDate = projectRequest.Finished ? DateOnly.FromDateTime(DateTime.Today) : project.EndDate;
 
-        return await projectRepository.UpdateProjectAsync(project);
+        // return await projectRepository.UpdateProjectAsync(project);
+        var result = await projectRepository.UpdateProjectAsync(project);
+        if (result.IsFailure)
+        {
+            await messageService.SendErrorAsync(
+                projectRequest.OwnerId,
+                "Failed to update project");
+            return result;
+        }
+        else 
+        {
+            await messageService.SendSuccessAsync(
+                projectRequest.OwnerId,
+                "Project updated successfully");
+            return result;
+        }
     }
 
     public async Task<Optional<bool>> AddLabelerToProjectAsync(LabelerAssignmentDto labelerAssignmentDto)
     {
         var projectByCodeOpt = await projectRepository.GetProjectByAccessCodeAsync(labelerAssignmentDto.AccessCode);
-
-        if (projectByCodeOpt.IsFailure)
-        {
-            return Optional<bool>.Failure("No project found!");
-        }
 
         var labelerOpt = await userManager.FindByIdAsync(labelerAssignmentDto.LabelerId);
 
@@ -78,11 +105,23 @@ public class ProjectService(
             return Optional<bool>.Failure("No labeler found!");
         }
 
+        if (projectByCodeOpt.IsFailure)
+        {
+            await messageService.SendErrorAsync(
+                labelerAssignmentDto.LabelerId,
+                "No project found!");
+            return Optional<bool>.Failure("No project found!");
+        }
+
         var project = projectByCodeOpt.GetValueOrThrow();
 
         project.ProjectLabelers.Add(labelerOpt);
 
         await projectRepository.UpdateProjectAsync(project);
+
+        await messageService.SendSuccessAsync(
+            labelerAssignmentDto.LabelerId,
+            "Labeler added to project successfully");
 
         return Optional<bool>.Success(true);
     }
@@ -108,10 +147,14 @@ public class ProjectService(
 
     public async Task DeleteProjectAsync(int id)
     {
-        var project = await projectRepository.GetProjectAsync(id);
-        if (project.IsSuccess)
+        var projectOpt = await projectRepository.GetProjectAsync(id);
+        if (projectOpt.IsSuccess)
         {
-            await projectRepository.DeleteProjectAsync(project.GetValueOrThrow());
+            var project = projectOpt.GetValueOrThrow();
+            await messageService.SendInfoAsync(
+                project.Owner.Id,
+                $"Project \"{project.Name}\" deleted successfully");
+            await projectRepository.DeleteProjectAsync(project);
         }
     }
 
@@ -134,6 +177,9 @@ public class ProjectService(
             await subjectVideoGroupAssignmentRepository.UpdateSubjectVideoGroupAssignmentAsync(assignment);
         }
 
+        await messageService.SendSuccessAsync(
+            project.Owner.Id,
+            "Labelers unassigned from project successfully");
         return Optional<bool>.Success(true);
     }
 
@@ -145,15 +191,35 @@ public class ProjectService(
             return Optional<bool>.Failure("No project found!");
         }
 
+        var projectOwnerId = projectOptional.GetValueOrThrow().Owner.Id;
+
         var unassignedLabelersResult = await GetUnassignedLabelersOfProjectAsync(projectId);
         if (unassignedLabelersResult.IsFailure)
         {
+            await messageService.SendErrorAsync(
+                projectOwnerId,
+                "No unassigned labelers found!");
             return Optional<bool>.Failure("No unassigned labelers found!");
         }
 
         var unassignedLabelers = unassignedLabelersResult.GetValueOrThrow().ToList();
 
-        return await AssignEquallyAsync(projectId, unassignedLabelers);
+        // return await AssignEquallyAsync(projectId, unassignedLabelers);
+        var result = await AssignEquallyAsync(projectId, unassignedLabelers);
+        if (result.IsFailure)
+        {
+            await messageService.SendErrorAsync(
+                projectOwnerId,
+                "Failed to assign labelers");
+            return result;
+        }
+        else 
+        {
+            await messageService.SendSuccessAsync(
+                projectOwnerId,
+                "Labelers assigned successfully");
+            return result;
+        }
     }
 
     private async Task<Optional<bool>> AssignEquallyAsync(int projectId, IReadOnlyCollection<User> labelers)

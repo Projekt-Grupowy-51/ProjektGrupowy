@@ -13,6 +13,7 @@ namespace ProjektGrupowy.API.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 [ServiceFilter(typeof(ValidateModelStateFilter))]
+[ServiceFilter(typeof(NonSuccessGetFilter))]
 [Authorize]
 public class AccessCodeController(
     IProjectAccessCodeService service, 
@@ -25,7 +26,7 @@ public class AccessCodeController(
     {
         var accessCodes = await service.GetAccessCodesByProjectAsync(projectId);
         return accessCodes.IsSuccess
-            ? Ok(mapper.Map<IEnumerable<AccessCodeResponse>>(accessCodes.GetValueOrThrow()))
+            ? BadRequest(mapper.Map<IEnumerable<AccessCodeResponse>>(accessCodes.GetValueOrThrow()))
             : NotFound(accessCodes.GetErrorOrThrow());
     }
 

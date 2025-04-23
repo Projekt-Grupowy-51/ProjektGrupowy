@@ -3,6 +3,7 @@ using ProjektGrupowy.API.DTOs.AccessCode;
 using ProjektGrupowy.API.Enums;
 using ProjektGrupowy.API.Models;
 using ProjektGrupowy.API.Repositories;
+using ProjektGrupowy.API.SignalR;
 using ProjektGrupowy.API.Utils;
 
 namespace ProjektGrupowy.API.Services.Impl;
@@ -11,6 +12,7 @@ public class ProjectAccessCodeService(
     IProjectAccessCodeRepository repository,
     IProjectRepository projectRepository,
     UserManager<User> userManager,
+    IMessageService messageService,
     ILogger<ProjectAccessCodeService> logger) : IProjectAccessCodeService
 {
     public async Task<bool> ValidateAccessCode(AccessCodeRequest accessCodeRequest)
@@ -30,7 +32,7 @@ public class ProjectAccessCodeService(
             logger.LogError(e, "Error while validating access code");
             return false;
         }
-    }
+    }   
 
     public async Task<Optional<IEnumerable<ProjectAccessCode>>> GetAccessCodesByProjectAsync(int projectId) =>
         await repository.GetAccessCodesByProjectAsync(projectId);
@@ -46,6 +48,9 @@ public class ProjectAccessCodeService(
             if (projectOpt.IsFailure)
             {
                 await transaction.RollbackAsync();
+                await messageService.SendErrorAsync(
+                    createCodeRequest.OwnerId,
+                    "Project does not exist");
                 return Optional<ProjectAccessCode>.Failure("Project does not exist");
             }
 
@@ -54,6 +59,9 @@ public class ProjectAccessCodeService(
             if (owner == null)
             {
                 await transaction.RollbackAsync();
+                await messageService.SendErrorAsync(
+                    createCodeRequest.OwnerId,
+                    "Owner does not exist");
                 return Optional<ProjectAccessCode>.Failure("Owner does not exist");
             }
 
@@ -72,10 +80,17 @@ public class ProjectAccessCodeService(
                 if (newAddedAccessCodeOpt.IsFailure)
                 {
                     await transaction.RollbackAsync();
+                    await messageService.SendErrorAsync(
+                        createCodeRequest.OwnerId,
+                        "Failed to add access code");
                     return Optional<ProjectAccessCode>.Failure(newAddedAccessCodeOpt.GetErrorOrThrow());
                 }
 
                 await transaction.CommitAsync();
+                await messageService.SendSuccessAsync(
+                    createCodeRequest.OwnerId,
+                    "Access code added successfully");
+                Console.WriteLine("Access code added successfully");
                 return newAddedAccessCodeOpt;
             }
             else
@@ -90,6 +105,9 @@ public class ProjectAccessCodeService(
                 if (updatedAccessCodeOpt.IsFailure)
                 {
                     await transaction.RollbackAsync();
+                    await messageService.SendErrorAsync(
+                        createCodeRequest.OwnerId,
+                        "Failed to update access code");
                     return Optional<ProjectAccessCode>.Failure(updatedAccessCodeOpt.GetErrorOrThrow());
                 }
 
@@ -101,10 +119,17 @@ public class ProjectAccessCodeService(
                 if (newAddedAccessCodeOpt.IsFailure)
                 {
                     await transaction.RollbackAsync();
+                    await messageService.SendErrorAsync(
+                        createCodeRequest.OwnerId,
+                        "Failed to add access code");
                     return Optional<ProjectAccessCode>.Failure(newAddedAccessCodeOpt.GetErrorOrThrow());
                 }
 
                 await transaction.CommitAsync();
+                await messageService.SendSuccessAsync(
+                    createCodeRequest.OwnerId,
+                    "Access code added successfully");
+                Console.WriteLine("Access code added successfully");
                 return newAddedAccessCodeOpt;
             }
         }
@@ -112,6 +137,10 @@ public class ProjectAccessCodeService(
         {
             logger.LogError(e, "Error while adding access code to project");
             await transaction.RollbackAsync();
+
+            await messageService.SendErrorAsync(
+                createCodeRequest.OwnerId,
+                "Failed to add access code");
 
             return Optional<ProjectAccessCode>.Failure(e.Message);
         }
@@ -126,13 +155,29 @@ public class ProjectAccessCodeService(
         var accessCode = result.GetValueOrThrow();
 
         if (!accessCode.IsValid)
+        {
+            await messageService.SendWarningAsync(
+                accessCode.Owner.Id,
+                "Access code is already retired");
             return Optional<ProjectAccessCode>.Failure("Access code is already retired");
+        }
 
         accessCode.Retire();
         var updatedAccessCodeOpt = await repository.UpdateAccessCodeAsync(accessCode);
-        return updatedAccessCodeOpt.IsFailure
-            ? Optional<ProjectAccessCode>.Failure(updatedAccessCodeOpt.GetErrorOrThrow())
-            : updatedAccessCodeOpt;
+        if (updatedAccessCodeOpt.IsFailure)
+        {
+            await messageService.SendErrorAsync(
+                accessCode.Owner.Id,
+                "Failed to retire access code");
+            return Optional<ProjectAccessCode>.Failure(updatedAccessCodeOpt.GetErrorOrThrow());
+        }
+        else
+        {
+            await messageService.SendInfoAsync(
+                accessCode.Owner.Id,
+                "Access code retired successfully");
+            return updatedAccessCodeOpt;
+        }
     }
 
     private static DateTime? GetExpirationDate(AccessCodeExpiration expiration, int days = -1) =>

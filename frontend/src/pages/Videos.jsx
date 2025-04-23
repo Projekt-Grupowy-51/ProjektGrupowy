@@ -27,7 +27,7 @@ function useVideoGroup(videoGroupId, currentBatch, setCurrentBatch) {
       setVideoPositions(response.data.videosAtPositions);
       fetchVideos(currentBatch);
     } catch (error) {
-      addNotification("Failed to load video group details", "error");
+      // addNotification("Failed to load video group details", "error");
     }
   };
 

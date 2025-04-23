@@ -1,6 +1,6 @@
-import React from 'react';
-import { useNotification } from '../context/NotificationContext';
-import './css/Notification.css';
+import React from "react";
+import { useNotification } from "../context/NotificationContext";
+import "./css/Notification.css";
 
 const NotificationSystem = () => {
   const { notifications, removeNotification } = useNotification();
@@ -9,14 +9,14 @@ const NotificationSystem = () => {
 
   return (
     <div className="notification-container">
-      {notifications.map(notification => (
-        <div 
-          key={notification.id} 
+      {notifications.map((notification) => (
+        <div
+          key={notification.id}
           className={`notification notification-${notification.type}`}
         >
           <div className="notification-message">{notification.message}</div>
-          <button 
-            className="notification-close" 
+          <button
+            className="notification-close"
             onClick={() => removeNotification(notification.id)}
           >
             ×

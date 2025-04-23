@@ -26,21 +26,21 @@ const LabelerVideoGroups = () => {
     if (!accessCode.trim()) {
       addNotification("Please enter an access code", "error");
       return;
-      }
-      console.log(accessCode);
+    }
+    console.log(accessCode);
     try {
       await httpClient.post("/project/join", {
-          AccessCode: accessCode.trim(),
+        AccessCode: accessCode.trim(),
       });
-      addNotification("Successfully joined the project!", "success");
+      //addNotification("Successfully joined the project!", "success");
       setAccessCode("");
       fetchProjects();
     } catch (error) {
-        console.log(error);
-      addNotification(
-        error.response?.data?.message || "Invalid or expired access code",
-        "error"
-      );
+      console.log(error);
+      // addNotification(
+      //   error.response?.data?.message || "Invalid or expired access code",
+      //   "error"
+      // );
     }
   };
 
@@ -56,10 +56,10 @@ const LabelerVideoGroups = () => {
       setExpandedProjects(expanded);
       await fetchAssignments();
     } catch (error) {
-      addNotification(
-        error.response?.data?.message || "Failed to load projects",
-        "error"
-      );
+      // addNotification(
+      //   error.response?.data?.message || "Failed to load projects",
+      //   "error"
+      // );
       setLoading(false);
     }
   };
@@ -69,10 +69,10 @@ const LabelerVideoGroups = () => {
       const response = await httpClient.get(`/SubjectVideoGroupAssignment`);
       setAssignments(response.data);
     } catch (error) {
-      addNotification(
-        error.response?.data?.message || "Failed to load assignments",
-        "error"
-      );
+      // addNotification(
+      //   error.response?.data?.message || "Failed to load assignments",
+      //   "error"
+      // );
     } finally {
       setLoading(false);
     }

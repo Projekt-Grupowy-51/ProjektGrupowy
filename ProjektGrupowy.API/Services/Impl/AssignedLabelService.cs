@@ -2,6 +2,7 @@
 using ProjektGrupowy.API.DTOs.AssignedLabel;
 using ProjektGrupowy.API.Models;
 using ProjektGrupowy.API.Repositories;
+using ProjektGrupowy.API.SignalR;
 using ProjektGrupowy.API.Utils;
 
 namespace ProjektGrupowy.API.Services.Impl;
@@ -11,6 +12,7 @@ public class AssignedLabelService(
     ILabelRepository labelRepository,
     ISubjectVideoGroupAssignmentRepository subjectVideoGroupAssignmentRepository,
     UserManager<User> userManager,
+    IMessageService messageService,
     IVideoRepository videoRepository) : IAssignedLabelService
 
 {
@@ -26,22 +28,29 @@ public class AssignedLabelService(
 
     public async Task<Optional<AssignedLabel>> AddAssignedLabelAsync(AssignedLabelRequest assignedLabelRequest)
     {
-        var labelOptional = await labelRepository.GetLabelAsync(assignedLabelRequest.LabelId);
-
-        if (labelOptional.IsFailure)
-        {
-            return Optional<AssignedLabel>.Failure("No label found");
-        }
-
         var owner = await userManager.FindByIdAsync(assignedLabelRequest.LabelerId);
         if (owner == null)
         {
             return Optional<AssignedLabel>.Failure("No labeler found");
         }
 
+        var labelOptional = await labelRepository.GetLabelAsync(assignedLabelRequest.LabelId);
+
+        if (labelOptional.IsFailure)
+        {
+            await messageService.SendErrorAsync(
+                assignedLabelRequest.LabelerId,
+                "No label found");
+            return Optional<AssignedLabel>.Failure("No label found");
+        }
+
+
         var subjectVideoGroupAssignmentOptional = await videoRepository.GetVideoAsync(assignedLabelRequest.VideoId);
         if (subjectVideoGroupAssignmentOptional.IsFailure)
         {
+            await messageService.SendErrorAsync(
+                assignedLabelRequest.LabelerId,
+                "No subject video group assignment found");
             return Optional<AssignedLabel>.Failure("No subject video group assignment found");
         }
 
@@ -54,14 +63,32 @@ public class AssignedLabelService(
             End = assignedLabelRequest.End
         };
 
-        return await assignedLabelRepository.AddAssignedLabelAsync(assignedLabel);
+        // return await assignedLabelRepository.AddAssignedLabelAsync(assignedLabel);
+        var result = await assignedLabelRepository.AddAssignedLabelAsync(assignedLabel);
+        if (result.IsFailure)
+        {
+            await messageService.SendErrorAsync(
+                assignedLabelRequest.LabelerId,
+                "Failed to add assigned label");
+            return result;
+        }
+        await messageService.SendSuccessAsync(
+            assignedLabelRequest.LabelerId,
+            "Assigned label added successfully");
+        return result;
     }
 
     public async Task DeleteAssignedLabelAsync(int id)
     {
-        var assignedLabel = await assignedLabelRepository.GetAssignedLabelAsync(id);
-        if (assignedLabel.IsSuccess)
-            await assignedLabelRepository.DeleteAssignedLabelAsync(assignedLabel.GetValueOrThrow());
+        var assignedLabelOpt = await assignedLabelRepository.GetAssignedLabelAsync(id);
+        if (assignedLabelOpt.IsSuccess)
+        {
+            var assignedLabel = assignedLabelOpt.GetValueOrThrow();
+            await messageService.SendInfoAsync(
+                assignedLabel.Owner.Id,
+                "Assigned label deleted successfully");
+            await assignedLabelRepository.DeleteAssignedLabelAsync(assignedLabel);
+        }
     }
 
     public async Task<Optional<IEnumerable<AssignedLabel>>> GetAssignedLabelsByVideoIdAsync(int videoId)
