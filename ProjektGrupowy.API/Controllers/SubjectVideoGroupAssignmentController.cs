@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using ProjektGrupowy.API.DTOs.AssignedLabel;
 using ProjektGrupowy.API.DTOs.Labeler;
@@ -8,6 +9,7 @@ using ProjektGrupowy.API.Filters;
 using ProjektGrupowy.API.Models;
 using ProjektGrupowy.API.Services;
 using ProjektGrupowy.API.Utils.Constants;
+using ProjektGrupowy.API.Utils.Extensions;
 
 namespace ProjektGrupowy.API.Controllers;
 
@@ -17,32 +19,13 @@ namespace ProjektGrupowy.API.Controllers;
 [Authorize]
 public class SubjectVideoGroupAssignmentController(
     ISubjectVideoGroupAssignmentService subjectVideoGroupAssignmentService, 
-    IAuthorizationHelper authHelper,
+    UserManager<User> userManager,
     IMapper mapper) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<IEnumerable<SubjectVideoGroupAssignmentResponse>>> GetSubjectVideoGroupAssignmentsAsync()
     {
-        if (User.IsInRole(RoleConstants.Labeler))
-        {
-            var labelerResult = await authHelper.GetLabelerFromUserAsync(User);
-            if (labelerResult.Error != null)
-                return labelerResult.Error;
-
-            var assignments = await subjectVideoGroupAssignmentService.GetAssignmentsForLabelerAsync(labelerResult.Labeler!.Id);
-            
-            return assignments.IsSuccess
-                ? Ok(mapper.Map<IEnumerable<SubjectVideoGroupAssignmentResponse>>(assignments.GetValueOrThrow()))
-                : NotFound(assignments.GetErrorOrThrow());
-        }
-        
-        var checkResult = await authHelper.CheckGeneralAccessAsync(User);
-        if (checkResult.Error != null)
-            return checkResult.Error;
-
-        var subjectVideoGroupAssignments = checkResult.IsAdmin
-            ? await subjectVideoGroupAssignmentService.GetSubjectVideoGroupAssignmentsAsync()
-            : await subjectVideoGroupAssignmentService.GetSubjectVideoGroupAssignmentsByScientistIdAsync(checkResult.Scientist!.Id);
+        var subjectVideoGroupAssignments = await subjectVideoGroupAssignmentService.GetSubjectVideoGroupAssignmentsAsync();
 
         return subjectVideoGroupAssignments.IsSuccess
             ? Ok(mapper.Map<IEnumerable<SubjectVideoGroupAssignmentResponse>>(subjectVideoGroupAssignments.GetValueOrThrow()))
@@ -52,29 +35,6 @@ public class SubjectVideoGroupAssignmentController(
     [HttpGet("{id:int}")]
     public async Task<ActionResult<SubjectVideoGroupAssignmentResponse>> GetSubjectVideoGroupAssignmentAsync(int id)
     {
-        if (User.IsInRole(RoleConstants.Labeler))
-        {
-            var authResult = await authHelper.EnsureLabelerCanAccessAssignmentAsync(User, id);
-            if (authResult != null)
-                return authResult;
-            
-            var assignment = await subjectVideoGroupAssignmentService.GetSubjectVideoGroupAssignmentAsync(id);
-            return assignment.IsSuccess
-                ? Ok(mapper.Map<SubjectVideoGroupAssignmentResponse>(assignment.GetValueOrThrow()))
-                : NotFound(assignment.GetErrorOrThrow());
-        }
-        
-        var checkResult = await authHelper.CheckGeneralAccessAsync(User);
-        if (checkResult.Error != null)
-            return checkResult.Error;
-
-        if (checkResult.IsScientist)
-        {
-            var authResult = await authHelper.EnsureScientistOwnsSubjectVideoGroupAssignmentAsync(User, id);
-            if (authResult != null)
-                return authResult;
-        }
-
         var subjectVideoGroupAssignment = await subjectVideoGroupAssignmentService.GetSubjectVideoGroupAssignmentAsync(id);
         return subjectVideoGroupAssignment.IsSuccess
             ? Ok(mapper.Map<SubjectVideoGroupAssignmentResponse>(subjectVideoGroupAssignment.GetValueOrThrow()))
@@ -85,17 +45,6 @@ public class SubjectVideoGroupAssignmentController(
     [HttpGet("{id:int}/Labelers")]
     public async Task<ActionResult<IEnumerable<LabelerResponse>>> GetSubjectVideoGroupAssignmentLabelersAsync(int id)
     {
-        var checkResult = await authHelper.CheckGeneralAccessAsync(User);
-        if (checkResult.Error != null)
-            return checkResult.Error;
-
-        if (checkResult.IsScientist)
-        {
-            var authResult = await authHelper.EnsureScientistOwnsSubjectVideoGroupAssignmentAsync(User, id);
-            if (authResult != null)
-                return authResult;
-        }
-
         var labelers = await subjectVideoGroupAssignmentService.GetSubjectVideoGroupAssignmentsLabelersAsync(id);
         return labelers.IsSuccess
             ? Ok(mapper.Map<IEnumerable<LabelerResponse>>(labelers.GetValueOrThrow()))
@@ -106,21 +55,8 @@ public class SubjectVideoGroupAssignmentController(
     [HttpPost]
     public async Task<ActionResult<SubjectVideoGroupAssignmentResponse>> AddSubjectVideoGroupAssignmentAsync(SubjectVideoGroupAssignmentRequest subjectVideoGroupAssignmentRequest)
     {
-        var checkResult = await authHelper.CheckGeneralAccessAsync(User);
-        if (checkResult.Error != null)
-            return checkResult.Error;
-
-        if (checkResult.IsScientist)
-        {
-            var subjectAuthResult = await authHelper.EnsureScientistOwnsSubjectAsync(User, subjectVideoGroupAssignmentRequest.SubjectId);
-            if (subjectAuthResult != null)
-                return subjectAuthResult;
-            
-            var videoGroupAuthResult = await authHelper.EnsureScientistOwnsVideoGroupAsync(User, subjectVideoGroupAssignmentRequest.VideoGroupId);
-            if (videoGroupAuthResult != null)
-                return videoGroupAuthResult;
-        }
-
+        subjectVideoGroupAssignmentRequest.OwnerId = User.GetUserId();
+        
         var result = await subjectVideoGroupAssignmentService.AddSubjectVideoGroupAssignmentAsync(subjectVideoGroupAssignmentRequest);
 
         if (result.IsFailure) 
@@ -136,24 +72,11 @@ public class SubjectVideoGroupAssignmentController(
     [HttpPut("{id:int}")]
     public async Task<IActionResult> PutSubjectVideoGroupAssignmentAsync(int id, SubjectVideoGroupAssignmentRequest subjectVideoGroupAssignmentRequest)
     {
-        var checkResult = await authHelper.CheckGeneralAccessAsync(User);
-        if (checkResult.Error != null)
-            return checkResult.Error;
+        subjectVideoGroupAssignmentRequest.OwnerId = User.GetUserId();
 
-        if (checkResult.IsScientist)
-        {
-            var assignmentAuthResult = await authHelper.EnsureScientistOwnsSubjectVideoGroupAssignmentAsync(User, id);
-            if (assignmentAuthResult != null)
-                return assignmentAuthResult;
-            
-            var subjectAuthResult = await authHelper.EnsureScientistOwnsSubjectAsync(User, subjectVideoGroupAssignmentRequest.SubjectId);
-            if (subjectAuthResult != null)
-                return subjectAuthResult;
-            
-            var videoGroupAuthResult = await authHelper.EnsureScientistOwnsVideoGroupAsync(User, subjectVideoGroupAssignmentRequest.VideoGroupId);
-            if (videoGroupAuthResult != null)
-                return videoGroupAuthResult;
-        }
+        var subjectVideoGroupAssignment = await subjectVideoGroupAssignmentService.GetSubjectVideoGroupAssignmentAsync(id);
+        if (subjectVideoGroupAssignment.IsFailure)
+            return NotFound(subjectVideoGroupAssignment.GetErrorOrThrow());
 
         var result = await subjectVideoGroupAssignmentService.UpdateSubjectVideoGroupAssignmentAsync(id, subjectVideoGroupAssignmentRequest);
 
@@ -166,16 +89,9 @@ public class SubjectVideoGroupAssignmentController(
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteSubjectVideoGroupAssignmentAsync(int id)
     {
-        var checkResult = await authHelper.CheckGeneralAccessAsync(User);
-        if (checkResult.Error != null)
-            return checkResult.Error;
-
-        if (checkResult.IsScientist)
-        {
-            var authResult = await authHelper.EnsureScientistOwnsSubjectVideoGroupAssignmentAsync(User, id);
-            if (authResult != null)
-                return authResult;
-        }
+        var subjectVideoGroupAssignment = await subjectVideoGroupAssignmentService.GetSubjectVideoGroupAssignmentAsync(id);
+        if (subjectVideoGroupAssignment.IsFailure)
+            return NotFound(subjectVideoGroupAssignment.GetErrorOrThrow());
 
         await subjectVideoGroupAssignmentService.DeleteSubjectVideoGroupAssignmentAsync(id);
 
@@ -184,18 +100,15 @@ public class SubjectVideoGroupAssignmentController(
 
     [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
     [HttpPost("{assignmentId}/assign-labeler/{labelerId}")]
-    public async Task<IActionResult> AssignLabelerToSubjectVideoGroup(int assignmentId, int labelerId)
+    public async Task<IActionResult> AssignLabelerToSubjectVideoGroup(int assignmentId, string labelerId)
     {
-        var checkResult = await authHelper.CheckGeneralAccessAsync(User);
-        if (checkResult.Error != null)
-            return checkResult.Error;
+        var assignment = await subjectVideoGroupAssignmentService.GetSubjectVideoGroupAssignmentAsync(assignmentId);
+        if (assignment.IsFailure)
+            return NotFound(assignment.GetErrorOrThrow());
 
-        if (checkResult.IsScientist)
-        {
-            var authResult = await authHelper.EnsureScientistOwnsSubjectVideoGroupAssignmentAsync(User, assignmentId);
-            if (authResult != null)
-                return authResult;
-        }
+        var labeler = await userManager.FindByIdAsync(labelerId.ToString());
+        if (labeler == null)
+            return NotFound($"Labeler with ID {labelerId} not found.");
 
         var result = await subjectVideoGroupAssignmentService.AssignLabelerToAssignmentAsync(assignmentId, labelerId);
         return result.IsSuccess ? Ok("Labeler assigned successfully") : NotFound(result.GetErrorOrThrow());
@@ -203,18 +116,15 @@ public class SubjectVideoGroupAssignmentController(
 
     [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
     [HttpDelete("{assignmentId}/unassign-labeler/{labelerId}")]
-    public async Task<IActionResult> UnassignLabelerFromSubjectVideoGroup(int assignmentId, int labelerId)
+    public async Task<IActionResult> UnassignLabelerFromSubjectVideoGroup(int assignmentId, string labelerId)
     {
-        var checkResult = await authHelper.CheckGeneralAccessAsync(User);
-        if (checkResult.Error != null)
-            return checkResult.Error;
+        var assignment = await subjectVideoGroupAssignmentService.GetSubjectVideoGroupAssignmentAsync(assignmentId);
+        if (assignment.IsFailure)
+            return NotFound(assignment.GetErrorOrThrow());
 
-        if (checkResult.IsScientist)
-        {
-            var authResult = await authHelper.EnsureScientistOwnsSubjectVideoGroupAssignmentAsync(User, assignmentId);
-            if (authResult != null)
-                return authResult;
-        }
+        var labeler = await userManager.FindByIdAsync(labelerId.ToString());
+        if (labeler == null)
+            return NotFound($"Labeler with ID {labelerId} not found.");
 
         var result = await subjectVideoGroupAssignmentService.UnassignLabelerFromAssignmentAsync(assignmentId, labelerId);
         return result.IsSuccess ? Ok("Labeler unassigned successfully") : NotFound(result.GetErrorOrThrow());

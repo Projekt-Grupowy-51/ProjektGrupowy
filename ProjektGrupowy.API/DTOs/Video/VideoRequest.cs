@@ -6,4 +6,5 @@ public class VideoRequest
     public IFormFile File { get; set; }
     public int VideoGroupId { get; set; }
     public int PositionInQueue { get; set; }
+    public string OwnerId { get; set; } = string.Empty;
 }

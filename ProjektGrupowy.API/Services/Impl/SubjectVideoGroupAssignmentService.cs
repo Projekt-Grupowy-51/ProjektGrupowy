@@ -1,11 +1,12 @@
-﻿using ProjektGrupowy.API.DTOs.SubjectVideoGroupAssignment;
+﻿using Microsoft.AspNetCore.Identity;
+using ProjektGrupowy.API.DTOs.SubjectVideoGroupAssignment;
 using ProjektGrupowy.API.Models;
 using ProjektGrupowy.API.Repositories;
 using ProjektGrupowy.API.Utils;
 
 namespace ProjektGrupowy.API.Services.Impl;
 
-public class SubjectVideoGroupAssignmentService(ISubjectVideoGroupAssignmentRepository subjectVideoGroupAssignmentRepository, ISubjectRepository subjectRepository, IVideoGroupRepository videoGroupRepository) : ISubjectVideoGroupAssignmentService
+public class SubjectVideoGroupAssignmentService(ISubjectVideoGroupAssignmentRepository subjectVideoGroupAssignmentRepository, ISubjectRepository subjectRepository, IVideoGroupRepository videoGroupRepository, UserManager<User> userManager) : ISubjectVideoGroupAssignmentService
 {
     public async Task<Optional<IEnumerable<SubjectVideoGroupAssignment>>> GetSubjectVideoGroupAssignmentsAsync()
     {
@@ -33,11 +34,18 @@ public class SubjectVideoGroupAssignmentService(ISubjectVideoGroupAssignmentRepo
             return Optional<SubjectVideoGroupAssignment>.Failure("No video group found!");
         }
 
+        var owner = await userManager.FindByIdAsync(subjectVideoGroupAssignmentRequest.OwnerId);
+        if (owner == null)
+        {
+            return Optional<SubjectVideoGroupAssignment>.Failure("No labeler found");
+        }
+
         var subjectVideoGroupAssignment = new SubjectVideoGroupAssignment
         {
             Subject = subjectOptional.GetValueOrThrow(),
             VideoGroup = videoGroupOptional.GetValueOrThrow(),
-            CreationDate = DateOnly.FromDateTime(DateTime.Today)
+            CreationDate = DateOnly.FromDateTime(DateTime.Today),
+            Owner = owner,
         };
 
         return await subjectVideoGroupAssignmentRepository.AddSubjectVideoGroupAssignmentAsync(subjectVideoGroupAssignment);
@@ -66,9 +74,16 @@ public class SubjectVideoGroupAssignmentService(ISubjectVideoGroupAssignmentRepo
             return Optional<SubjectVideoGroupAssignment>.Failure("No video group found!");
         }
 
+        var owner = await userManager.FindByIdAsync(subjectVideoGroupAssignmentRequest.OwnerId);
+        if (owner == null)
+        {
+            return Optional<SubjectVideoGroupAssignment>.Failure("No labeler found");
+        }
+
         subjectVideoGroupAssignment.Subject = subjectOptional.GetValueOrThrow();
         subjectVideoGroupAssignment.VideoGroup = videoGroupOptional.GetValueOrThrow();
         subjectVideoGroupAssignment.ModificationDate = DateOnly.FromDateTime(DateTime.Today);
+        subjectVideoGroupAssignment.Owner = owner;
 
         return await subjectVideoGroupAssignmentRepository.UpdateSubjectVideoGroupAssignmentAsync(subjectVideoGroupAssignment);
     }
@@ -87,37 +102,17 @@ public class SubjectVideoGroupAssignmentService(ISubjectVideoGroupAssignmentRepo
         return await subjectVideoGroupAssignmentRepository.GetSubjectVideoGroupAssignmentsByProjectAsync(projectId);
     }
 
-    public async Task<Optional<IEnumerable<Labeler>>> GetSubjectVideoGroupAssignmentsLabelersAsync(int id)
+    public async Task<Optional<IEnumerable<User>>> GetSubjectVideoGroupAssignmentsLabelersAsync(int id)
     {
         return await subjectVideoGroupAssignmentRepository.GetSubjectVideoGroupAssignmentsLabelersAsync(id);
     }
 
-    public async Task<Optional<SubjectVideoGroupAssignment>> AssignLabelerToAssignmentAsync(int assignmentId, int labelerId)
+    public async Task<Optional<SubjectVideoGroupAssignment>> AssignLabelerToAssignmentAsync(int assignmentId, string labelerId)
     {
         return await subjectVideoGroupAssignmentRepository.AssignLabelerToAssignmentAsync(assignmentId, labelerId);
     }
 
-    public async Task<Optional<IEnumerable<SubjectVideoGroupAssignment>>> GetSubjectVideoGroupAssignmentsByVideoGroupIdAsync(int videoGroupId)
-    {
-        return await subjectVideoGroupAssignmentRepository.GetSubjectVideoGroupAssignmentsByVideoGroupIdAsync(videoGroupId);
-    }
-
-    public async Task<Optional<IEnumerable<SubjectVideoGroupAssignment>>> GetSubjectVideoGroupAssignmentsByScientistIdAsync(int scientistId)
-    {
-        return await subjectVideoGroupAssignmentRepository.GetSubjectVideoGroupAssignmentsByScientistIdAsync(scientistId);
-    }
-
-    public async Task<Optional<IEnumerable<SubjectVideoGroupAssignment>>> GetAssignmentsForLabelerAsync(int labelerId)
-    {
-        return await subjectVideoGroupAssignmentRepository.GetAssignmentsForLabelerAsync(labelerId);
-    }
-
-    public async Task<Optional<IEnumerable<SubjectVideoGroupAssignment>>> GetSubjectVideoGroupAssignmentsBySubjectIdAsync(int subjectId)
-    {
-        return await subjectVideoGroupAssignmentRepository.GetSubjectVideoGroupAssignmentsBySubjectIdAsync(subjectId);
-    }
-
-    public async Task<Optional<SubjectVideoGroupAssignment>> UnassignLabelerFromAssignmentAsync(int assignmentId, int labelerId)
+    public async Task<Optional<SubjectVideoGroupAssignment>> UnassignLabelerFromAssignmentAsync(int assignmentId, string labelerId)
     {
         return await subjectVideoGroupAssignmentRepository.UnassignLabelerFromAssignmentAsync(assignmentId, labelerId);
     }

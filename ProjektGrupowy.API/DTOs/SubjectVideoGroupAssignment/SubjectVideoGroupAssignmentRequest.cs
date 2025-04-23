@@ -4,4 +4,5 @@ public class SubjectVideoGroupAssignmentRequest
 {
     public int SubjectId { get; set; }
     public int VideoGroupId { get; set; }
+    public string OwnerId { get; set; } = string.Empty;
 }

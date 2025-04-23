@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 namespace ProjektGrupowy.API.Models;
 
 [Table("Subjects")]
-public class Subject
+public class Subject : IOwnedEntity
 {
     [Key]
     public int Id { get; set; }
@@ -21,4 +21,9 @@ public class Subject
     public virtual ICollection<Label>? Labels { get; set; }
 
     public virtual ICollection<SubjectVideoGroupAssignment>? SubjectVideoGroupAssignments { get; set; }
+    public string OwnerId { get; set; }
+
+    [ForeignKey(nameof(OwnerId))]
+    public virtual User Owner { get; set; }
+    public DateTime? DelDate { get; set; } = null;
 }

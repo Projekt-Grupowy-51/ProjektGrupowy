@@ -11,4 +11,5 @@ public class LabelRequest
     public string Type { get; set; }
     public char Shortcut { get; set; }
     public int SubjectId { get; set; }
+    public string OwnerId { get; set; } = string.Empty;
 }

@@ -1,4 +1,5 @@
-﻿using ProjektGrupowy.API.DTOs.AccessCode;
+﻿using Microsoft.AspNetCore.Identity;
+using ProjektGrupowy.API.DTOs.AccessCode;
 using ProjektGrupowy.API.Enums;
 using ProjektGrupowy.API.Models;
 using ProjektGrupowy.API.Repositories;
@@ -9,6 +10,7 @@ namespace ProjektGrupowy.API.Services.Impl;
 public class ProjectAccessCodeService(
     IProjectAccessCodeRepository repository,
     IProjectRepository projectRepository,
+    UserManager<User> userManager,
     ILogger<ProjectAccessCodeService> logger) : IProjectAccessCodeService
 {
     public async Task<bool> ValidateAccessCode(AccessCodeRequest accessCodeRequest)
@@ -48,6 +50,12 @@ public class ProjectAccessCodeService(
             }
 
             var project = projectOpt.GetValueOrThrow();
+            var owner = await userManager.FindByIdAsync(createCodeRequest.OwnerId);
+            if (owner == null)
+            {
+                await transaction.RollbackAsync();
+                return Optional<ProjectAccessCode>.Failure("Owner does not exist");
+            }
 
             // 2. Check if there is a valid access code for this project
             var accessCodeOpt = await repository.GetValidAccessCodeByProjectAsync(project.Id);
@@ -58,6 +66,7 @@ public class ProjectAccessCodeService(
                 var expirationDate = GetExpirationDate(createCodeRequest.Expiration, createCodeRequest.CustomExpiration);
 
                 var newAccessCode = AccessCodeGenerator.Create(project, expirationDate);
+                newAccessCode.Owner = owner;
                 var newAddedAccessCodeOpt = await repository.AddAccessCodeAsync(newAccessCode);
 
                 if (newAddedAccessCodeOpt.IsFailure)
@@ -87,6 +96,7 @@ public class ProjectAccessCodeService(
                 var expirationDate = GetExpirationDate(createCodeRequest.Expiration, createCodeRequest.CustomExpiration);
                 var newAccessCode = AccessCodeGenerator.Create(project, expirationDate);
 
+                newAccessCode.Owner = owner;
                 var newAddedAccessCodeOpt = await repository.AddAccessCodeAsync(newAccessCode);
                 if (newAddedAccessCodeOpt.IsFailure)
                 {

@@ -1,4 +1,5 @@
-﻿using ProjektGrupowy.API.DTOs.LabelerAssignment;
+﻿using Microsoft.AspNetCore.Identity;
+using ProjektGrupowy.API.DTOs.LabelerAssignment;
 using ProjektGrupowy.API.DTOs.Project;
 using ProjektGrupowy.API.Models;
 using ProjektGrupowy.API.Repositories;
@@ -8,10 +9,8 @@ namespace ProjektGrupowy.API.Services.Impl;
 
 public class ProjectService(
     IProjectRepository projectRepository,
-    IScientistRepository scientistRepository,
     ISubjectVideoGroupAssignmentRepository subjectVideoGroupAssignmentRepository,
-    ILabelerRepository labelerRepository)
-    : IProjectService
+    UserManager<User> userManager) : IProjectService
 {
     public async Task<Optional<IEnumerable<Project>>> GetProjectsAsync() => await projectRepository.GetProjectsAsync();
 
@@ -19,18 +18,18 @@ public class ProjectService(
 
     public async Task<Optional<Project>> AddProjectAsync(ProjectRequest projectRequest)
     {
-        var scientistOptional = await scientistRepository.GetScientistAsync(projectRequest.ScientistId);
+        var owner = await userManager.FindByIdAsync(projectRequest.OwnerId);
 
-        if (scientistOptional.IsFailure)
+        if (owner == null)
         {
-            return Optional<Project>.Failure("No scientist found!");
+            return Optional<Project>.Failure("Owner not found.");
         }
 
         var project = new Project
         {
             Name = projectRequest.Name,
             Description = projectRequest.Description,
-            Scientist = scientistOptional.GetValueOrThrow(),
+            Owner = owner,
             CreationDate = DateOnly.FromDateTime(DateTime.Today)
         };
 
@@ -48,58 +47,63 @@ public class ProjectService(
 
         var project = projectOptional.GetValueOrThrow();
 
-        var scientistOptional = await scientistRepository.GetScientistAsync(projectRequest.ScientistId);
-
-        if (scientistOptional.IsFailure)
+        var owner = await userManager.FindByIdAsync(projectRequest.OwnerId);
+        if (owner == null)
         {
-            return Optional<Project>.Failure("No scientist found!");
+            return Optional<Project>.Failure("Owner not found.");
         }
 
         project.Name = projectRequest.Name;
         project.Description = projectRequest.Description;
-        project.Scientist = scientistOptional.GetValueOrThrow();
+        project.Owner = owner;
         project.ModificationDate = DateOnly.FromDateTime(DateTime.Today);
         project.EndDate = projectRequest.Finished ? DateOnly.FromDateTime(DateTime.Today) : project.EndDate;
 
         return await projectRepository.UpdateProjectAsync(project);
     }
 
-    public async Task<Optional<IEnumerable<Project>>> GetProjectsOfScientist(int scientistId)
-        => await projectRepository.GetProjectsOfScientist(scientistId);
-        
-    public async Task<Optional<IEnumerable<Project>>> GetProjectsForLabelerAsync(int labelerId)
-        => await projectRepository.GetProjectsForLabelerAsync(labelerId);
-
     public async Task<Optional<bool>> AddLabelerToProjectAsync(LabelerAssignmentDto labelerAssignmentDto)
     {
         var projectByCodeOpt = await projectRepository.GetProjectByAccessCodeAsync(labelerAssignmentDto.AccessCode);
-        var labelerByIdOpt = await labelerRepository.GetLabelerAsync(labelerAssignmentDto.LabelerId);
 
         if (projectByCodeOpt.IsFailure)
         {
             return Optional<bool>.Failure("No project found!");
         }
 
-        if (labelerByIdOpt.IsFailure)
+        var labelerOpt = await userManager.FindByIdAsync(labelerAssignmentDto.LabelerId);
+
+        if (labelerOpt == null)
         {
             return Optional<bool>.Failure("No labeler found!");
         }
 
         var project = projectByCodeOpt.GetValueOrThrow();
-        var labeler = labelerByIdOpt.GetValueOrThrow();
 
-        labeler.ProjectLabelers.Add(project);
-        project.ProjectLabelers.Add(labeler);
+        project.ProjectLabelers.Add(labelerOpt);
 
         await projectRepository.UpdateProjectAsync(project);
-        await labelerRepository.UpdateLabelerAsync(labeler);
 
         return Optional<bool>.Success(true);
     }
 
-    public async Task<Optional<IEnumerable<Labeler>>> GetUnassignedLabelersOfProjectAsync(int id)
+    public async Task<Optional<IEnumerable<User>>> GetUnassignedLabelersOfProjectAsync(int id)
     {
-        return await labelerRepository.GetUnassignedLabelersOfProjectAsync(id);
+        var projectOptional = await projectRepository.GetProjectAsync(id);
+        if (projectOptional.IsFailure)
+        {
+            return Optional<IEnumerable<User>>.Failure("No project found!");
+        }
+
+        var project = projectOptional.GetValueOrThrow();
+
+        var unassignedLabelers = project.ProjectLabelers
+            .Where(labeler => !project.Subjects
+                .SelectMany(subject => subject.SubjectVideoGroupAssignments)
+                .Any(assignment => assignment.Labelers!.Contains(labeler)))
+            .ToList();
+
+        return Optional<IEnumerable<User>>.Success(unassignedLabelers);
     }
 
     public async Task DeleteProjectAsync(int id)
@@ -141,11 +145,10 @@ public class ProjectService(
             return Optional<bool>.Failure("No project found!");
         }
 
-        var unassignedLabelersResult = await labelerRepository.GetUnassignedLabelersOfProjectAsync(projectId);
-
+        var unassignedLabelersResult = await GetUnassignedLabelersOfProjectAsync(projectId);
         if (unassignedLabelersResult.IsFailure)
         {
-            return Optional<bool>.Failure("No labelers found!");
+            return Optional<bool>.Failure("No unassigned labelers found!");
         }
 
         var unassignedLabelers = unassignedLabelersResult.GetValueOrThrow().ToList();
@@ -153,7 +156,7 @@ public class ProjectService(
         return await AssignEquallyAsync(projectId, unassignedLabelers);
     }
 
-    private async Task<Optional<bool>> AssignEquallyAsync(int projectId, IReadOnlyCollection<Labeler> labelers)
+    private async Task<Optional<bool>> AssignEquallyAsync(int projectId, IReadOnlyCollection<User> labelers)
     {
         if (labelers.Count == 0)
         {
@@ -226,7 +229,7 @@ public class ProjectService(
         }
     }
 
-    private async Task<Optional<bool>> AssignLabelerToAssignmentAsync(int assignmentId, IEnumerable<Labeler> labelers)
+    private async Task<Optional<bool>> AssignLabelerToAssignmentAsync(int assignmentId, IEnumerable<User> labelers)
     {
         var assignmentOptional =
             await subjectVideoGroupAssignmentRepository.GetSubjectVideoGroupAssignmentAsync(assignmentId);
@@ -240,13 +243,22 @@ public class ProjectService(
         foreach (var labeler in labelers)
         {
             assignment.Labelers!.Add(labeler);
-            labeler.SubjectVideoGroups.Add(assignment);
-
-            await labelerRepository.UpdateLabelerAsync(labeler);
         }
 
         await subjectVideoGroupAssignmentRepository.UpdateSubjectVideoGroupAssignmentAsync(assignment);
 
         return Optional<bool>.Success(true);
+    }
+
+    public async Task<Optional<IEnumerable<User>>> GetLabelersByProjectAsync(int projectId)
+    {
+        var projectOptional = await projectRepository.GetProjectAsync(projectId);
+        if (projectOptional.IsFailure)
+        {
+            return Optional<IEnumerable<User>>.Failure("No project found!");
+        }
+
+        var project = projectOptional.GetValueOrThrow();
+        return Optional<IEnumerable<User>>.Success(project.ProjectLabelers);
     }
 }

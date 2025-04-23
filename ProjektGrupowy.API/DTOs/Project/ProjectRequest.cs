@@ -12,7 +12,6 @@ public class ProjectRequest
     [StringLength(1000, ErrorMessage = "Maksymalna długość opisu projektu wynosi 1000 znaków.")]
     public string Description { get; set; }
 
-    public int ScientistId { get; set; }
-    
     public bool Finished { get; set; }
+    public string OwnerId { get; set; } = string.Empty;
 }

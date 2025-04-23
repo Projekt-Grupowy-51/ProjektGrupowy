@@ -32,6 +32,7 @@ const ProjectLabelersTab = ({ projectId, onSuccess, onError }) => {
       );
       return true;
     } catch (error) {
+        console.log(error);
       addNotification(
         error.response?.data?.message || "Failed to assign labeler",
         "error"
@@ -130,8 +131,6 @@ const ProjectLabelersTab = ({ projectId, onSuccess, onError }) => {
   };
 
   const handleCustomLabelerAssignmentChange = (labelerId, assignmentId) => {
-    if (!Number.isInteger(Number(labelerId))) return;
-
     setSelectedCustomAssignment((prev) => {
       const updated = { ...prev };
 

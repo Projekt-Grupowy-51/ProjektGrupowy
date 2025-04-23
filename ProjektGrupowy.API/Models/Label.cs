@@ -5,7 +5,7 @@ using System.Text.Json;
 namespace ProjektGrupowy.API.Models;
 
 [Table("Labels")]
-public class Label
+public class Label : IOwnedEntity
 {
     [Key]
     public int Id { get; set; } 
@@ -23,6 +23,12 @@ public class Label
     public virtual Subject Subject { get; set; }
 
     public virtual ICollection<AssignedLabel>? AssignedLabels { get; set; }
+    public string OwnerId { get; set; }
+
+    [ForeignKey(nameof(OwnerId))]
+    public virtual User Owner { get; set; }
+    public DateTime? DelDate { get; set; } = null;
+
 
     public string ToJson()
     {

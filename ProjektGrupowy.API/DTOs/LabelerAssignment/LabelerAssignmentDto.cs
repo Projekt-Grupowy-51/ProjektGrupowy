@@ -4,8 +4,7 @@ namespace ProjektGrupowy.API.DTOs.LabelerAssignment;
 
 public class LabelerAssignmentDto
 {
-    [Range(1, int.MaxValue)]
-    public int? LabelerId { get; set; }
+    public string LabelerId { get; set; } = string.Empty;
 
     [Required]
     [StringLength(16, MinimumLength = 16)]

@@ -26,16 +26,17 @@ const LabelerVideoGroups = () => {
     if (!accessCode.trim()) {
       addNotification("Please enter an access code", "error");
       return;
-    }
-
+      }
+      console.log(accessCode);
     try {
       await httpClient.post("/project/join", {
-        AccessCode: accessCode.trim(),
+          AccessCode: accessCode.trim(),
       });
       addNotification("Successfully joined the project!", "success");
       setAccessCode("");
       fetchProjects();
     } catch (error) {
+        console.log(error);
       addNotification(
         error.response?.data?.message || "Invalid or expired access code",
         "error"

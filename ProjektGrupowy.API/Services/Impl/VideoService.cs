@@ -1,4 +1,5 @@
-﻿using ProjektGrupowy.API.DTOs.Video;
+﻿using Microsoft.AspNetCore.Identity;
+using ProjektGrupowy.API.DTOs.Video;
 using ProjektGrupowy.API.Models;
 using ProjektGrupowy.API.Repositories;
 using ProjektGrupowy.API.Utils;
@@ -8,7 +9,8 @@ namespace ProjektGrupowy.API.Services.Impl;
 public class VideoService(
     IVideoRepository videoRepository,
     IVideoGroupRepository videoGroupRepository,
-    IConfiguration configuration) : IVideoService
+    IConfiguration configuration,
+    UserManager<User> userManager) : IVideoService
 {
     public async Task<Optional<IEnumerable<Video>>> GetVideosAsync() => await videoRepository.GetVideosAsync();
 
@@ -23,6 +25,12 @@ public class VideoService(
         if (videoGroupOptional.IsFailure)
         {
             return Optional<Video>.Failure("No video group found!");
+        }
+
+        var owner = await userManager.FindByIdAsync(videoRequest.OwnerId);
+        if (owner == null)
+        {
+            return Optional<Video>.Failure("No labeler found");
         }
 
         var videoGroup = videoGroupOptional.GetValueOrThrow();
@@ -57,7 +65,8 @@ public class VideoService(
             Path = videoPath,
             VideoGroup = videoGroup,
             ContentType = videoRequest.File.ContentType,
-            PositionInQueue = videoRequest.PositionInQueue
+            PositionInQueue = videoRequest.PositionInQueue,
+            Owner = owner,
         };
 
         return await videoRepository.AddVideoAsync(video);
@@ -70,6 +79,12 @@ public class VideoService(
         if (videoOptional.IsFailure)
         {
             return videoOptional;
+        }
+
+        var owner = await userManager.FindByIdAsync(videoRequest.OwnerId);
+        if (owner == null)
+        {
+            return Optional<Video>.Failure("No labeler found");
         }
 
         var video = videoOptional.GetValueOrThrow();
@@ -95,6 +110,9 @@ public class VideoService(
         }
 
         video.Path = videoPath;
+        video.ContentType = videoRequest.File.ContentType;
+        video.PositionInQueue = videoRequest.PositionInQueue;
+        video.Owner = owner;
 
         return await videoRepository.UpdateVideoAsync(video);
     }
@@ -105,10 +123,5 @@ public class VideoService(
         var video = await videoRepository.GetVideoAsync(id);
         if (video.IsSuccess)
             await videoRepository.DeleteVideoAsync(video.GetValueOrThrow());
-    }
-
-    public async Task<Optional<IEnumerable<Video>>> GetVideosByScientistIdAsync(int scientistId)
-    {
-        return await videoRepository.GetVideosByScientistIdAsync(scientistId);
     }
 }

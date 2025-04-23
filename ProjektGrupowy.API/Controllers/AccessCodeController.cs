@@ -6,6 +6,7 @@ using ProjektGrupowy.API.DTOs.AccessCode;
 using ProjektGrupowy.API.Filters;
 using ProjektGrupowy.API.Services;
 using ProjektGrupowy.API.Utils.Constants;
+using ProjektGrupowy.API.Utils.Extensions;
 
 namespace ProjektGrupowy.API.Controllers;
 
@@ -15,28 +16,13 @@ namespace ProjektGrupowy.API.Controllers;
 [Authorize]
 public class AccessCodeController(
     IProjectAccessCodeService service, 
-    IAuthorizationHelper authHelper,
+    IProjectService projectService,
     IMapper mapper) : ControllerBase
 {
     [HttpGet("project/{projectId:int}")]
     [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
     public async Task<ActionResult<IEnumerable<AccessCodeResponse>>> GetAccessCodesByProjectAsync(int projectId)
     {
-        var checkResult = await authHelper.CheckGeneralAccessAsync(User);
-        if (checkResult.Error != null)
-        {
-            return checkResult.Error;
-        }
-
-        if (checkResult.IsScientist)
-        {
-            var authResult = await authHelper.EnsureScientistOwnsProjectAsync(User, projectId);
-            if (authResult != null)
-            {
-                return authResult;
-            }
-        }
-
         var accessCodes = await service.GetAccessCodesByProjectAsync(projectId);
         return accessCodes.IsSuccess
             ? Ok(mapper.Map<IEnumerable<AccessCodeResponse>>(accessCodes.GetValueOrThrow()))
@@ -47,12 +33,6 @@ public class AccessCodeController(
     [HttpPut("{code:required}/retire")]
     public async Task<IActionResult> RetireCodeAsync(string code)
     {
-        var checkResult = await authHelper.CheckGeneralAccessAsync(User);
-        if (checkResult.Error != null)
-        {
-            return checkResult.Error;
-        }
-
         var result = await service.RetireAccessCodeAsync(code);
         return result.IsSuccess
             ? Ok()
@@ -63,12 +43,6 @@ public class AccessCodeController(
     [HttpPost("validate")]
     public async Task<ActionResult<bool>> ValidateAccessCodeAsync(AccessCodeRequest accessCodeRequest)
     {
-        var checkResult = await authHelper.CheckGeneralAccessAsync(User);
-        if (checkResult.Error != null)
-        {
-            return checkResult.Error;
-        }
-
         var result = await service.ValidateAccessCode(accessCodeRequest);
         return Ok(result);
     }
@@ -78,20 +52,11 @@ public class AccessCodeController(
     public async Task<ActionResult<AccessCodeResponse>> AddValidCodeToProjectAsync(
         CreateAccessCodeRequest createCodeRequest)
     {
-        var checkResult = await authHelper.CheckGeneralAccessAsync(User);
-        if (checkResult.Error != null)
-        {
-            return checkResult.Error;
-        }
+        createCodeRequest.OwnerId = User.GetUserId();
 
-        if (checkResult.IsScientist)
-        {
-            var authResult = await authHelper.EnsureScientistOwnsProjectAsync(User, createCodeRequest.ProjectId);
-            if (authResult != null)
-            {
-                return authResult;
-            }
-        }
+        var project = await projectService.GetProjectAsync(createCodeRequest.ProjectId);
+        if (project.IsFailure)
+            return NotFound(project.GetErrorOrThrow());
 
         var result = await service.AddValidCodeToProjectAsync(createCodeRequest);
         if (result.IsFailure)
