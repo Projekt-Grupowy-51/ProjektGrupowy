@@ -26,7 +26,7 @@ public class AccessCodeController(
     {
         var accessCodes = await service.GetAccessCodesByProjectAsync(projectId);
         return accessCodes.IsSuccess
-            ? BadRequest(mapper.Map<IEnumerable<AccessCodeResponse>>(accessCodes.GetValueOrThrow()))
+            ? Ok(mapper.Map<IEnumerable<AccessCodeResponse>>(accessCodes.GetValueOrThrow()))
             : NotFound(accessCodes.GetErrorOrThrow());
     }
 
