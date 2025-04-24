@@ -2,11 +2,16 @@
 using ProjektGrupowy.API.DTOs.VideoGroup;
 using ProjektGrupowy.API.Models;
 using ProjektGrupowy.API.Repositories;
+using ProjektGrupowy.API.SignalR;
 using ProjektGrupowy.API.Utils;
 
 namespace ProjektGrupowy.API.Services.Impl;
 
-public class VideoGroupService(IVideoGroupRepository videoGroupRepository, IProjectRepository projectRepository, UserManager<User> userManager) : IVideoGroupService
+public class VideoGroupService(
+    IVideoGroupRepository videoGroupRepository, 
+    IProjectRepository projectRepository,
+    IMessageService messageService,
+    UserManager<User> userManager) : IVideoGroupService
 {
     public async Task<Optional<IEnumerable<VideoGroup>>> GetVideoGroupsAsync()
     {
@@ -20,17 +25,20 @@ public class VideoGroupService(IVideoGroupRepository videoGroupRepository, IProj
 
     public async Task<Optional<VideoGroup>> AddVideoGroupAsync(VideoGroupRequest videoGroupRequest)
     {
-        var projectOptional = await projectRepository.GetProjectAsync(videoGroupRequest.ProjectId);
-
-        if (projectOptional.IsFailure)
-        {
-            return Optional<VideoGroup>.Failure("No project found!");
-        }
-
         var owner = await userManager.FindByIdAsync(videoGroupRequest.OwnerId);
         if (owner == null)
         {
             return Optional<VideoGroup>.Failure("No labeler found");
+        }
+
+        var projectOptional = await projectRepository.GetProjectAsync(videoGroupRequest.ProjectId);
+
+        if (projectOptional.IsFailure)
+        {
+            await messageService.SendErrorAsync(
+                videoGroupRequest.OwnerId,
+                "No project found");
+            return Optional<VideoGroup>.Failure("No project found!");
         }
 
         var videoGroup = new VideoGroup
@@ -41,15 +49,36 @@ public class VideoGroupService(IVideoGroupRepository videoGroupRepository, IProj
             Owner = owner,
         };
 
-        return await videoGroupRepository.AddVideoGroupAsync(videoGroup);
+        // return await videoGroupRepository.AddVideoGroupAsync(videoGroup);
+        var result = await videoGroupRepository.AddVideoGroupAsync(videoGroup);
+        if (result.IsFailure)
+        {
+            await messageService.SendErrorAsync(
+                videoGroupRequest.OwnerId,
+                "Failed to add video group");
+            return result;
+        }
+        await messageService.SendSuccessAsync(
+            videoGroupRequest.OwnerId,
+            "Video group added successfully");
+        return result;
     }
 
     public async Task<Optional<VideoGroup>> UpdateVideoGroupAsync(int videoGroupId, VideoGroupRequest videoGroupRequest)
     {
+        var owner = await userManager.FindByIdAsync(videoGroupRequest.OwnerId);
+        if (owner == null)
+        {
+            return Optional<VideoGroup>.Failure("No labeler found");
+        }
+
         var videoGroupOptional = await videoGroupRepository.GetVideoGroupAsync(videoGroupId);
 
         if (videoGroupOptional.IsFailure)
         {
+            await messageService.SendErrorAsync(
+                videoGroupRequest.OwnerId,
+                "No video group found");
             return videoGroupOptional;
         }
 
@@ -59,13 +88,10 @@ public class VideoGroupService(IVideoGroupRepository videoGroupRepository, IProj
 
         if (projectOptional.IsFailure)
         {
+            await messageService.SendErrorAsync(
+                videoGroupRequest.OwnerId,
+                "No project found");
             return Optional<VideoGroup>.Failure("No project found!");
-        }
-
-        var owner = await userManager.FindByIdAsync(videoGroupRequest.OwnerId);
-        if (owner == null)
-        {
-            return Optional<VideoGroup>.Failure("No labeler found");
         }
 
         videoGroup.Name = videoGroupRequest.Name;
@@ -73,7 +99,19 @@ public class VideoGroupService(IVideoGroupRepository videoGroupRepository, IProj
         videoGroup.Description = videoGroupRequest.Description;
         videoGroup.Owner = owner;
 
-        return await videoGroupRepository.UpdateVideoGroupAsync(videoGroup);
+        // return await videoGroupRepository.UpdateVideoGroupAsync(videoGroup);
+        var result = await videoGroupRepository.UpdateVideoGroupAsync(videoGroup);
+        if (result.IsFailure)
+        {
+            await messageService.SendErrorAsync(
+                videoGroupRequest.OwnerId,
+                "Failed to update video group");
+            return result;
+        }
+        await messageService.SendSuccessAsync(
+            videoGroupRequest.OwnerId,
+            "Video group updated successfully");
+        return result;
     }
 
     public async Task<Optional<IEnumerable<VideoGroup>>> GetVideoGroupsByProjectAsync(int projectId)
@@ -81,10 +119,14 @@ public class VideoGroupService(IVideoGroupRepository videoGroupRepository, IProj
 
     public async Task DeleteVideoGroupAsync(int id)
     {
-        var videoGroup = await videoGroupRepository.GetVideoGroupAsync(id);
-        if (videoGroup.IsSuccess)
+        var videoGroupOpt = await videoGroupRepository.GetVideoGroupAsync(id);
+        if (videoGroupOpt.IsSuccess)
         {
-            await videoGroupRepository.DeleteVideoGroupAsync(videoGroup.GetValueOrThrow());
+            var videoGroup = videoGroupOpt.GetValueOrThrow();
+            await messageService.SendInfoAsync(
+                videoGroup.Owner.Id,
+                "Video group deleted successfully");
+            await videoGroupRepository.DeleteVideoGroupAsync(videoGroup);
         }
     }
 

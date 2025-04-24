@@ -37,6 +37,7 @@ import { NotificationProvider } from "./context/NotificationContext";
 import NotFound from "./pages/errors/NotFound";
 import Forbidden from "./pages/errors/Forbidden";
 import NotificationSystem from "./components/NotificationSystem";
+import SignalRListener from "../src/services/SignalRListener";
 
 const AuthContext = createContext();
 
@@ -207,6 +208,7 @@ function App() {
   return (
     <NotificationProvider>
       <AuthProvider>
+        <SignalRListener />
         <Router>
           <ModalProvider>
             <Navbar />

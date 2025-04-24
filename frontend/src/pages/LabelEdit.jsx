@@ -25,10 +25,10 @@ const LabelEdit = () => {
         setLabelData(response.data);
         fetchSubjectName(response.data.subjectId);
       } catch (error) {
-        addNotification(
-          error.response?.data?.message || "Failed to load label data",
-          "error"
-        );
+        // addNotification(
+        //   error.response?.data?.message || "Failed to load label data",
+        //   "error"
+        // );
       }
     };
 
@@ -37,7 +37,7 @@ const LabelEdit = () => {
         const response = await httpClient.get(`/subject/${subjectId}`);
         setSubjectName(response.data.name);
       } catch (error) {
-        addNotification("Failed to load subject information.", "error");
+        //addNotification("Failed to load subject information.", "error");
       }
     };
 
@@ -68,13 +68,13 @@ const LabelEdit = () => {
     setLoading(true);
     try {
       await httpClient.put(`/Label/${id}`, labelData);
-      addNotification("Label updated successfully!", "success");
+      //addNotification("Label updated successfully!", "success");
       navigate(`/subjects/${labelData.subjectId}`);
     } catch (error) {
-      addNotification(
-        error.response?.data?.message || "Failed to update label",
-        "error"
-      );
+      // addNotification(
+      //   error.response?.data?.message || "Failed to update label",
+      //   "error"
+      // );
     } finally {
       setLoading(false);
     }

@@ -21,7 +21,7 @@ const SubjectDetails = () => {
       setSubjectDetails(response.data);
       await fetchLabels();
     } catch (error) {
-      addNotification("Failed to load subject details", "error");
+      // addNotification("Failed to load subject details", "error");
     }
   };
 
@@ -33,16 +33,16 @@ const SubjectDetails = () => {
         .sort((a, b) => a.id - b.id);
       setLabels(filteredLabels);
     } catch (error) {
-      addNotification("Failed to load labels", "error");
+      // addNotification("Failed to load labels", "error");
     }
   };
 
-  useEffect(() => {
-    if (location.state?.successMessage) {
-      addNotification(location.state.successMessage, "success");
-      window.history.replaceState({}, document.title);
-    }
-  }, [location.state]);
+  // useEffect(() => {
+  //   if (location.state?.successMessage) {
+  //     addNotification(location.state.successMessage, "success");
+  //     window.history.replaceState({}, document.title);
+  //   }
+  // }, [location.state]);
 
   useEffect(() => {
     if (id) fetchSubjectDetails();
@@ -53,7 +53,7 @@ const SubjectDetails = () => {
       await httpClient.delete(`/label/${labelId}`);
       await fetchSubjectDetails();
     } catch (error) {
-      addNotification("Failed to delete label. Please try again.", "error");
+      //addNotification("Failed to delete label. Please try again.", "error");
     }
   };
 

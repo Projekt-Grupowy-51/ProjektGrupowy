@@ -23,14 +23,14 @@ function ProjectAdd() {
       const response = await httpClient.post("/Project", formData);
 
       if (response.status === 201) {
-        addNotification("Project added successfully!", "success");
+        ////addNotification("Project added successfully!", "success");
         navigate("/projects");
       }
     } catch (error) {
-      addNotification(
-        error.response?.data?.message || "Failed to add project",
-        "error"
-      );
+      // addNotification(
+      //   error.response?.data?.message || "Failed to add project",
+      //   "error"
+      // );
     } finally {
       setLoading(false);
     }

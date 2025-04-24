@@ -1,7 +1,9 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 
 namespace ProjektGrupowy.API.SignalR;
 
+[Authorize]
 public class AppHub(IConnectedClientManager clientManager) : Hub
 {
     public override async Task OnConnectedAsync()

@@ -69,7 +69,7 @@ const AuthPage = () => {
         });
         setIsLoginView(true);
         setFormData({ ...formData, password: "", confirmPassword: "" });
-        addNotification("Registration successful! Please log in.", "success");
+        //addNotification("Registration successful! Please log in.", "success");
       }
     } catch (err) {
       addNotification(

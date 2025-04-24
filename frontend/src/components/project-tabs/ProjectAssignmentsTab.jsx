@@ -18,7 +18,7 @@ const ProjectAssignmentsTab = ({ projectId }) => {
       );
       setAssignments(response.data);
     } catch (error) {
-      addNotification("Failed to load assignments", "error");
+      //addNotification("Failed to load assignments", "error");
     } finally {
       setLoading(false);
     }
@@ -36,10 +36,10 @@ const ProjectAssignmentsTab = ({ projectId }) => {
       );
       // DeleteButton will show success notification automatically
     } catch (error) {
-      addNotification(
-        error.response?.data?.message || "Failed to delete assignment",
-        "error"
-      );
+      // addNotification(
+      //   error.response?.data?.message || "Failed to delete assignment",
+      //   "error"
+      // );
     }
   };
 
@@ -62,10 +62,11 @@ const ProjectAssignmentsTab = ({ projectId }) => {
   return (
     <div className="assignments">
       <div className="d-flex justify-content-end mb-3">
-        <NavigateButton 
-          actionType="Add" 
+        <NavigateButton
+          actionType="Add"
           path={`/assignments/add?projectId=${projectId}`}
-          value="Add Assignment" />
+          value="Add Assignment"
+        />
       </div>
       {assignments.length > 0 ? (
         <DataTable

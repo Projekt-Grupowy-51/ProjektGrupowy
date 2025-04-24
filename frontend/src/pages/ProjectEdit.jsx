@@ -27,10 +27,10 @@ function ProjectEdit() {
           finished: data.finished,
         });
       } catch (error) {
-        addNotification(
-          error.response?.data?.message || "Failed to load project data",
-          "error"
-        );
+        // addNotification(
+        //   error.response?.data?.message || "Failed to load project data",
+        //   "error"
+        // );
       } finally {
         setLoading(false);
       }
@@ -43,13 +43,13 @@ function ProjectEdit() {
 
     try {
       await httpClient.put(`/Project/${id}`, formData);
-      addNotification("Project updated successfully!", "success");
+      //addNotification("Project updated successfully!", "success");
       navigate(`/projects/${id}`);
     } catch (error) {
-      addNotification(
-        error.response?.data?.message || "Failed to update project",
-        "error"
-      );
+      // addNotification(
+      //   error.response?.data?.message || "Failed to update project",
+      //   "error"
+      // );
     }
   };
 

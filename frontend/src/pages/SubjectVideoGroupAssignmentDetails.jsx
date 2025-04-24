@@ -40,10 +40,10 @@ const SubjectVideoGroupAssignmentDetails = () => {
         );
         setLabelers(labelersResponse.data);
       } catch (err) {
-        addNotification("Error loading labelers", "error");
+        // addNotification("Error loading labelers", "error");
       }
     } catch (error) {
-      addNotification("Failed to load assignment details", "error");
+      // addNotification("Failed to load assignment details", "error");
     } finally {
       setLoading(false);
     }
@@ -54,16 +54,10 @@ const SubjectVideoGroupAssignmentDetails = () => {
   }, [id]);
 
   const handleDelete = async () => {
-    if (!window.confirm("Are you sure you want to delete this assignment?"))
-      return;
-
     try {
       await httpClient.delete(`/SubjectVideoGroupAssignment/${id}`);
-      addNotification("Assignment successfully deleted", "success");
-      navigate("/assignments");
-    } catch (error) {
-      addNotification("Deletion failed", "error");
-    }
+      navigate(-1);
+    } catch (error) {}
   };
 
   // Define columns for labelers table

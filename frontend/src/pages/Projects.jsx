@@ -28,10 +28,10 @@ const Projects = () => {
       const sortedProjects = response.data.sort((a, b) => a.id - b.id);
       setProjects(sortedProjects);
     } catch (error) {
-      addNotification(
-        error.response?.data?.message || "Failed to load projects",
-        "error"
-      );
+      // addNotification(
+      //   error.response?.data?.message || "Failed to load projects",
+      //   "error"
+      // );
     } finally {
       setLoading(false);
     }
@@ -43,19 +43,19 @@ const Projects = () => {
       await httpClient.delete(`/Project/${projectId}`);
       setProjects((prev) => prev.filter((project) => project.id !== projectId));
     } catch (error) {
-      addNotification(
-        error.response?.data?.message || "Failed to delete project",
-        "error"
-      );
+      // addNotification(
+      //   error.response?.data?.message || "Failed to delete project",
+      //   "error"
+      // );
     }
   };
 
-  useEffect(() => {
-    if (location.state?.successMessage) {
-      addNotification(location.state.successMessage, "success");
-      window.history.replaceState({}, document.title);
-    }
-  }, [location.state, addNotification]);
+  // useEffect(() => {
+  //   if (location.state?.successMessage) {
+  //     addNotification(location.state.successMessage, "success");
+  //     window.history.replaceState({}, document.title);
+  //   }
+  // }, [location.state, addNotification]);
 
   useEffect(() => {
     fetchProjects();

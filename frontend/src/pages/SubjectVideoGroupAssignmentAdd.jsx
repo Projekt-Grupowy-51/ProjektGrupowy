@@ -39,10 +39,10 @@ const SubjectVideoGroupAssignmentAdd = () => {
       setSubjects(subjectsRes.data);
       setVideoGroups(videoGroupsRes.data);
     } catch (err) {
-      addNotification(
-        err.response?.data?.message || "Failed to load data",
-        "error"
-      );
+      // addNotification(
+      //   err.response?.data?.message || "Failed to load data",
+      //   "error"
+      // );
     } finally {
       setDataLoading(false);
     }
@@ -71,13 +71,13 @@ const SubjectVideoGroupAssignmentAdd = () => {
         subjectId: parseInt(formData.subjectId),
         videoGroupId: parseInt(formData.videoGroupId),
       });
-      addNotification("Assignment added successfully!", "success");
+      //addNotification("Assignment added successfully!", "success");
       navigate(`/projects/${projectId}`);
     } catch (err) {
-      addNotification(
-        err.response?.data?.message || "An error occurred. Please try again.",
-        "error"
-      );
+      // addNotification(
+      //   err.response?.data?.message || "An error occurred. Please try again.",
+      //   "error"
+      // );
       setLoading(false);
     }
   };

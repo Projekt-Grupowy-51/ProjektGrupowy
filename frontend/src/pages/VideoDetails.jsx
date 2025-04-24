@@ -32,13 +32,13 @@ const VideoDetails = () => {
       if (response.status === 200) {
         setVideoData(response.data);
       } else {
-        addNotification(
-          `Unexpected response status: ${response.status}`,
-          "error"
-        );
+        // addNotification(
+        //   `Unexpected response status: ${response.status}`,
+        //   "error"
+        // );
       }
     } catch (error) {
-      addNotification("Failed to load video details", "error");
+      // addNotification("Failed to load video details", "error");
     }
   };
 
@@ -51,7 +51,7 @@ const VideoDetails = () => {
       const streamUrl = URL.createObjectURL(response.data);
       setVideoStream(streamUrl);
     } catch (error) {
-      addNotification("Error fetching video stream", "error");
+      // addNotification("Error fetching video stream", "error");
       setVideoStream(null);
     }
   }
@@ -66,7 +66,7 @@ const VideoDetails = () => {
       );
       setLabels(response.data);
     } catch (error) {
-      addNotification("Failed to load assigned labels", "error");
+      // addNotification("Failed to load assigned labels", "error");
     }
   };
 
@@ -86,12 +86,12 @@ const VideoDetails = () => {
       if (response.status === 200) {
         setVideoData((prevData) => ({ ...prevData, title: editedTitle }));
         setIsEditingTitle(false);
-        addNotification("Title updated successfully", "success");
+        //addNotification("Title updated successfully", "success");
       } else {
-        addNotification(`Failed to update title: ${response.status}`, "error");
+        //addNotification(`Failed to update title: ${response.status}`, "error");
       }
     } catch (error) {
-      addNotification("Error updating title", "error");
+      //addNotification("Error updating title", "error");
     }
   };
 

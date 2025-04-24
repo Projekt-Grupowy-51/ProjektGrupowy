@@ -5,7 +5,12 @@ import DataTable from "../../components/DataTable";
 import httpClient from "../../httpclient";
 import { useNotification } from "../../context/NotificationContext";
 
-const ProjectLabelersTab = ({ projectId, onSuccess, onError }) => {
+const ProjectLabelersTab = ({
+  projectId,
+  onSuccess,
+  onError,
+  onLabelersUpdate,
+}) => {
   const { addNotification } = useNotification();
   const [labelers, setLabelers] = useState([]);
   const [unassignedLabelers, setUnassignedLabelers] = useState([]);
@@ -32,11 +37,11 @@ const ProjectLabelersTab = ({ projectId, onSuccess, onError }) => {
       );
       return true;
     } catch (error) {
-        console.log(error);
-      addNotification(
-        error.response?.data?.message || "Failed to assign labeler",
-        "error"
-      );
+      console.log(error);
+      // addNotification(
+      //   error.response?.data?.message || "Failed to assign labeler",
+      //   "error"
+      // );
       return false;
     }
   };
@@ -123,8 +128,15 @@ const ProjectLabelersTab = ({ projectId, onSuccess, onError }) => {
       setLabelers(labelerRes.data);
       setUnassignedLabelers(unassignedLabelersRes.data);
       setAssignments(assignmentsRes.data);
+
+      if (onLabelersUpdate) {
+        console.log("Labelers count:", labelerRes.data.length);
+        onLabelersUpdate(labelerRes.data.length);
+      } else {
+        console.log("onLabelersUpdate function not provided");
+      }
     } catch (err) {
-      addNotification("Failed to load labeler data", "error");
+      //addNotification("Failed to load labeler data", "error");
     } finally {
       setLoading(false);
     }
@@ -185,7 +197,7 @@ const ProjectLabelersTab = ({ projectId, onSuccess, onError }) => {
       });
 
       fetchData();
-      addNotification("Labeler assigned successfully!", "success");
+      //addNotification("Labeler assigned successfully!", "success");
     }
   };
 
@@ -212,12 +224,12 @@ const ProjectLabelersTab = ({ projectId, onSuccess, onError }) => {
       if (allSucceeded) {
         setSelectedCustomAssignment({});
         fetchData();
-        addNotification("All labelers assigned successfully!", "success");
+        //addNotification("All labelers assigned successfully!", "success");
       } else {
-        addNotification("One or more assignments failed.", "error");
+        //addNotification("One or more assignments failed.", "error");
       }
     } catch (error) {
-      addNotification("Failed to process assignments", "error");
+      //addNotification("Failed to process assignments", "error");
     }
   };
 
@@ -226,9 +238,9 @@ const ProjectLabelersTab = ({ projectId, onSuccess, onError }) => {
       await httpClient.post(`/project/${projectId}/distribute`);
       fetchData();
       setSelectedCustomAssignment({});
-      addNotification("Labelers distributed successfully!", "success");
+      //addNotification("Labelers distributed successfully!", "success");
     } catch (error) {
-      addNotification("Failed to distribute labelers", "error");
+      //addNotification("Failed to distribute labelers", "error");
     }
   };
 
@@ -239,7 +251,7 @@ const ProjectLabelersTab = ({ projectId, onSuccess, onError }) => {
       );
       fetchData();
     } catch (error) {
-      addNotification("Failed to unassign labeler", "error");
+      //addNotification("Failed to unassign labeler", "error");
     }
   };
 
@@ -247,9 +259,9 @@ const ProjectLabelersTab = ({ projectId, onSuccess, onError }) => {
     try {
       await httpClient.post(`/project/${projectId}/unassign-all`);
       fetchData();
-      addNotification("All labelers unassigned successfully!", "success");
+      //addNotification("All labelers unassigned successfully!", "success");
     } catch (error) {
-      addNotification("Failed to unassign all labelers", "error");
+      //addNotification("Failed to unassign all labelers", "error");
     }
   };
 
