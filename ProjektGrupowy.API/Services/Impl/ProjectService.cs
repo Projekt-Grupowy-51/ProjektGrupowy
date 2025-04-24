@@ -216,8 +216,16 @@ public class ProjectService(
         {
             return Optional<bool>.Failure("No project found!");
         }
-
-        var projectOwnerId = projectOptional.GetValueOrThrow().Owner.Id;
+        
+        var project = projectOptional.GetValueOrThrow();
+        var projectOwnerId = project.Owner.Id;
+        
+        var totalAssignmentCount = project.Subjects.Sum(subject => subject.SubjectVideoGroupAssignments.Count);
+        if (totalAssignmentCount == 0)
+        {
+            await messageService.SendErrorAsync(projectOwnerId, "There are no assignments.");
+            return Optional<bool>.Failure("There are no assignments.");
+        }
 
         var unassignedLabelersResult = await GetUnassignedLabelersOfProjectAsync(projectId);
         if (unassignedLabelersResult.IsFailure)
