@@ -43,7 +43,6 @@
 
   <ItemGroup>
     <Folder Include="Migrations\" />
-    <Folder Include="Services\Background\Impl\" />
   </ItemGroup>
 
 </Project>

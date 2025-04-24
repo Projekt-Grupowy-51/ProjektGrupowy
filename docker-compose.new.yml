@@ -36,6 +36,7 @@ services:
         condition: service_healthy
     volumes:
       - videos_data:/app/videos
+      - reports_data:/app/reports
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:80/health || exit 1"]
       interval: 10s
@@ -67,6 +68,7 @@ services:
 volumes:
   postgres_data:
   videos_data:
+  reports_data:
 
 networks:
   mynetwork:

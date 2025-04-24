@@ -13,6 +13,8 @@ using ProjektGrupowy.API.Utils.Constants;
 using ProjektGrupowy.API.Utils.Extensions;  // Add this using directive
 using System.Security.Claims;
 using ProjektGrupowy.API.DTOs.Labeler;
+using Hangfire;
+using ProjektGrupowy.API.Services.Background;
 
 namespace ProjektGrupowy.API.Controllers;
 
@@ -85,6 +87,17 @@ public class ProjectController(
 
         return CreatedAtAction("GetProject", new { id = createdProject.Id },
             mapper.Map<ProjectResponse>(createdProject));
+    }
+
+    [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
+    [HttpPost("{projectId:int}/generate-report")]
+    public IActionResult GenerateReport(int projectId)
+    {
+        var result = BackgroundJob.Enqueue<IReportGenerator>(g => g.GenerateAsync(projectId));
+        
+        return result is null
+            ? BadRequest("Failed to enqueue report generation job.")
+            : Accepted("Report generation job has been enqueued.");
     }
 
     [HttpPost("join")]

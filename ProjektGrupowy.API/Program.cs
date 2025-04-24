@@ -23,6 +23,8 @@ using Hangfire.MemoryStorage;
 using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.SignalR;
 using ProjektGrupowy.API.Utils.Extensions;
+using ProjektGrupowy.API.Services.Background;
+using ProjektGrupowy.API.Services.Background.Impl;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -193,6 +195,7 @@ static void AddServices(WebApplicationBuilder builder)
     builder.Services.AddScoped<IVideoGroupService, VideoGroupService>();
     builder.Services.AddScoped<IVideoService, VideoService>();
     builder.Services.AddScoped<IProjectAccessCodeService, ProjectAccessCodeService>();
+    builder.Services.AddScoped<IReportGenerator, ReportGenerator>();
 
     builder.Services.AddSingleton<IConnectedClientManager, ConnectedClientManager>();
     builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
