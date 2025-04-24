@@ -7,5 +7,6 @@ namespace ProjektGrupowy.API.SignalR
         public const string Warning = "NotifyFromBackendServerWarning";
         public const string Info = "NotifyFromBackendServerInfo";
         public const string Message = "NotifyFromBackendServerMessage";
+        public const string LabelersCountChanged = "LabelersCountChanged";
     }
 }

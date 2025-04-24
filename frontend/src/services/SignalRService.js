@@ -14,7 +14,7 @@ class SignalRService {
         skipNegotiation: true,
         transport: signalR.HttpTransportType.WebSockets,
       })
-      .withAutomaticReconnect() // 👈 this!
+      .withAutomaticReconnect()
       .configureLogging(signalR.LogLevel.Information)
       .build();
 

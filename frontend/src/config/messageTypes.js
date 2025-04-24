@@ -4,4 +4,5 @@ export const MessageTypes = {
   Warning: "NotifyFromBackendServerWarning",
   Info: "NotifyFromBackendServerInfo",
   Message: "NotifyFromBackendServerMessage",
+  LabelersCountChanged: "LabelersCountChanged",
 };

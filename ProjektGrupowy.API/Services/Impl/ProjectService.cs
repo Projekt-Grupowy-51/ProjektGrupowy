@@ -16,7 +16,24 @@ public class ProjectService(
 {
     public async Task<Optional<IEnumerable<Project>>> GetProjectsAsync() => await projectRepository.GetProjectsAsync();
 
-    public async Task<Optional<Project>> GetProjectAsync(int id) => await projectRepository.GetProjectAsync(id);
+    public async Task<Optional<Project>> GetProjectAsync(int id)
+    {
+        // return await projectRepository.GetProjectAsync(id);
+        var projectOptional = await projectRepository.GetProjectAsync(id);
+        if (projectOptional.IsFailure)
+        {
+            return projectOptional;
+        }
+        
+        var project = projectOptional.GetValueOrThrow();
+        var userId = project.Owner.Id;
+        await messageService.SendMessageAsync(
+            userId, 
+            MessageTypes.LabelersCountChanged, 
+            project.ProjectLabelers.Count);
+        
+        return projectOptional;
+    }
 
     public async Task<Optional<Project>> AddProjectAsync(ProjectRequest projectRequest)
     {
@@ -122,6 +139,15 @@ public class ProjectService(
         await messageService.SendSuccessAsync(
             labelerAssignmentDto.LabelerId,
             "Labeler added to project successfully");
+
+        await messageService.SendInfoAsync(
+            project.Owner.Id,
+            $"Labeler \"{labelerOpt.UserName}\" joined the project \"{project.Name}\"");
+
+        await messageService.SendMessageAsync(
+            project.Owner.Id, 
+            MessageTypes.LabelersCountChanged,
+            project.ProjectLabelers.Count);
 
         return Optional<bool>.Success(true);
     }

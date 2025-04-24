@@ -13,7 +13,7 @@ public class NonSuccessGetFilter(IMessageService messageService) : IAsyncResultF
         var request = context.HttpContext.Request;
         var response = context.HttpContext.Response;
 
-        if (request.Method == HttpMethods.Get && response.StatusCode is < 200 or >= 300)
+        if (request.Method == HttpMethods.Get && (response.StatusCode < 200 || (response.StatusCode >= 300 && response.StatusCode != 302)))
         {
             try 
             {
