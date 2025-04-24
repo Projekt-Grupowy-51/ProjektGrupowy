@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc.Filters;
 using ProjektGrupowy.API.SignalR;
 using ProjektGrupowy.API.Utils.Extensions;
+using Serilog;
 
 namespace ProjektGrupowy.API.Filters;
 
@@ -13,7 +14,7 @@ public class NonSuccessGetFilter(IMessageService messageService) : IAsyncResultF
         var request = context.HttpContext.Request;
         var response = context.HttpContext.Response;
 
-        if (request.Method == HttpMethods.Get && (response.StatusCode < 200 || (response.StatusCode >= 300 && response.StatusCode != 302)))
+        if (request.Method == HttpMethods.Get && response.StatusCode is >= 400 and < 500)
         {
             try 
             {
@@ -22,6 +23,7 @@ public class NonSuccessGetFilter(IMessageService messageService) : IAsyncResultF
             } 
             catch (Exception ex)
             {
+                Log.Error(ex, "An error occurred: {Error}", ex.Message);
             }
         }
     }
