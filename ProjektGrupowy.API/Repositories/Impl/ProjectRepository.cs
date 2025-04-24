@@ -33,7 +33,7 @@ public class ProjectRepository(AppDbContext context, ILogger<ProjectRepository> 
             // Nested loops and two index lookups "IX_ProjectAccessCode_Code" on "ProjectAccessCodes"
             // and "PK_Projects" on "Projects"
             var project = await context.Projects
-                .Where(p => p.AccessCodes.Any(x => x.Code == code && x.ExpiresAtUtc == null || x.ExpiresAtUtc > DateTime.UtcNow))
+                .Where(p => p.AccessCodes.Any(x => x.Code == code && (x.ExpiresAtUtc == null || x.ExpiresAtUtc > DateTime.UtcNow)))
                 .SingleOrDefaultAsync();
 
             return project is null
