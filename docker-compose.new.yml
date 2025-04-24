@@ -9,6 +9,7 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./init:/docker-entrypoint-initdb.d
     networks:
       - mynetwork
     healthcheck:
@@ -24,6 +25,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ConnectionStrings__DefaultConnection=Host=db;Database=mydatabase;UserName=myuser;Password=mypassword
+      - ConnectionStrings__Hangfire=Host=db;Database=hangfire;UserName=myuser;Password=mypassword
       - ASPNETCORE_URLS=http://+:80
     ports:
       - "5000:80"

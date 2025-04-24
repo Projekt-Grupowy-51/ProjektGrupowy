@@ -18,6 +18,9 @@ using System.Text;
 using System.Text.Json.Serialization;
 using ProjektGrupowy.API.SignalR;
 using Azure.Core;
+using Hangfire;
+using Hangfire.MemoryStorage;
+using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.SignalR;
 using ProjektGrupowy.API.Utils.Extensions;
 
@@ -36,6 +39,8 @@ AddServices(builder);
 builder.Host.UseSerilog();
 
 var app = builder.Build();
+
+app.UseHangfireDashboard();
 
 app.MapHealthChecks("/health");
 
@@ -110,6 +115,33 @@ static void AddServices(WebApplicationBuilder builder)
         });
 
     builder.Services.AddHealthChecks();
+    
+    // ========== Hangfire ========== //
+
+    builder.Services.AddHangfire(config => config.UseSerilogLogProvider());
+    
+    if (builder.Environment.IsDevelopment())
+    {
+        builder.Services.AddHangfire(config => config.UseMemoryStorage());
+    }
+    else
+    {
+        builder.Services.AddHangfire(config =>
+        {
+            config.UseSimpleAssemblyNameTypeSerializer();
+            config.UseRecommendedSerializerSettings();
+            
+            var hangfireConnectionString = builder.Configuration.GetConnectionString("Hangfire");
+            config.UsePostgreSqlStorage(c => c.UseNpgsqlConnection(hangfireConnectionString));
+        });
+    }
+
+    builder.Services.AddHangfireServer(options =>
+    {
+        options.WorkerCount = Environment.ProcessorCount;
+    });
+    
+    // ========== Done with hangfire ========== //
 
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen(c =>
