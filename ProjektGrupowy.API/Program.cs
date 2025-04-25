@@ -185,6 +185,7 @@ static void AddServices(WebApplicationBuilder builder)
     builder.Services.AddScoped<IVideoGroupRepository, VideoGroupRepository>();
     builder.Services.AddScoped<IVideoRepository, VideoRepository>();
     builder.Services.AddScoped<IProjectAccessCodeRepository, ProjectAccessCodeRepository>();
+    builder.Services.AddScoped<IProjectReportRepository, ProjectReportRepository>();
 
     // Services
     builder.Services.AddScoped<IAssignedLabelService, AssignedLabelService>();
@@ -196,6 +197,7 @@ static void AddServices(WebApplicationBuilder builder)
     builder.Services.AddScoped<IVideoService, VideoService>();
     builder.Services.AddScoped<IProjectAccessCodeService, ProjectAccessCodeService>();
     builder.Services.AddScoped<IReportGenerator, ReportGenerator>();
+    builder.Services.AddScoped<IProjectReportService, ProjectReportService>();
 
     builder.Services.AddSingleton<IConnectedClientManager, ConnectedClientManager>();
     builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();

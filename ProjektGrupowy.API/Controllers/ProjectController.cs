@@ -26,7 +26,8 @@ namespace ProjektGrupowy.API.Controllers;
 public class ProjectController(
     IProjectService projectService, 
     ISubjectService subjectService, 
-    IVideoGroupService videoGroupService, 
+    IVideoGroupService videoGroupService,
+    IProjectReportService projectReportService,
     ISubjectVideoGroupAssignmentService subjectVideoGroupAssignmentService, 
     IMapper mapper) : ControllerBase
 {
