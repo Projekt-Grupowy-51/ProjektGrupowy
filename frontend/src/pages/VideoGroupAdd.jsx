@@ -4,6 +4,7 @@ import httpClient from "../httpclient";
 import "./css/ScientistProjects.css";
 import NavigateButton from "../components/NavigateButton";
 import { useNotification } from "../context/NotificationContext";
+import { useTranslation } from "react-i18next";
 
 const VideoGroupAdd = () => {
   const [formData, setFormData] = useState({
@@ -15,6 +16,7 @@ const VideoGroupAdd = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { addNotification } = useNotification();
+  const { t } = useTranslation(['videos', 'common']);
 
   useEffect(() => {
     // Extract projectId from query params if available
@@ -36,7 +38,7 @@ const VideoGroupAdd = () => {
 
     // Validate form
     if (!formData.name || !formData.description || !formData.projectId) {
-      addNotification("Please fill in all required fields.", "error");
+      addNotification(t('videos:errors.upload_required_fields'), "error");
       setLoading(false);
       return;
     }
@@ -44,11 +46,11 @@ const VideoGroupAdd = () => {
     try {
       await httpClient.post("/videogroup", formData);
       navigate(`/projects/${formData.projectId}`, {
-        state: { successMessage: "Video group added successfully!" },
+        state: { successMessage: t('success.video_group_added') },
       });
     } catch (err) {
       addNotification(
-        err.response?.data?.message || "An error occurred. Please try again.",
+        err.response?.data?.message || t('errors.general'),
         "error"
       );
       setLoading(false);
@@ -61,13 +63,13 @@ const VideoGroupAdd = () => {
         <div className="col-lg-8">
           <div className="card shadow-sm">
             <div className="card-header bg-primary text-white">
-              <h1 className="heading mb-0">Add New Video Group</h1>
+              <h1 className="heading mb-0">{t('video_group.add_title')}</h1>
             </div>
             <div className="card-body">
               <form onSubmit={handleSubmit}>
                 <div className="mb-3">
                   <label htmlFor="name" className="form-label">
-                    Group Name
+                    {t('video_group.name')}
                   </label>
                   <input
                     type="text"
@@ -82,7 +84,7 @@ const VideoGroupAdd = () => {
 
                 <div className="mb-3">
                   <label htmlFor="description" className="form-label">
-                    Description
+                    {t('video_group.description')}
                   </label>
                   <textarea
                     id="description"
@@ -102,9 +104,9 @@ const VideoGroupAdd = () => {
                     disabled={loading}
                   >
                     <i className="fas fa-plus-circle me-2"></i>
-                    {loading ? "Adding..." : "Add Video Group"}
+                    {loading ? t('buttons.adding') : t('buttons.add')}
                   </button>
-                  <NavigateButton actionType="Back" value="Cancel" />
+                  <NavigateButton actionType="Back" value={t('buttons.cancel')} />
                 </div>
               </form>
             </div>

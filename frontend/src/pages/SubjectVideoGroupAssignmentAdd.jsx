@@ -4,8 +4,10 @@ import httpClient from "../httpclient";
 import "./css/ScientistProjects.css";
 import NavigateButton from "../components/NavigateButton";
 import { useNotification } from "../context/NotificationContext";
+import { useTranslation } from 'react-i18next';
 
 const SubjectVideoGroupAssignmentAdd = () => {
+  const { t } = useTranslation(['assignments', 'common']);
   const [formData, setFormData] = useState({
     subjectId: "",
     videoGroupId: "",
@@ -35,14 +37,10 @@ const SubjectVideoGroupAssignmentAdd = () => {
         httpClient.get(`/project/${projectId}/subjects`),
         httpClient.get(`/project/${projectId}/videogroups`),
       ]);
-
       setSubjects(subjectsRes.data);
       setVideoGroups(videoGroupsRes.data);
     } catch (err) {
-      addNotification(
-        err.response?.data?.message || "Failed to load data",
-        "error"
-      );
+      addNotification(t('assignments:errors.load_data'), "error");
     } finally {
       setDataLoading(false);
     }
@@ -58,10 +56,7 @@ const SubjectVideoGroupAssignmentAdd = () => {
     setLoading(true);
 
     if (!formData.subjectId || !formData.videoGroupId) {
-      addNotification(
-        "Please select both a subject and a video group.",
-        "error"
-      );
+      addNotification(t('assignments:errors.selection_required'), "error");
       setLoading(false);
       return;
     }
@@ -71,96 +66,93 @@ const SubjectVideoGroupAssignmentAdd = () => {
         subjectId: parseInt(formData.subjectId),
         videoGroupId: parseInt(formData.videoGroupId),
       });
-      addNotification("Assignment added successfully!", "success");
+      addNotification(t('assignments:success.create'), "success");
       navigate(`/projects/${projectId}`);
     } catch (err) {
-      addNotification(
-        err.response?.data?.message || "An error occurred. Please try again.",
-        "error"
-      );
+      addNotification(t('assignments:errors.general'), "error");
       setLoading(false);
     }
   };
 
   if (dataLoading) {
     return (
-      <div className="container d-flex justify-content-center align-items-center py-5">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading...</span>
+        <div className="container d-flex justify-content-center align-items-center py-5">
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">{t('common:loading')}</span>
+          </div>
         </div>
-      </div>
     );
   }
 
   return (
-    <div className="container py-4">
-      <div className="row justify-content-center">
-        <div className="col-lg-8">
-          <div className="card shadow-sm">
-            <div className="card-header bg-primary text-white">
-              <h1 className="heading mb-0">Add New Assignment</h1>
-            </div>
-            <div className="card-body">
-              <form onSubmit={handleSubmit}>
-                <div className="mb-3">
-                  <label htmlFor="subjectId" className="form-label">
-                    Subject
-                  </label>
-                  <select
-                    id="subjectId"
-                    name="subjectId"
-                    value={formData.subjectId}
-                    onChange={handleChange}
-                    className="form-select"
-                    required
-                  >
-                    <option value="">Select a subject</option>
-                    {subjects.map((subject) => (
-                      <option key={subject.id} value={subject.id}>
-                        {subject.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+      <div className="container py-4">
+        <div className="row justify-content-center">
+          <div className="col-lg-8">
+            <div className="card shadow-sm">
+              <div className="card-header bg-primary text-white">
+                <h1 className="heading mb-0">{t('assignments:add_title')}</h1>
+              </div>
+              <div className="card-body">
+                <form onSubmit={handleSubmit}>
+                  <div className="mb-3">
+                    <label htmlFor="subjectId" className="form-label">
+                      {t('assignments:form.subject')}
+                    </label>
+                    <select
+                        id="subjectId"
+                        name="subjectId"
+                        value={formData.subjectId}
+                        onChange={handleChange}
+                        className="form-select"
+                        required
+                    >
+                      <option value="">{t('assignments:form.select_subject')}</option>
+                      {subjects.map((subject) => (
+                          <option key={subject.id} value={subject.id}>
+                            {subject.name}
+                          </option>
+                      ))}
+                    </select>
+                  </div>
 
-                <div className="mb-4">
-                  <label htmlFor="videoGroupId" className="form-label">
-                    Video Group
-                  </label>
-                  <select
-                    id="videoGroupId"
-                    name="videoGroupId"
-                    value={formData.videoGroupId}
-                    onChange={handleChange}
-                    className="form-select"
-                    required
-                  >
-                    <option value="">Select a video group</option>
-                    {videoGroups.map((videoGroup) => (
-                      <option key={videoGroup.id} value={videoGroup.id}>
-                        {videoGroup.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                  <div className="mb-4">
+                    <label htmlFor="videoGroupId" className="form-label">
+                      {t('assignments:form.video_group')}
+                    </label>
+                    <select
+                        id="videoGroupId"
+                        name="videoGroupId"
+                        value={formData.videoGroupId}
+                        onChange={handleChange}
+                        className="form-select"
+                        required
+                    >
+                      <option value="">{t('assignments:form.select_video_group')}</option>
+                      {videoGroups.map((videoGroup) => (
+                          <option key={videoGroup.id} value={videoGroup.id}>
+                            {videoGroup.name}
+                          </option>
+                      ))}
+                    </select>
+                  </div>
 
-                <div className="d-flex">
-                  <button
-                    type="submit"
-                    className="btn btn-primary me-2"
-                    disabled={loading}
-                  >
-                    <i className="fas fa-plus-circle me-2"></i>
-                    {loading ? "Creating..." : "Create Assignment"}
-                  </button>
-                  <NavigateButton actionType="Back" value="Cancel" />
-                </div>
-              </form>
+                  <div className="d-flex">
+                    <button
+                        type="submit"
+                        className="btn btn-primary me-2"
+                        disabled={loading}
+                    >
+                      <i className="fas fa-plus-circle me-2"></i>
+                      {loading ? t('assignments:buttons.creating') : t('assignments:buttons.create')}
+                    </button>
+                    <NavigateButton actionType="Back" value={t('common:buttons.cancel')} />
+                  </div>
+                </form>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
   );
 };
 

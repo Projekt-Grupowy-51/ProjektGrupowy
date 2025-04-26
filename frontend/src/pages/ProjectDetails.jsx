@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
-import { useLocation } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import httpClient from "../httpclient";
 import "./css/ScientistProjects.css";
 import SignalRService from "../services/SignalRService";
 import { useNotification } from "../context/NotificationContext";
+import { useTranslation } from 'react-i18next';
 
 // Import tab components
 import ProjectDetailsTab from "../components/project-tabs/ProjectDetailsTab";
@@ -21,8 +21,8 @@ const ProjectDetails = () => {
   const [loading, setLoading] = useState(true);
   const location = useLocation();
   const { addNotification } = useNotification();
+  const { t } = useTranslation(['projects', 'common']);
 
-  // Fetch basic project info for the header
   const fetchBasicProjectData = async () => {
     try {
       setLoading(true);
@@ -30,8 +30,8 @@ const ProjectDetails = () => {
       setProject(projectRes.data);
     } catch (error) {
       addNotification(
-        error.response?.data?.message || "Failed to load project data",
-        "error"
+          error.response?.data?.message || t('projects:notifications.details_error'),
+          "error"
       );
     } finally {
       setLoading(false);
@@ -66,7 +66,7 @@ const ProjectDetails = () => {
     return (
       <div className="container d-flex justify-content-center align-items-center py-5">
         <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading...</span>
+          <span className="visually-hidden">{t('common:loading')}</span>
         </div>
       </div>
     );
@@ -76,15 +76,15 @@ const ProjectDetails = () => {
       <div className="container">
         <div className="alert alert-danger">
           <i className="fas fa-exclamation-circle me-2"></i>
-          Failed to load project information
+          {t('projects:notifications.details_error')}
         </div>
       </div>
-    );
+  );
 
   return (
-    <div className="container">
-      <div className="content">
-        <h1 className="heading mb-4">{project?.name}</h1>
+      <div className="container">
+        <div className="content">
+          <h1 className="heading mb-4">{project?.name}</h1>
 
         <div className="tab-navigation">
           <button

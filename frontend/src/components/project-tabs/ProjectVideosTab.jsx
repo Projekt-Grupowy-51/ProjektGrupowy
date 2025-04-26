@@ -4,16 +4,18 @@ import DeleteButton from "../../components/DeleteButton";
 import DataTable from "../../components/DataTable";
 import httpClient from "../../httpclient";
 import { useNotification } from "../../context/NotificationContext";
+import { useTranslation} from "react-i18next";
 
 const ProjectVideosTab = ({ projectId }) => {
   const [videoGroups, setVideoGroups] = useState([]);
   const [loading, setLoading] = useState(true);
   const { addNotification } = useNotification();
+  const { t } = useTranslation(['common', 'projects']);
 
   // Define columns for video groups table
   const videoGroupColumns = [
-    { field: "name", header: "Name" },
-    { field: "description", header: "Description" },
+    { field: "name", header: t('common:name') },
+    { field: "description", header: t('common:description') },
   ];
 
   const fetchVideoGroups = async () => {
@@ -50,7 +52,7 @@ const ProjectVideosTab = ({ projectId }) => {
     return (
       <div className="d-flex justify-content-center my-5">
         <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading video groups...</span>
+          <span className="visually-hidden">{t('projects:video_groups.loading')}</span>
         </div>
       </div>
     );
@@ -60,9 +62,9 @@ const ProjectVideosTab = ({ projectId }) => {
     <div className="videos">
       <div className="d-flex justify-content-end mb-3">
         <NavigateButton
-          actionType="Add"
+          actionType='Add'
           path={`/video-groups/add?projectId=${projectId}`}
-          value="Add Video Group"
+          value={t('projects:add.video_group')}
         />
       </div>
       {videoGroups.length > 0 ? (
@@ -73,19 +75,20 @@ const ProjectVideosTab = ({ projectId }) => {
           navigateButton={(video) => (
             <NavigateButton
               path={`/video-groups/${video.id}`}
-              actionType="Details"
+              actionType='Details'
+              value={t('common:buttons.details')}
             />
           )}
           deleteButton={(video) => (
             <DeleteButton
               onClick={() => handleDeleteVideoGroup(video.id)}
-              itemType="video group"
+              itemType={t('projects:add.video_group')}
             />
           )}
         />
       ) : (
         <div className="alert alert-info">
-          <i className="fas fa-info-circle me-2"></i>No video groups found
+          <i className="fas fa-info-circle me-2"></i>{t('projects:not_found.video_group')}
         </div>
       )}
     </div>

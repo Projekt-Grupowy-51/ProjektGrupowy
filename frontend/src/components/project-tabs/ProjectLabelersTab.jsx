@@ -4,6 +4,7 @@ import DeleteButton from "../../components/DeleteButton";
 import DataTable from "../../components/DataTable";
 import httpClient from "../../httpclient";
 import { useNotification } from "../../context/NotificationContext";
+import { useTranslation } from "react-i18next";
 
 const ProjectLabelersTab = ({ projectId, onSuccess, onError }) => {
   const { addNotification } = useNotification();
@@ -14,6 +15,7 @@ const ProjectLabelersTab = ({ projectId, onSuccess, onError }) => {
   const [selectedAssignment, setSelectedAssignment] = useState("");
   const [selectedCustomAssignments, setSelectedCustomAssignment] = useState({});
   const [loading, setLoading] = useState(true);
+  const { t } = useTranslation(['common', 'project']);
 
   // Helper function to format assignment option label
   const formatAssignmentOption = (assignment) =>
@@ -302,7 +304,7 @@ const ProjectLabelersTab = ({ projectId, onSuccess, onError }) => {
             <div className="row mb-3">
               <div className="col-md-6">
                 <label htmlFor="labelerSelect" className="form-label">
-                  Select Labeler:
+                  {t('projects:labeler_tab.select_labeler')}:
                 </label>
                 <select
                   id="labelerSelect"
@@ -310,7 +312,7 @@ const ProjectLabelersTab = ({ projectId, onSuccess, onError }) => {
                   value={selectedLabeler}
                   onChange={(e) => setSelectedLabeler(e.target.value)}
                 >
-                  <option value="">-- Select Labeler --</option>
+                  <option value="">-- {t('projects:labeler_tab.select_labeler')} --</option>
                   {labelers.map((labeler) => (
                     <option key={labeler.id} value={labeler.id}>
                       {labeler.name} (ID: {labeler.id})
@@ -320,7 +322,7 @@ const ProjectLabelersTab = ({ projectId, onSuccess, onError }) => {
               </div>
               <div className="col-md-6">
                 <label htmlFor="assignmentSelect" className="form-label">
-                  Select Assignment:
+                  {t('projects:labeler_tab.select_assignment')}:
                 </label>
                 <select
                   id="assignmentSelect"
@@ -328,7 +330,7 @@ const ProjectLabelersTab = ({ projectId, onSuccess, onError }) => {
                   value={selectedAssignment}
                   onChange={(e) => setSelectedAssignment(e.target.value)}
                 >
-                  <option value="">-- Select Assignment --</option>
+                  <option value="">-- {t('projects:labeler_tab.select_assignment')} --</option>
                   {assignments.map((assignment) => (
                     <option key={assignment.id} value={assignment.id}>
                       {formatAssignmentOption(assignment)}
@@ -354,7 +356,7 @@ const ProjectLabelersTab = ({ projectId, onSuccess, onError }) => {
         className="d-flex justify-content-between align-items-center m-3"
         style={{ minHeight: "56px" }}
       >
-        <h3 className="mb-0">Unassigned Labelers</h3>
+        <h3 className="mb-0">{t('projects:labeler_tab.unassigned_labelers')}</h3>
         <div className="d-flex align-items-center gap-2">
           {unassignedLabelers.length > 0 && (
             <button
@@ -362,7 +364,7 @@ const ProjectLabelersTab = ({ projectId, onSuccess, onError }) => {
               onClick={handleDistributeLabelers}
             >
               <i className="fa-solid fa-wand-magic-sparkles me-2"></i>
-              Distribute Labelers
+              {t('projects:labeler_tab.distribute_labelers')}
             </button>
           )}
 
@@ -372,7 +374,7 @@ const ProjectLabelersTab = ({ projectId, onSuccess, onError }) => {
               onClick={handleAllSelectedAssignments}
             >
               <i className="fas fa-user-plus me-2"></i>
-              Assign all selected
+              {t('projects:labeler_tab.assign_all_selected')}
             </button>
           )}
         </div>
@@ -387,7 +389,7 @@ const ProjectLabelersTab = ({ projectId, onSuccess, onError }) => {
       ) : (
         <div className="alert alert-info">
           <i className="fas fa-info-circle me-2"></i>
-          There are no labelers awaiting assignment
+          {t('projects:not_found.unassigned_labelers')}
         </div>
       )}
 
@@ -396,7 +398,7 @@ const ProjectLabelersTab = ({ projectId, onSuccess, onError }) => {
         className="d-flex justify-content-between align-items-center m-3 mt-5"
         style={{ minHeight: "56px" }}
       >
-        <h3 className="mb-0">All Labelers</h3>
+        <h3 className="mb-0">{t('projects:labeler_tab.all_labelers')}</h3>
         <div className="d-flex align-items-center gap-2">
           {labelers.length > 0 &&
             Object.keys(selectedCustomAssignments).length > 0 && (
@@ -405,7 +407,7 @@ const ProjectLabelersTab = ({ projectId, onSuccess, onError }) => {
                 onClick={handleAllSelectedAssignments}
               >
                 <i className="fas fa-user-plus me-2"></i>
-                Assign all selected
+                {t('projects:labeler_tab.assign_all_selected')}
               </button>
             )}
         </div>
@@ -420,14 +422,14 @@ const ProjectLabelersTab = ({ projectId, onSuccess, onError }) => {
       ) : (
         <div className="alert alert-info">
           <i className="fas fa-info-circle me-2"></i>
-          No labelers available in this project
+          {t('projects:not_found.all_labelers')}
         </div>
       )}
 
       {/* Assigned Labelers section */}
       <div className="row align-items-center mb-3 mt-4">
         <div className="col">
-          <h3 className="mb-0">Assigned Labelers</h3>
+          <h3 className="mb-0">{t('projects:labeler_tab.assigned_labelers')}</h3>
         </div>
         <div className="col-auto">
           {hasAssignedLabelers && (
@@ -436,7 +438,7 @@ const ProjectLabelersTab = ({ projectId, onSuccess, onError }) => {
               onClick={handleUnassignAllLabelers}
             >
               <i className="fa-solid fa-user-xmark me-1"></i>
-              Unassign All Labelers
+              {t('projects:labeler_tab.unassign_all')}
             </button>
           )}
         </div>
@@ -451,7 +453,7 @@ const ProjectLabelersTab = ({ projectId, onSuccess, onError }) => {
       ) : (
         <div className="alert alert-info">
           <i className="fas fa-info-circle me-2"></i>
-          No labelers found in assignments
+          {t('projects:not_found.assigned_labelers')}
         </div>
       )}
     </div>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import httpClient from "../../httpclient";
 import { useNotification } from "../../context/NotificationContext";
+import { useTranslation } from "react-i18next";
 
 const ProjectAccessCodesTab = ({
   projectId,
@@ -15,6 +16,7 @@ const ProjectAccessCodesTab = ({
   const [localAccessCodes, setLocalAccessCodes] = useState([]);
   const [loading, setLoading] = useState(true);
   const { addNotification } = useNotification();
+  const { t } = useTranslation(['common', 'projects']);
 
   // Fetch access codes if they're not provided via props
   useEffect(() => {
@@ -33,7 +35,7 @@ const ProjectAccessCodesTab = ({
       setLocalAccessCodes(response.data || []);
     } catch (error) {
       const errorMessage =
-        error.response?.data?.message || "Failed to load access codes";
+        error.response?.data?.message || t('projects:access_codes.errors.load_failed');
       if (onError) {
         onError(error);
       } else {
@@ -57,7 +59,7 @@ const ProjectAccessCodesTab = ({
       onError(error);
     } else {
       addNotification(
-        error.response?.data?.message || "An error occurred",
+        error.response?.data?.message || t('common:errors.general'),
         "error"
       );
     }
@@ -74,13 +76,13 @@ const ProjectAccessCodesTab = ({
       };
       await httpClient.post("/AccessCode/project", json);
       setCodeExpiration(0);
-      notifySuccess("Access code created successfully!");
+      notifySuccess(t('projects:access_codes.success.created'));
 
       // Refresh the codes list after creating a new one
       fetchAccessCodes();
     } catch (error) {
       setCreationError(
-        error.response?.data?.message || "Failed to create code"
+        error.response?.data?.message || t('projects:access_codes.errors.create_failed')
       );
       notifyError(error);
     }
@@ -100,17 +102,17 @@ const ProjectAccessCodesTab = ({
     navigator.clipboard
       .writeText(code)
       .then(() => {
-        notifySuccess("Code copied to clipboard!");
+        notifySuccess(t('projects:access_codes.success.copied'));
       })
       .catch(() => {
-        notifyError({ message: "Failed to copy code. Please try again." });
+        notifyError({ message: t('projects:access_codes.errors.copy_failed') });
       });
   };
 
   const handleRetireCode = async (code) => {
     try {
       await httpClient.put(`/AccessCode/${code}/retire`);
-      notifySuccess("Access code retired successfully!");
+      notifySuccess(t('projects:access_codes.success.retired'));
       fetchAccessCodes(); // Refresh the list after retiring a code
     } catch (error) {
       notifyError(error);
@@ -131,7 +133,7 @@ const ProjectAccessCodesTab = ({
           className="card-header bg-primary text-white"
           style={{ background: "var(--gradient-blue)" }}
         >
-          <h5 className="card-title mb-0">Generate Access Codes</h5>
+          <h5 className="card-title mb-0">{t('projects:access_codes.generate_title')}</h5>
         </div>
         <div className="card-body">
           <div className="duration-options d-inline-grid align-items-center gap-3 mb-3">
@@ -142,7 +144,7 @@ const ProjectAccessCodesTab = ({
                 }`}
                 onClick={() => setCodeExpiration(0)}
               >
-                14 Days
+                {t('projects:access_codes.durations.14_days')}
               </button>
               <button
                 className={`btn ${
@@ -150,7 +152,7 @@ const ProjectAccessCodesTab = ({
                 }`}
                 onClick={() => setCodeExpiration(1)}
               >
-                30 Days
+                {t('projects:access_codes.durations.30_days')}
               </button>
               <button
                 className={`btn ${
@@ -158,7 +160,7 @@ const ProjectAccessCodesTab = ({
                 }`}
                 onClick={() => setCodeExpiration(3)}
               >
-                Custom
+                {t('projects:access_codes.durations.custom')}
               </button>
               <button
                 className={`btn ${
@@ -166,7 +168,7 @@ const ProjectAccessCodesTab = ({
                 }`}
                 onClick={() => setCodeExpiration(2)}
               >
-                Unlimited
+                {t('projects:access_codes.durations.unlimited')}
               </button>
             </div>
             {codeExpiration === 3 && (
@@ -175,7 +177,7 @@ const ProjectAccessCodesTab = ({
                   className="input-group-text"
                   style={{ height: "calc(1.5em + 0.75rem + 2px)" }}
                 >
-                  Days
+                  {t('projects:access_codes.durations.days')}
                 </span>
                 <input
                   type="number"
@@ -192,7 +194,7 @@ const ProjectAccessCodesTab = ({
               className="btn btn-success"
               onClick={handleCreateAccessCode}
             >
-              <i className="fas fa-key me-2"></i>Generate Access Code
+              <i className="fas fa-key me-2"></i>{t('projects:access_codes.buttons.generate')}
             </button>
           </div>
           {creationError && (
@@ -207,18 +209,18 @@ const ProjectAccessCodesTab = ({
       {loading ? (
         <div className="d-flex justify-content-center my-5">
           <div className="spinner-border text-primary" role="status">
-            <span className="visually-hidden">Loading access codes...</span>
+            <span className="visually-hidden">{t('projects:access_codes.loading')}</span>
           </div>
         </div>
       ) : localAccessCodes.length > 0 ? (
         <table className="normal-table" id="access-codes-table">
           <thead>
             <tr>
-              <th>Code</th>
-              <th>Created At</th>
-              <th>Expires At</th>
-              <th>Valid</th>
-              <th>Actions</th>
+              <th>{t('projects:access_codes.columns.code')}</th>
+              <th>{t('projects:access_codes.columns.created_at')}</th>
+              <th>{t('projects:access_codes.columns.expires_at')}</th>
+              <th>{t('projects:access_codes.columns.status')}</th>
+              <th>{t('common:actions')}</th>
             </tr>
           </thead>
           <tbody>
@@ -252,7 +254,9 @@ const ProjectAccessCodesTab = ({
                         className="btn btn-link p-0"
                         onClick={() => toggleCodeVisibility(code.code)}
                         title={
-                          visibleCodes[code.code] ? "Hide code" : "Show code"
+                          visibleCodes[code.code] 
+                            ? t('projects:access_codes.visibility.hide') 
+                            : t('projects:access_codes.visibility.show')
                         }
                       >
                         <i
@@ -268,14 +272,14 @@ const ProjectAccessCodesTab = ({
                     {code.isValid
                       ? code.expiresAtUtc
                         ? new Date(code.expiresAtUtc).toLocaleString()
-                        : "Never"
-                      : "Expired"}
+                        : t('projects:access_codes.expiration.never')
+                      : t('projects:access_codes.expiration.expired')}
                   </td>
                   <td>
                     {code.isValid ? (
-                      <span className="badge bg-success">✓ Valid</span>
+                      <span className="badge bg-success">{t('projects:access_codes.status.valid')}</span>
                     ) : (
-                      <span className="badge bg-danger">✗ Invalid</span>
+                      <span className="badge bg-danger">{t('projects:access_codes.status.invalid')}</span>
                     )}
                   </td>
                   <td>
@@ -283,7 +287,7 @@ const ProjectAccessCodesTab = ({
                       className="btn btn-outline-primary"
                       onClick={() => handleCopyCode(code.code)}
                     >
-                      <i className="fas fa-copy me-1"></i>Copy
+                      <i className="fas fa-copy me-1"></i>{t('common:buttons.copy')}
                     </button>
                     {code.isValid && (
                       <button
@@ -291,7 +295,7 @@ const ProjectAccessCodesTab = ({
                         onClick={() => handleRetireCode(code.code)}
                       >
                         <i className="fa-solid fa-trash-can me-1"></i>
-                        Retire
+                        {t('common:buttons.retire')}
                       </button>
                     )}
                   </td>
@@ -301,7 +305,7 @@ const ProjectAccessCodesTab = ({
         </table>
       ) : (
         <div className="alert alert-info text-center">
-          <i className="fas fa-info-circle me-2"></i>No access codes found
+          <i className="fas fa-info-circle me-2"></i>{t('projects:access_codes.no_codes')}
         </div>
       )}
     </div>
