@@ -1,5 +1,5 @@
 ﻿import { useState, useEffect, useCallback } from "react";
-import httpClient from "../../../httpClient";
+import httpClient from "../../../httpclient";
 
 const useVideoGroup = (videoGroupId) => {
     const [videoGroup, setVideoGroup] = useState({

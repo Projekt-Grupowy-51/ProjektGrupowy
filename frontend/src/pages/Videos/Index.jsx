@@ -10,6 +10,7 @@ import LabelInterface from "./components/LabelInterface";
 import httpClient from "../../httpclient.js";
 
 const Videos = () => {
+    console.log('xd');
     const { id: assignmentId } = useParams();
     const [assignment, setAssignment] = React.useState({
         subjectId: null,
