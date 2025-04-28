@@ -104,6 +104,22 @@ public class ProjectRepository(AppDbContext context, ILogger<ProjectRepository> 
             return Optional<Project>.Failure(e.Message);
         }
     }
+    
+    public async Task<Optional<Project>> GetProjectAsync(int id, bool isHttpRequest)
+    {
+        try
+        {
+            var project = await context.Projects.FirstOrDefaultAsync(p => p.Id == id);
+            return project is null
+                ? Optional<Project>.Failure("Project not found")
+                : Optional<Project>.Success(project);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "An error occurred while getting project");
+            return Optional<Project>.Failure(e.Message);
+        }
+    }
 
     public async Task<Optional<IEnumerable<Project>>> GetProjectsAsync()
     {

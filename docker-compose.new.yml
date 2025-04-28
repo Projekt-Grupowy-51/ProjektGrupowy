@@ -64,6 +64,7 @@ services:
       - mynetwork
     volumes:
       - videos_data:/mnt/videos:ro
+      - reports_data:/mnt/reports:ro
 
 volumes:
   postgres_data:

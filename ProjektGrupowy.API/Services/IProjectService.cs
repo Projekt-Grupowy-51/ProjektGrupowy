@@ -10,8 +10,10 @@ public interface IProjectService
 {
     Task<Optional<IEnumerable<Project>>> GetProjectsAsync();
     Task<Optional<Project>> GetProjectAsync(int id);
+    Task<Optional<Project>> GetProjectAsync(int id, bool isHttpRequest);
     Task<Optional<Project>> AddProjectAsync(ProjectRequest projectRequest);
     Task<Optional<Project>> UpdateProjectAsync(int projectId, ProjectRequest projectRequest);
+    Task<Optional<Project>> UpdateProjectAsync(Project project);
     Task<Optional<bool>> AddLabelerToProjectAsync(LabelerAssignmentDto labelerAssignmentDto);
     Task<Optional<IEnumerable<User>>> GetUnassignedLabelersOfProjectAsync(int id);
     Task DeleteProjectAsync(int id);

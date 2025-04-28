@@ -18,6 +18,7 @@ import { MessageTypes } from "../config/messageTypes";
 const ProjectDetails = () => {
   const { id } = useParams();
   const [project, setProject] = useState(null);
+  const [reports, setReports] = useState([]);
   const [activeTab, setActiveTab] = useState("details");
   const [loading, setLoading] = useState(true);
   const [labelersCount, setLabelersCount] = useState(0);
@@ -44,7 +45,9 @@ const ProjectDetails = () => {
     try {
       setLoading(true);
       const projectRes = await httpClient.get(`/project/${id}`);
+      const reportsRes = await httpClient.get(`/project/${id}/reports`);
       setProject(projectRes.data);
+      setReports(reportsRes.data);
     } catch (error) {
       // addNotification(
       //   error.response?.data?.message || "Failed to load project data",
@@ -153,7 +156,9 @@ const ProjectDetails = () => {
         </div>
 
         <div className="tab-content mt-4">
-          {activeTab === "details" && <ProjectDetailsTab project={project} />}
+          {activeTab === "details" && (
+            <ProjectDetailsTab project={project} reports={reports} />
+          )}
 
           {activeTab === "subjects" && (
             <ProjectSubjectsTab

@@ -39,4 +39,18 @@ public class ProjectReportRepository(AppDbContext dbContext) : IProjectReportRep
             return Optional<GeneratedReport>.Failure(e.Message);
         }
     }
+
+    public async Task<Optional<GeneratedReport>> AddReportAsync(GeneratedReport report)
+    {
+        try 
+        {
+            await dbContext.GeneratedReports.AddAsync(report);
+            await dbContext.SaveChangesAsync();
+            return Optional<GeneratedReport>.Success(report);
+        }
+        catch (Exception e)
+        {
+            return Optional<GeneratedReport>.Failure(e.Message);
+        }
+    }
 }

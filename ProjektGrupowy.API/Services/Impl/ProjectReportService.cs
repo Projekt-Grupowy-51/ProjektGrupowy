@@ -11,4 +11,7 @@ public class ProjectReportService(IProjectReportRepository projectReportReposito
 
     public async Task<Optional<GeneratedReport>> GetReportAsync(int reportId) =>
         await projectReportRepository.GetReportAsync(reportId);
+
+    public async Task<Optional<GeneratedReport>> AddReportAsync(GeneratedReport report) =>
+        await projectReportRepository.AddReportAsync(report);
 }

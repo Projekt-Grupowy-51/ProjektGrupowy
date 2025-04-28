@@ -15,6 +15,9 @@ using System.Security.Claims;
 using ProjektGrupowy.API.DTOs.Labeler;
 using Hangfire;
 using ProjektGrupowy.API.Services.Background;
+using ProjektGrupowy.API.SignalR;
+using System.Threading.Tasks;
+using ProjektGrupowy.API.DTOs.ProjectReport;
 
 namespace ProjektGrupowy.API.Controllers;
 
@@ -28,6 +31,7 @@ public class ProjectController(
     ISubjectService subjectService, 
     IVideoGroupService videoGroupService,
     IProjectReportService projectReportService,
+    IMessageService messageService,
     ISubjectVideoGroupAssignmentService subjectVideoGroupAssignmentService, 
     IMapper mapper) : ControllerBase
 {
@@ -48,6 +52,16 @@ public class ProjectController(
         return project.IsSuccess
             ? Ok(mapper.Map<ProjectResponse>(project.GetValueOrThrow()))
             : NotFound(project.GetErrorOrThrow());
+    }
+
+    [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
+    [HttpGet("{id:int}/reports")]
+    public async Task<ActionResult<IEnumerable<GeneratedReportResponse>>> GetProjectReports(int id)
+    {
+        var result = await projectReportService.GetReportsAsync(id);
+        return result.IsSuccess
+            ? Ok(mapper.Map<IEnumerable<GeneratedReportResponse>>(result.GetValueOrThrow()))
+            : NotFound(result.GetErrorOrThrow());
     }
 
     [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
@@ -92,13 +106,21 @@ public class ProjectController(
 
     [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
     [HttpPost("{projectId:int}/generate-report")]
-    public IActionResult GenerateReport(int projectId)
+    public async Task<IActionResult> GenerateReport(int projectId)
     {
         var result = BackgroundJob.Enqueue<IReportGenerator>(g => g.GenerateAsync(projectId));
-        
-        return result is null
-            ? BadRequest("Failed to enqueue report generation job.")
-            : Accepted("Report generation job has been enqueued.");
+
+        if (result is null)
+        {
+            return BadRequest("Failed to enqueue report generation job.");
+        }
+        else
+        {
+            await messageService.SendInfoAsync(
+                User.GetUserId(), 
+                "Report generation job has been enqueued.");
+            return Accepted("Report generation job has been enqueued.");
+        }
     }
 
     [HttpPost("join")]

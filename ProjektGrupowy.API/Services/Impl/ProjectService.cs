@@ -35,6 +35,11 @@ public class ProjectService(
         return projectOptional;
     }
 
+    public async Task<Optional<Project>> GetProjectAsync(int id, bool isHttpRequest)
+    {
+        return await projectRepository.GetProjectAsync(id, isHttpRequest);
+    }
+
     public async Task<Optional<Project>> AddProjectAsync(ProjectRequest projectRequest)
     {
         var owner = await userManager.FindByIdAsync(projectRequest.OwnerId);
@@ -361,4 +366,7 @@ public class ProjectService(
         var project = projectOptional.GetValueOrThrow();
         return Optional<IEnumerable<User>>.Success(project.ProjectLabelers);
     }
+
+    public async Task<Optional<Project>> UpdateProjectAsync(Project project) =>
+        await projectRepository.UpdateProjectAsync(project);
 }
