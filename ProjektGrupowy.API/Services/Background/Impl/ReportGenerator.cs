@@ -74,7 +74,8 @@ public class ReportGenerator(
             var report = new GeneratedReport
             {
                 Path = filePath,
-                Owner = project.Owner
+                Owner = project.Owner,
+                Name = $"Summary report {DateTime.UtcNow:dd.MM.yyyy HH:mm}",
             };
 
             return Optional<GeneratedReport>.Success(report);

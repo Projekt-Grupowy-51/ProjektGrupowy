@@ -110,6 +110,7 @@ const ProjectDetailsTab = ({ project, reports, onReportDeleted }) => {
               <thead>
                 <tr>
                   <th scope="col">#</th>
+                  <th scope="col">Name</th>
                   <th scope="col">Created At</th>
                   <th scope="col">Actions</th>
                 </tr>
@@ -124,6 +125,7 @@ const ProjectDetailsTab = ({ project, reports, onReportDeleted }) => {
                   .map((report, index) => (
                     <tr key={report.id}>
                       <td>{index + 1}</td>
+                      <td>{report.name}</td>
                       <td>{new Date(report.createdAtUtc).toLocaleString()}</td>
                       <td>
                         <button

@@ -7,7 +7,7 @@ public class GeneratedReport : IOwnedEntity
 {
     [Key]
     public int Id { get; set; }
-    // public string Name { get; set; }
+    public string Name { get; set; }
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
     public string Path { get; set; }
     public string OwnerId { get; set; }
