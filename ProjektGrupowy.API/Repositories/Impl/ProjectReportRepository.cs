@@ -1,18 +1,18 @@
 using Microsoft.EntityFrameworkCore;
 using ProjektGrupowy.API.Data;
 using ProjektGrupowy.API.Models;
+using ProjektGrupowy.API.Services;
 using ProjektGrupowy.API.Utils;
 
 namespace ProjektGrupowy.API.Repositories.Impl;
 
-public class ProjectReportRepository(AppDbContext dbContext) : IProjectReportRepository
+public class ProjectReportRepository(AppDbContext dbContext, ICurrentUserService currentUserService) : IProjectReportRepository
 {
     public async Task<Optional<IEnumerable<GeneratedReport>>> GetReportsAsync(int projectId)
     {
         try
         {
-            var project = await dbContext.Projects
-                .Include(p => p.GeneratedReports)
+            var project = await dbContext.Projects.FilteredProjects(currentUserService.UserId, currentUserService.IsAdmin)
                 .SingleOrDefaultAsync(p => p.Id == projectId);
 
             return project is null 
@@ -29,7 +29,7 @@ public class ProjectReportRepository(AppDbContext dbContext) : IProjectReportRep
     {
         try
         {
-            var report = await dbContext.GeneratedReports.SingleOrDefaultAsync(r => r.Id == reportId);
+            var report = await dbContext.GeneratedReports.FilteredGeneratedReports(currentUserService.UserId, currentUserService.IsAdmin).SingleOrDefaultAsync(r => r.Id == reportId);
             return report is null
                 ? Optional<GeneratedReport>.Failure($"Report with id {reportId} was not found")
                 : Optional<GeneratedReport>.Success(report);

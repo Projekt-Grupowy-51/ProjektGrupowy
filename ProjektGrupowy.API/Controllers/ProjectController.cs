@@ -1,23 +1,18 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ProjektGrupowy.API.DTOs.Labeler;
 using ProjektGrupowy.API.DTOs.LabelerAssignment;
 using ProjektGrupowy.API.DTOs.Project;
+using ProjektGrupowy.API.DTOs.ProjectReport;
 using ProjektGrupowy.API.DTOs.Subject;
 using ProjektGrupowy.API.DTOs.SubjectVideoGroupAssignment;
 using ProjektGrupowy.API.DTOs.VideoGroup;
 using ProjektGrupowy.API.Filters;
-using ProjektGrupowy.API.Models;
 using ProjektGrupowy.API.Services;
+using ProjektGrupowy.API.SignalR;
 using ProjektGrupowy.API.Utils.Constants;
 using ProjektGrupowy.API.Utils.Extensions;  // Add this using directive
-using System.Security.Claims;
-using ProjektGrupowy.API.DTOs.Labeler;
-using Hangfire;
-using ProjektGrupowy.API.Services.Background;
-using ProjektGrupowy.API.SignalR;
-using System.Threading.Tasks;
-using ProjektGrupowy.API.DTOs.ProjectReport;
 
 namespace ProjektGrupowy.API.Controllers;
 
@@ -27,12 +22,12 @@ namespace ProjektGrupowy.API.Controllers;
 [ServiceFilter(typeof(NonSuccessGetFilter))]
 [Authorize]
 public class ProjectController(
-    IProjectService projectService, 
-    ISubjectService subjectService, 
+    IProjectService projectService,
+    ISubjectService subjectService,
     IVideoGroupService videoGroupService,
     IProjectReportService projectReportService,
     IMessageService messageService,
-    ISubjectVideoGroupAssignmentService subjectVideoGroupAssignmentService, 
+    ISubjectVideoGroupAssignmentService subjectVideoGroupAssignmentService,
     IMapper mapper) : ControllerBase
 {
     [HttpGet]
@@ -132,7 +127,7 @@ public class ProjectController(
     public async Task<IActionResult> DistributeLabelersEqually(int projectId)
     {
         var result = await projectService.DistributeLabelersEquallyAsync(projectId);
-        return result.IsSuccess 
+        return result.IsSuccess
             ? Ok(result.GetValueOrThrow())
             : NotFound(result.GetErrorOrThrow());
     }
@@ -157,7 +152,7 @@ public class ProjectController(
     public async Task<ActionResult<IEnumerable<SubjectResponse>>> GetSubjectsByProjectAsync(int projectId)
     {
         var subjectsResult = await subjectService.GetSubjectsByProjectAsync(projectId);
-        return subjectsResult.IsSuccess 
+        return subjectsResult.IsSuccess
             ? Ok(mapper.Map<IEnumerable<SubjectResponse>>(subjectsResult.GetValueOrThrow()))
             : NotFound(subjectsResult.GetErrorOrThrow());
     }
@@ -167,7 +162,7 @@ public class ProjectController(
     public async Task<ActionResult<IEnumerable<VideoGroupResponse>>> GetVideoGroupsByProjectAsync(int projectId)
     {
         var videoGroupsResult = await videoGroupService.GetVideoGroupsByProjectAsync(projectId);
-        return videoGroupsResult.IsSuccess 
+        return videoGroupsResult.IsSuccess
             ? Ok(mapper.Map<IEnumerable<VideoGroupResponse>>(videoGroupsResult.GetValueOrThrow()))
             : NotFound(videoGroupsResult.GetErrorOrThrow());
     }
@@ -177,17 +172,17 @@ public class ProjectController(
     public async Task<ActionResult<IEnumerable<SubjectVideoGroupAssignmentResponse>>> GetSubjectVideoGroupAssignmentsByProjectAsync(int projectId)
     {
         var assignmentsResult = await subjectVideoGroupAssignmentService.GetSubjectVideoGroupAssignmentsByProjectAsync(projectId);
-        return assignmentsResult.IsSuccess 
+        return assignmentsResult.IsSuccess
             ? Ok(mapper.Map<IEnumerable<SubjectVideoGroupAssignmentResponse>>(assignmentsResult.GetValueOrThrow()))
             : NotFound(assignmentsResult.GetErrorOrThrow());
     }
-    
+
     [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
     [HttpGet("{projectId:int}/Labelers")]
     public async Task<ActionResult<IEnumerable<LabelerResponse>>> GetLabelersByProjectAsync(int projectId)
     {
         var labelersResult = await projectService.GetLabelersByProjectAsync(projectId);
-        return labelersResult.IsSuccess 
+        return labelersResult.IsSuccess
             ? Ok(mapper.Map<IEnumerable<LabelerResponse>>(labelersResult.GetValueOrThrow()))
             : NotFound(labelersResult.GetErrorOrThrow());
     }

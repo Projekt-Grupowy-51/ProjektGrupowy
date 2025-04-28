@@ -133,14 +133,14 @@ static void AddServices(WebApplicationBuilder builder)
             config.UseSimpleAssemblyNameTypeSerializer();
             config.UseRecommendedSerializerSettings();
             
-            var hangfireConnectionString = builder.Configuration.GetConnectionString("Hangfire");
+            var hangfireConnectionString = builder.Configuration.GetConnectionString("HangfireConnection");
             config.UsePostgreSqlStorage(c => c.UseNpgsqlConnection(hangfireConnectionString));
         });
     }
 
     builder.Services.AddHangfireServer(options =>
     {
-        options.WorkerCount = Environment.ProcessorCount;
+        options.WorkerCount = 1;
     });
     
     // ========== Done with hangfire ========== //

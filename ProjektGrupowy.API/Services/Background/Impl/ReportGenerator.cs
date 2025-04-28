@@ -13,11 +13,11 @@ public class ReportGenerator(
     IConfiguration configuration,
     ILogger<ReportGenerator> logger) : IReportGenerator
 {
-    public async Task GenerateAsync(int projectId)
+    public async Task GenerateAsync(int projectId, string userId, bool isAdmin)
     {
         logger.LogInformation("Generating report for project {ProjectId}", projectId);
         
-        var projectOpt = await projectService.GetProjectAsync(projectId, false);
+        var projectOpt = await projectService.GetProjectAsync(projectId, userId, isAdmin);
         
         var project = projectOpt.GetValueOrThrow();
         var projectOwnerId = project.OwnerId;

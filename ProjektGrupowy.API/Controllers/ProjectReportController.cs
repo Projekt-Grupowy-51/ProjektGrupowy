@@ -23,6 +23,7 @@ public class ProjectReportController(
     IProjectReportService projectReportService,
     IMessageService messageService,
     IMapper mapper,
+    ICurrentUserService currentUserService,
     IConfiguration configuration) : ControllerBase
 {
     [HttpGet("project/{projectId:int}")]
@@ -68,7 +69,7 @@ public class ProjectReportController(
     [HttpPost("{projectId:int}/generate-report")]
     public async Task<IActionResult> GenerateReport(int projectId)
     {
-        var result = BackgroundJob.Enqueue<IReportGenerator>(g => g.GenerateAsync(projectId));
+        var result = BackgroundJob.Enqueue<IReportGenerator>(g => g.GenerateAsync(projectId, currentUserService.UserId, currentUserService.IsAdmin));
 
         if (result is null)
         {

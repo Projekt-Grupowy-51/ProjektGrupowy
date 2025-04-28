@@ -66,5 +66,11 @@ namespace ProjektGrupowy.API.Data
                               svga.Subject.Project.Owner.Id == userId || 
                               svga.Labelers.Any(l => l.Id == userId));
         }
+
+        public static IQueryable<GeneratedReport> FilteredGeneratedReports(this IQueryable<GeneratedReport> reports, string userId, bool isAdmin = false)
+        {
+            return reports
+                .Where(r => isAdmin || r.Owner.Id == userId);
+        }
     }
 }

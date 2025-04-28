@@ -88,28 +88,15 @@ public class ProjectRepository(AppDbContext context, ILogger<ProjectRepository> 
 
     public async Task<IDbContextTransaction> BeginTransactionAsync() => await context.Database.BeginTransactionAsync();
 
-    public async Task<Optional<Project>> GetProjectAsync(int id)
+    public async Task<Optional<Project>> GetProjectAsync(int id, string? userId = null, bool? isAdmin = null)
     {
+        var ownerId = userId ?? currentUserService.UserId;
+        var isOwner = isAdmin ?? currentUserService.IsAdmin;
+
         try
         {
-            var project = await context.Projects.FilteredProjects(currentUserService.UserId, currentUserService.IsAdmin)
+            var project = await context.Projects.FilteredProjects(ownerId, isOwner)
                 .FirstOrDefaultAsync(p => p.Id == id);
-            return project is null
-                ? Optional<Project>.Failure("Project not found")
-                : Optional<Project>.Success(project);
-        }
-        catch (Exception e)
-        {
-            logger.LogError(e, "An error occurred while getting project");
-            return Optional<Project>.Failure(e.Message);
-        }
-    }
-    
-    public async Task<Optional<Project>> GetProjectAsync(int id, bool isHttpRequest)
-    {
-        try
-        {
-            var project = await context.Projects.FirstOrDefaultAsync(p => p.Id == id);
             return project is null
                 ? Optional<Project>.Failure("Project not found")
                 : Optional<Project>.Success(project);
