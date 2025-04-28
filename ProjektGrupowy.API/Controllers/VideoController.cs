@@ -5,6 +5,7 @@ using ProjektGrupowy.API.DTOs.AssignedLabel;
 using ProjektGrupowy.API.DTOs.Video;
 using ProjektGrupowy.API.Filters;
 using ProjektGrupowy.API.Services;
+using ProjektGrupowy.API.Utils;
 using ProjektGrupowy.API.Utils.Constants;
 using ProjektGrupowy.API.Utils.Extensions;
 
@@ -95,9 +96,17 @@ public class VideoController(
         }
 
         var video = videoOptional.GetValueOrThrow();
-        var baseUrl = configuration["Videos:NginxUrl"];
-        var path = $"{baseUrl}/{video.VideoGroup.Project.Id}/{video.VideoGroupId}/{Path.GetFileName(video.Path)}";
-        return Redirect(path);
+        
+        if (DockerDetector.IsRunningInDocker())
+        {
+            var baseUrl = configuration["Videos:NginxUrl"];
+            var path = $"{baseUrl}/{Path.GetFileName(video.Path)}";
+            return Redirect(path);
+        }
+        else
+        {
+            return File(video.ToStream(), video.ContentType, Path.GetFileName(video.Path), enableRangeProcessing: true);
+        }
     }
 
     [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]

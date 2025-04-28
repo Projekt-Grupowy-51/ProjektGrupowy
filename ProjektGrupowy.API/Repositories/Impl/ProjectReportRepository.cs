@@ -53,4 +53,17 @@ public class ProjectReportRepository(AppDbContext dbContext) : IProjectReportRep
             return Optional<GeneratedReport>.Failure(e.Message);
         }
     }
+
+    public async Task DeleteReportAsync(GeneratedReport report)
+    {
+        try
+        {
+            dbContext.GeneratedReports.Remove(report);
+            await dbContext.SaveChangesAsync();
+        }
+        catch (Exception e)
+        {
+            throw new Exception($"Failed to delete report: {e.Message}");
+        }
+    }
 }

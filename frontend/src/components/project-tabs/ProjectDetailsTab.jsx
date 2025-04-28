@@ -31,6 +31,14 @@ const ProjectDetailsTab = ({ project, reports }) => {
     }
   };
 
+  const handleDeleteReport = async (reportId) => {
+    try {
+      await httpClient.delete(`/projectreport/${reportId}`);
+    } catch (error) {
+      // addNotification(\
+    }
+  };
+
   const downloadReport = async (reportId) => {
     try {
       const response = await httpClient.get(
@@ -116,11 +124,17 @@ const ProjectDetailsTab = ({ project, reports }) => {
                       <td>{new Date(report.createdAtUtc).toLocaleString()}</td>
                       <td>
                         <button
-                          className="btn btn-secondary"
+                          className="btn btn-secondary me-2"
                           onClick={() => downloadReport(report.id)}
                         >
                           <i className="fa-solid fa-download me-2"></i>
                           Download
+                        </button>
+                        <button
+                          className="btn btn-danger"
+                          onClick={() => handleDeleteReport(report.id)}
+                        >
+                          <i className="fa-solid fa-trash-can me-2"></i> Delete
                         </button>
                       </td>
                     </tr>

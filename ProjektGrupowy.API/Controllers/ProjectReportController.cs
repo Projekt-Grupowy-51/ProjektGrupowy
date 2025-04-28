@@ -14,12 +14,12 @@ namespace ProjektGrupowy.API.Controllers;
 [ServiceFilter(typeof(ValidateModelStateFilter))]
 [ServiceFilter(typeof(NonSuccessGetFilter))]
 [Authorize]
+[Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
 public class ProjectReportController(
     IProjectReportService projectReportService,
     IMapper mapper,
     IConfiguration configuration) : ControllerBase
 {
-    [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
     [HttpGet("project/{projectId:int}")]
     public async Task<IActionResult> GetProjectReports(int projectId)
     {
@@ -29,7 +29,6 @@ public class ProjectReportController(
             : NotFound(result.GetValueOrThrow());
     }
     
-    [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
     [HttpGet("{reportId:int}")]
     public async Task<IActionResult> GetReport(int reportId)
     {
@@ -39,7 +38,6 @@ public class ProjectReportController(
             : NotFound(result.GetValueOrThrow());
     }
 
-    [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
     [HttpGet("download/{reportId:int}")]
     public async Task<IActionResult> DownloadReport(int reportId)
     {
@@ -59,5 +57,17 @@ public class ProjectReportController(
         {
             return File(report.ToStream(), "application/json", Path.GetFileName(report.Path), true);
         }
+    }
+
+    [HttpDelete("{reportId:int}")]
+    public async Task<IActionResult> DeleteReport(int reportId)
+    {
+        var result = await projectReportService.GetReportAsync(reportId);
+        if (result.IsFailure)
+            return NotFound(result.GetErrorOrThrow());
+
+        var report = result.GetValueOrThrow();
+        await projectReportService.DeleteReportAsync(report);
+        return NoContent();
     }
 }

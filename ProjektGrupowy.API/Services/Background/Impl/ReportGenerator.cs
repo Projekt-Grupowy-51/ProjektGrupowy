@@ -1,4 +1,6 @@
+using System.Text;
 using Newtonsoft.Json;
+using NuGet.Protocol;
 using ProjektGrupowy.API.Models;
 using ProjektGrupowy.API.SignalR;
 using ProjektGrupowy.API.Utils;
@@ -85,6 +87,20 @@ public class ReportGenerator(
 
     private string ConvertProjectToJson(Project project)
     {
-        return "Test";
+        // var projectSimple = new 
+        // {
+        //     project.Id,
+        //     project.Name,
+        //     Subjects = project.Subjects.Select(subject => new
+        //     {
+        //         subject.Id,
+        //         subject.Name,
+        //         Svga = subject.SubjectVideoGroupAssignments.Select(svga)
+        //     })
+        // };
+
+        // return JsonConvert.SerializeObject(projectSimple, Formatting.Indented);
+
+        return "";
     }
 }

@@ -8,4 +8,5 @@ public interface IProjectReportService
     Task<Optional<IEnumerable<GeneratedReport>>> GetReportsAsync(int projectId);
     Task<Optional<GeneratedReport>> GetReportAsync(int reportId);
     Task<Optional<GeneratedReport>> AddReportAsync(GeneratedReport report);
+    Task DeleteReportAsync(GeneratedReport report);
 }
