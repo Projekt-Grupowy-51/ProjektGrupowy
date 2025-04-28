@@ -47,6 +47,11 @@ public class ReportGenerator(
         await messageService.SendSuccessAsync(
             projectOwnerId, 
             "Report generation completed successfully.");
+        
+        await messageService.SendMessageAsync(
+            projectOwnerId,
+            MessageTypes.ReportGenerated,
+            "");
     }
 
     private async Task<Optional<GeneratedReport>> WriteReportToFileAsync(Project project)

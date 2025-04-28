@@ -5,4 +5,5 @@ export const MessageTypes = {
   Info: "NotifyFromBackendServerInfo",
   Message: "NotifyFromBackendServerMessage",
   LabelersCountChanged: "LabelersCountChanged",
+  ReportGenerated: "ReportGenerated",
 };

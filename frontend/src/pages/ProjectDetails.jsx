@@ -35,19 +35,32 @@ const ProjectDetails = () => {
           setLabelersCount(msg);
         }
       );
+
+      signalRService.onMessage(MessageTypes.ReportGenerated, function () {
+        fetchReports();
+      });
     };
 
     startSignalR();
   }, [id]);
+
+  const fetchReports = async () => {
+    try {
+      const response = await httpClient.get(`/project/${id}/reports`);
+      setReports(response.data);
+    } catch (error) {
+      //
+    }
+  };
 
   // Fetch basic project info for the header
   const fetchBasicProjectData = async () => {
     try {
       setLoading(true);
       const projectRes = await httpClient.get(`/project/${id}`);
-      const reportsRes = await httpClient.get(`/project/${id}/reports`);
       setProject(projectRes.data);
-      setReports(reportsRes.data);
+
+      await fetchReports();
     } catch (error) {
       // addNotification(
       //   error.response?.data?.message || "Failed to load project data",
