@@ -100,7 +100,7 @@ public class VideoController(
         if (DockerDetector.IsRunningInDocker())
         {
             var baseUrl = configuration["Videos:NginxUrl"];
-            var path = $"{baseUrl}/{Path.GetFileName(video.Path)}";
+            var path = $"{baseUrl}/{video.VideoGroup.Project.Id}/{video.VideoGroupId}/{Path.GetFileName(video.Path)}";            
             return Redirect(path);
         }
         else
