@@ -170,7 +170,11 @@ const ProjectDetails = () => {
 
         <div className="tab-content mt-4">
           {activeTab === "details" && (
-            <ProjectDetailsTab project={project} reports={reports} />
+            <ProjectDetailsTab
+              project={project}
+              reports={reports}
+              onReportDeleted={fetchReports}
+            />
           )}
 
           {activeTab === "subjects" && (

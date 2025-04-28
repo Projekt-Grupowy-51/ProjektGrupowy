@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import httpClient from "../../httpclient";
 import { useNotification } from "../../context/NotificationContext";
 
-const ProjectDetailsTab = ({ project, reports }) => {
+const ProjectDetailsTab = ({ project, reports, onReportDeleted }) => {
   const navigate = useNavigate();
   const { addNotification } = useNotification();
 
@@ -34,6 +34,9 @@ const ProjectDetailsTab = ({ project, reports }) => {
   const handleDeleteReport = async (reportId) => {
     try {
       await httpClient.delete(`/projectreport/${reportId}`);
+      if (onReportDeleted) {
+        onReportDeleted();
+      }
     } catch (error) {
       // addNotification(\
     }

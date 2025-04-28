@@ -87,20 +87,32 @@ public class ReportGenerator(
 
     private string ConvertProjectToJson(Project project)
     {
-        // var projectSimple = new 
-        // {
-        //     project.Id,
-        //     project.Name,
-        //     Subjects = project.Subjects.Select(subject => new
-        //     {
-        //         subject.Id,
-        //         subject.Name,
-        //         Svga = subject.SubjectVideoGroupAssignments.Select(svga)
-        //     })
-        // };
+        var json = project.Subjects
+            .Select(subject => new
+            {
+                SubjectId = subject.Id,
+                SubjectName = subject.Name,
+                Labels = subject.Labels
+                    .SelectMany(label => label.AssignedLabels)
+                    .Select(label => new
+                    {
+                        LabelId = label.Label.Id,
+                        LabelerId = label.OwnerId,
+                        LabelName = label.Label.Name,
+                        label.Start,
+                        label.End,
+                        VideoId = label.Video.Id,
+                        VideoGroupId = label.Video.VideoGroup.Id
+                    })
+                    .GroupBy(l => l.VideoGroupId)
+                    .Select(l => new
+                    {
+                        VideoGroupId = l.Key,
+                        Labels = l.ToList()
+                    })
+                    .ToList()
+            });
 
-        // return JsonConvert.SerializeObject(projectSimple, Formatting.Indented);
-
-        return "";
+            return JsonConvert.SerializeObject(json, Formatting.Indented);
     }
 }
