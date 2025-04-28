@@ -25,7 +25,7 @@ const ProjectDetailsTab = ({ project, reports, onReportDeleted }) => {
 
   const handleGenerateReport = async () => {
     try {
-      await httpClient.post(`/project/${project.id}/generate-report`);
+      await httpClient.post(`/projectreport/${project.id}/generate-report`);
     } catch (error) {
       //
     }

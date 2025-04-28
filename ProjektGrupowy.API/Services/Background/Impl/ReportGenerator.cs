@@ -92,22 +92,23 @@ public class ReportGenerator(
             {
                 SubjectId = subject.Id,
                 SubjectName = subject.Name,
-                Labels = subject.Labels
+                VideoGroups = subject.Labels
                     .SelectMany(label => label.AssignedLabels)
                     .Select(label => new
                     {
                         LabelId = label.Label.Id,
-                        LabelerId = label.OwnerId,
+                        LabelerId = label.Owner.UserName,
                         LabelName = label.Label.Name,
                         label.Start,
                         label.End,
                         VideoId = label.Video.Id,
-                        VideoGroupId = label.Video.VideoGroup.Id
+                        label.Label.ColorHex,
+                        VideoGroupName = label.Video.VideoGroup.Name
                     })
-                    .GroupBy(l => l.VideoGroupId)
+                    .GroupBy(l => l.VideoGroupName)
                     .Select(l => new
                     {
-                        VideoGroupId = l.Key,
+                        VideoGroupName = l.Key,
                         Labels = l.ToList()
                     })
                     .ToList()

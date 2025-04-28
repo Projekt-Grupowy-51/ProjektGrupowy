@@ -1,11 +1,15 @@
 using AutoMapper;
+using Hangfire;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ProjektGrupowy.API.DTOs.ProjectReport;
 using ProjektGrupowy.API.Filters;
 using ProjektGrupowy.API.Services;
+using ProjektGrupowy.API.Services.Background;
+using ProjektGrupowy.API.SignalR;
 using ProjektGrupowy.API.Utils;
 using ProjektGrupowy.API.Utils.Constants;
+using ProjektGrupowy.API.Utils.Extensions;
 
 namespace ProjektGrupowy.API.Controllers;
 
@@ -17,6 +21,7 @@ namespace ProjektGrupowy.API.Controllers;
 [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
 public class ProjectReportController(
     IProjectReportService projectReportService,
+    IMessageService messageService,
     IMapper mapper,
     IConfiguration configuration) : ControllerBase
 {
@@ -56,6 +61,25 @@ public class ProjectReportController(
         else
         {
             return File(report.ToStream(), "application/json", Path.GetFileName(report.Path), true);
+        }
+    }
+
+    [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
+    [HttpPost("{projectId:int}/generate-report")]
+    public async Task<IActionResult> GenerateReport(int projectId)
+    {
+        var result = BackgroundJob.Enqueue<IReportGenerator>(g => g.GenerateAsync(projectId));
+
+        if (result is null)
+        {
+            return BadRequest("Failed to enqueue report generation job.");
+        }
+        else
+        {
+            await messageService.SendInfoAsync(
+                User.GetUserId(), 
+                "Report generation job has been enqueued.");
+            return Accepted("Report generation job has been enqueued.");
         }
     }
 

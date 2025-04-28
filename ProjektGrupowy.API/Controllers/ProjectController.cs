@@ -104,25 +104,6 @@ public class ProjectController(
             mapper.Map<ProjectResponse>(createdProject));
     }
 
-    [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
-    [HttpPost("{projectId:int}/generate-report")]
-    public async Task<IActionResult> GenerateReport(int projectId)
-    {
-        var result = BackgroundJob.Enqueue<IReportGenerator>(g => g.GenerateAsync(projectId));
-
-        if (result is null)
-        {
-            return BadRequest("Failed to enqueue report generation job.");
-        }
-        else
-        {
-            await messageService.SendInfoAsync(
-                User.GetUserId(), 
-                "Report generation job has been enqueued.");
-            return Accepted("Report generation job has been enqueued.");
-        }
-    }
-
     [HttpPost("join")]
     public async Task<IActionResult> AssignLabelerToGroupAssignment(LabelerAssignmentDto laveAssignmentDto)
     {
