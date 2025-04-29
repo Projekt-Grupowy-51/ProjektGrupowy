@@ -14,6 +14,7 @@ function ProjectEdit() {
     finished: false,
   });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const { addNotification } = useNotification();
 
   useEffect(() => {
@@ -27,10 +28,11 @@ function ProjectEdit() {
           finished: data.finished,
         });
       } catch (error) {
-        // addNotification(
-        //   error.response?.data?.message || "Failed to load project data",
-        //   "error"
-        // );
+        setError(error.response?.data?.message || "Failed to load project data");
+        addNotification(
+          error.response?.data?.message || "Failed to load project data",
+          "error"
+        );
       } finally {
         setLoading(false);
       }
@@ -43,13 +45,14 @@ function ProjectEdit() {
 
     try {
       await httpClient.put(`/Project/${id}`, formData);
-      //addNotification("Project updated successfully!", "success");
+      addNotification("Project updated successfully!", "success");
       navigate(`/projects/${id}`);
     } catch (error) {
-      // addNotification(
-      //   error.response?.data?.message || "Failed to update project",
-      //   "error"
-      // );
+      setError(error.response?.data?.message || "Failed to update project");
+      addNotification(
+        error.response?.data?.message || "Failed to update project",
+        "error"
+      );
     }
   };
 

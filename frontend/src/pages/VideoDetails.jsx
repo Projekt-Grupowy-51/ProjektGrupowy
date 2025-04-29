@@ -141,13 +141,13 @@ const VideoDetails = () => {
       ) : (
         <h1 className="text-center mb-4">
           {videoData.title}
-          <button
+          {/* <button
             onClick={handleEditTitle}
             className="btn btn-link ms-2"
             style={{ textDecoration: "none" }}
           >
             ✏️
-          </button>
+          </button> */}
         </h1>
       )}
       <div

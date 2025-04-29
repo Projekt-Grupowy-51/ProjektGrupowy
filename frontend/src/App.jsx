@@ -137,6 +137,26 @@ const ProtectedRoute = () => {
   );
 };
 
+const RoleProtectedRoute = ({ allowedRoles }) => {
+  const { isAuthenticated, roles } = useAuth();
+  const location = useLocation();
+
+  if (isAuthenticated === null) {
+    return <div className="loading">Loading...</div>;
+  }
+  const hasAccess = roles.some(role => allowedRoles.includes(role));
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+  if (!hasAccess) {
+    return <Navigate to="/forbidden" replace />;
+  }
+
+  return <Outlet />;
+};
+
+
 const Navbar = () => {
   const { isAuthenticated, roles, user, hasRole, handleLogout } = useAuth();
 
@@ -213,52 +233,32 @@ function App() {
           <ModalProvider>
             <Navbar />
             <Routes>
-              <Route path="/login" element={<Login />} />
+            <Route path="/" element={<Login />} />
+            <Route path="/login" element={<Login />} />
 
-              <Route element={<ProtectedRoute />}>
+              <Route element={<RoleProtectedRoute allowedRoles={["Labeler"]} />}>
+                <Route path="/labeler-video-groups" element={<LabelerVideoGroups />} />
+                <Route path="/video-group/:id" element={<VideoGroup />} />
+              </Route>
+
+              <Route element={<RoleProtectedRoute allowedRoles={["Scientist"]} />}>
                 <Route path="/projects" element={<Projects />} />
                 <Route path="/projects/:id" element={<ProjectDetails />} />
-                <Route
-                  path="/projects/edit/:id"
-                  element={<EditProjectPage />}
-                />
+                <Route path="/projects/edit/:id" element={<EditProjectPage />} />
                 <Route path="/projects/add" element={<AddProjectPage />} />
-
                 <Route path="/subjects/:id" element={<SubjectDetails />} />
                 <Route path="/subjects/add" element={<AddSubject />} />
-
                 <Route path="/video-groups/add" element={<AddVideoGroup />} />
-                <Route
-                  path="/video-groups/:id"
-                  element={<VideoGroupsDetails />}
-                />
-
+                <Route path="/video-groups/:id" element={<VideoGroupsDetails />} />
                 <Route path="/videos/:id" element={<VideoDetails />} />
                 <Route path="/videos/add" element={<AddVideo />} />
-
-                <Route path="/video-group/:id" element={<VideoGroup />} />
-
-                <Route
-                  path="/assignments/:id"
-                  element={<SubjectVideoGroupAssignmentDetails />}
-                />
-                <Route
-                  path="/assignments/add"
-                  element={<SubjectVideoGroupAssignmentAdd />}
-                />
-
-                <Route
-                  path="/subject-video-group-assignments/:id"
-                  element={<SubjectVideoGroupAssignmentDetails />}
-                />
-                <Route
-                  path="/labeler-video-groups"
-                  element={<LabelerVideoGroups />}
-                />
-
+                <Route path="/assignments/:id" element={<SubjectVideoGroupAssignmentDetails />} />
+                <Route path="/assignments/add" element={<SubjectVideoGroupAssignmentAdd />} />
+                <Route path="/subject-video-group-assignments/:id" element={<SubjectVideoGroupAssignmentDetails />} />
                 <Route path="/labels/add" element={<LabelAdd />} />
                 <Route path="/labels/edit/:id" element={<EditLabel />} />
               </Route>
+
               <Route path="/forbidden" element={<Forbidden />} />
 
               <Route path="*" element={<NotFound />} />
