@@ -19,7 +19,7 @@ import Projects from "./pages/Projects";
 import SubjectDetails from "./pages/SubjectDetails";
 import ProjectDetails from "./pages/ProjectDetails";
 import VideoGroupsDetails from "./pages/VideoGroupsDetails";
-import VideoGroup from "./pages/Videos/Index.jsx";
+import VideoGroup from "./pages/Videos.jsx";
 import VideoDetails from "./pages/VideoDetails";
 import AddVideo from "./pages/VideoAdd";
 import AddSubject from "./pages/SubjectAdd";
