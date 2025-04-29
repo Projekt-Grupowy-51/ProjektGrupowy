@@ -7,7 +7,7 @@ namespace ProjektGrupowy.API.Repositories;
 public interface IProjectRepository
 {
     Task<Optional<IEnumerable<Project>>> GetProjectsAsync();
-    Task<Optional<Project>> GetProjectAsync(int id);
+    Task<Optional<Project>> GetProjectAsync(int id, string? userId = null, bool? isAdmin = null);
     Task<Optional<Project>> AddProjectAsync(Project project);
     Task<Optional<Project>> UpdateProjectAsync(Project project);
     Task DeleteProjectAsync(Project project);

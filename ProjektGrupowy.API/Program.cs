@@ -18,8 +18,13 @@ using System.Text;
 using System.Text.Json.Serialization;
 using ProjektGrupowy.API.SignalR;
 using Azure.Core;
+using Hangfire;
+using Hangfire.MemoryStorage;
+using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.SignalR;
 using ProjektGrupowy.API.Utils.Extensions;
+using ProjektGrupowy.API.Services.Background;
+using ProjektGrupowy.API.Services.Background.Impl;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,6 +41,8 @@ AddServices(builder);
 builder.Host.UseSerilog();
 
 var app = builder.Build();
+
+app.UseHangfireDashboard();
 
 app.MapHealthChecks("/health");
 
@@ -110,6 +117,33 @@ static void AddServices(WebApplicationBuilder builder)
         });
 
     builder.Services.AddHealthChecks();
+    
+    // ========== Hangfire ========== //
+
+    builder.Services.AddHangfire(config => config.UseSerilogLogProvider());
+    
+    if (builder.Environment.IsDevelopment())
+    {
+        builder.Services.AddHangfire(config => config.UseMemoryStorage());
+    }
+    else
+    {
+        builder.Services.AddHangfire(config =>
+        {
+            config.UseSimpleAssemblyNameTypeSerializer();
+            config.UseRecommendedSerializerSettings();
+            
+            var hangfireConnectionString = builder.Configuration.GetConnectionString("HangfireConnection");
+            config.UsePostgreSqlStorage(c => c.UseNpgsqlConnection(hangfireConnectionString));
+        });
+    }
+
+    builder.Services.AddHangfireServer(options =>
+    {
+        options.WorkerCount = 1;
+    });
+    
+    // ========== Done with hangfire ========== //
 
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen(c =>
@@ -151,6 +185,7 @@ static void AddServices(WebApplicationBuilder builder)
     builder.Services.AddScoped<IVideoGroupRepository, VideoGroupRepository>();
     builder.Services.AddScoped<IVideoRepository, VideoRepository>();
     builder.Services.AddScoped<IProjectAccessCodeRepository, ProjectAccessCodeRepository>();
+    builder.Services.AddScoped<IProjectReportRepository, ProjectReportRepository>();
 
     // Services
     builder.Services.AddScoped<IAssignedLabelService, AssignedLabelService>();
@@ -161,6 +196,8 @@ static void AddServices(WebApplicationBuilder builder)
     builder.Services.AddScoped<IVideoGroupService, VideoGroupService>();
     builder.Services.AddScoped<IVideoService, VideoService>();
     builder.Services.AddScoped<IProjectAccessCodeService, ProjectAccessCodeService>();
+    builder.Services.AddScoped<IReportGenerator, ReportGenerator>();
+    builder.Services.AddScoped<IProjectReportService, ProjectReportService>();
 
     builder.Services.AddSingleton<IConnectedClientManager, ConnectedClientManager>();
     builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();

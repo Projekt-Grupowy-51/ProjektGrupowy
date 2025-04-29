@@ -16,21 +16,13 @@ public class ProjectService(
 {
     public async Task<Optional<IEnumerable<Project>>> GetProjectsAsync() => await projectRepository.GetProjectsAsync();
 
-    public async Task<Optional<Project>> GetProjectAsync(int id)
+    public async Task<Optional<Project>> GetProjectAsync(int id, string? userId = null, bool? isAdmin = null)
     {
-        // return await projectRepository.GetProjectAsync(id);
-        var projectOptional = await projectRepository.GetProjectAsync(id);
+        var projectOptional = await projectRepository.GetProjectAsync(id, userId, isAdmin);
         if (projectOptional.IsFailure)
         {
             return projectOptional;
         }
-        
-        var project = projectOptional.GetValueOrThrow();
-        var userId = project.Owner.Id;
-        await messageService.SendMessageAsync(
-            userId, 
-            MessageTypes.LabelersCountChanged, 
-            project.ProjectLabelers.Count);
         
         return projectOptional;
     }
@@ -361,4 +353,7 @@ public class ProjectService(
         var project = projectOptional.GetValueOrThrow();
         return Optional<IEnumerable<User>>.Success(project.ProjectLabelers);
     }
+
+    public async Task<Optional<Project>> UpdateProjectAsync(Project project) =>
+        await projectRepository.UpdateProjectAsync(project);
 }

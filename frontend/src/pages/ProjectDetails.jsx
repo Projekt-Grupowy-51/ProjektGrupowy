@@ -18,6 +18,7 @@ import { MessageTypes } from "../config/messageTypes";
 const ProjectDetails = () => {
   const { id } = useParams();
   const [project, setProject] = useState(null);
+  const [reports, setReports] = useState([]);
   const [activeTab, setActiveTab] = useState("details");
   const [loading, setLoading] = useState(true);
   const [labelersCount, setLabelersCount] = useState(0);
@@ -30,22 +31,38 @@ const ProjectDetails = () => {
         const startSignalR = async () => {
             const signalRService = getSignalRService(addNotification);
 
-            signalRService.onMessage(
-                MessageTypes.LabelersCountChanged,
-                function (msg) {
-                    setLabelersCount(msg);
-                }
-            );
-        };
+      signalRService.onMessage(
+        MessageTypes.LabelersCountChanged,
+        function (msg) {
+          setLabelersCount(msg);
+        }
+      );
 
-        startSignalR();
-    }, [id]);
+      signalRService.onMessage(MessageTypes.ReportGenerated, function () {
+        fetchReports();
+      });
+    };
+
+    startSignalR();
+  }, [id]);
+
+  const fetchReports = async () => {
+    try {
+      const response = await httpClient.get(`/project/${id}/reports`);
+      setReports(response.data);
+    } catch (error) {
+      //
+    }
+  };
+
   // Fetch basic project info for the header
   const fetchBasicProjectData = async () => {
     try {
       setLoading(true);
       const projectRes = await httpClient.get(`/project/${id}`);
       setProject(projectRes.data);
+
+      await fetchReports();
     } catch (error) {
       addNotification(
           error.response?.data?.message || t('projects:notifications.details_error'),
@@ -154,7 +171,13 @@ const ProjectDetails = () => {
         </div>
 
         <div className="tab-content mt-4">
-          {activeTab === "details" && <ProjectDetailsTab project={project} />}
+          {activeTab === "details" && (
+            <ProjectDetailsTab
+              project={project}
+              reports={reports}
+              onReportDeleted={fetchReports}
+            />
+          )}
 
           {activeTab === "subjects" && (
             <ProjectSubjectsTab
