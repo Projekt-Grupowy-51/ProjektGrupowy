@@ -215,6 +215,47 @@ namespace ProjektGrupowy.API.Migrations
                     b.ToTable("AssignedLabels");
                 });
 
+            modelBuilder.Entity("ProjektGrupowy.API.Models.GeneratedReport", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DelDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("OwnerId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Path")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("ProjectId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OwnerId");
+
+                    b.HasIndex("Path")
+                        .IsUnique();
+
+                    b.HasIndex("ProjectId");
+
+                    b.ToTable("GeneratedReports");
+                });
+
             modelBuilder.Entity("ProjektGrupowy.API.Models.Label", b =>
                 {
                     b.Property<int>("Id")
@@ -669,6 +710,25 @@ namespace ProjektGrupowy.API.Migrations
                     b.Navigation("Video");
                 });
 
+            modelBuilder.Entity("ProjektGrupowy.API.Models.GeneratedReport", b =>
+                {
+                    b.HasOne("ProjektGrupowy.API.Models.User", "Owner")
+                        .WithMany()
+                        .HasForeignKey("OwnerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ProjektGrupowy.API.Models.Project", "Project")
+                        .WithMany("GeneratedReports")
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Owner");
+
+                    b.Navigation("Project");
+                });
+
             modelBuilder.Entity("ProjektGrupowy.API.Models.Label", b =>
                 {
                     b.HasOne("ProjektGrupowy.API.Models.User", "Owner")
@@ -825,6 +885,8 @@ namespace ProjektGrupowy.API.Migrations
             modelBuilder.Entity("ProjektGrupowy.API.Models.Project", b =>
                 {
                     b.Navigation("AccessCodes");
+
+                    b.Navigation("GeneratedReports");
 
                     b.Navigation("Subjects");
                 });

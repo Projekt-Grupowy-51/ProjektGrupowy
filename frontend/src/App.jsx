@@ -19,7 +19,7 @@ import Projects from "./pages/Projects";
 import SubjectDetails from "./pages/SubjectDetails";
 import ProjectDetails from "./pages/ProjectDetails";
 import VideoGroupsDetails from "./pages/VideoGroupsDetails";
-import VideoGroup from "./pages/Videos";
+import VideoGroup from "./pages/Videos.jsx";
 import VideoDetails from "./pages/VideoDetails";
 import AddVideo from "./pages/VideoAdd";
 import AddSubject from "./pages/SubjectAdd";
@@ -38,6 +38,8 @@ import NotFound from "./pages/errors/NotFound";
 import Forbidden from "./pages/errors/Forbidden";
 import NotificationSystem from "./components/NotificationSystem";
 import SignalRListener from "../src/services/SignalRListener";
+import { useTranslation } from 'react-i18next';
+import './i18n.js'
 
 const AuthContext = createContext();
 
@@ -159,67 +161,87 @@ const RoleProtectedRoute = ({ allowedRoles }) => {
 
 const Navbar = () => {
   const { isAuthenticated, roles, user, hasRole, handleLogout } = useAuth();
+  const { t, i18n } = useTranslation(['common']);
+  const changeLanguage = (lang) => {
+    if (i18n.language !== lang) {
+      i18n.changeLanguage(lang);
+    }
+  };
 
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
-      <div className="container-fluid justify-content-center">
-        <button
-          className="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarNav"
-          aria-controls="navbarNav"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
-          <span className="navbar-toggler-icon"></span>
-        </button>
-        <div
-          className="collapse navbar-collapse justify-content-center"
-          id="navbarNav"
-        >
-          <ul className="navbar-nav">
-            {isAuthenticated ? (
-              <>
-                {hasRole("Scientist") && (
-                  <li className="nav-item">
-                    <Link
-                      to="/projects"
-                      className="nav-link text-white text-nowrap"
-                    >
-                      Scientist Dashboard
-                    </Link>
-                  </li>
-                )}
-                {hasRole("Labeler") && (
-                  <li className="nav-item">
-                    <Link
-                      to="/labeler-video-groups"
-                      className="nav-link text-white text-nowrap"
-                    >
-                      Labeler Dashboard
-                    </Link>
-                  </li>
-                )}
-                <li className="nav-item" style={{ width: "100%" }}>
-                  <button
-                    onClick={handleLogout}
-                    className="btn btn-danger nav-link text-white w-100"
-                  >
-                    Logout
-                  </button>
-                </li>
-              </>
-            ) : (
-              <li className="nav-item">
-                <Link to="/login" className="nav-link text-white">
-                  Login
-                </Link>
-              </li>
-            )}
-          </ul>
+        <div className="container-fluid justify-content-center">
+            <div className="btn-group me-3" role="group" aria-label="Language selector">
+                <button
+                    className={`btn ${i18n.language === 'en' ? 'btn-light text-dark' : 'btn-outline-light'}`}
+                    onClick={() => changeLanguage('en')}
+                >
+                    EN
+                </button>
+                <button
+                    className={`btn ${i18n.language === 'pl' ? 'btn-light text-dark' : 'btn-outline-light'}`}
+                    onClick={() => changeLanguage('pl')}
+                >
+                    PL
+                </button>
+            </div>
+            <button
+                className="navbar-toggler"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#navbarNav"
+                aria-controls="navbarNav"
+                aria-expanded="false"
+                aria-label="Toggle navigation"
+            >
+                <span className="navbar-toggler-icon"></span>
+            </button>
+            <div
+                className="collapse navbar-collapse justify-content-center"
+                id="navbarNav"
+            >
+                <ul className="navbar-nav">
+                    {isAuthenticated ? (
+                        <>
+                            {hasRole("Scientist") && (
+                                <li className="nav-item">
+                                    <Link
+                                        to="/projects"
+                                        className="nav-link text-white text-nowrap"
+                                    >
+                                        {t('scientistDashboard')}
+                                    </Link>
+                                </li>
+                            )}
+                            {hasRole("Labeler") && (
+                                <li className="nav-item">
+                                    <Link
+                                        to="/labeler-video-groups"
+                                        className="nav-link text-white text-nowrap"
+                                    >
+                                        {t('labelerDashboard')}
+                                    </Link>
+                                </li>
+                            )}
+                            <li className="nav-item" style={{ width: "100%" }}>
+                                <button
+                                    onClick={handleLogout}
+                                    className="btn btn-danger nav-link text-white w-100"
+                                >
+                                    {t('logout')}
+                                </button>
+                            </li>
+                        </>
+                    ) : (
+                        <li className="nav-item">
+                            <Link to="/login" className="nav-link text-white">
+                                {t('common:login')}
+                            </Link>
+                        </li>
+                    )}
+                </ul>
+            </div>
         </div>
-      </div>
     </nav>
   );
 };

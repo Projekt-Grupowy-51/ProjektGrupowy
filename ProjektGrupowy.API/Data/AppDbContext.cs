@@ -26,6 +26,7 @@ public class AppDbContext : IdentityDbContext<User>
     public DbSet<SubjectVideoGroupAssignment> SubjectVideoGroupAssignments { get; set; }
     public DbSet<VideoGroup> VideoGroups { get; set; }
     public DbSet<ProjectAccessCode> ProjectAccessCodes { get; set; }
+    public DbSet<GeneratedReport> GeneratedReports { get; set; }
 
     public override int SaveChanges()
     {
@@ -61,6 +62,7 @@ public class AppDbContext : IdentityDbContext<User>
         modelBuilder.Entity<SubjectVideoGroupAssignment>().HasQueryFilter(svga => svga.DelDate == null);
         modelBuilder.Entity<AssignedLabel>().HasQueryFilter(al => al.DelDate == null);
         modelBuilder.Entity<ProjectAccessCode>().HasQueryFilter(pac => pac.DelDate == null);
+        modelBuilder.Entity<GeneratedReport>().HasQueryFilter(re => re.DelDate == null);
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -110,5 +112,9 @@ public class AppDbContext : IdentityDbContext<User>
 
         modelBuilder.Entity<Video>()
             .HasIndex(v => new { v.VideoGroupId, v.PositionInQueue });
+
+        modelBuilder.Entity<GeneratedReport>()
+            .HasIndex(r => r.Path)
+            .IsUnique();
     }
 }

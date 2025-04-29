@@ -47,6 +47,12 @@ httpClient.interceptors.response.use(
       window.location.href = "/forbidden";
     }
 
+            // Handle network errors (like ERR_CONNECTION_REFUSED)
+            if (error.code === 'ERR_NETWORK' || !error.response) {
+              console.error('Network error:', error.message);
+              // You could dispatch to a notification system here if needed
+            }
+        
     return Promise.reject(error);
   }
 );

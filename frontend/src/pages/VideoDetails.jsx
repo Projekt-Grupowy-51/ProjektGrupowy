@@ -6,6 +6,7 @@ import DataTable from "../components/DataTable";
 import NavigateButton from "../components/NavigateButton";
 import { useNotification } from "../context/NotificationContext";
 import { formatISODate } from "../utils/dateFormatter.jsx";
+import { useTranslation } from "react-i18next";
 
 const VideoDetails = () => {
   const { id: videoId } = useParams();
@@ -16,6 +17,7 @@ const VideoDetails = () => {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editedTitle, setEditedTitle] = useState("");
   const { addNotification } = useNotification();
+  const { t } = useTranslation(['videos', 'common']);
 
   useEffect(() => {
     fetchVideoDetails(videoId);
@@ -102,19 +104,19 @@ const VideoDetails = () => {
 
   // Define columns for the assigned labels table
   const labelColumns = [
-    { field: "labelName", header: "Label" },
-    { field: "labelerName", header: "Labeler" },
-    { field: "start", header: "Start" },
-    { field: "end", header: "End" },
+    { field: "labelName", header: t('table.label') },
+    { field: "labelerName", header: t('table.labeler') },
+    { field: "start", header: t('table.start') },
+    { field: "end", header: t('table.end') },
     {
       field: "insDate",
-      header: "Ins Date",
+      header: t('table.ins_date'),
       render: (label) => new Date(label.insDate).toLocaleString(),
     },
   ];
 
   if (!videoData) {
-    return <div className="container text-center">Loading...</div>;
+    return <div className="container text-center">{t('details.loading')}</div>;
   }
 
   return (
@@ -132,10 +134,10 @@ const VideoDetails = () => {
             className="form-control mb-2"
           />
           <button onClick={handleSaveTitle} className="btn btn-success me-2">
-            Save
+            {t('buttons.save')}
           </button>
           <button onClick={handleCancelEdit} className="btn btn-secondary">
-            Cancel
+            {t('buttons.cancel')}
           </button>
         </div>
       ) : (
@@ -170,7 +172,7 @@ const VideoDetails = () => {
         />
       </div>
       <div className="assigned-labels">
-        <h3 className="">Assigned Labels</h3>
+        <h3 className="">{t('details.assigned_labels')}</h3>
         <div className="assigned-labels-table">
           <DataTable
             showRowNumbers={true}

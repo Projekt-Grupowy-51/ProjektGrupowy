@@ -30,6 +30,8 @@ public class Project : IOwnedEntity
 
     // Many-to-Many Relation
     public virtual ICollection<User> ProjectLabelers { get; set; } = new List<User>();
+    
+    public virtual ICollection<GeneratedReport> GeneratedReports { get; set; } = new List<GeneratedReport>();
 
     public string OwnerId { get; set; }
 

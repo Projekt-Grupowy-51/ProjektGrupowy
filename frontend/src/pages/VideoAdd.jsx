@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import httpClient from "../httpclient";
 import "./css/ScientistProjects.css";
+import { useTranslation } from "react-i18next";
+import { useNotification } from "../context/NotificationContext";
 
 const VideoAdd = () => {
   const [videoGroupId, setVideoGroupId] = useState(null);
@@ -14,6 +16,8 @@ const VideoAdd = () => {
   const location = useLocation();
   const dropRef = useRef(null);
   const fileInputRef = useRef(null);
+  const { t } = useTranslation(['videos', 'common']);
+  const { addNotification } = useNotification();
 
   const handleButtonClick = () => {
     fileInputRef.current.click();
@@ -27,9 +31,9 @@ const VideoAdd = () => {
 
     selectedFiles.forEach((file) => {
       if (!file.type.startsWith("video/")) {
-        rejected.push(`${file.name} is not a valid video.`);
+        rejected.push(t('upload.error_not_video', { filename: file.name }));
       } else if (file.size > 100 * 1024 * 1024) {
-        rejected.push(`${file.name} exceeds 100MB limit.`);
+        rejected.push(t('upload.error_size', { filename: file.name }));
       } else {
         accepted.push({
           file,
@@ -48,21 +52,21 @@ const VideoAdd = () => {
     const groupId = queryParams.get("videogroupId");
 
     if (!groupId) {
-      setError("Video Group ID is required. Please go back and try again.");
+      setError(t('errors.load_video_group'));
       return;
     }
 
     const parsedId = parseInt(groupId);
     setVideoGroupId(parsedId);
     fetchVideoGroupName(parsedId);
-  }, [location.search]);
+  }, [location.search, t]);
 
   const fetchVideoGroupName = async (id) => {
     try {
       const response = await httpClient.get(`/videogroup/${id}`);
       setVideoGroupName(response.data.name);
     } catch {
-      setError("Failed to load video group information.");
+      setError(t('errors.load_video_group_details'));
     }
   };
 
@@ -75,9 +79,9 @@ const VideoAdd = () => {
 
     droppedFiles.forEach((file) => {
       if (!file.type.startsWith("video/")) {
-        rejected.push(`${file.name} is not a valid video.`);
+        rejected.push(t('upload.error_not_video', { filename: file.name }));
       } else if (file.size > 100 * 1024 * 1024) {
-        rejected.push(`${file.name} exceeds 100MB limit.`);
+        rejected.push(t('upload.error_size', { filename: file.name }));
       } else {
         accepted.push({
           file,
@@ -109,7 +113,7 @@ const VideoAdd = () => {
     setUploadProgress(0);
 
     if (videos.length === 0) {
-      setError("Please drag and drop at least one video.");
+      setError(t('upload.error_empty'));
       setLoading(false);
       return;
     }
@@ -148,7 +152,7 @@ const VideoAdd = () => {
     } catch (err) {
       setError(
         err.response?.data?.message ||
-          "An error occurred while uploading the videos."
+          t('upload.error_general')
       );
       setLoading(false);
     }
@@ -162,7 +166,7 @@ const VideoAdd = () => {
     <div className="container py-4">
       <div className="card shadow-sm">
         <div className="card-header bg-primary text-white">
-          <h1 className="heading mb-0">Upload Multiple Videos</h1>
+          <h1 className="heading mb-0">{t('upload.title')}</h1>
         </div>
         <div className="card-body">
           {error && (
@@ -180,8 +184,8 @@ const VideoAdd = () => {
             style={{ background: "#f8f9fa", cursor: "pointer" }}
           >
             <i className="fas fa-cloud-upload-alt fa-2x mb-2"></i>
-            <p className="mb-0">Drag and drop your videos here</p>
-            <small className="text-muted">Maximum size: 100MB each</small>
+            <p className="mb-0">{t('upload.drag_drop')}</p>
+            <small className="text-muted">{t('upload.max_size')}</small>
 
             {/* Add a div to move the button to a new line */}
             <div className="mt-3">
@@ -190,7 +194,7 @@ const VideoAdd = () => {
                 className="btn btn-secondary"
                 onClick={handleButtonClick}
               >
-                Select Files
+                {t('buttons.select_files')}
               </button>
             </div>
 
@@ -209,10 +213,10 @@ const VideoAdd = () => {
               <table className="table table-bordered">
                 <thead className="table-light">
                   <tr>
-                    <th>Title</th>
-                    <th>File Size</th>
-                    <th>Position in Queue</th>
-                    <th>Actions</th> {/* 👈 New column header */}
+                    <th>{t('table.title')}</th>
+                    <th>{t('upload.max_size').split(':')[0]}</th>
+                    <th>{t('table.position')}</th>
+                    <th>{t('common:actions')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -256,7 +260,7 @@ const VideoAdd = () => {
                             onClick={() => handleRemove(index)}
                             disabled={loading}
                           >
-                            <i className="fas fa-trash-alt"></i>
+                            <i className="fas fa-trash-alt"></i> {t('buttons.remove')}
                           </button>
                         </div>
                       </td>
@@ -267,7 +271,7 @@ const VideoAdd = () => {
 
               {loading && (
                 <div className="mb-3">
-                  <label className="form-label">Upload Progress</label>
+                  <label className="form-label">{t('upload.progress')}</label>
                   <div className="progress">
                     <div
                       className="progress-bar progress-bar-striped progress-bar-animated"
@@ -286,7 +290,7 @@ const VideoAdd = () => {
                   disabled={loading}
                 >
                   <i className="fas fa-upload me-2"></i>
-                  {loading ? "Uploading..." : "Upload All Videos"}
+                  {loading ? t('buttons.uploading') : t('buttons.upload_all')}
                 </button>
               </div>
             </form>
