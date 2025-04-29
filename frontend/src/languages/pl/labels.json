@@ -1,0 +1,38 @@
+﻿{
+  "add_title": "Dodaj nową etykietę",
+  "edit_title": "Edytuj etykietę",
+  "form": {
+    "name": "Nazwa etykiety",
+    "color": "Kolor etykiety",
+    "type": "Typ etykiety",
+    "shortcut": "Skrót klawiszowy",
+    "subject": "Temat",
+    "color_format": "Kolor w formacie szesnastkowym (#RRGGBB)",
+    "shortcut_hint": "Pojedynczy znak używany jako skrót klawiaturowy",
+    "type_options": {
+      "range": "Zakres",
+      "point": "Punkt"
+    }
+  },
+  "notification": {
+    "create_success": "Etykieta została pomyślnie utworzona!",
+    "update_success": "Etykieta została zaktualizowana!",
+    "missing_subject": "Wymagane ID tematu. Wróć i spróbuj ponownie.",
+    "load_error": "Błąd ładowania danych etykiety",
+    "subject_error": "Błąd ładowania informacji o temacie",
+    "validation": {
+      "shortcut": "Skrót musi składać się z jednego znaku",
+      "color": "Kolor musi być w formacie #RRGGBB"
+    }
+  },
+  "buttons": {
+    "add": "Dodaj etykietę",
+    "save": "Zapisz zmiany",
+    "adding": "Dodawanie...",
+    "updating": "Aktualizowanie..."
+  },
+  "errors": {
+    "required": "Proszę wypełnić wszystkie wymagane pola",
+    "general": "Wystąpił błąd. Spróbuj ponownie."
+  }
+}

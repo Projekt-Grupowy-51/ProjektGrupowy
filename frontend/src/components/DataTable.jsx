@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import './css/DataTable.css';
+import { useTranslation} from "react-i18next";
 
 const DataTable = ({
                      columns,
@@ -10,6 +11,7 @@ const DataTable = ({
                      showRowNumbers = false
                    }) => {
   const showActions = navigateButton || deleteButton;
+  const {t} = useTranslation(['common']);
 
   const [sortConfig, setSortConfig] = useState({
     key: null,
@@ -85,7 +87,7 @@ const DataTable = ({
                 </div>
               </th>
           ))}
-          {showActions && <th>Actions</th>}
+          {showActions && <th>{t('common:actions')}</th>}
         </tr>
         </thead>
         <tbody>
