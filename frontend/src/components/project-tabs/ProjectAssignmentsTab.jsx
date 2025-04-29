@@ -4,11 +4,13 @@ import NavigateButton from "../NavigateButton";
 import DeleteButton from "../DeleteButton";
 import DataTable from "../DataTable";
 import { useNotification } from "../../context/NotificationContext";
+import { useTranslation } from "react-i18next";
 
 const ProjectAssignmentsTab = ({ projectId }) => {
   const [assignments, setAssignments] = useState([]);
   const [loading, setLoading] = useState(true);
   const { addNotification } = useNotification();
+  const { t } = useTranslation(['common', 'projects']);
 
   const fetchAssignments = async () => {
     try {
@@ -45,8 +47,8 @@ const ProjectAssignmentsTab = ({ projectId }) => {
 
   // Define columns for assignments table
   const assignmentColumns = [
-    { field: "subjectName", header: "Subject" },
-    { field: "videoGroupName", header: "Video Group" },
+    { field: "subjectName", header: t('projects:assignment.subject') },
+    { field: "videoGroupName", header: t('projects:assignment.video_group') },
   ];
 
   if (loading) {
@@ -62,11 +64,10 @@ const ProjectAssignmentsTab = ({ projectId }) => {
   return (
     <div className="assignments">
       <div className="d-flex justify-content-end mb-3">
-        <NavigateButton
-          actionType="Add"
+        <NavigateButton 
+          actionType='Add'
           path={`/assignments/add?projectId=${projectId}`}
-          value="Add Assignment"
-        />
+          value={t('projects:add.assignment')} />
       </div>
       {assignments.length > 0 ? (
         <DataTable
@@ -76,7 +77,8 @@ const ProjectAssignmentsTab = ({ projectId }) => {
           navigateButton={(assignment) => (
             <NavigateButton
               path={`/assignments/${assignment.id}`}
-              actionType="Details"
+              actionType='Add'
+              value={t('common:buttons.details')}
             />
           )}
           deleteButton={(assignment) => (
@@ -88,7 +90,7 @@ const ProjectAssignmentsTab = ({ projectId }) => {
         />
       ) : (
         <div className="alert alert-info">
-          <i className="fas fa-info-circle me-2"></i>No assignments found
+          <i className="fas fa-info-circle me-2"></i>{t('projects:not_found.assignment')}
         </div>
       )}
     </div>

@@ -1,0 +1,36 @@
+﻿{
+  "login": "Zaloguj się",
+  "logout": "Wyloguj",
+  "loading": "Ładowanie...",
+  "description": "Opis",
+  "name": "Nazwa",
+  "actions": "Akcje",
+  "scientistDashboard": "Panel naukowca",
+  "labelerDashboard": "Panel etykietującego",
+  "language": {
+    "change": "Zmień język",
+    "en": "Angielski",
+    "pl": "Polski"
+  },
+  "buttons": {
+    "back": "Wróć",
+    "cancel": "Anuluj",
+    "refresh": "Odśwież",
+    "delete": "Usuń",
+    "details": "Szczegóły",
+    "add": "Dodaj",
+    "edit": "Edytuj",
+    "copy": "Kopiuj",
+    "retire": "Wycofaj"
+  },
+  "deleteConfirmation": {
+    "title": "Potwierdź usunięcie",
+    "message": "Czy na pewno chcesz usunąć ten {{item}}?",
+    "confirm": "Usuń",
+    "cancel": "Anuluj"
+  },
+  "status": {
+    "active": "Aktywny",
+    "inactive": "Nieaktywny"
+  }
+}

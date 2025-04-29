@@ -4,6 +4,7 @@ import httpClient from "../httpclient";
 import "./css/ScientistProjects.css";
 import NavigateButton from "../components/NavigateButton";
 import { useNotification } from "../context/NotificationContext";
+import { useTranslation } from 'react-i18next';
 
 function ProjectAdd() {
   const navigate = useNavigate();
@@ -14,6 +15,7 @@ function ProjectAdd() {
   });
   const [loading, setLoading] = useState(false);
   const { addNotification } = useNotification();
+  const { t } = useTranslation(['projects', 'common']);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -23,14 +25,14 @@ function ProjectAdd() {
       const response = await httpClient.post("/Project", formData);
 
       if (response.status === 201) {
-        ////addNotification("Project added successfully!", "success");
+        addNotification(t('projects:notifications.create_success'), "success");
         navigate("/projects");
       }
     } catch (error) {
-      // addNotification(
-      //   error.response?.data?.message || "Failed to add project",
-      //   "error"
-      // );
+      addNotification(
+          error.response?.data?.message || t('projects:notifications.load_error'),
+          "error"
+      );
     } finally {
       setLoading(false);
     }
@@ -44,62 +46,62 @@ function ProjectAdd() {
   };
 
   return (
-    <div className="container py-4">
-      <div className="row justify-content-center">
-        <div className="col-lg-8">
-          <div className="card shadow-sm">
-            <div className="card-header bg-primary text-white">
-              <h1 className="heading mb-0">Add New Project</h1>
-            </div>
-            <div className="card-body">
-              <form onSubmit={handleSubmit}>
-                <div className="mb-3">
-                  <label htmlFor="name" className="form-label">
-                    Project Name
-                  </label>
-                  <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    className="form-control"
-                    value={formData.name}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
+      <div className="container py-4">
+        <div className="row justify-content-center">
+          <div className="col-lg-8">
+            <div className="card shadow-sm">
+              <div className="card-header bg-primary text-white">
+                <h1 className="heading mb-0">{t('projects:add_title')}</h1>
+              </div>
+              <div className="card-body">
+                <form onSubmit={handleSubmit}>
+                  <div className="mb-3">
+                    <label htmlFor="name" className="form-label">
+                      {t('projects:form.name')}
+                    </label>
+                    <input
+                        type="text"
+                        id="name"
+                        name="name"
+                        className="form-control"
+                        value={formData.name}
+                        onChange={handleChange}
+                        required
+                    />
+                  </div>
 
-                <div className="mb-3">
-                  <label htmlFor="description" className="form-label">
-                    Description
-                  </label>
-                  <textarea
-                    id="description"
-                    name="description"
-                    className="form-control"
-                    value={formData.description}
-                    onChange={handleChange}
-                    required
-                    rows="4"
-                  />
-                </div>
+                  <div className="mb-3">
+                    <label htmlFor="description" className="form-label">
+                      {t('projects:form.description')}
+                    </label>
+                    <textarea
+                        id="description"
+                        name="description"
+                        className="form-control"
+                        value={formData.description}
+                        onChange={handleChange}
+                        required
+                        rows="4"
+                    />
+                  </div>
 
-                <div className="d-flex">
-                  <button
-                    type="submit"
-                    className="btn btn-primary me-2"
-                    disabled={loading}
-                  >
-                    <i className="fas fa-plus-circle me-2"></i>
-                    {loading ? "Creating..." : "Create Project"}
-                  </button>
-                  <NavigateButton actionType="Back" value="Cancel" />
-                </div>
-              </form>
+                  <div className="d-flex">
+                    <button
+                        type="submit"
+                        className="btn btn-primary me-2"
+                        disabled={loading}
+                    >
+                      <i className="fas fa-plus-circle me-2"></i>
+                      {loading ? t('projects:buttons.creating') : t('projects:buttons.create')}
+                    </button>
+                    <NavigateButton actionType="Back" value={t('common:buttons.cancel')} />
+                  </div>
+                </form>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
   );
 }
 

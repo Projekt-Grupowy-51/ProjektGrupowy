@@ -1,5 +1,6 @@
 ﻿import React from 'react';
 import './css/Modal.css'
+import { useTranslation } from 'react-i18next';
 
 const DeleteConfirmationModal = ({
                                      show,
@@ -8,18 +9,19 @@ const DeleteConfirmationModal = ({
                                      onCancel
                                  }) => {
     if (!show) return null;
+    const { t } = useTranslation(['common']);
 
     return (
         <div className="modal-overlay">
             <div className="modal-content">
-                <h5>Confirm Delete</h5>
-                <p>Are you sure you want to delete this {itemType}?</p>
+                <h5>{t('common:deleteConfirmation.title')}</h5>
+                <p>{t('common:deleteConfirmation.message', { item: itemType })}</p>
                 <div className="modal-actions">
                     <button className="btn btn-secondary" onClick={onCancel}>
-                        Cancel
+                        {t('common:deleteConfirmation.cancel')}
                     </button>
                     <button className="btn btn-danger" onClick={onConfirm}>
-                        Delete
+                        {t('common:deleteConfirmation.confirm')}
                     </button>
                 </div>
             </div>
