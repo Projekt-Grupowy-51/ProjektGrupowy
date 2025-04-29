@@ -7,7 +7,7 @@ const DeleteButton = ({ onClick, itemType = 'item', buttonText, className = '', 
     const [showModal, setShowModal] = useState(false);
     const { addNotification } = useNotification();
     const { t } = useTranslation(['common']);
-    
+
     const deleteText = t('buttons.delete');
 
     const handleOpenModal = (e) => {
@@ -41,14 +41,14 @@ const DeleteButton = ({ onClick, itemType = 'item', buttonText, className = '', 
                 <i className="fas fa-trash-alt"></i> {deleteText}
             </button>
 
-            <DeleteConfirmationModal
-                show={showModal}
-                itemType={itemType}
-                onConfirm={handleConfirm}
-                onCancel={handleCloseModal}
-            />
-        </>
-    );
+      <DeleteConfirmationModal
+        show={showModal}
+        itemType={itemType}
+        onConfirm={handleConfirm}
+        onCancel={handleCloseModal}
+      />
+    </>
+  );
 };
 
 export default DeleteButton;

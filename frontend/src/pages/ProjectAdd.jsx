@@ -23,6 +23,7 @@ function ProjectAdd() {
 
     try {
       const response = await httpClient.post("/Project", formData);
+
       if (response.status === 201) {
         addNotification(t('projects:notifications.create_success'), "success");
         navigate("/projects");

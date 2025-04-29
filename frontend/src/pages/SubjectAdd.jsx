@@ -7,7 +7,6 @@ import { useNotification } from "../context/NotificationContext";
 import { useTranslation } from 'react-i18next';
 
 const AddSubject = () => {
-  const { t } = useTranslation(['subjects', 'common']);
   const location = useLocation();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -28,16 +27,14 @@ const AddSubject = () => {
     setLoading(true);
 
     if (!subjectData.name.trim() || !subjectData.description.trim()) {
-      addNotification(t('subjects:notifications.required_fields'), "error");
+      addNotification("All fields are required", "error");
       setLoading(false);
       return;
     }
 
     try {
       await httpClient.post("/Subject", subjectData);
-      navigate(`/projects/${subjectData.projectId}`, {
-        state: { successMessage: t('subjects:notifications.add_success') },
-      });
+        navigate(`/projects/${subjectData.projectId}`);
     } catch (error) {
       addNotification(
           error.response?.data?.message || t('subjects:notifications.add_error'),

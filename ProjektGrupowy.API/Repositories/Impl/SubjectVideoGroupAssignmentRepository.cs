@@ -143,10 +143,7 @@ public class SubjectVideoGroupAssignmentRepository(
             return Optional<SubjectVideoGroupAssignment>.Failure("Labeler not found");
         }
 
-        if (assignment.Labelers == null)
-        {
-            assignment.Labelers = new List<User>();
-        }
+        assignment.Labelers ??= [];
 
         if (!assignment.Labelers.Contains(labeler))
         {

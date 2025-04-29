@@ -19,7 +19,7 @@ const ProjectSubjectsTab = ({ projectId }) => {
       const response = await httpClient.get(`/project/${projectId}/subjects`);
       setSubjects(response.data);
     } catch (error) {
-      addNotification("Failed to load subjects", "error");
+      //addNotification("Failed to load subjects", "error");
     } finally {
       setLoading(false);
     }
@@ -35,10 +35,10 @@ const ProjectSubjectsTab = ({ projectId }) => {
       setSubjects(subjects.filter((subject) => subject.id !== subjectId));
       // DeleteButton will show success notification automatically
     } catch (error) {
-      addNotification(
-        error.response?.data?.message || "Failed to delete subject",
-        "error"
-      );
+      // addNotification(
+      //   error.response?.data?.message || "Failed to delete subject",
+      //   "error"
+      // );
     }
   };
   

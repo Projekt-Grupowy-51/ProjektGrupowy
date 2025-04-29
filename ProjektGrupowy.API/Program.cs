@@ -19,6 +19,7 @@ using System.Text.Json.Serialization;
 using ProjektGrupowy.API.SignalR;
 using Azure.Core;
 using Microsoft.AspNetCore.SignalR;
+using ProjektGrupowy.API.Utils.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -65,11 +66,25 @@ app.UseExceptionHandler(errorApp =>
     {
         context.Response.StatusCode = StatusCodes.Status500InternalServerError;
         context.Response.ContentType = "application/json";
+        
+        using var scope = app.Services.CreateScope();
+        var messageService = scope.ServiceProvider.GetRequiredService<IMessageService>();
 
         var exceptionHandlerPathFeature = context.Features.Get<IExceptionHandlerPathFeature>();
         if (exceptionHandlerPathFeature?.Error != null)
         {
             Log.Error("An error occurred: {Error}", exceptionHandlerPathFeature.Error);
+
+            try
+            {
+                var identity = context.User.GetUserId();
+                var errorMessage = exceptionHandlerPathFeature.Error.Message;
+                await messageService.SendErrorAsync(identity, $"Something went wrong: {errorMessage}");
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "An error occurred: {Error}", ex.Message);
+            }
 
             await context.Response.WriteAsync(new
             {
@@ -87,7 +102,8 @@ app.Run();
 
 static void AddServices(WebApplicationBuilder builder)
 {
-    builder.Services.AddControllers()
+    builder.Services
+        .AddControllers()
         .AddJsonOptions(options =>
         {
             options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
@@ -151,6 +167,8 @@ static void AddServices(WebApplicationBuilder builder)
     builder.Services.AddSignalR(options =>
     {
         options.EnableDetailedErrors = true;
+        options.KeepAliveInterval = TimeSpan.FromSeconds(15); // Default is 15 seconds
+        options.HandshakeTimeout = TimeSpan.FromSeconds(15);
     });
     builder.Services.AddSingleton<IMessageService, MessageService>();
 
@@ -159,6 +177,7 @@ static void AddServices(WebApplicationBuilder builder)
 
     // Filters
     builder.Services.AddScoped<ValidateModelStateFilter>();
+    builder.Services.AddScoped<NonSuccessGetFilter>();
 
     // Database Context
     builder.Services.AddDbContext<AppDbContext>(options =>

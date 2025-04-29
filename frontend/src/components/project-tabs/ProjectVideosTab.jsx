@@ -26,7 +26,7 @@ const ProjectVideosTab = ({ projectId }) => {
       );
       setVideoGroups(response.data);
     } catch (error) {
-      addNotification("Failed to load video groups", "error");
+      //addNotification("Failed to load video groups", "error");
     } finally {
       setLoading(false);
     }
@@ -37,10 +37,10 @@ const ProjectVideosTab = ({ projectId }) => {
       await httpClient.delete(`/videogroup/${videoGroupId}`);
       setVideoGroups(videoGroups.filter((group) => group.id !== videoGroupId));
     } catch (error) {
-      addNotification(
-        error.response?.data?.message || "Failed to delete video group",
-        "error"
-      );
+      // addNotification(
+      //   error.response?.data?.message || "Failed to delete video group",
+      //   "error"
+      // );
     }
   };
 

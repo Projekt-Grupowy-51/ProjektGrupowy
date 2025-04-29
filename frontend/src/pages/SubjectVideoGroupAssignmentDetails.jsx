@@ -41,10 +41,10 @@ const SubjectVideoGroupAssignmentDetails = () => {
         const labelersResponse = await httpClient.get(`/SubjectVideoGroupAssignment/${id}/labelers`);
         setLabelers(labelersResponse.data);
       } catch (err) {
-        addNotification(t('assignments:errors.load_labelers'), "error");
+        // addNotification("Error loading labelers", "error");
       }
     } catch (error) {
-      addNotification(t('assignments:errors.load_details'), "error");
+      // addNotification("Failed to load assignment details", "error");
     } finally {
       setLoading(false);
     }
@@ -59,26 +59,26 @@ const SubjectVideoGroupAssignmentDetails = () => {
 
     try {
       await httpClient.delete(`/SubjectVideoGroupAssignment/${id}`);
-      addNotification(t('assignments:success.delete'), "success");
-      navigate("/assignments");
-    } catch (error) {
-      addNotification(t('assignments:errors.delete'), "error");
-    }
+      navigate(-1);
+    } catch (error) {}
   };
 
-  if (loading) return (
+  if (loading)
+    return (
       <div className="container d-flex justify-content-center align-items-center py-5">
         <div className="spinner-border text-primary" role="status">
           <span className="visually-hidden">{t('common:loading')}</span>
         </div>
       </div>
-  );
+    );
 
-  if (!assignmentDetails) return (
+  // Remove error.main condition check - use notifications instead
+  if (!assignmentDetails)
+    return (
       <div className="container mt-4">
         <div className="alert alert-danger">{t('assignments:errors.not_found')}</div>
       </div>
-  );
+    );
 
   return (
       <div className="container py-4">

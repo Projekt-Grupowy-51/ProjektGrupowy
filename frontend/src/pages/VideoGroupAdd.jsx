@@ -45,14 +45,12 @@ const VideoGroupAdd = () => {
 
     try {
       await httpClient.post("/videogroup", formData);
-      navigate(`/projects/${formData.projectId}`, {
-        state: { successMessage: t('success.video_group_added') },
-      });
+      navigate(`/projects/${formData.projectId}`);
     } catch (err) {
-      addNotification(
-        err.response?.data?.message || t('errors.general'),
-        "error"
-      );
+      // addNotification(
+      //   err.response?.data?.message || "An error occurred. Please try again.",
+      //   "error"
+      // );
       setLoading(false);
     }
   };

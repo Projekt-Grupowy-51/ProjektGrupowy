@@ -2,6 +2,7 @@
 using ProjektGrupowy.API.DTOs.Video;
 using ProjektGrupowy.API.Models;
 using ProjektGrupowy.API.Repositories;
+using ProjektGrupowy.API.SignalR;
 using ProjektGrupowy.API.Utils;
 
 namespace ProjektGrupowy.API.Services.Impl;
@@ -10,6 +11,7 @@ public class VideoService(
     IVideoRepository videoRepository,
     IVideoGroupRepository videoGroupRepository,
     IConfiguration configuration,
+    IMessageService messageService,
     UserManager<User> userManager) : IVideoService
 {
     public async Task<Optional<IEnumerable<Video>>> GetVideosAsync() => await videoRepository.GetVideosAsync();
@@ -20,18 +22,22 @@ public class VideoService(
 
     public async Task<Optional<Video>> AddVideoAsync(VideoRequest videoRequest)
     {
-        var videoGroupOptional = await videoGroupRepository.GetVideoGroupAsync(videoRequest.VideoGroupId);
-
-        if (videoGroupOptional.IsFailure)
-        {
-            return Optional<Video>.Failure("No video group found!");
-        }
-
         var owner = await userManager.FindByIdAsync(videoRequest.OwnerId);
         if (owner == null)
         {
             return Optional<Video>.Failure("No labeler found");
         }
+
+        var videoGroupOptional = await videoGroupRepository.GetVideoGroupAsync(videoRequest.VideoGroupId);
+
+        if (videoGroupOptional.IsFailure)
+        {
+            await messageService.SendErrorAsync(
+                videoRequest.OwnerId,
+                "No video group found");
+            return Optional<Video>.Failure("No video group found!");
+        }
+
 
         var videoGroup = videoGroupOptional.GetValueOrThrow();
         var videoProject = videoGroup.Project;
@@ -56,6 +62,9 @@ public class VideoService(
 
         if (videoGroup.Videos is null)
         {
+            await messageService.SendErrorAsync(
+                videoRequest.OwnerId,
+                "videoGroup.Videos was null");
             return Optional<Video>.Failure("Error. videoGroup.Videos was null.");
         }
 
@@ -69,22 +78,37 @@ public class VideoService(
             Owner = owner,
         };
 
-        return await videoRepository.AddVideoAsync(video);
+        // return await videoRepository.AddVideoAsync(video);
+        var result = await videoRepository.AddVideoAsync(video);
+        if (result.IsFailure)
+        {
+            await messageService.SendErrorAsync(
+                videoRequest.OwnerId,
+                "Failed to add video");
+            return result;
+        }
+        await messageService.SendSuccessAsync(
+            videoRequest.OwnerId,
+            "Video added successfully");
+        return result;
     }
 
     public async Task<Optional<Video>> UpdateVideoAsync(int videoId, VideoRequest videoRequest)
     {
-        var videoOptional = await videoRepository.GetVideoAsync(videoId);
-
-        if (videoOptional.IsFailure)
-        {
-            return videoOptional;
-        }
-
         var owner = await userManager.FindByIdAsync(videoRequest.OwnerId);
         if (owner == null)
         {
             return Optional<Video>.Failure("No labeler found");
+        }
+
+        var videoOptional = await videoRepository.GetVideoAsync(videoId);
+
+        if (videoOptional.IsFailure)
+        {
+            await messageService.SendErrorAsync(
+                videoRequest.OwnerId,
+                "No video found");
+            return videoOptional;
         }
 
         var video = videoOptional.GetValueOrThrow();
@@ -92,6 +116,9 @@ public class VideoService(
         var videoGroupOptional = await videoGroupRepository.GetVideoGroupAsync(videoRequest.VideoGroupId);
         if (videoGroupOptional.IsFailure)
         {
+            await messageService.SendErrorAsync(
+                videoRequest.OwnerId,
+                "No video group found");
             return Optional<Video>.Failure("No video group found!");
         }
 
@@ -114,14 +141,31 @@ public class VideoService(
         video.PositionInQueue = videoRequest.PositionInQueue;
         video.Owner = owner;
 
-        return await videoRepository.UpdateVideoAsync(video);
+        // return await videoRepository.UpdateVideoAsync(video);
+        var result = await videoRepository.UpdateVideoAsync(video);
+        if (result.IsFailure)
+        {
+            await messageService.SendErrorAsync(
+                videoRequest.OwnerId,
+                "Failed to update video");
+            return result;
+        }
+        await messageService.SendSuccessAsync(
+            videoRequest.OwnerId,
+            "Video updated successfully");
+        return result;
     }
-
 
     public async Task DeleteVideoAsync(int id)
     {
-        var video = await videoRepository.GetVideoAsync(id);
-        if (video.IsSuccess)
-            await videoRepository.DeleteVideoAsync(video.GetValueOrThrow());
+        var videoOpt = await videoRepository.GetVideoAsync(id);
+        if (videoOpt.IsSuccess)
+        {
+            var video = videoOpt.GetValueOrThrow();
+            await messageService.SendInfoAsync(
+                video.Owner.Id,
+                "Video deleted successfully");
+            await videoRepository.DeleteVideoAsync(video);
+        }
     }
 }

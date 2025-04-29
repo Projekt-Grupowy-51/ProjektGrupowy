@@ -72,9 +72,8 @@ const SubjectDetails = () => {
     try {
       await httpClient.delete(`/label/${labelId}`);
       await fetchSubjectDetails();
-      addNotification(t('subjects:notifications.delete_success'), "success");
     } catch (error) {
-      addNotification(t('subjects:notifications.delete_error'), "error");
+      //addNotification("Failed to delete label. Please try again.", "error");
     }
   };
 

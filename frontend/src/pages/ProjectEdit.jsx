@@ -22,7 +22,12 @@ function ProjectEdit() {
     const fetchProject = async () => {
       try {
         const response = await httpClient.get(`/Project/${id}`);
-        setFormData(response.data);
+        const data = response.data;
+        setFormData({
+          name: data.name,
+          description: data.description,
+          finished: data.finished,
+        });
       } catch (error) {
         addNotification(t('projects:notifications.details_error'), "error");
       } finally {
@@ -34,6 +39,7 @@ function ProjectEdit() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
       await httpClient.put(`/Project/${id}`, formData);
       addNotification(t('projects:notifications.update_success'), "success");
@@ -43,10 +49,10 @@ function ProjectEdit() {
     }
   };
 
-  const handleChange = (e) => {
-    const value = e.target.type === "checkbox" ? e.target.checked : e.target.value;
-    setFormData({ ...formData, [e.target.name]: value });
-  };
+    const handleChange = (e) => {
+        const value = e.target.type === "checkbox" ? e.target.checked : e.target.value;
+        setFormData({ ...formData, [e.target.name]: value });
+    };
 
   if (loading) return (
       <div className="container d-flex justify-content-center align-items-center py-5">

@@ -20,7 +20,7 @@ const ProjectAssignmentsTab = ({ projectId }) => {
       );
       setAssignments(response.data);
     } catch (error) {
-      addNotification("Failed to load assignments", "error");
+      //addNotification("Failed to load assignments", "error");
     } finally {
       setLoading(false);
     }
@@ -38,10 +38,10 @@ const ProjectAssignmentsTab = ({ projectId }) => {
       );
       // DeleteButton will show success notification automatically
     } catch (error) {
-      addNotification(
-        error.response?.data?.message || "Failed to delete assignment",
-        "error"
-      );
+      // addNotification(
+      //   error.response?.data?.message || "Failed to delete assignment",
+      //   "error"
+      // );
     }
   };
 

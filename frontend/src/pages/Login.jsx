@@ -27,6 +27,11 @@ const AuthPage = () => {
   const { handleLogin, roles } = useAuth();
   const [loginSuccess, setLoginSuccess] = useState(false);
 
+  const handleInputChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  // Inside your component:
   useEffect(() => {
     if (loginSuccess) {
       addNotification(t('auth:notification.login_success'), "success");
@@ -41,10 +46,6 @@ const AuthPage = () => {
     }
   }, [loginSuccess, roles, navigate, t, addNotification]);
 
-  const handleInputChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -57,6 +58,7 @@ const AuthPage = () => {
 
     try {
       if (isLoginView) {
+        // Use the auth context login handler (it also calls verifyToken and sets global state)
         await handleLogin(formData.username, formData.password);
         setLoginSuccess(true);
       } else {

@@ -46,13 +46,13 @@ const ProjectAccessCodesTab = ({
     }
   };
 
-  const notifySuccess = (message) => {
-    if (onSuccess) {
-      onSuccess(message);
-    } else {
-      addNotification(message, "success");
-    }
-  };
+  // const notifySuccess = (message) => {
+  //   if (onSuccess) {
+  //     onSuccess(message);
+  //   } else {
+  //     addNotification(message, "success");
+  //   }
+  // };
 
   const notifyError = (error) => {
     if (onError) {
@@ -98,23 +98,22 @@ const ProjectAccessCodesTab = ({
     }
   };
 
-  const handleCopyCode = (code) => {
-    navigator.clipboard
-      .writeText(code)
-      .then(() => {
-        notifySuccess(t('projects:access_codes.success.copied'));
-      })
-      .catch(() => {
-        notifyError({ message: t('projects:access_codes.errors.copy_failed') });
-      });
+  const handleCopyCode = async (code) => {
+    try {
+      await navigator.clipboard.writeText(code);
+      addNotification(t('projects:access_codes.success.copied'), "success");
+    } catch (err) {
+      console.error("Failed to copy code:", err);
+      addNotification(t('projects:access_codes.errors.copy_failed'), "error");
+    }
   };
 
   const handleRetireCode = async (code) => {
     try {
       await httpClient.put(`/AccessCode/${code}/retire`);
-      notifySuccess(t('projects:access_codes.success.retired'));
-      fetchAccessCodes(); // Refresh the list after retiring a code
+      fetchAccessCodes();
     } catch (error) {
+      console.error("Failed to retire code:", error);
       notifyError(error);
     }
   };

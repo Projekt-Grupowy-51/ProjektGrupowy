@@ -31,7 +31,7 @@ const LabelerVideoGroups = () => {
 
     try {
       await httpClient.post("/project/join", {
-        AccessCode: accessCode.trim(),
+          AccessCode: accessCode.trim(),
       });
       addNotification(t('labeler:join_project.success'), "success");
       setAccessCode("");
@@ -87,7 +87,7 @@ const LabelerVideoGroups = () => {
 
   const getProjectAssignments = (projectId) => {
     return assignments.filter(
-        (assignment) => assignment.projectId === projectId
+      (assignment) => assignment.projectId === projectId
     );
   };
 

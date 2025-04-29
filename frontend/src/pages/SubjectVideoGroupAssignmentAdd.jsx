@@ -37,10 +37,14 @@ const SubjectVideoGroupAssignmentAdd = () => {
         httpClient.get(`/project/${projectId}/subjects`),
         httpClient.get(`/project/${projectId}/videogroups`),
       ]);
+
       setSubjects(subjectsRes.data);
       setVideoGroups(videoGroupsRes.data);
     } catch (err) {
-      addNotification(t('assignments:errors.load_data'), "error");
+      // addNotification(
+      //   err.response?.data?.message || "Failed to load data",
+      //   "error"
+      // );
     } finally {
       setDataLoading(false);
     }
@@ -56,7 +60,10 @@ const SubjectVideoGroupAssignmentAdd = () => {
     setLoading(true);
 
     if (!formData.subjectId || !formData.videoGroupId) {
-      addNotification(t('assignments:errors.selection_required'), "error");
+      addNotification(
+        "Please select both a subject and a video group.",
+        "error"
+      );
       setLoading(false);
       return;
     }
@@ -66,10 +73,13 @@ const SubjectVideoGroupAssignmentAdd = () => {
         subjectId: parseInt(formData.subjectId),
         videoGroupId: parseInt(formData.videoGroupId),
       });
-      addNotification(t('assignments:success.create'), "success");
+      //addNotification("Assignment added successfully!", "success");
       navigate(`/projects/${projectId}`);
     } catch (err) {
-      addNotification(t('assignments:errors.general'), "error");
+      // addNotification(
+      //   err.response?.data?.message || "An error occurred. Please try again.",
+      //   "error"
+      // );
       setLoading(false);
     }
   };

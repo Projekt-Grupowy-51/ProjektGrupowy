@@ -2,11 +2,16 @@
 using ProjektGrupowy.API.DTOs.Subject;
 using ProjektGrupowy.API.Models;
 using ProjektGrupowy.API.Repositories;
+using ProjektGrupowy.API.SignalR;
 using ProjektGrupowy.API.Utils;
 
 namespace ProjektGrupowy.API.Services.Impl;
 
-public class SubjectService(ISubjectRepository subjectRepository, IProjectRepository projectRepository, UserManager<User> userManager)
+public class SubjectService(
+    ISubjectRepository subjectRepository, 
+    IProjectRepository projectRepository,
+    IMessageService messageService, 
+    UserManager<User> userManager)
     : ISubjectService
 {
     public async Task<Optional<IEnumerable<Subject>>> GetSubjectsAsync()
@@ -42,7 +47,20 @@ public class SubjectService(ISubjectRepository subjectRepository, IProjectReposi
             Owner = owner,
         };
 
-        return await subjectRepository.AddSubjectAsync(subject);
+        // return await subjectRepository.AddSubjectAsync(subject);
+        var result = await subjectRepository.AddSubjectAsync(subject);
+        if (result.IsFailure)
+        {
+            await messageService.SendErrorAsync(
+                subjectRequest.OwnerId,
+                "Failed to add subject");
+            return result;
+        }
+        await messageService.SendSuccessAsync(
+            subjectRequest.OwnerId,
+            "Subject added successfully");
+        return result;
+
     }
 
     public async Task<Optional<Subject>> UpdateSubjectAsync(int subjectId, SubjectRequest subjectRequest)
@@ -74,7 +92,19 @@ public class SubjectService(ISubjectRepository subjectRepository, IProjectReposi
         subject.Project = projectOptional.GetValueOrThrow();
         subject.Owner = owner;
 
-        return await subjectRepository.UpdateSubjectAsync(subject);
+        // return await subjectRepository.UpdateSubjectAsync(subject);
+        var result = await subjectRepository.UpdateSubjectAsync(subject);
+        if (result.IsFailure)
+        {
+            await messageService.SendErrorAsync(
+                subjectRequest.OwnerId,
+                "Failed to update subject");
+            return result;
+        }
+        await messageService.SendInfoAsync(
+            subjectRequest.OwnerId,
+            "Subject updated successfully");
+        return result;
     }
 
     public async Task<Optional<IEnumerable<Subject>>> GetSubjectsByProjectAsync(int projectId)
@@ -84,7 +114,12 @@ public class SubjectService(ISubjectRepository subjectRepository, IProjectReposi
     {
         var subject = await subjectRepository.GetSubjectAsync(id);
         if (subject.IsSuccess)
+        {
+            await messageService.SendInfoAsync(
+                subject.GetValueOrThrow().Owner.Id,
+                "Subject deleted successfully");
             await subjectRepository.DeleteSubjectAsync(subject.GetValueOrThrow());
+        }
     }
     
     public async Task<Optional<IEnumerable<Label>>> GetSubjectLabelsAsync(int subjectId)

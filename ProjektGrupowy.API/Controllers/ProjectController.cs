@@ -19,6 +19,7 @@ namespace ProjektGrupowy.API.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 [ServiceFilter(typeof(ValidateModelStateFilter))]
+[ServiceFilter(typeof(NonSuccessGetFilter))]
 [Authorize]
 public class ProjectController(
     IProjectService projectService, 

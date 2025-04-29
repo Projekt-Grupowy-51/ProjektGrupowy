@@ -18,10 +18,10 @@ const ProjectDetailsTab = ({ project }) => {
       // DeleteButton will show success notification automatically
       navigate("/projects");
     } catch (error) {
-      addNotification(
-        error.response?.data?.message || "Failed to delete project",
-        "error"
-      );
+      // addNotification(
+      //   error.response?.data?.message || "Failed to delete project",
+      //   "error"
+      // );
     }
   };
 

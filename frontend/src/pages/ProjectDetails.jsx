@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import httpClient from "../httpclient";
 import "./css/ScientistProjects.css";
-import SignalRService from "../services/SignalRService";
+import { getSignalRService } from "../services/SignalRServiceInstance";
 import { useNotification } from "../context/NotificationContext";
 import { useTranslation } from 'react-i18next';
 
@@ -13,16 +13,34 @@ import ProjectVideosTab from "../components/project-tabs/ProjectVideosTab";
 import ProjectAssignmentsTab from "../components/project-tabs/ProjectAssignmentsTab";
 import ProjectLabelersTab from "../components/project-tabs/ProjectLabelersTab";
 import ProjectAccessCodesTab from "../components/project-tabs/ProjectAccessCodesTab";
+import { MessageTypes } from "../config/messageTypes";
 
 const ProjectDetails = () => {
   const { id } = useParams();
   const [project, setProject] = useState(null);
   const [activeTab, setActiveTab] = useState("details");
   const [loading, setLoading] = useState(true);
+  const [labelersCount, setLabelersCount] = useState(0);
   const location = useLocation();
   const { addNotification } = useNotification();
   const { t } = useTranslation(['projects', 'common']);
 
+
+    useEffect(() => {
+        const startSignalR = async () => {
+            const signalRService = getSignalRService(addNotification);
+
+            signalRService.onMessage(
+                MessageTypes.LabelersCountChanged,
+                function (msg) {
+                    setLabelersCount(msg);
+                }
+            );
+        };
+
+        startSignalR();
+    }, [id]);
+  // Fetch basic project info for the header
   const fetchBasicProjectData = async () => {
     try {
       setLoading(true);
@@ -118,6 +136,12 @@ const ProjectDetails = () => {
             onClick={() => setActiveTab("labelers")}
           >
             <i className="fas fa-users me-2"></i>Labelers
+            <span
+              className="badge rounded-pill text-bg-primary ms-2"
+              style={{ verticalAlign: "middle" }}
+            >
+              {labelersCount}
+            </span>
           </button>
           <button
             className={`tab-button ${
@@ -161,6 +185,7 @@ const ProjectDetails = () => {
               projectId={id}
               onSuccess={handleSuccess}
               onError={handleError}
+              onLabelersUpdate={(count) => setLabelersCount(count)}
             />
           )}
 

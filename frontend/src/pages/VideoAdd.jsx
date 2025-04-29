@@ -148,9 +148,7 @@ const VideoAdd = () => {
 
       await Promise.all(uploadPromises);
 
-      navigate(`/video-groups/${videoGroupId}`, {
-        state: { successMessage: t('upload.success') },
-      });
+      navigate(`/video-groups/${videoGroupId}`);
     } catch (err) {
       setError(
         err.response?.data?.message ||

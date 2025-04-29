@@ -33,6 +33,7 @@ const Projects = () => {
     }
   };
 
+  // Simplified delete handler - will be passed to DeleteButton
   const handleDeleteProject = async (projectId) => {
     try {
       await httpClient.delete(`/Project/${projectId}`);
@@ -47,6 +48,7 @@ const Projects = () => {
     fetchProjects();
   }, []);
 
+  // Define columns configuration
   const columns = [
     { field: "name", header: t('projects:form.name') },
     { field: "description", header: t('projects:form.description') }
