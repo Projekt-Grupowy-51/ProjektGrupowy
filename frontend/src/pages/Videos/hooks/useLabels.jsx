@@ -1,5 +1,5 @@
 ﻿import {useState, useEffect, useRef, useCallback} from "react";
-import httpClient from "../../../httpClient";
+import httpClient from "../../../httpclient";
 import { formatTime } from "../utils";
 
 const useLabels = (subjectId, videos, videoRefs) => {
@@ -19,6 +19,7 @@ const useLabels = (subjectId, videos, videoRefs) => {
     }, [subjectId]);
 
     const fetchAssignedLabels = useCallback(async () => {
+        console.log('videos', videos);
         try {
             const results = await Promise.all(
                 videos.map((video) =>
