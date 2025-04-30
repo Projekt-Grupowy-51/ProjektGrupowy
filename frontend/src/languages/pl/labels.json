@@ -22,7 +22,8 @@
     "subject_error": "Błąd ładowania informacji o temacie",
     "validation": {
       "shortcut": "Skrót musi składać się z jednego znaku",
-      "color": "Kolor musi być w formacie #RRGGBB"
+      "color": "Kolor musi być w formacie #RRGGBB",
+      "name": "Nazwa etykiety nie może być pusta"
     }
   },
   "buttons": {

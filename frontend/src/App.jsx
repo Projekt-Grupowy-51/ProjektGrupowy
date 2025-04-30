@@ -36,6 +36,7 @@ import { ModalProvider } from "./context/ModalContext";
 import { NotificationProvider } from "./context/NotificationContext";
 import NotFound from "./pages/errors/NotFound";
 import Forbidden from "./pages/errors/Forbidden";
+import Error from "./pages/errors/Error";
 import NotificationSystem from "./components/NotificationSystem";
 import SignalRListener from "../src/services/SignalRListener";
 import { useTranslation } from 'react-i18next';
@@ -45,11 +46,10 @@ const AuthContext = createContext();
 
 const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
-  const [roles, setRoles] = useState([]); // Store user roles
-  const [user, setUser] = useState(null); // Store user details
-  const [authError, setAuthError] = useState(null); // Store authentication errors
+  const [roles, setRoles] = useState([]);
+  const [user, setUser] = useState(null);
+  const [authError, setAuthError] = useState(null);
 
-  // Check authentication and fetch user details
   const checkAuth = useCallback(async () => {
     try {
       const response = await authService.verifyToken();
@@ -65,39 +65,25 @@ const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  // Handle login and update authentication state
-  const handleLogin = useCallback(
-    async (username, password) => {
-      try {
-        await authService.login(username, password);
-        await checkAuth(); // Re-check authentication after login
-        setAuthError(null);
-      } catch (error) {
-        setAuthError("Login failed. Please check your credentials.");
-        throw error;
-      }
-    },
-    [checkAuth]
-  );
-
-  // Handle logout and clear authentication state
-  const handleLogout = useCallback(async () => {
+  const handleLogin = useCallback(async (username, password) => {
     try {
-      await authService.logout();
-      setIsAuthenticated(false);
-      setRoles([]);
-      setUser(null);
-      setAuthError(null);
+      await authService.login(username, password);
+      await checkAuth();
     } catch (error) {
-      console.error("Logout error:", error);
-      setAuthError("Failed to log out.");
+      setAuthError("Login failed. Please check your credentials.");
+      throw error;
     }
+  }, [checkAuth]);
+
+  const handleLogout = useCallback(async () => {
+    await authService.logout();
+    setIsAuthenticated(false);
+    setRoles([]);
+    setUser(null);
   }, []);
 
-  // Check if the user has a specific role
   const hasRole = useCallback((role) => roles.includes(role), [roles]);
 
-  // Automatically check authentication on component mount
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
@@ -122,21 +108,6 @@ const AuthProvider = ({ children }) => {
 
 const useAuth = () => {
   return useContext(AuthContext);
-};
-
-const ProtectedRoute = () => {
-  const { isAuthenticated, checkAuth } = useAuth();
-  const location = useLocation();
-
-  if (isAuthenticated === null) {
-    return <div className="loading">Loading...</div>;
-  }
-
-  return isAuthenticated ? (
-    <Outlet />
-  ) : (
-    <Navigate to="/login" state={{ from: location }} replace />
-  );
 };
 
 const RoleProtectedRoute = ({ allowedRoles }) => {
@@ -282,6 +253,7 @@ function App() {
               </Route>
 
               <Route path="/forbidden" element={<Forbidden />} />
+              <Route path="/error" element={<Error />} />
 
               <Route path="*" element={<NotFound />} />
             </Routes>

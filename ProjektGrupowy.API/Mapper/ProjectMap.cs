@@ -15,6 +15,7 @@ public class ProjectMap : Profile
             .ForMember(dest => dest.ScientistId, opt => opt.MapFrom(src => src.Owner.Id))
             .ForMember(dest => dest.CreationDate, opt => opt.MapFrom(src => src.CreationDate))
             .ForMember(dest => dest.ModificationDate, opt => opt.MapFrom(src => src.ModificationDate))
-            .ForMember(dest => dest.EndDate, opt => opt.MapFrom(src => src.EndDate));
+            .ForMember(dest => dest.EndDate, opt => opt.MapFrom(src => src.EndDate))
+            .ForMember(dest => dest.Finished, opt => opt.MapFrom(src => src.EndDate.HasValue));
     }
 }

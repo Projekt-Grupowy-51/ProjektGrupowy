@@ -1,70 +1,44 @@
 import React from "react";
-import { Link } from "react-router-dom";
 import NavigateButton from "../NavigateButton";
 import DeleteButton from "../DeleteButton";
 import { useNavigate } from "react-router-dom";
 import httpClient from "../../httpclient";
-import { useNotification } from "../../context/NotificationContext";
 import { useTranslation } from "react-i18next";
 
 const ProjectDetailsTab = ({ project, reports, onReportDeleted }) => {
     const navigate = useNavigate();
-    const { addNotification } = useNotification();
     const { t } = useTranslation(['common', 'projects']);
 
     const handleDeleteProject = async () => {
-        try {
-            await httpClient.delete(`/Project/${project.id}`);
-            // DeleteButton will show success notification automatically
-            navigate("/projects");
-        } catch (error) {
-            // addNotification(
-            //   error.response?.data?.message || "Failed to delete project",
-            //   "error"
-            // );
-        }
+        await httpClient.delete(`/Project/${project.id}`);
+        navigate("/projects");
     };
 
     const handleGenerateReport = async () => {
-        try {
-            await httpClient.post(`/projectreport/${project.id}/generate-report`);
-        } catch (error) {
-            //
-        }
+        await httpClient.post(`/projectreport/${project.id}/generate-report`);
     };
 
     const handleDeleteReport = async (reportId) => {
-        try {
-            await httpClient.delete(`/projectreport/${reportId}`);
-            if (onReportDeleted) {
-                onReportDeleted();
-            }
-        } catch (error) {
-            // addNotification(\
+        await httpClient.delete(`/projectreport/${reportId}`);
+        if (onReportDeleted) {
+            onReportDeleted();
         }
     };
 
     const downloadReport = async (reportId) => {
-        try {
-            const response = await httpClient.get(
-                `/projectreport/download/${reportId}`,
-                {
-                    responseType: "blob",
-                }
-            );
-            const blob = new Blob([response.data], { type: "application/json" });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = `report_${reportId}.json`;
-            a.click();
-            window.URL.revokeObjectURL(url);
-        } catch (error) {
-            // addNotification(
-            //   error.response?.data?.message || "Failed to download report",
-            //   "error"
-            // );
-        }
+        const response = await httpClient.get(
+            `/projectreport/download/${reportId}`,
+            {
+                responseType: "blob",
+            }
+        );
+        const blob = new Blob([response.data], { type: "application/json" });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `report_${reportId}.json`;
+        a.click();
+        window.URL.revokeObjectURL(url);
     };
 
     return (
@@ -120,11 +94,8 @@ const ProjectDetailsTab = ({ project, reports, onReportDeleted }) => {
                             </thead>
                             <tbody>
                                 {reports
-                                    .slice() // make a shallow copy to avoid mutating original reports array
-                                    .sort(
-                                        (a, b) =>
-                                            new Date(b.createdAtUtc) - new Date(a.createdAtUtc)
-                                    )
+                                    .slice()
+                                    .sort((a, b) => new Date(b.createdAtUtc) - new Date(a.createdAtUtc))
                                     .map((report, index) => (
                                         <tr key={report.id}>
                                             <td>{index + 1}</td>

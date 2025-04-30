@@ -83,9 +83,8 @@ public class ProjectService(
         project.Description = projectRequest.Description;
         project.Owner = owner;
         project.ModificationDate = DateOnly.FromDateTime(DateTime.Today);
-        project.EndDate = projectRequest.Finished ? DateOnly.FromDateTime(DateTime.Today) : project.EndDate;
+        project.EndDate = projectRequest.Finished ? DateOnly.FromDateTime(DateTime.Today) : null;
 
-        // return await projectRepository.UpdateProjectAsync(project);
         var result = await projectRepository.UpdateProjectAsync(project);
         if (result.IsFailure)
         {

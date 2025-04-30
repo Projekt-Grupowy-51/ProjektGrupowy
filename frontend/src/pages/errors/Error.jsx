@@ -2,20 +2,21 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../App";
 
-const NotFound = () => {
+const Error = () => {
 
   return (
     <div className="container d-flex align-items-center justify-content-center mb-0">
       <div className="text-center">
-        <h1 className="display-1 fw-bold text-warning">404</h1>
-        <h2 className="mb-3">Page Not Found</h2>
+        <h1 className="display-1 fw-bold text-danger">Error</h1>
+        <h2 className="mb-3">Connection Issue</h2>
         <p className="text-muted">
-          The page you’re looking for doesn’t exist or has been moved.
+          We're having trouble connecting to the server. Please try again later.
         </p>
+
 
       </div>
     </div>
   );
 };
 
-export default NotFound;
+export default Error;

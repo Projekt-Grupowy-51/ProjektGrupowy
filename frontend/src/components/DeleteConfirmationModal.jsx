@@ -1,15 +1,16 @@
 ﻿import React from 'react';
-import './css/Modal.css'
+import './css/Modal.css';
 import { useTranslation } from 'react-i18next';
 
 const DeleteConfirmationModal = ({
-                                     show,
-                                     itemType,
-                                     onConfirm,
-                                     onCancel
-                                 }) => {
-    if (!show) return null;
+    show,
+    itemType,
+    onConfirm,
+    onCancel
+}) => {
     const { t } = useTranslation(['common']);
+    
+    if (!show) return null;
 
     return (
         <div className="modal-overlay">
