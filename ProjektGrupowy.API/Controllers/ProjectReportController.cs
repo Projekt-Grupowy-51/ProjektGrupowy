@@ -87,12 +87,7 @@ public class ProjectReportController(
     [HttpDelete("{reportId:int}")]
     public async Task<IActionResult> DeleteReport(int reportId)
     {
-        var result = await projectReportService.GetReportAsync(reportId);
-        if (result.IsFailure)
-            return NotFound(result.GetErrorOrThrow());
-
-        var report = result.GetValueOrThrow();
-        await projectReportService.DeleteReportAsync(report);
+        await projectReportService.DeleteReportAsync(reportId);
         return NoContent();
     }
 }

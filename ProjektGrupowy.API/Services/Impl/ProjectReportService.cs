@@ -48,11 +48,24 @@ public class ProjectReportService(
         return reportOpt;
     }
 
-    public async Task DeleteReportAsync(GeneratedReport report)
+    public async Task DeleteReportAsync(int reportId)
     {
-        await projectReportRepository.DeleteReportAsync(report);
+        var reportOpt = await projectReportRepository.GetReportAsync(reportId);
+        if (reportOpt.IsFailure)
+        {
+            await messageService.SendInfoAsync(currentUserService.UserId, "Error while deleting report.");
+        }
+
+        var reportEntity = reportOpt.GetValueOrThrow();
+        var authResult = await authorizationService.AuthorizeAsync(currentUserService.User, reportEntity, new ResourceOperationRequirement(ResourceOperation.Delete));
+        if (!authResult.Succeeded)
+        {
+            throw new ForbiddenException("You do not have permission to delete this report.");
+        }
+
+        await projectReportRepository.DeleteReportAsync(reportEntity);
         await messageService.SendInfoAsync(
-            report.Project.CreatedById, 
+            currentUserService.UserId, 
             $"Report was deleted.");
     }
 }
