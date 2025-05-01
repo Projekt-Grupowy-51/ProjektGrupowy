@@ -8,11 +8,13 @@
   "table": {
     "label": "Etykieta",
     "labeler": "Etykietujący",
+    "subject":  "Temat",
     "start": "Początek",
     "end": "Koniec",
     "ins_date": "Data Dodania",
     "title": "Tytuł",
-    "position": "Pozycja"
+    "position": "Pozycja",
+    "videoId":  "Wideo Id"
   },
   "buttons": {
     "save": "Zapisz",

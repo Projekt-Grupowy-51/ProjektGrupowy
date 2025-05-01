@@ -44,8 +44,6 @@ public class VideoGroupController(
     [HttpPost]
     public async Task<ActionResult<VideoGroupResponse>> PostVideoGroupAsync(VideoGroupRequest videoGroupRequest)
     {
-        videoGroupRequest.OwnerId = User.GetUserId();
-
         var result = await videoGroupService.AddVideoGroupAsync(videoGroupRequest);
         if (result.IsFailure)
             return BadRequest(result.GetErrorOrThrow());
@@ -60,8 +58,6 @@ public class VideoGroupController(
     [HttpPut("{id:int}")]
     public async Task<IActionResult> PutVideoGroupAsync(int id, VideoGroupRequest videoGroupRequest)
     {
-        videoGroupRequest.OwnerId = User.GetUserId();
-
         var videoGroupResult = await videoGroupService.GetVideoGroupAsync(id);
         if (videoGroupResult.IsFailure)
         {

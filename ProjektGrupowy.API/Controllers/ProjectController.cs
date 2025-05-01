@@ -73,8 +73,6 @@ public class ProjectController(
     [HttpPut("{id:int}")]
     public async Task<IActionResult> PutProjectAsync(int id, ProjectRequest projectRequest)
     {
-        projectRequest.OwnerId = User.GetUserId();
-
         var updateResult = await projectService.UpdateProjectAsync(id, projectRequest);
         return updateResult.IsSuccess
             ? NoContent()
@@ -85,8 +83,6 @@ public class ProjectController(
     [HttpPost]
     public async Task<ActionResult<ProjectResponse>> PostProject(ProjectRequest projectRequest)
     {
-        projectRequest.OwnerId = User.GetUserId();
-
         var projectResult = await projectService.AddProjectAsync(projectRequest);
         if (!projectResult.IsSuccess)
         {
@@ -102,8 +98,6 @@ public class ProjectController(
     [HttpPost("join")]
     public async Task<IActionResult> AssignLabelerToGroupAssignment(LabelerAssignmentDto laveAssignmentDto)
     {
-        laveAssignmentDto.LabelerId = User.GetUserId();
-
         var result = await projectService.AddLabelerToProjectAsync(laveAssignmentDto);
 
         return result.IsSuccess

@@ -8,7 +8,7 @@ namespace ProjektGrupowy.API.Data
         {
             return projects
                 .Where(p => isAdmin || 
-                           p.Owner.Id == userId || 
+                           p.CreatedBy.Id == userId || 
                            p.ProjectLabelers.Any(l => l.Id == userId));
         }
 
@@ -16,7 +16,7 @@ namespace ProjektGrupowy.API.Data
         {
             return videoGroups
                 .Where(vg => isAdmin || 
-                            vg.Project.Owner.Id == userId || 
+                            vg.Project.CreatedBy.Id == userId || 
                             vg.SubjectVideoGroupAssignments.Any(svga => svga.Labelers.Any(l => l.Id == userId)));
         }
 
@@ -24,7 +24,7 @@ namespace ProjektGrupowy.API.Data
         {
             return videos
                 .Where(v => isAdmin || 
-                           v.VideoGroup.Project.Owner.Id == userId || 
+                           v.VideoGroup.Project.CreatedBy.Id == userId || 
                            v.VideoGroup.SubjectVideoGroupAssignments.Any(svga => svga.Labelers.Any(l => l.Id == userId)));
         }
 
@@ -32,7 +32,7 @@ namespace ProjektGrupowy.API.Data
         {
             return subjects
                 .Where(s => isAdmin || 
-                           s.Project.Owner.Id == userId || 
+                           s.Project.CreatedBy.Id == userId || 
                            s.SubjectVideoGroupAssignments.Any(svga => svga.Labelers.Any(l => l.Id == userId)));
         }
 
@@ -40,7 +40,7 @@ namespace ProjektGrupowy.API.Data
         {
             return labels
                 .Where(l => isAdmin || 
-                           l.Subject.Project.Owner.Id == userId || 
+                           l.Subject.Project.CreatedBy.Id == userId || 
                            l.Subject.SubjectVideoGroupAssignments.Any(svga => svga.Labelers.Any(lab => lab.Id == userId)));
         }
 
@@ -48,29 +48,29 @@ namespace ProjektGrupowy.API.Data
         {
             return assignedLabels
                 .Where(al => isAdmin || 
-                            al.Owner.Id == userId || 
-                            al.Video.VideoGroup.Project.Owner.Id == userId);
+                            al.CreatedBy.Id == userId || 
+                            al.Video.VideoGroup.Project.CreatedBy.Id == userId);
         }
 
         public static IQueryable<ProjectAccessCode> FilteredProjectAccessCodes(this IQueryable<ProjectAccessCode> projectAccessCodes, string userId, bool isAdmin = false)
         {
             return projectAccessCodes
                 .Where(pac => isAdmin || 
-                             pac.Project.Owner.Id == userId);
+                             pac.CreatedBy.Id == userId);
         }
 
         public static IQueryable<SubjectVideoGroupAssignment> FilteredSubjectVideoGroupAssignments(this IQueryable<SubjectVideoGroupAssignment> assignments, string userId, bool isAdmin = false)
         {
             return assignments
                 .Where(svga => isAdmin || 
-                              svga.Subject.Project.Owner.Id == userId || 
+                              svga.Subject.Project.CreatedBy.Id == userId || 
                               svga.Labelers.Any(l => l.Id == userId));
         }
 
         public static IQueryable<GeneratedReport> FilteredGeneratedReports(this IQueryable<GeneratedReport> reports, string userId, bool isAdmin = false)
         {
             return reports
-                .Where(r => isAdmin || r.Owner.Id == userId);
+                .Where(r => isAdmin || r.CreatedBy.Id == userId);
         }
     }
 }

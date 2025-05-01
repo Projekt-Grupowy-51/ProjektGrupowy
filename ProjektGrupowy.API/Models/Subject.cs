@@ -21,9 +21,9 @@ public class Subject : IOwnedEntity
     public virtual ICollection<Label>? Labels { get; set; }
 
     public virtual ICollection<SubjectVideoGroupAssignment>? SubjectVideoGroupAssignments { get; set; }
-    public string OwnerId { get; set; }
+    public string CreatedById { get; set; }
 
-    [ForeignKey(nameof(OwnerId))]
-    public virtual User Owner { get; set; }
+    [ForeignKey(nameof(CreatedById))]
+    public virtual User CreatedBy { get; set; }
     public DateTime? DelDate { get; set; } = null;
 }

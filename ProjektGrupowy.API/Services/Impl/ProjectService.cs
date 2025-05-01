@@ -1,6 +1,9 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using ProjektGrupowy.API.Authorization;
 using ProjektGrupowy.API.DTOs.LabelerAssignment;
 using ProjektGrupowy.API.DTOs.Project;
+using ProjektGrupowy.API.Exceptions;
 using ProjektGrupowy.API.Models;
 using ProjektGrupowy.API.Repositories;
 using ProjektGrupowy.API.SignalR;
@@ -12,9 +15,28 @@ public class ProjectService(
     IProjectRepository projectRepository,
     IMessageService messageService,
     ISubjectVideoGroupAssignmentRepository subjectVideoGroupAssignmentRepository,
+    ICurrentUserService currentUserService,
+    IAuthorizationService authorizationService,
     UserManager<User> userManager) : IProjectService
 {
-    public async Task<Optional<IEnumerable<Project>>> GetProjectsAsync() => await projectRepository.GetProjectsAsync();
+    public async Task<Optional<IEnumerable<Project>>> GetProjectsAsync()
+    {
+        var projectsOptional = await projectRepository.GetProjectsAsync();
+        if (projectsOptional.IsFailure)
+        {
+            return projectsOptional;
+        }
+
+        var projects = projectsOptional.GetValueOrThrow();
+
+        var authResult = await authorizationService.AuthorizeAsync(currentUserService.User, projects, new ResourceOperationRequirement(ResourceOperation.Read));
+        if (!authResult.Succeeded)
+        {
+            throw new ForbiddenException();
+        }
+        
+        return projectsOptional;
+    }
 
     public async Task<Optional<Project>> GetProjectAsync(int id, string? userId = null, bool? isAdmin = null)
     {
@@ -23,44 +45,48 @@ public class ProjectService(
         {
             return projectOptional;
         }
-        
+
+        var project = projectOptional.GetValueOrThrow();
+
+        if (userId == null)
+        {
+            var authResult = await authorizationService.AuthorizeAsync(currentUserService.User, project, new ResourceOperationRequirement(ResourceOperation.Read));
+            if (!authResult.Succeeded && userId != null)
+            {
+                throw new ForbiddenException();
+            }
+        }
+
         return projectOptional;
     }
 
     public async Task<Optional<Project>> AddProjectAsync(ProjectRequest projectRequest)
     {
-        var owner = await userManager.FindByIdAsync(projectRequest.OwnerId);
-
-        if (owner == null)
-        {
-            return Optional<Project>.Failure("Owner not found.");
-        }
-
         var project = new Project
         {
             Name = projectRequest.Name,
             Description = projectRequest.Description,
-            Owner = owner,
+            CreatedById = currentUserService.UserId,
             CreationDate = DateOnly.FromDateTime(DateTime.Today)
         };
 
-        // return await projectRepository.AddProjectAsync(project);
         var projectOptional = await projectRepository.AddProjectAsync(project);
+
         if (projectOptional.IsFailure)
         {
             await messageService.SendErrorAsync(
-                projectRequest.OwnerId,
+                currentUserService.UserId,
                 "Failed to create project");
-            return projectOptional;
         }
         else 
         {
             await messageService.SendSuccessAsync(
-                projectRequest.OwnerId,
+                currentUserService.UserId,
                 $"Project \"{projectRequest.Name}\" created successfully");
-            return projectOptional;
-        } 
-    } 
+        }
+
+        return projectOptional;
+    }
 
     public async Task<Optional<Project>> UpdateProjectAsync(int projectId, ProjectRequest projectRequest)
     {
@@ -73,15 +99,15 @@ public class ProjectService(
 
         var project = projectOptional.GetValueOrThrow();
 
-        var owner = await userManager.FindByIdAsync(projectRequest.OwnerId);
-        if (owner == null)
+        var authResult = await authorizationService.AuthorizeAsync(currentUserService.User, project, new ResourceOperationRequirement(ResourceOperation.Update));
+        if (!authResult.Succeeded)
         {
-            return Optional<Project>.Failure("Owner not found.");
+            throw new ForbiddenException();
         }
 
         project.Name = projectRequest.Name;
         project.Description = projectRequest.Description;
-        project.Owner = owner;
+        project.CreatedById = currentUserService.UserId;
         project.ModificationDate = DateOnly.FromDateTime(DateTime.Today);
         project.EndDate = projectRequest.Finished ? DateOnly.FromDateTime(DateTime.Today) : null;
 
@@ -89,24 +115,26 @@ public class ProjectService(
         if (result.IsFailure)
         {
             await messageService.SendErrorAsync(
-                projectRequest.OwnerId,
+                currentUserService.UserId,
                 "Failed to update project");
-            return result;
         }
         else 
         {
             await messageService.SendSuccessAsync(
-                projectRequest.OwnerId,
+                currentUserService.UserId,
                 "Project updated successfully");
-            return result;
         }
+
+        return result;
     }
 
     public async Task<Optional<bool>> AddLabelerToProjectAsync(LabelerAssignmentDto labelerAssignmentDto)
     {
+        var joinerId = currentUserService.UserId;
+
         var projectByCodeOpt = await projectRepository.GetProjectByAccessCodeAsync(labelerAssignmentDto.AccessCode);
 
-        var labelerOpt = await userManager.FindByIdAsync(labelerAssignmentDto.LabelerId);
+        var labelerOpt = await userManager.FindByIdAsync(joinerId);
 
         if (labelerOpt == null)
         {
@@ -116,7 +144,7 @@ public class ProjectService(
         if (projectByCodeOpt.IsFailure)
         {
             await messageService.SendErrorAsync(
-                labelerAssignmentDto.LabelerId,
+                joinerId,
                 "No project found!");
             return Optional<bool>.Failure("No project found!");
         }
@@ -128,15 +156,15 @@ public class ProjectService(
         await projectRepository.UpdateProjectAsync(project);
 
         await messageService.SendSuccessAsync(
-            labelerAssignmentDto.LabelerId,
+            joinerId,
             "Labeler added to project successfully");
 
         await messageService.SendInfoAsync(
-            project.Owner.Id,
+            project.CreatedById,
             $"Labeler \"{labelerOpt.UserName}\" joined the project \"{project.Name}\"");
 
         await messageService.SendMessageAsync(
-            project.Owner.Id, 
+            project.CreatedById, 
             MessageTypes.LabelersCountChanged,
             project.ProjectLabelers.Count);
 
@@ -153,6 +181,12 @@ public class ProjectService(
 
         var project = projectOptional.GetValueOrThrow();
 
+        var authResult = await authorizationService.AuthorizeAsync(currentUserService.User, project, new ResourceOperationRequirement(ResourceOperation.Read));
+        if (!authResult.Succeeded)
+        {
+            throw new ForbiddenException();
+        }
+
         var unassignedLabelers = project.ProjectLabelers
             .Where(labeler => !project.Subjects
                 .SelectMany(subject => subject.SubjectVideoGroupAssignments)
@@ -165,14 +199,25 @@ public class ProjectService(
     public async Task DeleteProjectAsync(int id)
     {
         var projectOpt = await projectRepository.GetProjectAsync(id);
-        if (projectOpt.IsSuccess)
+
+        if (projectOpt.IsFailure)
         {
-            var project = projectOpt.GetValueOrThrow();
-            await messageService.SendInfoAsync(
-                project.Owner.Id,
-                $"Project \"{project.Name}\" deleted successfully");
-            await projectRepository.DeleteProjectAsync(project);
+            await messageService.SendErrorAsync(
+                currentUserService.UserId,
+                "No project found!");
+            return;
         }
+
+        var project = projectOpt.GetValueOrThrow();
+        var authResult = await authorizationService.AuthorizeAsync(currentUserService.User, project, new ResourceOperationRequirement(ResourceOperation.Delete));
+        if (!authResult.Succeeded)
+        {
+            throw new ForbiddenException();
+        }
+
+        await messageService.SendInfoAsync(currentUserService.UserId, $"Project \"{project.Name}\" deleted successfully");
+        
+        await projectRepository.DeleteProjectAsync(project);
     }
 
     public async Task<Optional<bool>> UnassignLabelersFromProjectAsync(int projectId)
@@ -184,6 +229,13 @@ public class ProjectService(
         }
 
         var project = projectOpt.GetValueOrThrow();
+
+        var authResult = await authorizationService.AuthorizeAsync(currentUserService.User, project, new ResourceOperationRequirement(ResourceOperation.Update));
+        if (!authResult.Succeeded)
+        {
+            throw new ForbiddenException();
+        }
+
         var assignments = project.Subjects
             .SelectMany(s => s.SubjectVideoGroupAssignments)
             .ToList();
@@ -194,9 +246,8 @@ public class ProjectService(
             await subjectVideoGroupAssignmentRepository.UpdateSubjectVideoGroupAssignmentAsync(assignment);
         }
 
-        await messageService.SendSuccessAsync(
-            project.Owner.Id,
-            "Labelers unassigned from project successfully");
+        await messageService.SendSuccessAsync(currentUserService.UserId, "Labelers unassigned from project successfully");
+
         return Optional<bool>.Success(true);
     }
 
@@ -209,12 +260,17 @@ public class ProjectService(
         }
         
         var project = projectOptional.GetValueOrThrow();
-        var projectOwnerId = project.Owner.Id;
-        
+
+        var authResult = await authorizationService.AuthorizeAsync(currentUserService.User, project, new ResourceOperationRequirement(ResourceOperation.Update));
+        if (!authResult.Succeeded)
+        {
+            throw new ForbiddenException();
+        }
+
         var totalAssignmentCount = project.Subjects.Sum(subject => subject.SubjectVideoGroupAssignments.Count);
         if (totalAssignmentCount == 0)
         {
-            await messageService.SendErrorAsync(projectOwnerId, "There are no assignments.");
+            await messageService.SendErrorAsync(currentUserService.UserId, "There are no assignments.");
             return Optional<bool>.Failure("There are no assignments.");
         }
 
@@ -222,29 +278,28 @@ public class ProjectService(
         if (unassignedLabelersResult.IsFailure)
         {
             await messageService.SendErrorAsync(
-                projectOwnerId,
+                currentUserService.UserId,
                 "No unassigned labelers found!");
             return Optional<bool>.Failure("No unassigned labelers found!");
         }
 
         var unassignedLabelers = unassignedLabelersResult.GetValueOrThrow().ToList();
 
-        // return await AssignEquallyAsync(projectId, unassignedLabelers);
         var result = await AssignEquallyAsync(projectId, unassignedLabelers);
         if (result.IsFailure)
         {
             await messageService.SendErrorAsync(
-                projectOwnerId,
+                currentUserService.UserId,
                 "Failed to assign labelers");
-            return result;
         }
         else 
         {
             await messageService.SendSuccessAsync(
-                projectOwnerId,
+                currentUserService.UserId,
                 "Labelers assigned successfully");
-            return result;
         }
+
+        return result;
     }
 
     private async Task<Optional<bool>> AssignEquallyAsync(int projectId, IReadOnlyCollection<User> labelers)
@@ -330,6 +385,11 @@ public class ProjectService(
         }
 
         var assignment = assignmentOptional.GetValueOrThrow();
+        var authResult = await authorizationService.AuthorizeAsync(currentUserService.User, assignment, new ResourceOperationRequirement(ResourceOperation.Update));
+        if (!authResult.Succeeded)
+        {
+            throw new ForbiddenException();
+        }
 
         foreach (var labeler in labelers)
         {
@@ -350,6 +410,12 @@ public class ProjectService(
         }
 
         var project = projectOptional.GetValueOrThrow();
+        var authResult = await authorizationService.AuthorizeAsync(currentUserService.User, project, new ResourceOperationRequirement(ResourceOperation.Read));
+        if (!authResult.Succeeded)
+        {
+            throw new ForbiddenException();
+        }
+
         return Optional<IEnumerable<User>>.Success(project.ProjectLabelers);
     }
 

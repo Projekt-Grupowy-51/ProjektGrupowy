@@ -53,8 +53,6 @@ public class AccessCodeController(
     public async Task<ActionResult<AccessCodeResponse>> AddValidCodeToProjectAsync(
         CreateAccessCodeRequest createCodeRequest)
     {
-        createCodeRequest.OwnerId = User.GetUserId();
-
         var project = await projectService.GetProjectAsync(createCodeRequest.ProjectId);
         if (project.IsFailure)
             return NotFound(project.GetErrorOrThrow());

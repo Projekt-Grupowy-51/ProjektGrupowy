@@ -56,8 +56,6 @@ public class SubjectVideoGroupAssignmentController(
     [HttpPost]
     public async Task<ActionResult<SubjectVideoGroupAssignmentResponse>> AddSubjectVideoGroupAssignmentAsync(SubjectVideoGroupAssignmentRequest subjectVideoGroupAssignmentRequest)
     {
-        subjectVideoGroupAssignmentRequest.OwnerId = User.GetUserId();
-        
         var result = await subjectVideoGroupAssignmentService.AddSubjectVideoGroupAssignmentAsync(subjectVideoGroupAssignmentRequest);
 
         if (result.IsFailure) 
@@ -73,8 +71,6 @@ public class SubjectVideoGroupAssignmentController(
     [HttpPut("{id:int}")]
     public async Task<IActionResult> PutSubjectVideoGroupAssignmentAsync(int id, SubjectVideoGroupAssignmentRequest subjectVideoGroupAssignmentRequest)
     {
-        subjectVideoGroupAssignmentRequest.OwnerId = User.GetUserId();
-
         var subjectVideoGroupAssignment = await subjectVideoGroupAssignmentService.GetSubjectVideoGroupAssignmentAsync(id);
         if (subjectVideoGroupAssignment.IsFailure)
             return NotFound(subjectVideoGroupAssignment.GetErrorOrThrow());
@@ -103,14 +99,6 @@ public class SubjectVideoGroupAssignmentController(
     [HttpPost("{assignmentId}/assign-labeler/{labelerId}")]
     public async Task<IActionResult> AssignLabelerToSubjectVideoGroup(int assignmentId, string labelerId)
     {
-        var assignment = await subjectVideoGroupAssignmentService.GetSubjectVideoGroupAssignmentAsync(assignmentId);
-        if (assignment.IsFailure)
-            return NotFound(assignment.GetErrorOrThrow());
-
-        var labeler = await userManager.FindByIdAsync(labelerId.ToString());
-        if (labeler == null)
-            return NotFound($"Labeler with ID {labelerId} not found.");
-
         var result = await subjectVideoGroupAssignmentService.AssignLabelerToAssignmentAsync(assignmentId, labelerId);
         return result.IsSuccess ? Ok("Labeler assigned successfully") : NotFound(result.GetErrorOrThrow());
     }
@@ -119,14 +107,6 @@ public class SubjectVideoGroupAssignmentController(
     [HttpDelete("{assignmentId}/unassign-labeler/{labelerId}")]
     public async Task<IActionResult> UnassignLabelerFromSubjectVideoGroup(int assignmentId, string labelerId)
     {
-        var assignment = await subjectVideoGroupAssignmentService.GetSubjectVideoGroupAssignmentAsync(assignmentId);
-        if (assignment.IsFailure)
-            return NotFound(assignment.GetErrorOrThrow());
-
-        var labeler = await userManager.FindByIdAsync(labelerId.ToString());
-        if (labeler == null)
-            return NotFound($"Labeler with ID {labelerId} not found.");
-
         var result = await subjectVideoGroupAssignmentService.UnassignLabelerFromAssignmentAsync(assignmentId, labelerId);
         return result.IsSuccess ? Ok("Labeler unassigned successfully") : NotFound(result.GetErrorOrThrow());
     }

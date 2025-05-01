@@ -25,6 +25,8 @@ using Microsoft.AspNetCore.SignalR;
 using ProjektGrupowy.API.Utils.Extensions;
 using ProjektGrupowy.API.Services.Background;
 using ProjektGrupowy.API.Services.Background.Impl;
+using ProjektGrupowy.API.Authorization;
+using ProjektGrupowy.API.Exceptions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -71,33 +73,43 @@ app.UseExceptionHandler(errorApp =>
 {
     errorApp.Run(async context =>
     {
-        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
         context.Response.ContentType = "application/json";
-        
+
         using var scope = app.Services.CreateScope();
         var messageService = scope.ServiceProvider.GetRequiredService<IMessageService>();
+        var currentUserService = scope.ServiceProvider.GetRequiredService<ICurrentUserService>();
 
         var exceptionHandlerPathFeature = context.Features.Get<IExceptionHandlerPathFeature>();
-        if (exceptionHandlerPathFeature?.Error != null)
+        var exception = exceptionHandlerPathFeature?.Error;
+
+        if (exception != null)
         {
-            Log.Error("An error occurred: {Error}", exceptionHandlerPathFeature.Error);
+            Log.Error("An error occurred: {Error}", exception);
 
-            try
+            if (exception is ForbiddenException)
             {
-                var identity = context.User.GetUserId();
-                var errorMessage = exceptionHandlerPathFeature.Error.Message;
-                await messageService.SendErrorAsync(identity, $"Something went wrong: {errorMessage}");
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "An error occurred: {Error}", ex.Message);
-            }
+                context.Response.StatusCode = StatusCodes.Status403Forbidden;
 
-            await context.Response.WriteAsync(new
+                await messageService.SendErrorAsync(currentUserService.UserId, "You do not have permission to perform this action.");
+
+                await context.Response.WriteAsJsonAsync(new
+                {
+                    StatusCode = context.Response.StatusCode,
+                    Message = exception.Message
+                });
+            }
+            else
             {
-                StatusCode = context.Response.StatusCode,
-                Message = "An internal server error occurred."
-            }.ToString());
+                context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+
+                await messageService.SendErrorAsync(currentUserService.UserId, "An internal server error occurred.");
+
+                await context.Response.WriteAsJsonAsync(new
+                {
+                    StatusCode = context.Response.StatusCode,
+                    Message = "An internal server error occurred."
+                });
+            }
         }
     });
 });
@@ -175,6 +187,7 @@ static void AddServices(WebApplicationBuilder builder)
 
     builder.Services.AddHttpContextAccessor();
     builder.Services.AddTransient<ICurrentUserService, CurrentUserService>();
+    builder.Services.AddScoped<IAuthorizationHandler, CustomAuthorizationHandler>();
 
     // Repositories
     builder.Services.AddScoped<IAssignedLabelRepository, AssignedLabelRepository>();

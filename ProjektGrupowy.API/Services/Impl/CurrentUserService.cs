@@ -8,5 +8,6 @@ namespace ProjektGrupowy.API.Services.Impl
         public string UserId => httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
 
         public bool IsAdmin => httpContextAccessor.HttpContext?.User?.IsInRole(RoleConstants.Admin) ?? false;
+        public ClaimsPrincipal User => httpContextAccessor.HttpContext?.User;
     }
 }

@@ -1,14 +1,23 @@
 ﻿import { getTextColor } from "../utils";
 import DataTable from "../../../components/DataTable.jsx";
 import DeleteButton from "../../../components/DeleteButton.jsx";
+import { useTranslation } from "react-i18next";
 
 const LabelInterface = ({ labels, assignedLabels, labelActions }) => {
+    const { t } = useTranslation(['videos', 'common']);
+
     const labelColumns = [
-        { field: "labelName", header: "Label Name" },
-        { field: "labelerName", header: "Labeler" },
-        { field: "start", header: "Start" },
-        { field: "end", header: "End" },
-        { field: "insDate", header: "Date", render: (l) => new Date(l.insDate).toLocaleString() },
+        { field: "labelName", header: t('table.label') },
+        { field: "labelerName", header: t('table.labeler') },
+        { field: "subjectName", header: t('table.subject') },
+        { field: "start", header: t('table.start') },
+        { field: "end", header: t('table.end') },
+        {
+            field: "insDate",
+            header: t('table.ins_date'),
+            render: (label) => new Date(label.insDate).toLocaleString(),
+        },
+        { field: "videoId", header: t('table.videoId') }
     ];
 
     return (

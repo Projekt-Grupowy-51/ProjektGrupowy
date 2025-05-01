@@ -43,8 +43,6 @@ public class LabelController(
     [HttpPost]
     public async Task<ActionResult<LabelResponse>> AddLabelAsync(LabelRequest labelRequest)
     {
-        labelRequest.OwnerId = User.GetUserId();
-
         var result = await labelService.AddLabelAsync(labelRequest);
 
         if (result.IsFailure) 
@@ -60,8 +58,6 @@ public class LabelController(
     [HttpPut("{id:int}")]
     public async Task<IActionResult> PutLabelAsync(int id, LabelRequest labelRequest)
     {
-        labelRequest.OwnerId = User.GetUserId();
-
         var labelResult = await labelService.GetLabelAsync(id);
         if (labelResult.IsFailure)
         {

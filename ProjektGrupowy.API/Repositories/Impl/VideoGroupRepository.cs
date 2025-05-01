@@ -110,7 +110,6 @@ public class VideoGroupRepository(AppDbContext context, ILogger<VideoGroupReposi
         try
         {
             var videoGroup = await context.VideoGroups.FilteredVideoGroups(currentUserService.UserId, currentUserService.IsAdmin)
-                .AsNoTracking()
                 .FirstOrDefaultAsync(vg => vg.Id == id);
 
             if (videoGroup is null)

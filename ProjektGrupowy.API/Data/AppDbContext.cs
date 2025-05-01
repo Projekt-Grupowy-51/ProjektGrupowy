@@ -71,9 +71,9 @@ public class AppDbContext : IdentityDbContext<User>
 
         // === Relacja 1:N - Właściciel projektu ===
         modelBuilder.Entity<Project>()
-            .HasOne(p => p.Owner)
+            .HasOne(p => p.CreatedBy)
             .WithMany(u => u.OwnedProjects) // Musi istnieć w User.cs
-            .HasForeignKey(p => p.OwnerId)
+            .HasForeignKey(p => p.CreatedById)
             .OnDelete(DeleteBehavior.SetNull);
 
         // === Relacja N:N - Labelerzy w projekcie ===
@@ -85,8 +85,8 @@ public class AppDbContext : IdentityDbContext<User>
         // 1:N - Właściciel przypisania
         modelBuilder.Entity<User>()
             .HasMany(u => u.OwnedAssignments)
-            .WithOne(svga => svga.Owner)
-            .HasForeignKey(svga => svga.OwnerId)
+            .WithOne(svga => svga.CreatedBy)
+            .HasForeignKey(svga => svga.CreatedById)
             .OnDelete(DeleteBehavior.Restrict);
 
         // N:N - Labelerzy przypisani do zadań

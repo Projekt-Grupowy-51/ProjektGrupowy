@@ -6,12 +6,14 @@ import DeleteButton from "../components/DeleteButton";
 import DataTable from "../components/DataTable";
 import { useNotification } from "../context/NotificationContext";
 import { formatISODate } from "../utils/dateFormatter";
+import { useTranslation } from "react-i18next";
 
 function useVideoGroup(videoGroupId, currentBatch, setCurrentBatch) {
   const { addNotification } = useNotification();
   const [videoPositions, setVideoPositions] = useState({});
   const [videos, setVideos] = useState([]);
-  const [streams, setStreams] = useState([]);
+    const [streams, setStreams] = useState([]);
+
 
   useEffect(() => {
     if (videoGroupId !== null) {
@@ -483,6 +485,7 @@ const Videos = () => {
   const [videoGroupId, setVideoGroupId] = useState(null);
   const [currentBatch, setCurrentBatch] = useState(1);
   const videoRefs = useRef([]);
+    const { t } = useTranslation(['videos', 'common']);
 
   // Initialize refs for batch transitions
   const endedVideosCount = useRef(0);
@@ -522,17 +525,19 @@ const Videos = () => {
   } = labelsManager;
 
   // Define columns for the assigned labels table
-  const labelColumns = [
-    { field: "labelName", header: "Label" },
-    { field: "labelerName", header: "Labeler" },
-    { field: "start", header: "Start Time" },
-    { field: "end", header: "End Time" },
-    {
-      field: "insDate",
-      header: "Ins Date",
-      render: (label) => new Date(label.insDate).toLocaleString(),
-    },
-  ];
+    const labelColumns = [
+        { field: "labelName", header: t('table.label') },
+        { field: "labelerName", header: t('table.labeler') },
+        { field: "subjectName", header: t('table.subject') },
+        { field: "start", header: t('table.start') },
+        { field: "end", header: t('table.end') },
+        {
+            field: "insDate",
+            header: t('table.ins_date'),
+            render: (label) => new Date(label.insDate).toLocaleString(),
+        },
+        { field: "videoId", header: t('table.videoId') }
+    ];
 
   useEffect(() => {
     if (id) {

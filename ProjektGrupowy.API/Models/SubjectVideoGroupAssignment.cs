@@ -21,10 +21,10 @@ public class SubjectVideoGroupAssignment : IOwnedEntity
     public virtual VideoGroup VideoGroup { get; set; }
 
     public virtual ICollection<User>? Labelers { get; set; }
-    public string OwnerId { get; set; }
+    public string CreatedById { get; set; }
 
-    [ForeignKey(nameof(OwnerId))]
-    public virtual User Owner { get; set; }
+    [ForeignKey(nameof(CreatedById))]
+    public virtual User CreatedBy { get; set; }
     public DateTime? DelDate { get; set; } = null;
 
     //public string ToJson()

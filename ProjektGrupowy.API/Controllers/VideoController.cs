@@ -55,8 +55,6 @@ public class VideoController(
     [HttpPost]
     public async Task<ActionResult<VideoResponse>> AddVideoAsync(VideoRequest videoRequest)
     {
-        videoRequest.OwnerId = User.GetUserId();
-
         var result = await videoService.AddVideoAsync(videoRequest);
 
         if (result.IsFailure)
@@ -73,8 +71,6 @@ public class VideoController(
     [HttpPut("{id:int}")]
     public async Task<IActionResult> PutVideoAsync(int id, VideoRequest videoRequest)
     {
-        videoRequest.OwnerId = User.GetUserId();
-
         var video = await videoService.GetVideoAsync(id);
         if (video.IsFailure)
             return NotFound(video.GetErrorOrThrow());

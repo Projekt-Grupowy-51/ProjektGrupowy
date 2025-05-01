@@ -45,8 +45,6 @@ public class AssignedLabelController(
     [HttpPost]
     public async Task<ActionResult<AssignedLabelResponse>> AddAssignedLabelAsync(AssignedLabelRequest assignedLabelRequest)
     {
-        assignedLabelRequest.LabelerId = User.GetUserId();
-        
         var labelResult = await labelService.GetLabelAsync(assignedLabelRequest.LabelId);
         if (!labelResult.IsSuccess)
             return NotFound(labelResult.GetErrorOrThrow());

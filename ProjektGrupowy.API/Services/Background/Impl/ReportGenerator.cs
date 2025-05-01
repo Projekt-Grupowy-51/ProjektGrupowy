@@ -20,14 +20,14 @@ public class ReportGenerator(
         var projectOpt = await projectService.GetProjectAsync(projectId, userId, isAdmin);
         
         var project = projectOpt.GetValueOrThrow();
-        var projectOwnerId = project.OwnerId;
+
         
         var reportOpt = await WriteReportToFileAsync(project);
         if (reportOpt.IsFailure)
         {
             logger.LogError("Failed to generate report for project {ProjectId}: {Error}", projectId, reportOpt.GetErrorOrThrow());
             await messageService.SendErrorAsync(
-                project.OwnerId, 
+                userId, 
                 $"Failed to generate report: {reportOpt.GetErrorOrThrow()}");
             return;
         }
@@ -41,17 +41,17 @@ public class ReportGenerator(
         {
             logger.LogError("Failed to update project {ProjectId} after report generation: {Error}", projectId, updateResult.GetErrorOrThrow());
             await messageService.SendErrorAsync(
-                project.OwnerId, 
+                userId, 
                 $"Failed to update project after report generation: {updateResult.GetErrorOrThrow()}");
             return;
         }
 
         await messageService.SendSuccessAsync(
-            projectOwnerId, 
+            userId, 
             "Report generation completed successfully.");
         
         await messageService.SendMessageAsync(
-            projectOwnerId,
+            userId,
             MessageTypes.ReportGenerated,
             "");
     }
@@ -74,7 +74,7 @@ public class ReportGenerator(
             var report = new GeneratedReport
             {
                 Path = filePath,
-                Owner = project.Owner,
+                CreatedBy = project.CreatedBy,
                 Name = $"Summary report {DateTime.UtcNow:dd.MM.yyyy HH:mm}",
             };
 
@@ -98,13 +98,13 @@ public class ReportGenerator(
                     .Select(label => new
                     {
                         LabelId = label.Label.Id,
-                        LabelerId = label.Owner.UserName,
+                        LabelerId = label.CreatedBy.UserName,
                         LabelName = label.Label.Name,
                         label.Start,
                         label.End,
                         VideoId = label.Video.Id,
                         label.Label.ColorHex,
-                        VideoGroupName = label.Video.VideoGroup.Name
+                        VideoGroupName = label.Video.VideoGroup.Name,
                     })
                     .GroupBy(l => l.VideoGroupName)
                     .Select(l => new
