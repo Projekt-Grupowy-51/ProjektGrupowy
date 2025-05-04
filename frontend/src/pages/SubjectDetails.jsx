@@ -1,21 +1,17 @@
 ﻿import React, { useState, useEffect } from "react";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import httpClient from "../httpclient";
 import NavigateButton from "../components/NavigateButton";
 import DeleteButton from "../components/DeleteButton";
 import DataTable from "../components/DataTable";
 import "./css/ScientistProjects.css";
-import { useNotification } from "../context/NotificationContext";
 import { useTranslation } from 'react-i18next';
 
 const SubjectDetails = () => {
   const { t } = useTranslation(['subjects', 'common']);
   const { id } = useParams();
-  const [subjectDetails, setSubjectDetails] = useState(null);
+  const [subjectDetails, setSubjectDetails] = useState({});
   const [labels, setLabels] = useState([]);
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { addNotification } = useNotification();
 
   const labelColumns = [
     { field: "name", header: t('subjects:columns.name') },
@@ -39,51 +35,24 @@ const SubjectDetails = () => {
   ];
 
   const fetchSubjectDetails = async () => {
-    try {
-      const response = await httpClient.get(`/subject/${id}`);
-      setSubjectDetails(response.data);
-      await fetchLabels();
-    } catch (error) {
-      addNotification(t('subjects:notifications.load_error'), "error");
-    }
+    const response = await httpClient.get(`/subject/${id}`);
+    setSubjectDetails(response.data);
   };
 
   const fetchLabels = async () => {
-    try {
-      const response = await httpClient.get(`/subject/${id}/label`);
-      setLabels(response.data.filter(l => l.subjectId === parseInt(id)).sort((a, b) => a.id - b.id));
-    } catch (error) {
-      addNotification(t('subjects:notifications.labels_error'), "error");
-    }
+    const response = await httpClient.get(`/subject/${id}/label`);
+    setLabels(response.data.filter(l => l.subjectId === parseInt(id)).sort((a, b) => a.id - b.id));
   };
 
   useEffect(() => {
-    if (location.state?.successMessage) {
-      addNotification(location.state.successMessage, "success");
-      window.history.replaceState({}, document.title);
-    }
-  }, [location.state]);
-
-  useEffect(() => {
-    if (id) fetchSubjectDetails();
+    fetchSubjectDetails();
+    fetchLabels();
   }, [id]);
 
   const handleDeleteLabel = async (labelId) => {
-    try {
-      await httpClient.delete(`/label/${labelId}`);
-      await fetchSubjectDetails();
-    } catch (error) {
-      //addNotification("Failed to delete label. Please try again.", "error");
-    }
+    await httpClient.delete(`/label/${labelId}`);
+    fetchLabels();
   };
-
-  if (!subjectDetails) return (
-      <div className="container d-flex justify-content-center align-items-center py-5">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">{t('common:loading')}</span>
-        </div>
-      </div>
-  );
 
   return (
       <div className="container">
@@ -121,8 +90,7 @@ const SubjectDetails = () => {
                   )}
                   deleteButton={(label) => (
                       <DeleteButton
-                          onConfirm={() => handleDeleteLabel(label.id)}
-                          itemName={label.name}
+                          onClick={() => handleDeleteLabel(label.id)}
                           itemType={t('subjects:labels.label')}
                       />
                   )}

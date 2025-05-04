@@ -44,7 +44,6 @@ public class SubjectController(
     [HttpPost]
     public async Task<ActionResult<SubjectResponse>> PostSubjectAsync(SubjectRequest subjectRequest)
     {
-        subjectRequest.OwnerId = User.GetUserId();
         var result = await subjectService.AddSubjectAsync(subjectRequest);
         if (result.IsFailure)
             return BadRequest(result.GetErrorOrThrow());
@@ -59,8 +58,6 @@ public class SubjectController(
     [HttpPut("{id:int}")]
     public async Task<IActionResult> PutSubjectAsync(int id, SubjectRequest subjectRequest)
     {
-        subjectRequest.OwnerId = User.GetUserId();
-
         var result = await subjectService.UpdateSubjectAsync(id, subjectRequest);
         return result.IsSuccess
             ? NoContent()

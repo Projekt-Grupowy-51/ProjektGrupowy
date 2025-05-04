@@ -13,10 +13,10 @@ public class AssignedLabel : IOwnedEntity
     [Required]
     public virtual Label Label { get; set; }
 
-    public string OwnerId { get; set; }
+    public string CreatedById { get; set; }
 
-    [ForeignKey(nameof(OwnerId))]
-    public virtual User Owner { get; set; }
+    [ForeignKey(nameof(CreatedById))]
+    public virtual User CreatedBy { get; set; }
 
     [Required]
     public virtual Video Video { get; set; }

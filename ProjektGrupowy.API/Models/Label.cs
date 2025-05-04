@@ -23,10 +23,10 @@ public class Label : IOwnedEntity
     public virtual Subject Subject { get; set; }
 
     public virtual ICollection<AssignedLabel>? AssignedLabels { get; set; }
-    public string OwnerId { get; set; }
+    public string CreatedById { get; set; }
 
-    [ForeignKey(nameof(OwnerId))]
-    public virtual User Owner { get; set; }
+    [ForeignKey(nameof(CreatedById))]
+    public virtual User CreatedBy { get; set; }
     public DateTime? DelDate { get; set; } = null;
 
 

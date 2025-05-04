@@ -11,4 +11,5 @@ public class AssignedLabelResponse
     public string Start { get; set; }
     public string End { get; set; }
     public DateTime InsDate { get; set; }
+    public string SubjectName { get; set; }
 }

@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import httpClient from "../httpclient";
 import NavigateButton from "../components/NavigateButton";
-import { useNotification } from "../context/NotificationContext";
 import { useTranslation } from 'react-i18next';
+import { useNotification } from "../context/NotificationContext";
 
 const LabelEdit = () => {
   const { id } = useParams();
@@ -15,32 +15,20 @@ const LabelEdit = () => {
     subjectId: null,
   });
   const [subjectName, setSubjectName] = useState("");
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { addNotification } = useNotification();
   const { t } = useTranslation(['labels', 'common']);
+  const { addNotification } = useNotification();
 
   useEffect(() => {
     const fetchLabelData = async () => {
-      try {
-        const response = await httpClient.get(`/Label/${id}`);
-        setLabelData(response.data);
-        fetchSubjectName(response.data.subjectId);
-      } catch (error) {
-        addNotification(
-            error.response?.data?.message || t('labels:notification.load_error'),
-            "error"
-        );
-      }
+      const response = await httpClient.get(`/Label/${id}`);
+      setLabelData(response.data);
+      fetchSubjectName(response.data.subjectId);
     };
 
     const fetchSubjectName = async (subjectId) => {
-      try {
-        const response = await httpClient.get(`/subject/${subjectId}`);
-        setSubjectName(response.data.name);
-      } catch (error) {
-        addNotification(t('labels:notification.subject_error'), "error");
-      }
+      const response = await httpClient.get(`/subject/${subjectId}`);
+      setSubjectName(response.data.name);
     };
 
     if (id) fetchLabelData();
@@ -60,26 +48,19 @@ const LabelEdit = () => {
       addNotification(t('labels:notification.validation.color'), "error");
       return false;
     }
+    if (!labelData.name) {
+      addNotification(t('labels:notification.validation.name'), "error");
+      return false;
+    }
     return true;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
-
-    setLoading(true);
-    try {
-      await httpClient.put(`/Label/${id}`, labelData);
-      addNotification(t('labels:notification.update_success'), "success");
-      navigate(`/subjects/${labelData.subjectId}`);
-    } catch (error) {
-      addNotification(
-          error.response?.data?.message || t('labels:errors.general'),
-          "error"
-      );
-    } finally {
-      setLoading(false);
-    }
+    
+    await httpClient.put(`/Label/${id}`, labelData);
+    navigate(`/subjects/${labelData.subjectId}`);
   };
 
   return (
@@ -104,7 +85,6 @@ const LabelEdit = () => {
                         onChange={handleChange}
                         className="form-control"
                         required
-                        disabled={loading}
                     />
                   </div>
 
@@ -122,7 +102,7 @@ const LabelEdit = () => {
                           className="form-control form-control-color"
                           title={t('labels:form.color')}
                           style={{ maxWidth: "60px" }}
-                          disabled={loading}
+                          required
                       />
                       <input
                           type="text"
@@ -133,7 +113,7 @@ const LabelEdit = () => {
                           }
                           pattern="#[0-9A-Fa-f]{6}"
                           placeholder="#RRGGBB"
-                          disabled={loading}
+                          required
                       />
                       <span
                           className="input-group-text"
@@ -156,7 +136,6 @@ const LabelEdit = () => {
                         onChange={handleChange}
                         className="form-select"
                         required
-                        disabled={loading}
                     >
                       <option value="range">{t('labels:form.type_options.range')}</option>
                       <option value="point">{t('labels:form.type_options.point')}</option>
@@ -176,7 +155,7 @@ const LabelEdit = () => {
                         className="form-control"
                         maxLength="1"
                         placeholder={t('labels:form.shortcut_hint')}
-                        disabled={loading}
+                        required
                     />
                     <div className="form-text">
                       {t('labels:form.shortcut_hint')}
@@ -188,14 +167,15 @@ const LabelEdit = () => {
                       {t('labels:form.subject')}
                     </label>
                     <div className="input-group">
-                    <span className="input-group-text">
-                      <i className="fas fa-folder"></i>
-                    </span>
+                      <span className="input-group-text">
+                        <i className="fas fa-folder"></i>
+                      </span>
                       <input
                           type="text"
                           className="form-control"
                           value={subjectName || `${t('common:subject.id')}: ${labelData.subjectId}`}
                           disabled
+                          required
                       />
                     </div>
                   </div>
@@ -204,23 +184,9 @@ const LabelEdit = () => {
                     <button
                         type="submit"
                         className="btn btn-primary me-2"
-                        disabled={loading}
                     >
-                      {loading ? (
-                          <>
-                        <span
-                            className="spinner-border spinner-border-sm me-2"
-                            role="status"
-                            aria-hidden="true"
-                        ></span>
-                            {t('labels:buttons.updating')}
-                          </>
-                      ) : (
-                          <>
-                            <i className="fas fa-save me-2"></i>
-                            {t('labels:buttons.save')}
-                          </>
-                      )}
+                      <i className="fas fa-save me-2"></i>
+                      {t('labels:buttons.save')}
                     </button>
                     <NavigateButton actionType="Back" value={t('common:buttons.cancel')} />
                   </div>

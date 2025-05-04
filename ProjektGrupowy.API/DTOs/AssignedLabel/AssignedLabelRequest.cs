@@ -10,8 +10,6 @@ public class AssignedLabelRequest
     [Required]
     public int VideoId { get; set; } // ID of the video
 
-    public string LabelerId { get; set; } = string.Empty; // ID of the labeler (assignee)
-
     [Required]
     public string Start { get; set; } // Start time for the assigned label
 

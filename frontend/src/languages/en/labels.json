@@ -22,7 +22,8 @@
     "subject_error": "Failed to load subject information",
     "validation": {
       "shortcut": "Shortcut must be exactly one character",
-      "color": "Color must be in the format #RRGGBB"
+      "color": "Color must be in the format #RRGGBB",
+      "name": "Label name cannot be empty"
     }
   },
   "buttons": {

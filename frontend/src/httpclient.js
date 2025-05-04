@@ -14,45 +14,18 @@ const httpClient = axios.create({
 httpClient.interceptors.response.use(
   (response) => response,
   async (error) => {
-    const originalRequest = error.config;
-
-    // Handle 401 Unauthorized
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-
-      try {
-        await axios.post(
-          `${API_BASE_URL}/Auth/RefreshToken`,
-          {},
-          {
-            withCredentials: true,
-            headers: {
-              "Content-Type": "application/json",
-              Accept: "application/json",
-            },
-          }
-        );
-        return httpClient(originalRequest);
-      } catch (refreshError) {
-        return Promise.reject(refreshError);
-      }
+    return Promise.reject(error);
+    if (error.response?.status === 401) {
+      window.location.href = "/login";
+      return Promise.reject(error);
     }
 
-    // Handle 403 Forbidden
-    if (error.response?.status === 403 || error.response?.status === 401) {
-      console.error(
-        "Access denied: You do not have permission to access this resource."
-      );
-      // Optionally redirect to a custom 403 page
+    if (error.response?.status === 403) {
       window.location.href = "/forbidden";
+      return Promise.reject(error);
     }
 
-            // Handle network errors (like ERR_CONNECTION_REFUSED)
-            if (error.code === 'ERR_NETWORK' || !error.response) {
-              console.error('Network error:', error.message);
-              // You could dispatch to a notification system here if needed
-            }
-        
+    window.location.href = "/error";
     return Promise.reject(error);
   }
 );

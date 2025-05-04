@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import httpClient from "../httpclient";
 import "./css/ScientistProjects.css";
 import NavigateButton from "../components/NavigateButton";
-import { useNotification } from "../context/NotificationContext";
 import { useTranslation } from 'react-i18next';
 
 function ProjectAdd() {
@@ -13,29 +12,12 @@ function ProjectAdd() {
     description: "",
     finished: false,
   });
-  const [loading, setLoading] = useState(false);
-  const { addNotification } = useNotification();
   const { t } = useTranslation(['projects', 'common']);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-
-    try {
-      const response = await httpClient.post("/Project", formData);
-
-      if (response.status === 201) {
-        addNotification(t('projects:notifications.create_success'), "success");
-        navigate("/projects");
-      }
-    } catch (error) {
-      addNotification(
-          error.response?.data?.message || t('projects:notifications.load_error'),
-          "error"
-      );
-    } finally {
-      setLoading(false);
-    }
+    await httpClient.post("/Project", formData);
+    navigate("/projects");
   };
 
   const handleChange = (e) => {
@@ -89,10 +71,9 @@ function ProjectAdd() {
                     <button
                         type="submit"
                         className="btn btn-primary me-2"
-                        disabled={loading}
                     >
                       <i className="fas fa-plus-circle me-2"></i>
-                      {loading ? t('projects:buttons.creating') : t('projects:buttons.create')}
+                      {t('projects:buttons.create')}
                     </button>
                     <NavigateButton actionType="Back" value={t('common:buttons.cancel')} />
                   </div>

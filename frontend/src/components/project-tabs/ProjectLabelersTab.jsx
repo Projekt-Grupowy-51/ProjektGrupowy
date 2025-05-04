@@ -8,8 +8,6 @@ import { useTranslation } from "react-i18next";
 
 const ProjectLabelersTab = ({
   projectId,
-  onSuccess,
-  onError,
   onLabelersUpdate,
 }) => {
   const { addNotification } = useNotification();
@@ -19,10 +17,8 @@ const ProjectLabelersTab = ({
   const [selectedLabeler, setSelectedLabeler] = useState("");
   const [selectedAssignment, setSelectedAssignment] = useState("");
   const [selectedCustomAssignments, setSelectedCustomAssignment] = useState({});
-  const [loading, setLoading] = useState(true);
   const { t } = useTranslation(['common', 'project']);
 
-  // Helper function to format assignment option label
   const formatAssignmentOption = (assignment) =>
     `Assignment #${assignment.id} - Subject: ${
       assignment.subjectName || "Unknown"
@@ -31,21 +27,11 @@ const ProjectLabelersTab = ({
       assignment.videoGroupId
     })`;
 
-  // Helper function to assign a labeler to an assignment
   const assignLabelerToAssignment = async (labelerId, assignmentId) => {
-    try {
-      await httpClient.post(
-        `/SubjectVideoGroupAssignment/${assignmentId}/assign-labeler/${labelerId}`
-      );
-      return true;
-    } catch (error) {
-      console.log(error);
-      // addNotification(
-      //   error.response?.data?.message || "Failed to assign labeler",
-      //   "error"
-      // );
-      return false;
-    }
+    await httpClient.post(
+      `/SubjectVideoGroupAssignment/${assignmentId}/assign-labeler/${labelerId}`
+    );
+    return true;
   };
 
   const LabelerColumns = [
@@ -88,7 +74,6 @@ const ProjectLabelersTab = ({
     },
   ];
 
-  // Define columns for assigned labelers table
   const assignedLabelerColumns = [
     { field: "labelerName", header: "Username" },
     { field: "videoGroupName", header: "Video Group" },
@@ -118,29 +103,19 @@ const ProjectLabelersTab = ({
   ];
 
   const fetchData = async () => {
-    try {
-      setLoading(true);
-      const [labelerRes, unassignedLabelersRes, assignmentsRes] =
-        await Promise.all([
-          httpClient.get(`/project/${projectId}/labelers`),
-          httpClient.get(`/project/${projectId}/unassigned-labelers`),
-          httpClient.get(`/project/${projectId}/SubjectVideoGroupAssignments`),
-        ]);
+    const [labelerRes, unassignedLabelersRes, assignmentsRes] =
+      await Promise.all([
+        httpClient.get(`/project/${projectId}/labelers`),
+        httpClient.get(`/project/${projectId}/unassigned-labelers`),
+        httpClient.get(`/project/${projectId}/SubjectVideoGroupAssignments`),
+      ]);
 
-      setLabelers(labelerRes.data);
-      setUnassignedLabelers(unassignedLabelersRes.data);
-      setAssignments(assignmentsRes.data);
+    setLabelers(labelerRes.data);
+    setUnassignedLabelers(unassignedLabelersRes.data);
+    setAssignments(assignmentsRes.data);
 
-      if (onLabelersUpdate) {
-        console.log("Labelers count:", labelerRes.data.length);
-        onLabelersUpdate(labelerRes.data.length);
-      } else {
-        console.log("onLabelersUpdate function not provided");
-      }
-    } catch (err) {
-      //addNotification("Failed to load labeler data", "error");
-    } finally {
-      setLoading(false);
+    if (onLabelersUpdate) {
+      onLabelersUpdate(labelerRes.data.length);
     }
   };
 
@@ -158,9 +133,7 @@ const ProjectLabelersTab = ({
     });
   };
 
-  // Unified function to handle all types of labeler assignments
   const handleAssignLabeler = async (labelerId, assignmentId) => {
-    // For the form in the card
     if (!labelerId && !assignmentId) {
       if (!selectedLabeler || !selectedAssignment) {
         addNotification(
@@ -173,7 +146,6 @@ const ProjectLabelersTab = ({
       assignmentId = selectedAssignment;
     }
 
-    // Validation
     if (!labelerId || !assignmentId) {
       addNotification(
         "Please select both a labeler and an assignment",
@@ -185,13 +157,11 @@ const ProjectLabelersTab = ({
     const success = await assignLabelerToAssignment(labelerId, assignmentId);
 
     if (success) {
-      // Clear form selections if this was from the form
       if (labelerId === selectedLabeler) {
         setSelectedLabeler("");
         setSelectedAssignment("");
       }
 
-      // Clear from custom assignments if applicable
       setSelectedCustomAssignment((prev) => {
         const updated = { ...prev };
         delete updated[labelerId];
@@ -199,7 +169,6 @@ const ProjectLabelersTab = ({
       });
 
       fetchData();
-      //addNotification("Labeler assigned successfully!", "success");
     }
   };
 
@@ -214,74 +183,38 @@ const ProjectLabelersTab = ({
       return;
     }
 
-    try {
-      const results = await Promise.all(
-        entries.map(([labelerId, assignmentId]) =>
-          assignLabelerToAssignment(labelerId, assignmentId)
-        )
-      );
+    await Promise.all(
+      entries.map(([labelerId, assignmentId]) =>
+        assignLabelerToAssignment(labelerId, assignmentId)
+      )
+    );
 
-      const allSucceeded = results.every((result) => result === true);
-
-      if (allSucceeded) {
-        setSelectedCustomAssignment({});
-        fetchData();
-        //addNotification("All labelers assigned successfully!", "success");
-      } else {
-        //addNotification("One or more assignments failed.", "error");
-      }
-    } catch (error) {
-      //addNotification("Failed to process assignments", "error");
-    }
+    setSelectedCustomAssignment({});
+    fetchData();
   };
 
   const handleDistributeLabelers = async () => {
-    try {
-      await httpClient.post(`/project/${projectId}/distribute`);
-      fetchData();
-      setSelectedCustomAssignment({});
-      //addNotification("Labelers distributed successfully!", "success");
-    } catch (error) {
-      //addNotification("Failed to distribute labelers", "error");
-    }
+    await httpClient.post(`/project/${projectId}/distribute`);
+    fetchData();
+    setSelectedCustomAssignment({});
   };
 
   const handleUnassignLabeler = async (assignmentId, labelerId) => {
-    try {
-      await httpClient.delete(
-        `/SubjectVideoGroupAssignment/${assignmentId}/unassign-labeler/${labelerId}`
-      );
-      fetchData();
-    } catch (error) {
-      //addNotification("Failed to unassign labeler", "error");
-    }
+    await httpClient.delete(
+      `/SubjectVideoGroupAssignment/${assignmentId}/unassign-labeler/${labelerId}`
+    );
+    fetchData();
   };
 
   const handleUnassignAllLabelers = async () => {
-    try {
-      await httpClient.post(`/project/${projectId}/unassign-all`);
-      fetchData();
-      //addNotification("All labelers unassigned successfully!", "success");
-    } catch (error) {
-      //addNotification("Failed to unassign all labelers", "error");
-    }
+    await httpClient.post(`/project/${projectId}/unassign-all`);
+    fetchData();
   };
 
   useEffect(() => {
     fetchData();
   }, [projectId]);
 
-  if (loading) {
-    return (
-      <div className="d-flex justify-content-center my-5">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading labeler data...</span>
-        </div>
-      </div>
-    );
-  }
-
-  // Prepare assigned labelers data for rendering
   const assignedLabelerRows = assignments
     .filter(
       (assignment) => assignment.labelers && assignment.labelers.length > 0
@@ -300,9 +233,6 @@ const ProjectLabelersTab = ({
 
   return (
     <div className="labelers">
-      {/* Remove the error alert since we're using notifications now */}
-
-      {/* Assignment form */}
       <div className="card shadow-sm mb-4" style={{ marginTop: "25px" }}>
         <div
           className="card-header text-white"
@@ -311,7 +241,6 @@ const ProjectLabelersTab = ({
           <h5 className="card-title mb-0">Assign Labeler to Assignment</h5>
         </div>
         <div className="card-body">
-          {/* Remove the assignmentError alert since we're using notifications now */}
           <div className="assignment-form">
             <div className="row mb-3">
               <div className="col-md-6">
@@ -363,7 +292,6 @@ const ProjectLabelersTab = ({
         </div>
       </div>
 
-      {/* Unassigned Labelers section */}
       <div
         className="d-flex justify-content-between align-items-center m-3"
         style={{ minHeight: "56px" }}
@@ -405,7 +333,6 @@ const ProjectLabelersTab = ({
         </div>
       )}
 
-      {/* All Labelers section */}
       <div
         className="d-flex justify-content-between align-items-center m-3 mt-5"
         style={{ minHeight: "56px" }}
@@ -438,7 +365,6 @@ const ProjectLabelersTab = ({
         </div>
       )}
 
-      {/* Assigned Labelers section */}
       <div className="row align-items-center mb-3 mt-4">
         <div className="col">
           <h3 className="mb-0">{t('projects:labeler_tab.assigned_labelers')}</h3>

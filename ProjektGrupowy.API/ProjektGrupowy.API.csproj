@@ -9,14 +9,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="DB\Dockerfile" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="DB\Dockerfile" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="AutoMapper" Version="13.0.1" />
     <PackageReference Include="EFCore.BulkExtensions" Version="8.1.1" />
     <PackageReference Include="Hangfire.AspNetCore" Version="1.8.18" />

@@ -3,19 +3,17 @@ import { useLocation, useNavigate } from "react-router-dom";
 import httpClient from "../httpclient";
 import "./css/ScientistProjects.css";
 import NavigateButton from "../components/NavigateButton";
-import { useNotification } from "../context/NotificationContext";
 import { useTranslation } from 'react-i18next';
 
 const AddSubject = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
   const [subjectData, setSubjectData] = useState({
     name: "",
     description: "",
     projectId: new URLSearchParams(location.search).get("projectId"),
   });
-  const { addNotification } = useNotification();
+  const { t } = useTranslation(['subjects', 'common']);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -24,25 +22,8 @@ const AddSubject = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-
-    if (!subjectData.name.trim() || !subjectData.description.trim()) {
-      addNotification("All fields are required", "error");
-      setLoading(false);
-      return;
-    }
-
-    try {
-      await httpClient.post("/Subject", subjectData);
-        navigate(`/projects/${subjectData.projectId}`);
-    } catch (error) {
-      addNotification(
-          error.response?.data?.message || t('subjects:notifications.add_error'),
-          "error"
-      );
-    } finally {
-      setLoading(false);
-    }
+    await httpClient.post("/Subject", subjectData);
+    navigate(`/projects/${subjectData.projectId}`);
   };
 
   return (
@@ -89,10 +70,9 @@ const AddSubject = () => {
                     <button
                         type="submit"
                         className="btn btn-primary me-2"
-                        disabled={loading}
                     >
                       <i className="fas fa-plus-circle me-2"></i>
-                      {loading ? t('subjects:buttons.adding') : t('subjects:buttons.add')}
+                      {t('subjects:buttons.add')}
                     </button>
                     <NavigateButton actionType="Back" value={t('common:buttons.cancel')} />
                   </div>

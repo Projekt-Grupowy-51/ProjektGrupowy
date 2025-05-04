@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import httpClient from "../httpclient";
 import "./css/ScientistProjects.css";
-import { useNotification } from "../context/NotificationContext";
 import NavigateButton from "../components/NavigateButton";
 import { useTranslation } from 'react-i18next';
 
@@ -14,54 +13,32 @@ function ProjectEdit() {
     description: "",
     finished: false,
   });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const { addNotification } = useNotification();
   const { t } = useTranslation(['projects', 'common']);
 
   useEffect(() => {
     const fetchProject = async () => {
-      try {
-        const response = await httpClient.get(`/Project/${id}`);
-        const data = response.data;
-        setFormData({
-          name: data.name,
-          description: data.description,
-          finished: data.finished,
-        });
-      } catch (error) {
-        addNotification(t('projects:notifications.details_error'), "error");
-      } finally {
-        setLoading(false);
-      }
+      const response = await httpClient.get(`/Project/${id}`);
+      const data = response.data;
+      setFormData({
+        name: data.name,
+        description: data.description,
+        finished: data.finished,
+      });
     };
     fetchProject();
   }, [id]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    try {
-      await httpClient.put(`/Project/${id}`, formData);
-      addNotification(t('projects:notifications.update_success'), "success");
-      navigate(`/projects/${id}`);
-    } catch (error) {
-      addNotification(t('projects:notifications.load_error'), "error");
-    }
+    await httpClient.put(`/Project/${id}`, formData);
+    navigate(`/projects/${id}`);
   };
 
-    const handleChange = (e) => {
-        const value = e.target.type === "checkbox" ? e.target.checked : e.target.value;
-        setFormData({ ...formData, [e.target.name]: value });
-    };
-
-  if (loading) return (
-      <div className="container d-flex justify-content-center align-items-center py-5">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">{t('common:loading')}</span>
-        </div>
-      </div>
-  );
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    const finalValue = type === "checkbox" ? checked : name === "finished" ? value === "true" : value;
+    setFormData({ ...formData, [name]: finalValue });
+  };
 
   return (
       <div className="container py-4">
@@ -111,11 +88,11 @@ function ProjectEdit() {
                         id="finished"
                         name="finished"
                         className="form-select"
-                        value={formData.finished}
+                        value={(formData.finished !== undefined ? formData.finished : false).toString()}
                         onChange={handleChange}
                     >
-                      <option value={false}>{t('projects:status.active')}</option>
-                      <option value={true}>{t('projects:status.completed')}</option>
+                      <option value="false">{t('projects:status.active')}</option>
+                      <option value="true">{t('projects:status.completed')}</option>
                     </select>
                   </div>
 

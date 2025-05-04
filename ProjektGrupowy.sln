@@ -7,6 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProjektGrupowy.API", "Proje
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Elementy rozwiązania", "Elementy rozwiązania", "{39C2AD98-A96D-4F25-8D77-C08F42D62F89}"
 	ProjectSection(SolutionItems) = preProject
+		docker-compose.new.yml = docker-compose.new.yml
 		docker-compose.yml = docker-compose.yml
 	EndProjectSection
 EndProject

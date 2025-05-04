@@ -14,5 +14,4 @@ public class CreateAccessCodeRequest
 
     [Required]
     public int CustomExpiration { get; set; }
-    public string OwnerId { get; set; } = string.Empty;
 }

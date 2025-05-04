@@ -6,86 +6,35 @@ import { useTranslation } from "react-i18next";
 const ProjectAccessCodesTab = ({
   projectId,
   accessCodes = [],
-  onSuccess,
-  onError,
 }) => {
-  const [creationError, setCreationError] = useState("");
   const [codeExpiration, setCodeExpiration] = useState(0);
   const [customCodeExpiration, setCustomCodeExpiration] = useState(0);
   const [visibleCodes, setVisibleCodes] = useState({});
   const [localAccessCodes, setLocalAccessCodes] = useState([]);
-  const [loading, setLoading] = useState(true);
   const { addNotification } = useNotification();
   const { t } = useTranslation(['common', 'projects']);
 
-  // Fetch access codes if they're not provided via props
   useEffect(() => {
     if (accessCodes && accessCodes.length > 0) {
       setLocalAccessCodes(accessCodes);
-      setLoading(false);
     } else {
       fetchAccessCodes();
     }
   }, [projectId]);
 
   const fetchAccessCodes = async () => {
-    try {
-      setLoading(true);
-      const response = await httpClient.get(`/AccessCode/project/${projectId}`);
-      setLocalAccessCodes(response.data || []);
-    } catch (error) {
-      const errorMessage =
-        error.response?.data?.message || t('projects:access_codes.errors.load_failed');
-      if (onError) {
-        onError(error);
-      } else {
-        addNotification(errorMessage, "error");
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // const notifySuccess = (message) => {
-  //   if (onSuccess) {
-  //     onSuccess(message);
-  //   } else {
-  //     addNotification(message, "success");
-  //   }
-  // };
-
-  const notifyError = (error) => {
-    if (onError) {
-      onError(error);
-    } else {
-      addNotification(
-        error.response?.data?.message || t('common:errors.general'),
-        "error"
-      );
-    }
+    const response = await httpClient.get(`/AccessCode/project/${projectId}`);
+    setLocalAccessCodes(response.data || []);
   };
 
   const handleCreateAccessCode = async () => {
-    setCreationError("");
-
-    try {
-      const json = {
-        projectId: parseInt(projectId),
-        expiration: parseInt(codeExpiration),
-        customExpiration: parseInt(customCodeExpiration),
-      };
-      await httpClient.post("/AccessCode/project", json);
-      setCodeExpiration(0);
-      notifySuccess(t('projects:access_codes.success.created'));
-
-      // Refresh the codes list after creating a new one
-      fetchAccessCodes();
-    } catch (error) {
-      setCreationError(
-        error.response?.data?.message || t('projects:access_codes.errors.create_failed')
-      );
-      notifyError(error);
-    }
+    await httpClient.post("/AccessCode/project", {
+      projectId: parseInt(projectId),
+      expiration: parseInt(codeExpiration),
+      customExpiration: parseInt(customCodeExpiration),
+    });
+    setCodeExpiration(0);
+    fetchAccessCodes();
   };
 
   const handleCustomCodeExpirationChange = (e) => {
@@ -99,23 +48,13 @@ const ProjectAccessCodesTab = ({
   };
 
   const handleCopyCode = async (code) => {
-    try {
-      await navigator.clipboard.writeText(code);
-      addNotification(t('projects:access_codes.success.copied'), "success");
-    } catch (err) {
-      console.error("Failed to copy code:", err);
-      addNotification(t('projects:access_codes.errors.copy_failed'), "error");
-    }
+    await navigator.clipboard.writeText(code);
+    addNotification(t('projects:access_codes.success.copied'), "success");
   };
 
   const handleRetireCode = async (code) => {
-    try {
-      await httpClient.put(`/AccessCode/${code}/retire`);
-      fetchAccessCodes();
-    } catch (error) {
-      console.error("Failed to retire code:", error);
-      notifyError(error);
-    }
+    await httpClient.put(`/AccessCode/${code}/retire`);
+    fetchAccessCodes();
   };
 
   const toggleCodeVisibility = (code) => {
@@ -196,22 +135,10 @@ const ProjectAccessCodesTab = ({
               <i className="fas fa-key me-2"></i>{t('projects:access_codes.buttons.generate')}
             </button>
           </div>
-          {creationError && (
-            <div className="alert alert-danger">
-              <i className="fas fa-exclamation-triangle me-2"></i>
-              {creationError}
-            </div>
-          )}
         </div>
       </div>
 
-      {loading ? (
-        <div className="d-flex justify-content-center my-5">
-          <div className="spinner-border text-primary" role="status">
-            <span className="visually-hidden">{t('projects:access_codes.loading')}</span>
-          </div>
-        </div>
-      ) : localAccessCodes.length > 0 ? (
+      {localAccessCodes.length > 0 ? (
         <table className="normal-table" id="access-codes-table">
           <thead>
             <tr>

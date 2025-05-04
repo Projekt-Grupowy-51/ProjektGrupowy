@@ -1,14 +1,10 @@
 import React, { useState } from 'react';
 import DeleteConfirmationModal from './DeleteConfirmationModal';
-import { useNotification } from '../context/NotificationContext';
 import { useTranslation } from 'react-i18next';
 
-const DeleteButton = ({ onClick, itemType = 'item', buttonText, className = '', style = {} }) => {
+const DeleteButton = ({ onClick, itemType = 'item', className = '', style = {} }) => {
     const [showModal, setShowModal] = useState(false);
-    const { addNotification } = useNotification();
     const { t } = useTranslation(['common']);
-
-    const deleteText = t('buttons.delete');
 
     const handleOpenModal = (e) => {
         e.preventDefault();
@@ -21,13 +17,8 @@ const DeleteButton = ({ onClick, itemType = 'item', buttonText, className = '', 
     };
 
     const handleConfirm = async () => {
-        try {
-            await onClick();
-            addNotification(`Successfully deleted ${itemType}`, "success");
-        } catch (error) {
-        } finally {
-            setShowModal(false);
-        }
+        await onClick();
+        setShowModal(false);
     };
 
     return (
@@ -38,17 +29,17 @@ const DeleteButton = ({ onClick, itemType = 'item', buttonText, className = '', 
                 onClick={handleOpenModal}
                 style={style}
             >
-                <i className="fas fa-trash-alt"></i> {deleteText}
+                <i className="fas fa-trash-alt"></i> {t('buttons.delete')}
             </button>
 
-      <DeleteConfirmationModal
-        show={showModal}
-        itemType={itemType}
-        onConfirm={handleConfirm}
-        onCancel={handleCloseModal}
-      />
-    </>
-  );
+            <DeleteConfirmationModal
+                show={showModal}
+                itemType={itemType}
+                onConfirm={handleConfirm}
+                onCancel={handleCloseModal}
+            />
+        </>
+    );
 };
 
 export default DeleteButton;

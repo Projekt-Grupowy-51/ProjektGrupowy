@@ -40,7 +40,6 @@ public class VideoRepository : IVideoRepository
         {
             // Index lookup
             var videos = await _context.Videos.FilteredVideos(_currentUserService.UserId, _currentUserService.IsAdmin)
-                .AsNoTracking()
                 .Where(v => v.VideoGroupId == videoGroupId)
                 .Where(v => v.PositionInQueue == positionInQueue)
                 .ToListAsync();

@@ -10,10 +10,10 @@ public class GeneratedReport : IOwnedEntity
     public string Name { get; set; }
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
     public string Path { get; set; }
-    public string OwnerId { get; set; }
+    public string CreatedById { get; set; }
 
-    [ForeignKey(nameof(OwnerId))]
-    public virtual User Owner { get; set; }
+    [ForeignKey(nameof(CreatedById))]
+    public virtual User CreatedBy { get; set; }
     
     public virtual Project Project { get; set; }
     public DateTime? DelDate { get; set; }

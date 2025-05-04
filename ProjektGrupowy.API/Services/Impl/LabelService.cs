@@ -1,5 +1,8 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using ProjektGrupowy.API.Authorization;
 using ProjektGrupowy.API.DTOs.Label;
+using ProjektGrupowy.API.Exceptions;
 using ProjektGrupowy.API.Models;
 using ProjektGrupowy.API.Repositories;
 using ProjektGrupowy.API.SignalR;
@@ -7,44 +10,59 @@ using ProjektGrupowy.API.Utils;
 
 namespace ProjektGrupowy.API.Services.Impl;
 
-public class LabelService(ILabelRepository labelRepository, IMessageService messageService, ISubjectRepository subjectRepository, UserManager<User> userManager) : ILabelService
+public class LabelService(ILabelRepository labelRepository, IMessageService messageService, ISubjectRepository subjectRepository, UserManager<User> userManager, ICurrentUserService currentUserService, IAuthorizationService authorizationService) : ILabelService
 {
     public async Task<Optional<IEnumerable<Label>>> GetLabelsAsync()
     {
-        return await labelRepository.GetLabelsAsync();
+        var labelsOpt = await labelRepository.GetLabelsAsync();
+        if (labelsOpt.IsFailure)
+        {
+            return labelsOpt;
+        }
+
+        var labels = labelsOpt.GetValueOrThrow();
+        var authResult = await authorizationService.AuthorizeAsync(currentUserService.User, labels, new ResourceOperationRequirement(ResourceOperation.Read));
+        if (!authResult.Succeeded)
+        {
+            throw new ForbiddenException();
+        }
+
+        return labelsOpt;
     }
 
     public async Task<Optional<Label>> GetLabelAsync(int id)
     {
-        return await labelRepository.GetLabelAsync(id);
+        var labelOpt = await labelRepository.GetLabelAsync(id);
+        if (labelOpt.IsFailure)
+        {
+            return labelOpt;
+        }
+        var label = labelOpt.GetValueOrThrow();
+        var authResult = await authorizationService.AuthorizeAsync(currentUserService.User, label, new ResourceOperationRequirement(ResourceOperation.Read));
+        if (!authResult.Succeeded)
+        {
+            throw new ForbiddenException();
+        }
+        return labelOpt;
     }
 
     public async Task<Optional<Label>> AddLabelAsync(LabelRequest labelRequest)
     {
-        var owner = await userManager.FindByIdAsync(labelRequest.OwnerId);
-        if (owner == null)
-        {
-            await messageService.SendErrorAsync(
-                labelRequest.OwnerId,
-                "No labeler found");
-            return Optional<Label>.Failure("No labeler found");
-        }
-
         var subjectOptional = await subjectRepository.GetSubjectAsync(labelRequest.SubjectId);
 
         if (subjectOptional.IsFailure)
         {
-            await messageService.SendErrorAsync(
-                labelRequest.OwnerId,
-                "No subject found");
             return Optional<Label>.Failure("No subject found");
+        }
+
+        var authResult = await authorizationService.AuthorizeAsync(currentUserService.User, subjectOptional.GetValueOrThrow(), new ResourceOperationRequirement(ResourceOperation.Create));
+        if (!authResult.Succeeded)
+        {
+            throw new ForbiddenException();
         }
 
         if (!char.IsLetterOrDigit(labelRequest.Shortcut))
         {
-            await messageService.SendErrorAsync(
-                labelRequest.OwnerId,
-                "Shortcut has to be a letter or a number");
             return Optional<Label>.Failure("Shortcut has to be a letter or a number");
         }
 
@@ -55,21 +73,18 @@ public class LabelService(ILabelRepository labelRepository, IMessageService mess
             ColorHex = labelRequest.ColorHex,
             Type = labelRequest.Type,
             Shortcut = labelRequest.Shortcut,
-            Owner = owner
+            CreatedById = currentUserService.UserId,
         };
 
         var result = await labelRepository.AddLabelAsync(label);
         if (result.IsFailure)
         {
-            await messageService.SendErrorAsync(
-                labelRequest.OwnerId,
-                "Failed to add label");
             return Optional<Label>.Failure("Failed to add label");
-        } 
-        else 
+        }
+        else
         {
             await messageService.SendSuccessAsync(
-                labelRequest.OwnerId,
+                currentUserService.UserId,
                 "Label added successfully");
             return result;
         }
@@ -81,21 +96,31 @@ public class LabelService(ILabelRepository labelRepository, IMessageService mess
 
         if (labelOptional.IsFailure)
         {
-            await messageService.SendErrorAsync(
-                labelRequest.OwnerId,
-                "No label found");
             return labelOptional;
         }
 
         var label = labelOptional.GetValueOrThrow();
+        var authResult = await authorizationService.AuthorizeAsync(currentUserService.User, label, new ResourceOperationRequirement(ResourceOperation.Update));
+        if (!authResult.Succeeded)
+        {
+            throw new ForbiddenException();
+        }
 
         var subjectOptional = await subjectRepository.GetSubjectAsync(labelRequest.SubjectId);
         if (subjectOptional.IsFailure)
         {
-            await messageService.SendErrorAsync(
-                labelRequest.OwnerId,
-                "No subject found");
             return Optional<Label>.Failure("No subject found!");
+        }
+
+        var authResultSubject = await authorizationService.AuthorizeAsync(currentUserService.User, subjectOptional.GetValueOrThrow(), new ResourceOperationRequirement(ResourceOperation.Update));
+        if (!authResultSubject.Succeeded)
+        {
+            throw new ForbiddenException();
+        }
+
+        if (!char.IsLetterOrDigit(labelRequest.Shortcut))
+        {
+            return Optional<Label>.Failure("Shortcut has to be a letter or a number");
         }
 
         label.Name = labelRequest.Name;
@@ -104,19 +129,15 @@ public class LabelService(ILabelRepository labelRepository, IMessageService mess
         label.Type = labelRequest.Type;
         label.Shortcut = labelRequest.Shortcut;
 
-        // return await labelRepository.UpdateLabelAsync(label);
         var result = await labelRepository.UpdateLabelAsync(label);
         if (result.IsFailure)
         {
-            await messageService.SendErrorAsync(
-                labelRequest.OwnerId,
-                "Failed to update label");
             return Optional<Label>.Failure("Failed to update label");
-        } 
-        else 
+        }
+        else
         {
             await messageService.SendSuccessAsync(
-                labelRequest.OwnerId,
+                currentUserService.UserId,
                 "Label updated successfully");
             return result;
         }
@@ -125,12 +146,24 @@ public class LabelService(ILabelRepository labelRepository, IMessageService mess
     public async Task DeleteLabelAsync(int id)
     {
         var label = await labelRepository.GetLabelAsync(id);
-        if (label.IsSuccess)
+
+        if (label.IsFailure)
         {
-            await messageService.SendInfoAsync(
-                label.GetValueOrThrow().Owner.Id,
-                "Label deleted successfully");
-            await labelRepository.DeleteLabelAsync(label.GetValueOrThrow());
+            await messageService.SendErrorAsync(
+                currentUserService.UserId,
+                "Failed to delete label");
+            return;
         }
+
+        var authResult = await authorizationService.AuthorizeAsync(currentUserService.User, label.GetValueOrThrow(), new ResourceOperationRequirement(ResourceOperation.Delete));
+        if (!authResult.Succeeded)
+        {
+            throw new ForbiddenException();
+        }
+
+        await labelRepository.DeleteLabelAsync(label.GetValueOrThrow());
+        await messageService.SendInfoAsync(
+            currentUserService.UserId,
+            "Label deleted successfully");
     }
 }

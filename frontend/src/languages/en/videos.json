@@ -8,11 +8,13 @@
   "table": {
     "label": "Label",
     "labeler": "Labeler",
+    "subject": "Subject",
     "start": "Start",
     "end": "End",
     "ins_date": "Ins Date",
     "title": "Title",
-    "position": "Position"
+    "position": "Position",
+    "videoId": "Video Id"
   },
   "buttons": {
     "save": "Save",

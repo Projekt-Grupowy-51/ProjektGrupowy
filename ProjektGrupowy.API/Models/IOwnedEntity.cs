@@ -1,5 +1,5 @@
 public interface IOwnedEntity
 {
-    string OwnerId { get; set; }
+    string CreatedById { get; set; }
     DateTime? DelDate { get; set; }
 }

@@ -13,5 +13,4 @@ public class ProjectRequest
     public string Description { get; set; }
 
     public bool Finished { get; set; }
-    public string OwnerId { get; set; } = string.Empty;
 }

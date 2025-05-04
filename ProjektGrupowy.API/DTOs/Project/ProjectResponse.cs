@@ -11,4 +11,5 @@ public class ProjectResponse
     public DateOnly CreationDate { get; set; }
     public DateOnly? ModificationDate { get; set; }
     public DateOnly? EndDate { get; set; }
+    public bool Finished { get; set; }
 }

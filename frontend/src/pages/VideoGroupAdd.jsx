@@ -3,7 +3,6 @@ import { useNavigate, useLocation } from "react-router-dom";
 import httpClient from "../httpclient";
 import "./css/ScientistProjects.css";
 import NavigateButton from "../components/NavigateButton";
-import { useNotification } from "../context/NotificationContext";
 import { useTranslation } from "react-i18next";
 
 const VideoGroupAdd = () => {
@@ -12,14 +11,11 @@ const VideoGroupAdd = () => {
     description: "",
     projectId: null,
   });
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { addNotification } = useNotification();
   const { t } = useTranslation(['videos', 'common']);
 
   useEffect(() => {
-    // Extract projectId from query params if available
     const queryParams = new URLSearchParams(location.search);
     const projectId = queryParams.get("projectId");
     if (projectId) {
@@ -34,25 +30,8 @@ const VideoGroupAdd = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-
-    // Validate form
-    if (!formData.name || !formData.description || !formData.projectId) {
-      addNotification(t('videos:errors.upload_required_fields'), "error");
-      setLoading(false);
-      return;
-    }
-
-    try {
-      await httpClient.post("/videogroup", formData);
-      navigate(`/projects/${formData.projectId}`);
-    } catch (err) {
-      // addNotification(
-      //   err.response?.data?.message || "An error occurred. Please try again.",
-      //   "error"
-      // );
-      setLoading(false);
-    }
+    await httpClient.post("/videogroup", formData);
+    navigate(`/projects/${formData.projectId}`);
   };
 
   return (
@@ -99,10 +78,9 @@ const VideoGroupAdd = () => {
                   <button
                     type="submit"
                     className="btn btn-primary me-2"
-                    disabled={loading}
                   >
                     <i className="fas fa-plus-circle me-2"></i>
-                    {loading ? t('buttons.adding') : t('buttons.add')}
+                    {t('buttons.add')}
                   </button>
                   <NavigateButton actionType="Back" value={t('buttons.cancel')} />
                 </div>
