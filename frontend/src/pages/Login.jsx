@@ -76,6 +76,7 @@ const AuthPage = () => {
                     email: formData.email,
                     password: formData.password,
                     role: roleMap[formData.role],
+                    scientistCreateToken: formData.role === "Scientist" ? formData.ScientistCreateToken : undefined,
                 });
                 setIsLoginView(true);
                 setFormData({ ...formData, password: "", confirmPassword: "" });
@@ -192,6 +193,33 @@ const AuthPage = () => {
                                     </select>
                                 </div>
                             </div>
+
+                            {!isLoginView && formData.role === "Scientist" && (
+                                <div className="mb-3">
+                                    <label htmlFor="ScientistCreateToken" className="form-label">
+                                        {t('auth:scientist_token', 'Scientist Token')}
+                                    </label>
+                                    <div className="input-group">
+                                        <span className="input-group-text">
+                                            <i className="fas fa-key"></i>
+                                        </span>
+                                        <input
+                                            type="text"
+                                            id="ScientistCreateToken"
+                                            name="ScientistCreateToken"
+                                            className="form-control"
+                                            placeholder={t('auth:scientist_token_placeholder', 'Enter scientist registration token')}
+                                            value={formData.ScientistCreateToken}
+                                            onChange={handleInputChange}
+                                            required={formData.role === "Scientist"}
+                                            disabled={loading}
+                                        />
+                                    </div>
+                                    <small className="form-text text-muted">
+                                        {t('auth:scientist_token_info', 'A token is required to register as a Scientist')}
+                                    </small>
+                                </div>
+                            )}
                         </>
                     )}
 
