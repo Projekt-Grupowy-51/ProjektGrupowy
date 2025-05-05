@@ -37,7 +37,7 @@ namespace ProjektGrupowy.API.Services.Impl
             return new JwtSecurityToken(
                 issuer: _config["JWT:ValidIssuer"],
                 audience: _config["JWT:ValidAudience"],
-                expires: DateTime.UtcNow.AddSeconds(15),
+                expires: DateTime.UtcNow.AddMinutes(15),
                 claims: claims,
                 signingCredentials: creds
             );
