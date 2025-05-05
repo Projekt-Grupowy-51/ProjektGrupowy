@@ -18,9 +18,9 @@ public class Subject : IOwnedEntity
     [Required]
     public virtual Project Project { get; set; }
 
-    public virtual ICollection<Label>? Labels { get; set; }
+    public virtual ICollection<Label> Labels { get; set; } = new List<Label>();
 
-    public virtual ICollection<SubjectVideoGroupAssignment>? SubjectVideoGroupAssignments { get; set; }
+    public virtual ICollection<SubjectVideoGroupAssignment> SubjectVideoGroupAssignments { get; set; } = new List<SubjectVideoGroupAssignment>();
     public string CreatedById { get; set; }
 
     [ForeignKey(nameof(CreatedById))]

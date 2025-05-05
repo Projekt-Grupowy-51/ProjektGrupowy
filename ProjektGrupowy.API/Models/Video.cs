@@ -25,7 +25,7 @@ public class Video : IOwnedEntity
     public string ContentType { get; set; }
 
     public int VideoGroupId { get; set; }
-    public virtual ICollection<AssignedLabel>? AssignedLabels { get; set; }
+    public virtual ICollection<AssignedLabel> AssignedLabels { get; set; } = new List<AssignedLabel>();
     public string CreatedById { get; set; }
 
     [ForeignKey(nameof(CreatedById))]

@@ -20,7 +20,7 @@ public class SubjectVideoGroupAssignment : IOwnedEntity
     [Required]
     public virtual VideoGroup VideoGroup { get; set; }
 
-    public virtual ICollection<User>? Labelers { get; set; }
+    public virtual ICollection<User> Labelers { get; set; } = new List<User>();
     public string CreatedById { get; set; }
 
     [ForeignKey(nameof(CreatedById))]

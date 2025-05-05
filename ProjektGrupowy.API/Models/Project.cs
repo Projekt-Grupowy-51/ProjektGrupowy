@@ -25,8 +25,8 @@ public class Project : IOwnedEntity
 
     //public virtual ICollection<Video>? Videos { get; set; } = new List<Video>();
 
-    public virtual ICollection<Subject>? Subjects { get; set; } = new List<Subject>();
-    public virtual ICollection<ProjectAccessCode>? AccessCodes { get; set; } = new List<ProjectAccessCode>();
+    public virtual ICollection<Subject> Subjects { get; set; } = new List<Subject>();
+    public virtual ICollection<ProjectAccessCode> AccessCodes { get; set; } = new List<ProjectAccessCode>();
 
     // Many-to-Many Relation
     public virtual ICollection<User> ProjectLabelers { get; set; } = new List<User>();

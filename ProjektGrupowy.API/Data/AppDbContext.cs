@@ -27,6 +27,7 @@ public class AppDbContext : IdentityDbContext<User>
     public DbSet<VideoGroup> VideoGroups { get; set; }
     public DbSet<ProjectAccessCode> ProjectAccessCodes { get; set; }
     public DbSet<GeneratedReport> GeneratedReports { get; set; }
+    public DbSet<RefreshToken> RefreshTokens { get; set; }
 
     public override int SaveChanges()
     {

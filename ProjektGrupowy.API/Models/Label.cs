@@ -22,7 +22,7 @@ public class Label : IOwnedEntity
     [Required]
     public virtual Subject Subject { get; set; }
 
-    public virtual ICollection<AssignedLabel>? AssignedLabels { get; set; }
+    public virtual ICollection<AssignedLabel> AssignedLabels { get; set; } = new List<AssignedLabel>();
     public string CreatedById { get; set; }
 
     [ForeignKey(nameof(CreatedById))]

@@ -1,18 +1,18 @@
 import React, {
-  useEffect,
-  useState,
-  createContext,
-  useContext,
-  useCallback,
+    useEffect,
+    useState,
+    createContext,
+    useContext,
+    useCallback,
 } from "react";
 import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Link,
-  Navigate,
-  Outlet,
-  useLocation,
+    BrowserRouter as Router,
+    Routes,
+    Route,
+    Link,
+    Navigate,
+    Outlet,
+    useLocation,
 } from "react-router-dom";
 import authService from "./auth";
 import Projects from "./pages/Projects";
@@ -41,229 +41,158 @@ import NotificationSystem from "./components/NotificationSystem";
 import SignalRListener from "../src/services/SignalRListener";
 import { useTranslation } from 'react-i18next';
 import './i18n.js'
-
-const AuthContext = createContext();
-
-const AuthProvider = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(null);
-  const [roles, setRoles] = useState([]);
-  const [user, setUser] = useState(null);
-  const [authError, setAuthError] = useState(null);
-
-  const checkAuth = useCallback(async () => {
-    try {
-      const response = await authService.verifyToken();
-      setIsAuthenticated(response.isAuthenticated);
-      setRoles(response.roles || []);
-      setUser(response.username || null);
-      setAuthError(null);
-    } catch (error) {
-      setIsAuthenticated(false);
-      setRoles([]);
-      setUser(null);
-      setAuthError("Failed to verify authentication.");
-    }
-  }, []);
-
-  const handleLogin = useCallback(async (username, password) => {
-    try {
-      await authService.login(username, password);
-      await checkAuth();
-    } catch (error) {
-      setAuthError("Login failed. Please check your credentials.");
-      throw error;
-    }
-  }, [checkAuth]);
-
-  const handleLogout = useCallback(async () => {
-    await authService.logout();
-    setIsAuthenticated(false);
-    setRoles([]);
-    setUser(null);
-  }, []);
-
-  const hasRole = useCallback((role) => roles.includes(role), [roles]);
-
-  useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
-
-  return (
-    <AuthContext.Provider
-      value={{
-        isAuthenticated,
-        roles,
-        user,
-        authError,
-        checkAuth,
-        handleLogin,
-        handleLogout,
-        hasRole,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
-};
-
-const useAuth = () => {
-  return useContext(AuthContext);
-};
+import { AuthProvider, useAuth } from "./context/AuthContext";
 
 const RoleProtectedRoute = ({ allowedRoles }) => {
-  const { isAuthenticated, roles } = useAuth();
-  const location = useLocation();
+    const { isAuthenticated, roles } = useAuth();
+    const location = useLocation();
 
-  if (isAuthenticated === null) {
-    return <div className="loading">Loading...</div>;
-  }
-  const hasAccess = roles.some(role => allowedRoles.includes(role));
+    const hasAccess = roles.some(role => allowedRoles.includes(role));
 
-  if (!isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
-  }
-  if (!hasAccess) {
-    return <Navigate to="/forbidden" replace />;
-  }
+    if (!isAuthenticated) {
+        return <Navigate to="/login" state={{ from: location }} replace />;
+    }
+    if (!hasAccess) {
+        return <Navigate to="/forbidden" replace />;
+    }
 
-  return <Outlet />;
+    return <Outlet />;
 };
 
 
 const Navbar = () => {
-  const { isAuthenticated, roles, user, hasRole, handleLogout } = useAuth();
-  const { t, i18n } = useTranslation(['common']);
-  const changeLanguage = (lang) => {
-    if (i18n.language !== lang) {
-      i18n.changeLanguage(lang);
-    }
-  };
+    const { isAuthenticated, hasRole, handleLogout } = useAuth();
+    const { t, i18n } = useTranslation(['common']);
+    const changeLanguage = (lang) => {
+        if (i18n.language !== lang) {
+            i18n.changeLanguage(lang);
+        }
+    };
 
-  return (
-    <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div className="container-fluid justify-content-center">
-            <div className="btn-group me-3" role="group" aria-label="Language selector">
+    return (
+        <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div className="container-fluid justify-content-center">
+                <div className="btn-group me-3" role="group" aria-label="Language selector">
+                    <button
+                        className={`btn ${i18n.language === 'en' ? 'btn-light text-dark' : 'btn-outline-light'}`}
+                        onClick={() => changeLanguage('en')}
+                    >
+                        EN
+                    </button>
+                    <button
+                        className={`btn ${i18n.language === 'pl' ? 'btn-light text-dark' : 'btn-outline-light'}`}
+                        onClick={() => changeLanguage('pl')}
+                    >
+                        PL
+                    </button>
+                </div>
                 <button
-                    className={`btn ${i18n.language === 'en' ? 'btn-light text-dark' : 'btn-outline-light'}`}
-                    onClick={() => changeLanguage('en')}
+                    className="navbar-toggler"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#navbarNav"
+                    aria-controls="navbarNav"
+                    aria-expanded="false"
+                    aria-label="Toggle navigation"
                 >
-                    EN
+                    <span className="navbar-toggler-icon"></span>
                 </button>
-                <button
-                    className={`btn ${i18n.language === 'pl' ? 'btn-light text-dark' : 'btn-outline-light'}`}
-                    onClick={() => changeLanguage('pl')}
+                <div
+                    className="collapse navbar-collapse justify-content-center"
+                    id="navbarNav"
                 >
-                    PL
-                </button>
-            </div>
-            <button
-                className="navbar-toggler"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#navbarNav"
-                aria-controls="navbarNav"
-                aria-expanded="false"
-                aria-label="Toggle navigation"
-            >
-                <span className="navbar-toggler-icon"></span>
-            </button>
-            <div
-                className="collapse navbar-collapse justify-content-center"
-                id="navbarNav"
-            >
-                <ul className="navbar-nav">
-                    {isAuthenticated ? (
-                        <>
-                            {hasRole("Scientist") && (
-                                <li className="nav-item">
-                                    <Link
-                                        to="/projects"
-                                        className="nav-link text-white text-nowrap"
+                    <ul className="navbar-nav">
+                        {isAuthenticated ? (
+                            <>
+                                {hasRole("Scientist") && (
+                                    <li className="nav-item">
+                                        <Link
+                                            to="/projects"
+                                            className="nav-link text-white text-nowrap"
+                                        >
+                                            {t('scientistDashboard')}
+                                        </Link>
+                                    </li>
+                                )}
+                                {hasRole("Labeler") && (
+                                    <li className="nav-item">
+                                        <Link
+                                            to="/labeler-video-groups"
+                                            className="nav-link text-white text-nowrap"
+                                        >
+                                            {t('labelerDashboard')}
+                                        </Link>
+                                    </li>
+                                )}
+                                <li className="nav-item" style={{ width: "100%" }}>
+                                    <button
+                                        onClick={handleLogout}
+                                        className="btn btn-danger nav-link text-white w-100"
                                     >
-                                        {t('scientistDashboard')}
-                                    </Link>
+                                        {t('logout')}
+                                    </button>
                                 </li>
-                            )}
-                            {hasRole("Labeler") && (
-                                <li className="nav-item">
-                                    <Link
-                                        to="/labeler-video-groups"
-                                        className="nav-link text-white text-nowrap"
-                                    >
-                                        {t('labelerDashboard')}
-                                    </Link>
-                                </li>
-                            )}
-                            <li className="nav-item" style={{ width: "100%" }}>
-                                <button
-                                    onClick={handleLogout}
-                                    className="btn btn-danger nav-link text-white w-100"
-                                >
-                                    {t('logout')}
-                                </button>
+                            </>
+                        ) : (
+                            <li className="nav-item">
+                                <Link to="/login" className="nav-link text-white">
+                                    {t('common:login')}
+                                </Link>
                             </li>
-                        </>
-                    ) : (
-                        <li className="nav-item">
-                            <Link to="/login" className="nav-link text-white">
-                                {t('common:login')}
-                            </Link>
-                        </li>
-                    )}
-                </ul>
+                        )}
+                    </ul>
+                </div>
             </div>
-        </div>
-    </nav>
-  );
+        </nav>
+    );
 };
 
 function App() {
-  return (
-    <NotificationProvider>
-      <AuthProvider>
-        <SignalRListener />
-        <Router>
-          <ModalProvider>
-            <Navbar />
-            <Routes>
-            <Route path="/" element={<Login />} />
-            <Route path="/login" element={<Login />} />
+    return (
+        <NotificationProvider>
+            <AuthProvider>
+                <SignalRListener />
+                <Router>
+                    <ModalProvider>
+                        <Navbar />
+                        <Routes>
+                            <Route path="/" element={<Login />} />
+                            <Route path="/login" element={<Login />} />
 
-              <Route element={<RoleProtectedRoute allowedRoles={["Labeler"]} />}>
-                <Route path="/labeler-video-groups" element={<LabelerVideoGroups />} />
-                <Route path="/video-group/:id" element={<VideoGroup />} />
-              </Route>
+                            <Route element={<RoleProtectedRoute allowedRoles={["Labeler"]} />}>
+                                <Route path="/labeler-video-groups" element={<LabelerVideoGroups />} />
+                                <Route path="/video-group/:id" element={<VideoGroup />} />
+                            </Route>
 
-              <Route element={<RoleProtectedRoute allowedRoles={["Scientist"]} />}>
-                <Route path="/projects" element={<Projects />} />
-                <Route path="/projects/:id" element={<ProjectDetails />} />
-                <Route path="/projects/edit/:id" element={<EditProjectPage />} />
-                <Route path="/projects/add" element={<AddProjectPage />} />
-                <Route path="/subjects/:id" element={<SubjectDetails />} />
-                <Route path="/subjects/add" element={<AddSubject />} />
-                <Route path="/video-groups/add" element={<AddVideoGroup />} />
-                <Route path="/video-groups/:id" element={<VideoGroupsDetails />} />
-                <Route path="/videos/:id" element={<VideoDetails />} />
-                <Route path="/videos/add" element={<AddVideo />} />
-                <Route path="/assignments/:id" element={<SubjectVideoGroupAssignmentDetails />} />
-                <Route path="/assignments/add" element={<SubjectVideoGroupAssignmentAdd />} />
-                <Route path="/subject-video-group-assignments/:id" element={<SubjectVideoGroupAssignmentDetails />} />
-                <Route path="/labels/add" element={<LabelAdd />} />
-                <Route path="/labels/edit/:id" element={<EditLabel />} />
-              </Route>
+                            <Route element={<RoleProtectedRoute allowedRoles={["Scientist"]} />}>
+                                <Route path="/projects" element={<Projects />} />
+                                <Route path="/projects/:id" element={<ProjectDetails />} />
+                                <Route path="/projects/edit/:id" element={<EditProjectPage />} />
+                                <Route path="/projects/add" element={<AddProjectPage />} />
+                                <Route path="/subjects/:id" element={<SubjectDetails />} />
+                                <Route path="/subjects/add" element={<AddSubject />} />
+                                <Route path="/video-groups/add" element={<AddVideoGroup />} />
+                                <Route path="/video-groups/:id" element={<VideoGroupsDetails />} />
+                                <Route path="/videos/:id" element={<VideoDetails />} />
+                                <Route path="/videos/add" element={<AddVideo />} />
+                                <Route path="/assignments/:id" element={<SubjectVideoGroupAssignmentDetails />} />
+                                <Route path="/assignments/add" element={<SubjectVideoGroupAssignmentAdd />} />
+                                <Route path="/subject-video-group-assignments/:id" element={<SubjectVideoGroupAssignmentDetails />} />
+                                <Route path="/labels/add" element={<LabelAdd />} />
+                                <Route path="/labels/edit/:id" element={<EditLabel />} />
+                            </Route>
 
-              <Route path="/forbidden" element={<Forbidden />} />
-              <Route path="/error" element={<Error />} />
+                            <Route path="/forbidden" element={<Forbidden />} />
+                            <Route path="/error" element={<Error />} />
 
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-            <NotificationSystem />
-          </ModalProvider>
-        </Router>
-      </AuthProvider>
-    </NotificationProvider>
-  );
+                            <Route path="*" element={<NotFound />} />
+                        </Routes>
+                        <NotificationSystem />
+                    </ModalProvider>
+                </Router>
+            </AuthProvider>
+        </NotificationProvider>
+    );
 }
 
 export default App;
-export { useAuth };
