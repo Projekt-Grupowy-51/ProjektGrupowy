@@ -88,7 +88,12 @@ public class ReportGenerator(
 
     private string ConvertProjectToJson(Project project)
     {
-        var json = project.Subjects
+        var json = new {
+            ProjectId = project.Id,
+            ProjectName = project.Name,
+            ProjectDescription = project.Description,
+            ProjectOwner = project.CreatedBy.UserName,
+            Subjects = project.Subjects
             .Select(subject => new
             {
                 SubjectId = subject.Id,
@@ -98,23 +103,50 @@ public class ReportGenerator(
                     .Select(label => new
                     {
                         LabelId = label.Label.Id,
-                        LabelerId = label.CreatedBy.UserName,
+                        LabelerId = label.CreatedBy.Id,
+                        LabelerName = label.CreatedBy.UserName,
                         LabelName = label.Label.Name,
                         label.Start,
                         label.End,
-                        VideoId = label.Video.Id,
+                        label.Label.Type,
                         label.Label.ColorHex,
-                        VideoGroupName = label.Video.VideoGroup.Name,
+                        VideoPath = label.Video.Path,
+                        VideoTitle = label.Video.Title,
+                        VideoId = label.Video.Id,
+                        VideoGroupName = label.Video.VideoGroup.Name
                     })
                     .GroupBy(l => l.VideoGroupName)
-                    .Select(l => new
+                    .Select(group => new
                     {
-                        VideoGroupName = l.Key,
-                        Labels = l.ToList()
+                        VideoGroupName = group.Key,
+                        Videos = group
+                            .GroupBy(l => l.VideoId)
+                            .Select(videoGroup =>
+                            {
+                                var first = videoGroup.First();
+                                return new
+                                {
+                                    first.VideoId,
+                                    first.VideoPath,
+                                    first.VideoTitle,
+                                    Labels = videoGroup.Select(label => new
+                                    {
+                                        label.LabelId,
+                                        label.LabelerId,
+                                        label.LabelName,
+                                        label.Start,
+                                        label.End,
+                                        label.Type,
+                                        label.ColorHex
+                                    }).ToList()
+                                };
+                            })
+                            .ToList()
                     })
                     .ToList()
-            });
+            })
+        };
 
-            return JsonConvert.SerializeObject(json, Formatting.Indented);
+        return JsonConvert.SerializeObject(json, Formatting.Indented);
     }
 }
