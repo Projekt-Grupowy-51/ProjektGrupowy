@@ -42,6 +42,8 @@ import SignalRListener from "../src/services/SignalRListener";
 import { useTranslation } from 'react-i18next';
 import './i18n.js'
 import { AuthProvider, useAuth } from "./context/AuthContext";
+import { LoadingProvider } from './context/LoadingContext';
+import LoadingScreen from './components/LoadingScreen';
 
 const RoleProtectedRoute = ({ allowedRoles }) => {
     const { isAuthenticated, roles } = useAuth();
@@ -153,42 +155,45 @@ function App() {
             <AuthProvider>
                 <SignalRListener />
                 <Router>
-                    <ModalProvider>
-                        <Navbar />
-                        <Routes>
-                            <Route path="/" element={<Login />} />
-                            <Route path="/login" element={<Login />} />
+                    <LoadingProvider>
+                        <ModalProvider>
+                            <Navbar />
+                            <Routes>
+                                <Route path="/" element={<Login />} />
+                                <Route path="/login" element={<Login />} />
 
-                            <Route element={<RoleProtectedRoute allowedRoles={["Labeler"]} />}>
-                                <Route path="/labeler-video-groups" element={<LabelerVideoGroups />} />
-                                <Route path="/video-group/:id" element={<VideoGroup />} />
-                            </Route>
+                                <Route element={<RoleProtectedRoute allowedRoles={["Labeler"]} />}>
+                                    <Route path="/labeler-video-groups" element={<LabelerVideoGroups />} />
+                                    <Route path="/video-group/:id" element={<VideoGroup />} />
+                                </Route>
 
-                            <Route element={<RoleProtectedRoute allowedRoles={["Scientist"]} />}>
-                                <Route path="/projects" element={<Projects />} />
-                                <Route path="/projects/:id" element={<ProjectDetails />} />
-                                <Route path="/projects/edit/:id" element={<EditProjectPage />} />
-                                <Route path="/projects/add" element={<AddProjectPage />} />
-                                <Route path="/subjects/:id" element={<SubjectDetails />} />
-                                <Route path="/subjects/add" element={<AddSubject />} />
-                                <Route path="/video-groups/add" element={<AddVideoGroup />} />
-                                <Route path="/video-groups/:id" element={<VideoGroupsDetails />} />
-                                <Route path="/videos/:id" element={<VideoDetails />} />
-                                <Route path="/videos/add" element={<AddVideo />} />
-                                <Route path="/assignments/:id" element={<SubjectVideoGroupAssignmentDetails />} />
-                                <Route path="/assignments/add" element={<SubjectVideoGroupAssignmentAdd />} />
-                                <Route path="/subject-video-group-assignments/:id" element={<SubjectVideoGroupAssignmentDetails />} />
-                                <Route path="/labels/add" element={<LabelAdd />} />
-                                <Route path="/labels/edit/:id" element={<EditLabel />} />
-                            </Route>
+                                <Route element={<RoleProtectedRoute allowedRoles={["Scientist"]} />}>
+                                    <Route path="/projects" element={<Projects />} />
+                                    <Route path="/projects/:id" element={<ProjectDetails />} />
+                                    <Route path="/projects/edit/:id" element={<EditProjectPage />} />
+                                    <Route path="/projects/add" element={<AddProjectPage />} />
+                                    <Route path="/subjects/:id" element={<SubjectDetails />} />
+                                    <Route path="/subjects/add" element={<AddSubject />} />
+                                    <Route path="/video-groups/add" element={<AddVideoGroup />} />
+                                    <Route path="/video-groups/:id" element={<VideoGroupsDetails />} />
+                                    <Route path="/videos/:id" element={<VideoDetails />} />
+                                    <Route path="/videos/add" element={<AddVideo />} />
+                                    <Route path="/assignments/:id" element={<SubjectVideoGroupAssignmentDetails />} />
+                                    <Route path="/assignments/add" element={<SubjectVideoGroupAssignmentAdd />} />
+                                    <Route path="/subject-video-group-assignments/:id" element={<SubjectVideoGroupAssignmentDetails />} />
+                                    <Route path="/labels/add" element={<LabelAdd />} />
+                                    <Route path="/labels/edit/:id" element={<EditLabel />} />
+                                </Route>
 
-                            <Route path="/forbidden" element={<Forbidden />} />
-                            <Route path="/error" element={<Error />} />
+                                <Route path="/forbidden" element={<Forbidden />} />
+                                <Route path="/error" element={<Error />} />
 
-                            <Route path="*" element={<NotFound />} />
-                        </Routes>
-                        <NotificationSystem />
-                    </ModalProvider>
+                                <Route path="*" element={<NotFound />} />
+                            </Routes>
+                            <NotificationSystem />
+                            <LoadingScreen />
+                        </ModalProvider>
+                    </LoadingProvider>
                 </Router>
             </AuthProvider>
         </NotificationProvider>

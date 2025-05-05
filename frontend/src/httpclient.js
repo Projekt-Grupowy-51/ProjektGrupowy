@@ -1,4 +1,5 @@
 import axios from "axios";
+import { startRequest, endRequest } from "./services/loadingService";
 
 export const API_BASE_URL = "http://localhost:5000/api";
 
@@ -11,9 +12,24 @@ const httpClient = axios.create({
     },
 });
 
+httpClient.interceptors.request.use(
+    config => {
+        startRequest();
+        return config;
+    },
+    error => {
+        endRequest();
+        return Promise.reject(error);
+    }
+);
+
 httpClient.interceptors.response.use(
-    (response) => response,
+    response => {
+        endRequest();
+        return response;
+    },
     async (error) => {
+        endRequest();
         const originalRequest = error.config;
 
         if (error.response?.status === 401 && !originalRequest._retry) {
