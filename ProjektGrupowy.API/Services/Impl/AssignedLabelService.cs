@@ -152,4 +152,22 @@ public class AssignedLabelService(
 
         return assignedLabelsOpt;
     }
+
+     public async Task<Optional<IEnumerable<AssignedLabel>>> GetAssignedLabelsByVideoIdAndSubjectIdAsync(int videoId, int subjectId)
+    {
+        var assignedLabelsOpt = await assignedLabelRepository.GetAssignedLabelsByVideoIdAndSubjectIdAsync(videoId, subjectId);
+        if (assignedLabelsOpt.IsFailure)
+        {
+            return assignedLabelsOpt;
+        }
+
+        var assignedLabels = assignedLabelsOpt.GetValueOrThrow();
+        var authResult = await authorizationService.AuthorizeAsync(currentUserService.User, assignedLabels, new ResourceOperationRequirement(ResourceOperation.Read));
+        if (!authResult.Succeeded)
+        {
+            throw new ForbiddenException();
+        }
+
+        return assignedLabelsOpt;
+    }
 }

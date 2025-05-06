@@ -101,4 +101,21 @@ public class AssignedLabelRepository(AppDbContext context, ILogger<AssignedLabel
             return Optional<IEnumerable<AssignedLabel>>.Failure(e.Message);
         }
     }
+
+    public async Task<Optional<IEnumerable<AssignedLabel>>> GetAssignedLabelsByVideoIdAndSubjectIdAsync(int videoId, int subjectId)
+    {
+        try
+        {
+            var assignedLabels = await context.AssignedLabels.FilteredAssignedLabels(currentUserService.UserId, currentUserService.IsAdmin)
+                .Where(a => a.Video.Id == videoId && a.Label.Subject.Id == subjectId)
+                .OrderByDescending(a => a.InsDate)
+                .ToListAsync();
+            return Optional<IEnumerable<AssignedLabel>>.Success(assignedLabels);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "An error occurred while getting assigned labels by video and subject");
+            return Optional<IEnumerable<AssignedLabel>>.Failure(e.Message);
+        }
+    }
 }

@@ -1,8 +1,8 @@
-﻿import React, { useEffect } from "react";
+﻿import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import useVideoGroup from "./hooks/useVideoGroup.jsx";
-import  useVideoControls  from "./hooks/useVideoControls.jsx";
-import  useLabels  from "./hooks/useLabels.jsx";
+import useVideoControls from "./hooks/useVideoControls.jsx";
+import useLabels from "./hooks/useLabels.jsx";
 import VideoPlayers from "./components/VideoPlayers";
 import ProgressBar from "./components/ProgressBar";
 import BatchNavigation from "./components/BatchNavigation";
@@ -10,12 +10,12 @@ import LabelInterface from "./components/LabelInterface";
 import httpClient from "../../httpclient.js";
 
 const Videos = () => {
-    console.log('xd');
     const { id: assignmentId } = useParams();
-    const [assignment, setAssignment] = React.useState({
+    const [assignment, setAssignment] = useState({
         subjectId: null,
         videoGroupId: null,
     });
+    const [resetTrigger, setResetTrigger] = useState(0); 
 
     const {
         videoGroup,
@@ -59,34 +59,67 @@ const Videos = () => {
         return () => window.removeEventListener("keydown", handleKeyPress);
     }, [handleKeyPress, labels]);
 
+    const handleAllVideosEnded = () => {
+        if (batchState.currentBatch < Object.keys(videoGroup.positions).length) {
+            batchState.handleBatchChange(batchState.currentBatch + 1); 
+            controls.handlePlayStop(); 
+            setResetTrigger((prev) => prev + 1); 
+        }
+    };
+
+    const handleBatchChange = (newBatch) => {
+        batchState.handleBatchChange(newBatch);
+        controls.handleBatchChange(newBatch); 
+        setResetTrigger((prev) => prev + 1); 
+
+        setTimeout(() => {
+            setPlayerState((prev) => ({
+                ...prev,
+                isPlaying: false, 
+                currentTime: 0, 
+            }));
+        }, 0);
+    };
+
     return (
-        <div className="container content">
-            <VideoPlayers
-                streams={videoGroup.streams}
-                videoRefs={videoRefs}
-                onTimeUpdate={controls.handleTimeUpdate}
-                onEnded={batchState.handleVideoEnd}
-            />
+        <div className="container">
+            <div className="content">
+                <div className="row">
+                    <div className="col-12">
+                        <VideoPlayers
+                            streams={videoGroup.streams}
+                            videoRefs={videoRefs}
+                            onTimeUpdate={controls.handleTimeUpdate}
+                            onAllVideosEnded={handleAllVideosEnded}
+                            resetTrigger={resetTrigger} 
+                        />
 
-            <ProgressBar
-                currentTime={playerState.currentTime}
-                duration={playerState.duration}
-                onSeek={controls.handleSeek}
-            />
+                        <ProgressBar
+                            currentTime={playerState.currentTime}
+                            duration={playerState.duration}
+                            onSeek={controls.handleSeek}
+                        />
 
-            <BatchNavigation
-                currentBatch={batchState.currentBatch}
-                totalBatches={Object.keys(videoGroup.positions).length}
-                playerState={playerState}
-                controls={controls}
-                batchState={batchState}
-            />
-
-            <LabelInterface
-                labels={labels}
-                assignedLabels={assignedLabels}
-                labelActions={labelActions}
-            />
+                        <BatchNavigation
+                            currentBatch={batchState.currentBatch}
+                            totalBatches={Object.keys(videoGroup.positions).length}
+                            playerState={playerState}
+                            controls={controls}
+                            batchState={batchState} 
+                            handleBatchChange={handleBatchChange} 
+                        />
+                    </div>
+                </div>
+                <div className="row">
+                    <div className="col-12">
+                        <LabelInterface
+                            labels={labels}
+                            assignedLabels={assignedLabels}
+                            labelActions={labelActions}
+                        />
+                    </div>
+                </div>
+            </div>
         </div>
     );
 };

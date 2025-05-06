@@ -125,4 +125,13 @@ public class VideoController(
             ? Ok(mapper.Map<IEnumerable<AssignedLabelResponse>>(assignedLabels.GetValueOrThrow()))
             : NotFound(assignedLabels.GetErrorOrThrow());
     }
+
+    [HttpGet("{videoId:int}/{subjectId:int}/assignedlabels")]
+    public async Task<ActionResult<IEnumerable<AssignedLabelResponse>>> GetAssignedLabelsByVideoIdAndSubjectIdAsync(int videoId, int subjectId)
+    {
+        var assignedLabels = await assignedLabelService.GetAssignedLabelsByVideoIdAndSubjectIdAsync(videoId, subjectId);
+        return assignedLabels.IsSuccess
+            ? Ok(mapper.Map<IEnumerable<AssignedLabelResponse>>(assignedLabels.GetValueOrThrow()))
+            : NotFound(assignedLabels.GetErrorOrThrow());
+    }
 }
