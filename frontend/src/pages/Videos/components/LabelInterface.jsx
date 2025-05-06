@@ -42,19 +42,27 @@ const LabelInterface = ({ labels, assignedLabels, labelActions }) => {
     return (
         <>
             <div className="labels-container">
-                {labels.map((label) => (
-                    <button
-                        key={label.id}
-                        className="btn label-btn"
-                        style={{
-                            backgroundColor: label.colorHex,
-                            color: getTextColor(label.colorHex),
-                        }}
-                        onClick={() => labelActions.handleLabelClick(label.id)}
-                    >
-                        {label.name} [{label.shortcut}]
-                    </button>
-                ))}
+                {labels.map((label) => {
+                    const isRangeLabel = label.type === "range";
+                    const isPointLabel = label.type === "point";
+                    const labelState = labelActions.getLabelState(label.id); // Retrieve label state (start/stop)
+
+                    return (
+                        <button
+                            key={label.id}
+                            className="btn label-btn"
+                            style={{
+                                backgroundColor: label.colorHex,
+                                color: getTextColor(label.colorHex),
+                            }}
+                            onClick={() => labelActions.handleLabelClick(label.id)}
+                        >
+                            {label.name} [{label.shortcut}]{" "}
+                            {isRangeLabel && (labelState?.start ? "STOP" : "START")}
+                            {isPointLabel && "ADD POINT"}
+                        </button>
+                    );
+                })}
             </div>
 
             <div className="assigned-labels">
