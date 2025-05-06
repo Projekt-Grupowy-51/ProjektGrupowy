@@ -1,4 +1,5 @@
 ﻿import React, { useState, useEffect } from "react";
+import "../css/VideoPlayers.css"; 
 
 const VideoPlayers = ({ streams, videoRefs, onTimeUpdate, onAllVideosEnded, resetTrigger }) => {
     const [endedVideos, setEndedVideos] = useState(new Set());
@@ -22,44 +23,26 @@ const VideoPlayers = ({ streams, videoRefs, onTimeUpdate, onAllVideosEnded, rese
 
     return (
         <div className="content">
-            <div className="container" id="video-container">
-                <div
-                    className="row"
-                    id="video-row"
-                    style={
-                        streams.length === 2
-                            ? {
-                                  display: "flex",
-                                  justifyContent: "space-between",
-                              }
-                            : streams.length >= 3 && streams.length <= 4
-                            ? {
-                                  display: "grid",
-                                  gridTemplateColumns: "1fr 1fr",
-                                  gridTemplateRows: "1fr 1fr",
-                                  gap: "10px",
-                                  height: "75vh",
-                                  placeItems: "center",
-                              }
-                            : {}
-                    }
-                >
+            <div
+                className={`container ${
+                    streams.length === 2
+                        ? "video-container-two"
+                        : streams.length >= 3 && streams.length <= 4
+                        ? "video-container-grid"
+                        : "video-container-default"
+                }`}
+                id="video-container"
+            >
                     {streams.map((stream, index) => (
                         <div
                             key={index}
-                            style={
+                            className={`${
                                 streams.length === 2
-                                    ? {
-                                          width: "50%",
-                                          height: "auto",
-                                      }
+                                    ? "video-cell-two"
                                     : streams.length >= 3 && streams.length <= 4
-                                    ? {
-                                          height: "calc(75vh / 2)",
-                                          width: "calc((75vh / 2) * (16 / 9))",
-                                      }
-                                    : {}
-                            }
+                                    ? "video-cell-grid"
+                                    : "video-cell-default"
+                            }`}
                         >
                             <div className="video-cell">
                                 <video
@@ -74,7 +57,6 @@ const VideoPlayers = ({ streams, videoRefs, onTimeUpdate, onAllVideosEnded, rese
                             </div>
                         </div>
                     ))}
-                </div>
             </div>
         </div>
     );
