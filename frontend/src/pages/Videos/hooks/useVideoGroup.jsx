@@ -19,6 +19,7 @@ const useVideoGroup = (videoGroupId) => {
                 try {
                     const response = await httpClient.get(`/Video/${videoId}/stream`, {
                         responseType: "blob",
+                        skipLoadingScreen: true,
                     });
                     return URL.createObjectURL(response.data);
                 } catch (error) {

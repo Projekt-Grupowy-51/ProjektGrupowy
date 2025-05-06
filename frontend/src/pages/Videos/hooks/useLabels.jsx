@@ -11,7 +11,7 @@ const useLabels = (subjectId, videos, videoRefs) => {
     const fetchLabels = useCallback(async () => {
         if (!subjectId) return;
         try {
-            const response = await httpClient.get(`/subject/${subjectId}/label`);
+            const response = await httpClient.get(`/subject/${subjectId}/label`, {skipLoadingScreen: true});
             setLabels(response.data || []);
         } catch (error) {
             console.error("Error fetching labels:", error);
@@ -27,7 +27,7 @@ const useLabels = (subjectId, videos, videoRefs) => {
         try {
             const results = await Promise.all(
                 videos.map((video) =>
-                    httpClient.get(`/video/${video.id}/${subjectId}/assignedlabels`)
+                    httpClient.get(`/video/${video.id}/${subjectId}/assignedlabels`, { skipLoadingScreen: true })
                 )
             );
             setAssignedLabels(results.flatMap((res) => res.data));
@@ -81,13 +81,14 @@ const useLabels = (subjectId, videos, videoRefs) => {
                             videoId: video.id,
                             start: formatTime(start),
                             end: formatTime(end),
-                        })
+                        }, { skipLoadingScreen: true })
                     )
                 );
 
                 const fetchPromises = videos.map((video) =>
                     httpClient.get(`/video/${video.id}/${subjectId}/assignedlabels`, {
                         withCredentials: true,
+                        skipLoadingScreen: true,
                     })
                 );
 

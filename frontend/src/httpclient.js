@@ -14,22 +14,22 @@ const httpClient = axios.create({
 
 httpClient.interceptors.request.use(
     config => {
-        startRequest();
+        if (!config.skipLoadingScreen) startRequest();
         return config;
     },
     error => {
-        endRequest();
+        if (!error.config?.skipLoadingScreen) endRequest();
         return Promise.reject(error);
     }
 );
 
 httpClient.interceptors.response.use(
     response => {
-        endRequest();
+        if (!response.config.skipLoadingScreen) endRequest();
         return response;
     },
     async (error) => {
-        endRequest();
+        if (!error.config?.skipLoadingScreen) endRequest();
         const originalRequest = error.config;
 
         if (error.response?.status === 401 && !originalRequest._retry) {
