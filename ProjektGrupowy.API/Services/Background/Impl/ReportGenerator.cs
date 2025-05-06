@@ -100,6 +100,7 @@ public class ReportGenerator(
                 SubjectName = subject.Name,
                 VideoGroups = subject.Labels
                     .SelectMany(label => label.AssignedLabels)
+                    .Where(label => label.Video != null)
                     .Select(label => new
                     {
                         LabelId = label.Label.Id,

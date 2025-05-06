@@ -32,7 +32,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Log Configuration
 Log.Logger = new LoggerConfiguration()
-    .MinimumLevel.Debug()
+    .MinimumLevel.Warning()
     .WriteTo.Console()
     .WriteTo.File("Logs/internal_api.log", rollingInterval: RollingInterval.Day)
     .CreateLogger();
