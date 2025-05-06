@@ -10,4 +10,5 @@ public interface IAssignedLabelRepository
     Task<Optional<AssignedLabel>> AddAssignedLabelAsync(AssignedLabel assignedLabel);
     Task DeleteAssignedLabelAsync(AssignedLabel assignedLabel);
     Task<Optional<IEnumerable<AssignedLabel>>> GetAssignedLabelsByVideoIdAsync(int videoId);
+    Task<Optional<IEnumerable<AssignedLabel>>> GetAssignedLabelsByVideoIdAndSubjectIdAsync(int videoId, int subjectId);
 }

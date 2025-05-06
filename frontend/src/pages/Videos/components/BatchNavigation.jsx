@@ -12,7 +12,11 @@ const BatchNavigation = ({
             <div className="pagination d-flex align-items-center justify-content-between">
                 <button
                     className="btn btn-primary pagination-button"
-                    onClick={() => batchState.handleBatchChange(currentBatch - 1)}
+                    onClick={() => {
+                        batchState.handleBatchChange(currentBatch - 1);
+                        controls.resetPlaybackSpeed(); // Reset playback speed
+                        if (playerState.isPlaying) controls.handlePlayStop(); // Ensure play-stop is set to "stop"
+                    }}
                     disabled={currentBatch <= 1}
                 >
                     Previous
@@ -31,10 +35,22 @@ const BatchNavigation = ({
                         -5s
                     </button>
                     <button
+                        className="btn btn-primary seek-btn mx-1"
+                        onClick={() => controls.handleSeek(playerState.currentTime - 1)}
+                    >
+                        -1s
+                    </button>
+                    <button
                         className="btn btn-primary play-stop-btn mx-1"
                         onClick={controls.handlePlayStop}
                     >
-                        {playerState.isPlaying ? "⏹" : "▶"}
+                        {playerState.isPlaying ? "⏹" : "▶"} 
+                    </button>
+                    <button
+                        className="btn btn-primary seek-btn mx-1"
+                        onClick={() => controls.handleSeek(playerState.currentTime + 1)}
+                    >
+                        +1s
                     </button>
                     <button
                         className="btn btn-primary seek-btn mx-1"
@@ -58,7 +74,11 @@ const BatchNavigation = ({
 
                 <button
                     className="btn btn-primary pagination-button"
-                    onClick={() => batchState.handleBatchChange(currentBatch + 1)}
+                    onClick={() => {
+                        batchState.handleBatchChange(currentBatch + 1);
+                        controls.resetPlaybackSpeed(); // Reset playback speed
+                        if (playerState.isPlaying) controls.handlePlayStop(); // Ensure play-stop is set to "stop"
+                    }}
                     disabled={currentBatch >= totalBatches}
                 >
                     Next

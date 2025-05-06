@@ -1,12 +1,12 @@
-﻿import {useState, useEffect, useRef, useCallback} from "react";
+﻿import { useState, useEffect, useRef, useCallback } from "react";
 import httpClient from "../../../httpclient";
 import { formatTime } from "../utils";
 
 const useLabels = (subjectId, videos, videoRefs) => {
     const [labels, setLabels] = useState([]);
     const [assignedLabels, setAssignedLabels] = useState([]);
-    const [labelTimestamps, setLabelTimestamps] = useState({});
     const labelState = useRef({});
+    const isFetchingLabels = useRef(false); 
 
     const fetchLabels = useCallback(async () => {
         if (!subjectId) return;
@@ -19,16 +19,22 @@ const useLabels = (subjectId, videos, videoRefs) => {
     }, [subjectId]);
 
     const fetchAssignedLabels = useCallback(async () => {
-        console.log('videos', videos);
+        if (!videos || videos.length === 0 || isFetchingLabels.current) {
+            console.log("Skipping fetchAssignedLabels due to empty videos array or ongoing fetch");
+            return;
+        }
+        isFetchingLabels.current = true; 
         try {
             const results = await Promise.all(
                 videos.map((video) =>
-                    httpClient.get(`/video/${video.id}/assignedlabels`)
+                    httpClient.get(`/video/${video.id}/${subjectId}/assignedlabels`)
                 )
             );
             setAssignedLabels(results.flatMap((res) => res.data));
         } catch (error) {
             console.error("Error fetching assigned labels:", error);
+        } finally {
+            isFetchingLabels.current = false; 
         }
     }, [videos]);
 
@@ -39,6 +45,11 @@ const useLabels = (subjectId, videos, videoRefs) => {
 
             const time = video.currentTime;
             const label = labels.find((l) => l.id === labelId);
+
+            if (!videos || videos.length === 0) {
+                console.error("No videos available for label assignment");
+                return;
+            }
 
             if (label?.type === "point") {
                 await submitLabel(labelId, time, time);
@@ -52,11 +63,16 @@ const useLabels = (subjectId, videos, videoRefs) => {
                 labelState.current[labelId] = { start: time };
             }
         },
-        [labels, videoRefs]
+        [labels, videos, videoRefs]
     );
 
     const submitLabel = useCallback(
         async (labelId, start, end) => {
+            console.log("Submitting label:", { labelId, start, end, videos });
+            if (!videos || videos.length === 0) {
+                console.error("No videos available for label submission");
+                return;
+            }
             try {
                 await Promise.all(
                     videos.map((video) =>
@@ -68,12 +84,22 @@ const useLabels = (subjectId, videos, videoRefs) => {
                         })
                     )
                 );
-                fetchAssignedLabels();
+
+                const fetchPromises = videos.map((video) =>
+                    httpClient.get(`/video/${video.id}/${subjectId}/assignedlabels`, {
+                        withCredentials: true,
+                    })
+                );
+
+                const results = await Promise.all(fetchPromises);
+                const updatedAssignedLabels = results.flatMap((res) => res.data);
+
+                setAssignedLabels(updatedAssignedLabels);
             } catch (error) {
                 console.error("Error submitting label:", error);
             }
         },
-        [videos, fetchAssignedLabels]
+        [videos]
     );
 
     const handleDeleteLabel = useCallback(async (labelId) => {

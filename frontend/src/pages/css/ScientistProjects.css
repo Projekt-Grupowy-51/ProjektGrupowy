@@ -386,8 +386,7 @@ button {
 }
 
 video {
-  height: 100%;
-  object-fit: cover;
+  max-height: 75vh;
 }
 
 .controls {
@@ -533,6 +532,16 @@ video {
   margin: 0;
 }
 
+.labels-table{
+  margin-top: 0 !important;
+  border-radius: 0% !important;
+}
+
+.assigned-labels-table-container{
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
 .assigned-labels-table {
   max-height: 40vh;
   overflow-y: auto;
@@ -572,13 +581,6 @@ video {
   /* No longer needed */
 }
 
-.video-cell {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 10px;
-}
-
 .container {
   margin: 50px auto;
 }
@@ -586,14 +588,26 @@ video {
 #video-container {
   margin: 0px auto;
   padding: 0;
-  min-height: calc(70vh);
   margin-bottom: 5px;
+  max-height: 75vh;
+  min-height: auto;
+  height: fit-content;
 }
 
 #video-row {
   display: flex;
   justify-content: center;
   align-items: center;
+  max-height: 75vh;
+}
+
+.video-grid-2-2{
+  display: "grid"; 
+  grid-template-columns: "1fr 1fr";
+  grid-template-rows: "1fr 1fr";
+  gap: "10px";
+  height: "75vh";
+  place-items: "center";
 }
 
 /* Add these styles to your existing CSS file */

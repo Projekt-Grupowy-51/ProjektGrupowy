@@ -7,9 +7,28 @@ const LabelInterface = ({ labels, assignedLabels, labelActions }) => {
     const { t } = useTranslation(['videos', 'common']);
 
     const labelColumns = [
-        { field: "labelName", header: t('table.label') },
-        { field: "labelerName", header: t('table.labeler') },
-        { field: "subjectName", header: t('table.subject') },
+        { 
+            field: "labelName", 
+            header: t('table.label'),
+            render: (assignedLabel) => {
+                const matchingLabel = labels.find((label) => label.id === assignedLabel.labelId);
+                const colorHex = matchingLabel?.colorHex || "#ccc";
+                return (
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                        <div
+                            style={{
+                                backgroundColor: colorHex,
+                                width: "20px",
+                                height: "20px",
+                                borderRadius: "50%",
+                                border: "1px solid #ccc",
+                            }}
+                        />
+                        <span>{assignedLabel.labelName}</span>
+                    </div>
+                );
+            }, 
+        },
         { field: "start", header: t('table.start') },
         { field: "end", header: t('table.end') },
         {
@@ -40,16 +59,20 @@ const LabelInterface = ({ labels, assignedLabels, labelActions }) => {
 
             <div className="assigned-labels">
                 <h3>Assigned Labels:</h3>
-                <DataTable
-                    columns={labelColumns}
-                    data={assignedLabels}
-                    navigateButton={(label) => (
-                        <DeleteButton
-                            onClick={() => labelActions.handleDelete(label.id)}
-                            itemType={`label ${label.labelName}`}
-                        />
-                    )}
-                />
+                <div className="assigned-labels-table-container">
+                    <DataTable
+                        columns={labelColumns}
+                        data={assignedLabels}
+                        navigateButton={(label) => (
+                            <DeleteButton
+                                onClick={() => labelActions.handleDelete(label.id)}
+                                itemType={`label ${label.labelName}`}
+                            />
+                        )}
+                        tableClassName="normal-table labels-table"
+                        defaultSort={{ key: "start", direction: "asc" }} 
+                    />
+                </div>
             </div>
         </>
     );
