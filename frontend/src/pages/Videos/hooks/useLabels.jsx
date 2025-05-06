@@ -111,6 +111,10 @@ const useLabels = (subjectId, videos, videoRefs) => {
         }
     }, []);
 
+    const getLabelState = useCallback((labelId) => {
+        return labelState.current[labelId] || {};
+    }, []);
+
     useEffect(() => {
         fetchLabels();
     }, [fetchLabels]);
@@ -125,6 +129,7 @@ const useLabels = (subjectId, videos, videoRefs) => {
         labelActions: {
             handleLabelClick: handleLabelAction,
             handleDelete: handleDeleteLabel,
+            getLabelState, 
         },
     };
 };
