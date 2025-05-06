@@ -581,13 +581,6 @@ video {
   /* No longer needed */
 }
 
-.video-cell {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 5px;
-}
-
 .container {
   margin: 50px auto;
 }
