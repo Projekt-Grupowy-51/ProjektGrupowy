@@ -2,7 +2,7 @@ import { useNotification } from "../context/NotificationContext";
 import { getSignalRService } from "./SignalRServiceInstance";
 import { useEffect, useRef } from "react";
 import { MessageTypes } from "../config/messageTypes";
-import { useAuth } from "../App";
+import { useAuth } from "../context/AuthContext";
 
 const SignalRListener = () => {
   const { addNotification } = useNotification();

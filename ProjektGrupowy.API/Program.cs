@@ -211,6 +211,7 @@ static void AddServices(WebApplicationBuilder builder)
     builder.Services.AddScoped<IProjectAccessCodeService, ProjectAccessCodeService>();
     builder.Services.AddScoped<IReportGenerator, ReportGenerator>();
     builder.Services.AddScoped<IProjectReportService, ProjectReportService>();
+    builder.Services.AddScoped<ITokenService, TokenService>();
 
     builder.Services.AddSingleton<IConnectedClientManager, ConnectedClientManager>();
     builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
