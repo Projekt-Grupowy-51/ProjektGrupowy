@@ -29,6 +29,9 @@ const useVideoControls = (videoRefs, batchState) => {
                     video.pause();
                     video.currentTime = 0;
                     break;
+                case "resetSpeed":
+                    video.playbackRate = 1.0;
+                    break;
             }
         });
     }, [videoRefs]);
@@ -53,6 +56,11 @@ const useVideoControls = (videoRefs, batchState) => {
         },
         [syncVideos]
     );
+
+    const resetPlaybackSpeed = useCallback(() => {
+        syncVideos("resetSpeed");
+        setPlayerState((prev) => ({ ...prev, playbackSpeed: 1.0 }));
+    }, [syncVideos]);
 
     const handleTimeUpdate = useCallback(() => {
         const video = videoRefs.current[0];
@@ -103,6 +111,7 @@ const useVideoControls = (videoRefs, batchState) => {
             handleSeek,
             handleSpeedChange,
             handleTimeUpdate,
+            resetPlaybackSpeed,
         },
         handleKeyPress,
     };

@@ -14,7 +14,8 @@ const BatchNavigation = ({
                     className="btn btn-primary pagination-button"
                     onClick={() => {
                         batchState.handleBatchChange(currentBatch - 1);
-                        controls.handlePlayStop(); 
+                        controls.resetPlaybackSpeed(); // Reset playback speed
+                        if (playerState.isPlaying) controls.handlePlayStop(); // Ensure play-stop is set to "stop"
                     }}
                     disabled={currentBatch <= 1}
                 >
@@ -75,7 +76,8 @@ const BatchNavigation = ({
                     className="btn btn-primary pagination-button"
                     onClick={() => {
                         batchState.handleBatchChange(currentBatch + 1);
-                        controls.handlePlayStop(); 
+                        controls.resetPlaybackSpeed(); // Reset playback speed
+                        if (playerState.isPlaying) controls.handlePlayStop(); // Ensure play-stop is set to "stop"
                     }}
                     disabled={currentBatch >= totalBatches}
                 >

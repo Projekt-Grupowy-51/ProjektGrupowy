@@ -63,6 +63,7 @@ const Videos = () => {
         if (batchState.currentBatch < Object.keys(videoGroup.positions).length) {
             batchState.handleBatchChange(batchState.currentBatch + 1); 
             controls.handlePlayStop(); 
+            controls.resetPlaybackSpeed();
             setResetTrigger((prev) => prev + 1); 
         }
     };
