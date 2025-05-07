@@ -114,8 +114,7 @@ app.UseExceptionHandler(errorApp =>
     });
 });
 
-app.MapHub<AppHub>("/hub/app");
-
+app.MapHub<AppHub>(builder.Configuration["SignalR:HubUrl"] ?? "/hub/app");
 
 app.Run();
 
@@ -178,7 +177,10 @@ static void AddServices(WebApplicationBuilder builder)
     {
         options.AddPolicy("FrontendPolicy", policy =>
         {
-            policy.WithOrigins("http://localhost:3000")
+            var allowedDevOrigin = builder.Configuration["Cors:AllowedDevOrigin"];
+            var allowedProdOrigin = builder.Configuration["Cors:AllowedProductionOrigin"];
+
+            policy.WithOrigins(allowedDevOrigin!, allowedProdOrigin!)
                   .AllowAnyHeader()
                   .AllowAnyMethod()
                   .AllowCredentials();

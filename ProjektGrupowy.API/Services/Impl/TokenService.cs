@@ -34,10 +34,14 @@ namespace ProjektGrupowy.API.Services.Impl
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JWT:Secret"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
+            var expiresInMinutes = int.TryParse(_config["JWT:RegularTokenExpiresInMinutes"], out var exp) 
+                ? exp 
+                : 15;
+
             return new JwtSecurityToken(
                 issuer: _config["JWT:ValidIssuer"],
                 audience: _config["JWT:ValidAudience"],
-                expires: DateTime.UtcNow.AddMinutes(15),
+                expires: DateTime.UtcNow.AddMinutes(expiresInMinutes),
                 claims: claims,
                 signingCredentials: creds
             );
@@ -45,11 +49,15 @@ namespace ProjektGrupowy.API.Services.Impl
 
         public RefreshToken GenerateRefreshToken(string userId)
         {
+            var expiresInDays = int.TryParse(_config["JWT:RefreshTokenExpiresInDays"], out var exp) 
+                ? exp 
+                : 7;
+
             return new RefreshToken
             {
                 Token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64)),
                 UserId = userId,
-                Expires = DateTime.UtcNow.AddDays(7),
+                Expires = DateTime.UtcNow.AddDays(expiresInDays),
                 IsUsed = false,
                 IsRevoked = false
             };
