@@ -72,7 +72,7 @@ const SubjectDetails = () => {
 
           <div className="d-flex justify-content-between mb-2">
             <NavigateButton path={`/labels/add?subjectId=${id}`} actionType="Add" />
-            <NavigateButton actionType="Back" />
+            <NavigateButton path={`/projects/${subjectDetails.projectId}`} actionType="Back" />
           </div>
 
           <h2 className="section-title">{t('subjects:labels.title')}</h2>

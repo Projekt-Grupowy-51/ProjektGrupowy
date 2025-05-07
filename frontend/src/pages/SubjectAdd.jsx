@@ -74,7 +74,7 @@ const AddSubject = () => {
                       <i className="fas fa-plus-circle me-2"></i>
                       {t('subjects:buttons.add')}
                     </button>
-                    <NavigateButton actionType="Back" value={t('common:buttons.cancel')} />
+                    <NavigateButton path={`/projects/${projectId}`} actionType="Back" value={t('common:buttons.cancel')} />
                   </div>
                 </form>
               </div>

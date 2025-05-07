@@ -4,6 +4,7 @@ import httpClient from "../httpclient";
 import "./css/ScientistProjects.css";
 import { useTranslation } from "react-i18next";
 import { useNotification } from "../context/NotificationContext";
+import NavigateButton from "../components/NavigateButton";
 
 const VideoAdd = () => {
   const [videoGroupId, setVideoGroupId] = useState(null);
@@ -18,6 +19,7 @@ const VideoAdd = () => {
   const fileInputRef = useRef(null);
   const { t } = useTranslation(['videos', 'common']);
   const { addNotification } = useNotification();
+
 
   const handleButtonClick = () => {
     fileInputRef.current.click();
@@ -301,6 +303,11 @@ const VideoAdd = () => {
           )}
         </div>
       </div>
+      <NavigateButton
+          path={`/video-groups/${videoGroupId}`}
+          actionType="Back"
+          value={t('common:buttons.cancel')}
+      />
     </div>
   );
 };

@@ -63,7 +63,7 @@ const SubjectVideoGroupAssignmentDetails = () => {
               <button className="btn btn-secondary me-2 text-nowrap" onClick={fetchData}>
                 <i className="fas fa-sync-alt me-1"></i> {t('common:buttons.refresh')}
               </button>
-              <NavigateButton actionType="Back" />
+              <NavigateButton path={`/projects/${assignmentDetails.projectId}`} actionType="Back" />
             </div>
           </div>
         </div>

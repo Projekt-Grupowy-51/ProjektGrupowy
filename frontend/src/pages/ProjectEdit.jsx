@@ -101,7 +101,7 @@ function ProjectEdit() {
                       <i className="fas fa-save me-2"></i>
                       {t('projects:buttons.save')}
                     </button>
-                    <NavigateButton actionType="Back" value={t('common:buttons.cancel')} />
+                    <NavigateButton path={`/projects/${id}`} actionType="Back" value={t('common:buttons.cancel')} />
                   </div>
                 </form>
               </div>

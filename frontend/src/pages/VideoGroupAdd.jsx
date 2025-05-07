@@ -82,7 +82,7 @@ const VideoGroupAdd = () => {
                     <i className="fas fa-plus-circle me-2"></i>
                     {t('buttons.add')}
                   </button>
-                  <NavigateButton actionType="Back" value={t('buttons.cancel')} />
+                  <NavigateButton path={`/projects/${formData.projectId}`} actionType="Back" value={t('buttons.cancel')} />
                 </div>
               </form>
             </div>

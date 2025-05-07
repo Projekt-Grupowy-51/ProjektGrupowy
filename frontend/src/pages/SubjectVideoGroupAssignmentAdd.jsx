@@ -115,7 +115,7 @@ const SubjectVideoGroupAssignmentAdd = () => {
                     <i className="fas fa-plus-circle me-2"></i>
                     {t('assignments:buttons.create')}
                   </button>
-                  <NavigateButton actionType="Back" value={t('common:buttons.cancel')} />
+                  <NavigateButton path={`/projects/${projectId}`} actionType="Back" value={t('common:buttons.cancel')} />
                 </div>
               </form>
             </div>

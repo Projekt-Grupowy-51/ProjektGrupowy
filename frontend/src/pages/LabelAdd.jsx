@@ -74,7 +74,7 @@ const LabelAdd = () => {
           <i className="fas fa-exclamation-triangle me-2"></i>
           {t('labels:notification.missing_subject')}
         </div>
-        <NavigateButton actionType="Back" />
+        <NavigateButton path={`/subjects/${formData.subjectId}`} actionType="Back" />
       </div>
     );
   }
