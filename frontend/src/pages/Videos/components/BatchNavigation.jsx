@@ -1,12 +1,12 @@
 ﻿import { formatTime } from "../utils";
 
 const BatchNavigation = ({
-                             currentBatch,
-                             totalBatches,
-                             playerState,
-                             controls,
-                             batchState,
-                         }) => (
+    currentBatch,
+    totalBatches,
+    playerState,
+    controls,
+    batchState,
+}) => (
     <div className="row">
         <div className="col-12">
             <div className="pagination d-flex align-items-center justify-content-between">
@@ -14,8 +14,20 @@ const BatchNavigation = ({
                     className="btn btn-primary pagination-button"
                     onClick={() => {
                         batchState.handleBatchChange(currentBatch - 1);
-                        controls.resetPlaybackSpeed(); // Reset playback speed
-                        if (playerState.isPlaying) controls.handlePlayStop(); // Ensure play-stop is set to "stop"
+                        controls.resetPlaybackSpeed(); 
+                        controls.handleSeek(0); 
+                        if (playerState.isPlaying) controls.handlePlayStop(); 
+                        setTimeout(() => {
+                            controls.setPlayerState((prev) => {
+                                const newState = {
+                                    ...prev,
+                                    currentTime: 0, 
+                                    duration: 0, 
+                                    playbackSpeed: 1, 
+                                };
+                                return newState;
+                            });
+                        }, 0);
                     }}
                     disabled={currentBatch <= 1}
                 >
@@ -76,8 +88,20 @@ const BatchNavigation = ({
                     className="btn btn-primary pagination-button"
                     onClick={() => {
                         batchState.handleBatchChange(currentBatch + 1);
-                        controls.resetPlaybackSpeed(); // Reset playback speed
-                        if (playerState.isPlaying) controls.handlePlayStop(); // Ensure play-stop is set to "stop"
+                        controls.resetPlaybackSpeed(); 
+                        controls.handleSeek(0); 
+                        if (playerState.isPlaying) controls.handlePlayStop(); 
+                        setTimeout(() => {
+                            controls.setPlayerState((prev) => {
+                                const newState = {
+                                    ...prev,
+                                    currentTime: 0, 
+                                    duration: 0, 
+                                    playbackSpeed: 1, 
+                                };
+                                return newState;
+                            });
+                        }, 0);
                     }}
                     disabled={currentBatch >= totalBatches}
                 >

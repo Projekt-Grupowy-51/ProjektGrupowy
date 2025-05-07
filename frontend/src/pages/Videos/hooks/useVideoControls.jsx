@@ -43,8 +43,11 @@ const useVideoControls = (videoRefs, batchState) => {
 
     const handleSeek = useCallback(
         (newTime) => {
-            syncVideos("setTime", newTime);
-            setPlayerState((prev) => ({ ...prev, currentTime: newTime }));
+            syncVideos("setTime", newTime); 
+            setPlayerState((prev) => {
+                if (prev.currentTime === newTime) return prev; 
+                return { ...prev, currentTime: newTime }; 
+            });
         },
         [syncVideos]
     );
@@ -69,10 +72,24 @@ const useVideoControls = (videoRefs, batchState) => {
         setPlayerState((prev) => ({
             ...prev,
             currentTime: video.currentTime,
-            duration: video.duration,
-            timeLeft: Math.round(video.duration - video.currentTime),
+            duration: video.duration || prev.duration, 
+            timeLeft: Math.round((video.duration || prev.duration) - video.currentTime),
         }));
     }, [videoRefs]);
+
+    const initializeDuration = useCallback(() => {
+        const video = videoRefs.current[0];
+        if (video && video.duration) {
+            setPlayerState((prev) => ({
+                ...prev,
+                duration: video.duration, 
+            }));
+        }
+    }, [videoRefs]);
+
+    useEffect(() => {
+        initializeDuration(); 
+    }, [batchState.currentBatch, initializeDuration]);
 
     const handleKeyPress = useCallback(
         (event) => {
@@ -112,6 +129,7 @@ const useVideoControls = (videoRefs, batchState) => {
             handleSpeedChange,
             handleTimeUpdate,
             resetPlaybackSpeed,
+            setPlayerState, 
         },
         handleKeyPress,
     };

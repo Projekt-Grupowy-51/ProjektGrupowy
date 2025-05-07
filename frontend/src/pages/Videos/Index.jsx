@@ -70,15 +70,21 @@ const Videos = () => {
 
     const handleBatchChange = (newBatch) => {
         batchState.handleBatchChange(newBatch);
-        controls.handleBatchChange(newBatch); 
-        setResetTrigger((prev) => prev + 1); 
+        controls.handleBatchChange(newBatch);
+        setResetTrigger((prev) => prev + 1);
 
         setTimeout(() => {
-            setPlayerState((prev) => ({
-                ...prev,
-                isPlaying: false, 
-                currentTime: 0, 
-            }));
+            controls.resetPlaybackSpeed(); 
+            controls.handleSeek(0); 
+            controls.setPlayerState((prev) => {
+                const newState = {
+                    ...prev,
+                    isPlaying: false, 
+                    currentTime: 0, 
+                    duration: 0, 
+                };
+                return newState;
+            });
         }, 0);
     };
 
@@ -92,7 +98,8 @@ const Videos = () => {
                             videoRefs={videoRefs}
                             onTimeUpdate={controls.handleTimeUpdate}
                             onAllVideosEnded={handleAllVideosEnded}
-                            resetTrigger={resetTrigger} 
+                            resetTrigger={resetTrigger}
+                            onLoadedMetadata={controls.handleTimeUpdate} 
                         />
 
                         <ProgressBar
@@ -106,8 +113,8 @@ const Videos = () => {
                             totalBatches={Object.keys(videoGroup.positions).length}
                             playerState={playerState}
                             controls={controls}
-                            batchState={batchState} 
-                            handleBatchChange={handleBatchChange} 
+                            batchState={batchState}
+                            handleBatchChange={handleBatchChange}
                         />
                     </div>
                 </div>
