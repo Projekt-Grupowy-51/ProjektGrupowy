@@ -18,13 +18,21 @@ using System.Text;
 using System.Text.Json.Serialization;
 using ProjektGrupowy.API.SignalR;
 using Azure.Core;
+using Hangfire;
+using Hangfire.MemoryStorage;
+using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.SignalR;
+using ProjektGrupowy.API.Utils.Extensions;
+using ProjektGrupowy.API.Services.Background;
+using ProjektGrupowy.API.Services.Background.Impl;
+using ProjektGrupowy.API.Authorization;
+using ProjektGrupowy.API.Exceptions;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Log Configuration
 Log.Logger = new LoggerConfiguration()
-    .MinimumLevel.Debug()
+    .MinimumLevel.Warning()
     .WriteTo.Console()
     .WriteTo.File("Logs/internal_api.log", rollingInterval: RollingInterval.Day)
     .CreateLogger();
@@ -35,6 +43,8 @@ AddServices(builder);
 builder.Host.UseSerilog();
 
 var app = builder.Build();
+
+app.UseHangfireDashboard();
 
 app.MapHealthChecks("/health");
 
@@ -63,37 +73,88 @@ app.UseExceptionHandler(errorApp =>
 {
     errorApp.Run(async context =>
     {
-        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
         context.Response.ContentType = "application/json";
 
-        var exceptionHandlerPathFeature = context.Features.Get<IExceptionHandlerPathFeature>();
-        if (exceptionHandlerPathFeature?.Error != null)
-        {
-            Log.Error("An error occurred: {Error}", exceptionHandlerPathFeature.Error);
+        using var scope = app.Services.CreateScope();
+        var messageService = scope.ServiceProvider.GetRequiredService<IMessageService>();
+        var currentUserService = scope.ServiceProvider.GetRequiredService<ICurrentUserService>();
 
-            await context.Response.WriteAsync(new
+        var exceptionHandlerPathFeature = context.Features.Get<IExceptionHandlerPathFeature>();
+        var exception = exceptionHandlerPathFeature?.Error;
+
+        if (exception != null)
+        {
+            Log.Error("An error occurred: {Error}", exception);
+
+            if (exception is ForbiddenException)
             {
-                StatusCode = context.Response.StatusCode,
-                Message = "An internal server error occurred."
-            }.ToString());
+                context.Response.StatusCode = StatusCodes.Status403Forbidden;
+
+                await messageService.SendErrorAsync(currentUserService.UserId, "You do not have permission to perform this action.");
+
+                await context.Response.WriteAsJsonAsync(new
+                {
+                    StatusCode = context.Response.StatusCode,
+                    Message = exception.Message
+                });
+            }
+            else
+            {
+                context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+
+                await messageService.SendErrorAsync(currentUserService.UserId, "An internal server error occurred.");
+
+                await context.Response.WriteAsJsonAsync(new
+                {
+                    StatusCode = context.Response.StatusCode,
+                    Message = "An internal server error occurred."
+                });
+            }
         }
     });
 });
 
-app.MapHub<AppHub>("/hub/app");
-
+app.MapHub<AppHub>(builder.Configuration["SignalR:HubUrl"] ?? "/hub/app");
 
 app.Run();
 
 static void AddServices(WebApplicationBuilder builder)
 {
-    builder.Services.AddControllers()
+    builder.Services
+        .AddControllers()
         .AddJsonOptions(options =>
         {
             options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
         });
 
     builder.Services.AddHealthChecks();
+    
+    // ========== Hangfire ========== //
+
+    builder.Services.AddHangfire(config => config.UseSerilogLogProvider());
+    
+    if (builder.Environment.IsDevelopment())
+    {
+        builder.Services.AddHangfire(config => config.UseMemoryStorage());
+    }
+    else
+    {
+        builder.Services.AddHangfire(config =>
+        {
+            config.UseSimpleAssemblyNameTypeSerializer();
+            config.UseRecommendedSerializerSettings();
+            
+            var hangfireConnectionString = builder.Configuration.GetConnectionString("HangfireConnection");
+            config.UsePostgreSqlStorage(c => c.UseNpgsqlConnection(hangfireConnectionString));
+        });
+    }
+
+    builder.Services.AddHangfireServer(options =>
+    {
+        options.WorkerCount = 1;
+    });
+    
+    // ========== Done with hangfire ========== //
 
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen(c =>
@@ -116,43 +177,51 @@ static void AddServices(WebApplicationBuilder builder)
     {
         options.AddPolicy("FrontendPolicy", policy =>
         {
-            policy.WithOrigins("http://localhost:3000")
+            var allowedDevOrigin = builder.Configuration["Cors:AllowedDevOrigin"];
+            var allowedProdOrigin = builder.Configuration["Cors:AllowedProductionOrigin"];
+
+            policy.WithOrigins(allowedDevOrigin!, allowedProdOrigin!)
                   .AllowAnyHeader()
                   .AllowAnyMethod()
                   .AllowCredentials();
         });
     });
 
+    builder.Services.AddHttpContextAccessor();
+    builder.Services.AddTransient<ICurrentUserService, CurrentUserService>();
+    builder.Services.AddScoped<IAuthorizationHandler, CustomAuthorizationHandler>();
+
     // Repositories
     builder.Services.AddScoped<IAssignedLabelRepository, AssignedLabelRepository>();
-    builder.Services.AddScoped<ILabelerRepository, LabelerRepository>();
     builder.Services.AddScoped<ILabelRepository, LabelRepository>();
     builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
-    builder.Services.AddScoped<IScientistRepository, ScientistRepository>();
     builder.Services.AddScoped<ISubjectRepository, SubjectRepository>();
     builder.Services.AddScoped<ISubjectVideoGroupAssignmentRepository, SubjectVideoGroupAssignmentRepository>();
     builder.Services.AddScoped<IVideoGroupRepository, VideoGroupRepository>();
     builder.Services.AddScoped<IVideoRepository, VideoRepository>();
     builder.Services.AddScoped<IProjectAccessCodeRepository, ProjectAccessCodeRepository>();
+    builder.Services.AddScoped<IProjectReportRepository, ProjectReportRepository>();
 
     // Services
     builder.Services.AddScoped<IAssignedLabelService, AssignedLabelService>();
-    builder.Services.AddScoped<ILabelerService, LabelerService>();
     builder.Services.AddScoped<ILabelService, LabelService>();
     builder.Services.AddScoped<IProjectService, ProjectService>();
-    builder.Services.AddScoped<IScientistService, ScientistService>();
     builder.Services.AddScoped<ISubjectService, SubjectService>();
     builder.Services.AddScoped<ISubjectVideoGroupAssignmentService, SubjectVideoGroupAssignmentService>();
     builder.Services.AddScoped<IVideoGroupService, VideoGroupService>();
     builder.Services.AddScoped<IVideoService, VideoService>();
     builder.Services.AddScoped<IProjectAccessCodeService, ProjectAccessCodeService>();
-    builder.Services.AddScoped<IAuthorizationHelper, AuthorizationHelper>();
+    builder.Services.AddScoped<IReportGenerator, ReportGenerator>();
+    builder.Services.AddScoped<IProjectReportService, ProjectReportService>();
+    builder.Services.AddScoped<ITokenService, TokenService>();
 
     builder.Services.AddSingleton<IConnectedClientManager, ConnectedClientManager>();
     builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
     builder.Services.AddSignalR(options =>
     {
         options.EnableDetailedErrors = true;
+        options.KeepAliveInterval = TimeSpan.FromSeconds(15); // Default is 15 seconds
+        options.HandshakeTimeout = TimeSpan.FromSeconds(15);
     });
     builder.Services.AddSingleton<IMessageService, MessageService>();
 
@@ -161,6 +230,7 @@ static void AddServices(WebApplicationBuilder builder)
 
     // Filters
     builder.Services.AddScoped<ValidateModelStateFilter>();
+    builder.Services.AddScoped<NonSuccessGetFilter>();
 
     // Database Context
     builder.Services.AddDbContext<AppDbContext>(options =>

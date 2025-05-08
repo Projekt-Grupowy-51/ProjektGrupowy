@@ -9,12 +9,7 @@ public interface IAssignedLabelService
     Task<Optional<IEnumerable<AssignedLabel>>> GetAssignedLabelsAsync();
     Task<Optional<AssignedLabel>> GetAssignedLabelAsync(int id);
     Task<Optional<AssignedLabel>> AddAssignedLabelAsync(AssignedLabelRequest assignedLabelRequest);
-
-    Task<Optional<AssignedLabel>> UpdateAssignedLabelAsync(int assignedLabelId,
-        AssignedLabelRequest assignedLabelRequest);
     Task DeleteAssignedLabelAsync(int id);
-
-    Task<Optional<IEnumerable<AssignedLabel>>> GetAssignedLabelsByScientistIdAsync(int scientistId);
-    Task<Optional<IEnumerable<AssignedLabel>>> GetAssignedLabelsByLabelerIdAsync(int labelerId);
     Task<Optional<IEnumerable<AssignedLabel>>> GetAssignedLabelsByVideoIdAsync(int videoId);
+    Task<Optional<IEnumerable<AssignedLabel>>> GetAssignedLabelsByVideoIdAndSubjectIdAsync(int videoId, int subjectId);
 }

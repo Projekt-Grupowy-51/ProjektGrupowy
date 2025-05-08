@@ -1,40 +1,91 @@
-﻿using ProjektGrupowy.API.DTOs.LabelerAssignment;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using ProjektGrupowy.API.Authorization;
+using ProjektGrupowy.API.DTOs.LabelerAssignment;
 using ProjektGrupowy.API.DTOs.Project;
+using ProjektGrupowy.API.Exceptions;
 using ProjektGrupowy.API.Models;
 using ProjektGrupowy.API.Repositories;
+using ProjektGrupowy.API.SignalR;
 using ProjektGrupowy.API.Utils;
 
 namespace ProjektGrupowy.API.Services.Impl;
 
 public class ProjectService(
     IProjectRepository projectRepository,
-    IScientistRepository scientistRepository,
+    IMessageService messageService,
     ISubjectVideoGroupAssignmentRepository subjectVideoGroupAssignmentRepository,
-    ILabelerRepository labelerRepository)
-    : IProjectService
+    ICurrentUserService currentUserService,
+    IAuthorizationService authorizationService,
+    UserManager<User> userManager) : IProjectService
 {
-    public async Task<Optional<IEnumerable<Project>>> GetProjectsAsync() => await projectRepository.GetProjectsAsync();
+    public async Task<Optional<IEnumerable<Project>>> GetProjectsAsync()
+    {
+        var projectsOptional = await projectRepository.GetProjectsAsync();
+        if (projectsOptional.IsFailure)
+        {
+            return projectsOptional;
+        }
 
-    public async Task<Optional<Project>> GetProjectAsync(int id) => await projectRepository.GetProjectAsync(id);
+        var projects = projectsOptional.GetValueOrThrow();
+
+        var authResult = await authorizationService.AuthorizeAsync(currentUserService.User, projects, new ResourceOperationRequirement(ResourceOperation.Read));
+        if (!authResult.Succeeded)
+        {
+            throw new ForbiddenException();
+        }
+        
+        return projectsOptional;
+    }
+
+    public async Task<Optional<Project>> GetProjectAsync(int id, string? userId = null, bool? isAdmin = null)
+    {
+        var projectOptional = await projectRepository.GetProjectAsync(id, userId, isAdmin);
+        if (projectOptional.IsFailure)
+        {
+            return projectOptional;
+        }
+
+        var project = projectOptional.GetValueOrThrow();
+
+        if (userId == null)
+        {
+            var authResult = await authorizationService.AuthorizeAsync(currentUserService.User, project, new ResourceOperationRequirement(ResourceOperation.Read));
+            if (!authResult.Succeeded && userId != null)
+            {
+                throw new ForbiddenException();
+            }
+        }
+
+        return projectOptional;
+    }
 
     public async Task<Optional<Project>> AddProjectAsync(ProjectRequest projectRequest)
     {
-        var scientistOptional = await scientistRepository.GetScientistAsync(projectRequest.ScientistId);
-
-        if (scientistOptional.IsFailure)
-        {
-            return Optional<Project>.Failure("No scientist found!");
-        }
-
         var project = new Project
         {
             Name = projectRequest.Name,
             Description = projectRequest.Description,
-            Scientist = scientistOptional.GetValueOrThrow(),
+            CreatedById = currentUserService.UserId,
             CreationDate = DateOnly.FromDateTime(DateTime.Today)
         };
 
-        return await projectRepository.AddProjectAsync(project);
+        var projectOptional = await projectRepository.AddProjectAsync(project);
+
+        if (projectOptional.IsFailure)
+        {
+            await messageService.SendErrorAsync(
+                currentUserService.UserId,
+                "Failed to create project");
+        }
+        else 
+        {
+            await messageService.SendSuccessAsync(
+                currentUserService.UserId,
+                $"Project \"{projectRequest.Name}\" created successfully");
+        }
+
+        return projectOptional;
     }
 
     public async Task<Optional<Project>> UpdateProjectAsync(int projectId, ProjectRequest projectRequest)
@@ -48,67 +99,125 @@ public class ProjectService(
 
         var project = projectOptional.GetValueOrThrow();
 
-        var scientistOptional = await scientistRepository.GetScientistAsync(projectRequest.ScientistId);
-
-        if (scientistOptional.IsFailure)
+        var authResult = await authorizationService.AuthorizeAsync(currentUserService.User, project, new ResourceOperationRequirement(ResourceOperation.Update));
+        if (!authResult.Succeeded)
         {
-            return Optional<Project>.Failure("No scientist found!");
+            throw new ForbiddenException();
         }
 
         project.Name = projectRequest.Name;
         project.Description = projectRequest.Description;
-        project.Scientist = scientistOptional.GetValueOrThrow();
+        project.CreatedById = currentUserService.UserId;
         project.ModificationDate = DateOnly.FromDateTime(DateTime.Today);
-        project.EndDate = projectRequest.Finished ? DateOnly.FromDateTime(DateTime.Today) : project.EndDate;
+        project.EndDate = projectRequest.Finished ? DateOnly.FromDateTime(DateTime.Today) : null;
 
-        return await projectRepository.UpdateProjectAsync(project);
+        var result = await projectRepository.UpdateProjectAsync(project);
+        if (result.IsFailure)
+        {
+            await messageService.SendErrorAsync(
+                currentUserService.UserId,
+                "Failed to update project");
+        }
+        else 
+        {
+            await messageService.SendSuccessAsync(
+                currentUserService.UserId,
+                "Project updated successfully");
+        }
+
+        return result;
     }
-
-    public async Task<Optional<IEnumerable<Project>>> GetProjectsOfScientist(int scientistId)
-        => await projectRepository.GetProjectsOfScientist(scientistId);
-        
-    public async Task<Optional<IEnumerable<Project>>> GetProjectsForLabelerAsync(int labelerId)
-        => await projectRepository.GetProjectsForLabelerAsync(labelerId);
 
     public async Task<Optional<bool>> AddLabelerToProjectAsync(LabelerAssignmentDto labelerAssignmentDto)
     {
+        var joinerId = currentUserService.UserId;
+
         var projectByCodeOpt = await projectRepository.GetProjectByAccessCodeAsync(labelerAssignmentDto.AccessCode);
-        var labelerByIdOpt = await labelerRepository.GetLabelerAsync(labelerAssignmentDto.LabelerId);
 
-        if (projectByCodeOpt.IsFailure)
-        {
-            return Optional<bool>.Failure("No project found!");
-        }
+        var labelerOpt = await userManager.FindByIdAsync(joinerId);
 
-        if (labelerByIdOpt.IsFailure)
+        if (labelerOpt == null)
         {
             return Optional<bool>.Failure("No labeler found!");
         }
 
-        var project = projectByCodeOpt.GetValueOrThrow();
-        var labeler = labelerByIdOpt.GetValueOrThrow();
+        if (projectByCodeOpt.IsFailure)
+        {
+            await messageService.SendErrorAsync(
+                joinerId,
+                "No project found!");
+            return Optional<bool>.Failure("No project found!");
+        }
 
-        labeler.ProjectLabelers.Add(project);
-        project.ProjectLabelers.Add(labeler);
+        var project = projectByCodeOpt.GetValueOrThrow();
+
+        project.ProjectLabelers.Add(labelerOpt);
 
         await projectRepository.UpdateProjectAsync(project);
-        await labelerRepository.UpdateLabelerAsync(labeler);
+
+        await messageService.SendSuccessAsync(
+            joinerId,
+            "Labeler added to project successfully");
+
+        await messageService.SendInfoAsync(
+            project.CreatedById,
+            $"Labeler \"{labelerOpt.UserName}\" joined the project \"{project.Name}\"");
+
+        await messageService.SendMessageAsync(
+            project.CreatedById, 
+            MessageTypes.LabelersCountChanged,
+            project.ProjectLabelers.Count);
 
         return Optional<bool>.Success(true);
     }
 
-    public async Task<Optional<IEnumerable<Labeler>>> GetUnassignedLabelersOfProjectAsync(int id)
+    public async Task<Optional<IEnumerable<User>>> GetUnassignedLabelersOfProjectAsync(int id)
     {
-        return await labelerRepository.GetUnassignedLabelersOfProjectAsync(id);
+        var projectOptional = await projectRepository.GetProjectAsync(id);
+        if (projectOptional.IsFailure)
+        {
+            return Optional<IEnumerable<User>>.Failure("No project found!");
+        }
+
+        var project = projectOptional.GetValueOrThrow();
+
+        var authResult = await authorizationService.AuthorizeAsync(currentUserService.User, project, new ResourceOperationRequirement(ResourceOperation.Read));
+        if (!authResult.Succeeded)
+        {
+            throw new ForbiddenException();
+        }
+
+        var unassignedLabelers = project.ProjectLabelers
+            .Where(labeler => !project.Subjects
+                .SelectMany(subject => subject.SubjectVideoGroupAssignments)
+                .Any(assignment => assignment.Labelers!.Contains(labeler)))
+            .ToList();
+
+        return Optional<IEnumerable<User>>.Success(unassignedLabelers);
     }
 
     public async Task DeleteProjectAsync(int id)
     {
-        var project = await projectRepository.GetProjectAsync(id);
-        if (project.IsSuccess)
+        var projectOpt = await projectRepository.GetProjectAsync(id);
+
+        if (projectOpt.IsFailure)
         {
-            await projectRepository.DeleteProjectAsync(project.GetValueOrThrow());
+            await messageService.SendErrorAsync(
+                currentUserService.UserId,
+                "No project found!");
+            return;
         }
+
+        var project = projectOpt.GetValueOrThrow();
+        var authResult = await authorizationService.AuthorizeAsync(currentUserService.User, project, new ResourceOperationRequirement(ResourceOperation.Delete));
+        if (!authResult.Succeeded)
+        {
+            throw new ForbiddenException();
+        }
+
+        await messageService.SendInfoAsync(currentUserService.UserId, $"Project \"{project.Name}\" deleted successfully");
+        
+        await projectRepository.DeleteProjectAsync(project);
     }
 
     public async Task<Optional<bool>> UnassignLabelersFromProjectAsync(int projectId)
@@ -120,6 +229,13 @@ public class ProjectService(
         }
 
         var project = projectOpt.GetValueOrThrow();
+
+        var authResult = await authorizationService.AuthorizeAsync(currentUserService.User, project, new ResourceOperationRequirement(ResourceOperation.Update));
+        if (!authResult.Succeeded)
+        {
+            throw new ForbiddenException();
+        }
+
         var assignments = project.Subjects
             .SelectMany(s => s.SubjectVideoGroupAssignments)
             .ToList();
@@ -129,6 +245,8 @@ public class ProjectService(
             assignment.Labelers.Clear();
             await subjectVideoGroupAssignmentRepository.UpdateSubjectVideoGroupAssignmentAsync(assignment);
         }
+
+        await messageService.SendSuccessAsync(currentUserService.UserId, "Labelers unassigned from project successfully");
 
         return Optional<bool>.Success(true);
     }
@@ -140,20 +258,51 @@ public class ProjectService(
         {
             return Optional<bool>.Failure("No project found!");
         }
+        
+        var project = projectOptional.GetValueOrThrow();
 
-        var unassignedLabelersResult = await labelerRepository.GetUnassignedLabelersOfProjectAsync(projectId);
+        var authResult = await authorizationService.AuthorizeAsync(currentUserService.User, project, new ResourceOperationRequirement(ResourceOperation.Update));
+        if (!authResult.Succeeded)
+        {
+            throw new ForbiddenException();
+        }
 
+        var totalAssignmentCount = project.Subjects.Sum(subject => subject.SubjectVideoGroupAssignments.Count);
+        if (totalAssignmentCount == 0)
+        {
+            await messageService.SendErrorAsync(currentUserService.UserId, "There are no assignments.");
+            return Optional<bool>.Failure("There are no assignments.");
+        }
+
+        var unassignedLabelersResult = await GetUnassignedLabelersOfProjectAsync(projectId);
         if (unassignedLabelersResult.IsFailure)
         {
-            return Optional<bool>.Failure("No labelers found!");
+            await messageService.SendErrorAsync(
+                currentUserService.UserId,
+                "No unassigned labelers found!");
+            return Optional<bool>.Failure("No unassigned labelers found!");
         }
 
         var unassignedLabelers = unassignedLabelersResult.GetValueOrThrow().ToList();
 
-        return await AssignEquallyAsync(projectId, unassignedLabelers);
+        var result = await AssignEquallyAsync(projectId, unassignedLabelers);
+        if (result.IsFailure)
+        {
+            await messageService.SendErrorAsync(
+                currentUserService.UserId,
+                "Failed to assign labelers");
+        }
+        else 
+        {
+            await messageService.SendSuccessAsync(
+                currentUserService.UserId,
+                "Labelers assigned successfully");
+        }
+
+        return result;
     }
 
-    private async Task<Optional<bool>> AssignEquallyAsync(int projectId, IReadOnlyCollection<Labeler> labelers)
+    private async Task<Optional<bool>> AssignEquallyAsync(int projectId, IReadOnlyCollection<User> labelers)
     {
         if (labelers.Count == 0)
         {
@@ -226,7 +375,7 @@ public class ProjectService(
         }
     }
 
-    private async Task<Optional<bool>> AssignLabelerToAssignmentAsync(int assignmentId, IEnumerable<Labeler> labelers)
+    private async Task<Optional<bool>> AssignLabelerToAssignmentAsync(int assignmentId, IEnumerable<User> labelers)
     {
         var assignmentOptional =
             await subjectVideoGroupAssignmentRepository.GetSubjectVideoGroupAssignmentAsync(assignmentId);
@@ -236,17 +385,40 @@ public class ProjectService(
         }
 
         var assignment = assignmentOptional.GetValueOrThrow();
+        var authResult = await authorizationService.AuthorizeAsync(currentUserService.User, assignment, new ResourceOperationRequirement(ResourceOperation.Update));
+        if (!authResult.Succeeded)
+        {
+            throw new ForbiddenException();
+        }
 
         foreach (var labeler in labelers)
         {
             assignment.Labelers!.Add(labeler);
-            labeler.SubjectVideoGroups.Add(assignment);
-
-            await labelerRepository.UpdateLabelerAsync(labeler);
         }
 
         await subjectVideoGroupAssignmentRepository.UpdateSubjectVideoGroupAssignmentAsync(assignment);
 
         return Optional<bool>.Success(true);
     }
+
+    public async Task<Optional<IEnumerable<User>>> GetLabelersByProjectAsync(int projectId)
+    {
+        var projectOptional = await projectRepository.GetProjectAsync(projectId);
+        if (projectOptional.IsFailure)
+        {
+            return Optional<IEnumerable<User>>.Failure("No project found!");
+        }
+
+        var project = projectOptional.GetValueOrThrow();
+        var authResult = await authorizationService.AuthorizeAsync(currentUserService.User, project, new ResourceOperationRequirement(ResourceOperation.Read));
+        if (!authResult.Succeeded)
+        {
+            throw new ForbiddenException();
+        }
+
+        return Optional<IEnumerable<User>>.Success(project.ProjectLabelers);
+    }
+
+    public async Task<Optional<Project>> UpdateProjectAsync(Project project) =>
+        await projectRepository.UpdateProjectAsync(project);
 }

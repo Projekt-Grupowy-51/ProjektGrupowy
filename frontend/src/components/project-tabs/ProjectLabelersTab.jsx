@@ -4,8 +4,12 @@ import DeleteButton from "../../components/DeleteButton";
 import DataTable from "../../components/DataTable";
 import httpClient from "../../httpclient";
 import { useNotification } from "../../context/NotificationContext";
+import { useTranslation } from "react-i18next";
 
-const ProjectLabelersTab = ({ projectId, onSuccess, onError }) => {
+const ProjectLabelersTab = ({
+  projectId,
+  onLabelersUpdate,
+}) => {
   const { addNotification } = useNotification();
   const [labelers, setLabelers] = useState([]);
   const [unassignedLabelers, setUnassignedLabelers] = useState([]);
@@ -13,9 +17,8 @@ const ProjectLabelersTab = ({ projectId, onSuccess, onError }) => {
   const [selectedLabeler, setSelectedLabeler] = useState("");
   const [selectedAssignment, setSelectedAssignment] = useState("");
   const [selectedCustomAssignments, setSelectedCustomAssignment] = useState({});
-  const [loading, setLoading] = useState(true);
+  const { t } = useTranslation(['common', 'project']);
 
-  // Helper function to format assignment option label
   const formatAssignmentOption = (assignment) =>
     `Assignment #${assignment.id} - Subject: ${
       assignment.subjectName || "Unknown"
@@ -24,20 +27,11 @@ const ProjectLabelersTab = ({ projectId, onSuccess, onError }) => {
       assignment.videoGroupId
     })`;
 
-  // Helper function to assign a labeler to an assignment
   const assignLabelerToAssignment = async (labelerId, assignmentId) => {
-    try {
-      await httpClient.post(
-        `/SubjectVideoGroupAssignment/${assignmentId}/assign-labeler/${labelerId}`
-      );
-      return true;
-    } catch (error) {
-      addNotification(
-        error.response?.data?.message || "Failed to assign labeler",
-        "error"
-      );
-      return false;
-    }
+    await httpClient.post(
+      `/SubjectVideoGroupAssignment/${assignmentId}/assign-labeler/${labelerId}`
+    );
+    return true;
   };
 
   const LabelerColumns = [
@@ -80,7 +74,6 @@ const ProjectLabelersTab = ({ projectId, onSuccess, onError }) => {
     },
   ];
 
-  // Define columns for assigned labelers table
   const assignedLabelerColumns = [
     { field: "labelerName", header: "Username" },
     { field: "videoGroupName", header: "Video Group" },
@@ -110,28 +103,23 @@ const ProjectLabelersTab = ({ projectId, onSuccess, onError }) => {
   ];
 
   const fetchData = async () => {
-    try {
-      setLoading(true);
-      const [labelerRes, unassignedLabelersRes, assignmentsRes] =
-        await Promise.all([
-          httpClient.get(`/project/${projectId}/labelers`),
-          httpClient.get(`/project/${projectId}/unassigned-labelers`),
-          httpClient.get(`/project/${projectId}/SubjectVideoGroupAssignments`),
-        ]);
+    const [labelerRes, unassignedLabelersRes, assignmentsRes] =
+      await Promise.all([
+        httpClient.get(`/project/${projectId}/labelers`),
+        httpClient.get(`/project/${projectId}/unassigned-labelers`),
+        httpClient.get(`/project/${projectId}/SubjectVideoGroupAssignments`),
+      ]);
 
-      setLabelers(labelerRes.data);
-      setUnassignedLabelers(unassignedLabelersRes.data);
-      setAssignments(assignmentsRes.data);
-    } catch (err) {
-      addNotification("Failed to load labeler data", "error");
-    } finally {
-      setLoading(false);
+    setLabelers(labelerRes.data);
+    setUnassignedLabelers(unassignedLabelersRes.data);
+    setAssignments(assignmentsRes.data);
+
+    if (onLabelersUpdate) {
+      onLabelersUpdate(labelerRes.data.length);
     }
   };
 
   const handleCustomLabelerAssignmentChange = (labelerId, assignmentId) => {
-    if (!Number.isInteger(Number(labelerId))) return;
-
     setSelectedCustomAssignment((prev) => {
       const updated = { ...prev };
 
@@ -145,9 +133,7 @@ const ProjectLabelersTab = ({ projectId, onSuccess, onError }) => {
     });
   };
 
-  // Unified function to handle all types of labeler assignments
   const handleAssignLabeler = async (labelerId, assignmentId) => {
-    // For the form in the card
     if (!labelerId && !assignmentId) {
       if (!selectedLabeler || !selectedAssignment) {
         addNotification(
@@ -160,7 +146,6 @@ const ProjectLabelersTab = ({ projectId, onSuccess, onError }) => {
       assignmentId = selectedAssignment;
     }
 
-    // Validation
     if (!labelerId || !assignmentId) {
       addNotification(
         "Please select both a labeler and an assignment",
@@ -172,13 +157,11 @@ const ProjectLabelersTab = ({ projectId, onSuccess, onError }) => {
     const success = await assignLabelerToAssignment(labelerId, assignmentId);
 
     if (success) {
-      // Clear form selections if this was from the form
       if (labelerId === selectedLabeler) {
         setSelectedLabeler("");
         setSelectedAssignment("");
       }
 
-      // Clear from custom assignments if applicable
       setSelectedCustomAssignment((prev) => {
         const updated = { ...prev };
         delete updated[labelerId];
@@ -186,7 +169,6 @@ const ProjectLabelersTab = ({ projectId, onSuccess, onError }) => {
       });
 
       fetchData();
-      addNotification("Labeler assigned successfully!", "success");
     }
   };
 
@@ -201,74 +183,38 @@ const ProjectLabelersTab = ({ projectId, onSuccess, onError }) => {
       return;
     }
 
-    try {
-      const results = await Promise.all(
-        entries.map(([labelerId, assignmentId]) =>
-          assignLabelerToAssignment(labelerId, assignmentId)
-        )
-      );
+    await Promise.all(
+      entries.map(([labelerId, assignmentId]) =>
+        assignLabelerToAssignment(labelerId, assignmentId)
+      )
+    );
 
-      const allSucceeded = results.every((result) => result === true);
-
-      if (allSucceeded) {
-        setSelectedCustomAssignment({});
-        fetchData();
-        addNotification("All labelers assigned successfully!", "success");
-      } else {
-        addNotification("One or more assignments failed.", "error");
-      }
-    } catch (error) {
-      addNotification("Failed to process assignments", "error");
-    }
+    setSelectedCustomAssignment({});
+    fetchData();
   };
 
   const handleDistributeLabelers = async () => {
-    try {
-      await httpClient.post(`/project/${projectId}/distribute`);
-      fetchData();
-      setSelectedCustomAssignment({});
-      addNotification("Labelers distributed successfully!", "success");
-    } catch (error) {
-      addNotification("Failed to distribute labelers", "error");
-    }
+    await httpClient.post(`/project/${projectId}/distribute`);
+    fetchData();
+    setSelectedCustomAssignment({});
   };
 
   const handleUnassignLabeler = async (assignmentId, labelerId) => {
-    try {
-      await httpClient.delete(
-        `/SubjectVideoGroupAssignment/${assignmentId}/unassign-labeler/${labelerId}`
-      );
-      fetchData();
-    } catch (error) {
-      addNotification("Failed to unassign labeler", "error");
-    }
+    await httpClient.delete(
+      `/SubjectVideoGroupAssignment/${assignmentId}/unassign-labeler/${labelerId}`
+    );
+    fetchData();
   };
 
   const handleUnassignAllLabelers = async () => {
-    try {
-      await httpClient.post(`/project/${projectId}/unassign-all`);
-      fetchData();
-      addNotification("All labelers unassigned successfully!", "success");
-    } catch (error) {
-      addNotification("Failed to unassign all labelers", "error");
-    }
+    await httpClient.post(`/project/${projectId}/unassign-all`);
+    fetchData();
   };
 
   useEffect(() => {
     fetchData();
   }, [projectId]);
 
-  if (loading) {
-    return (
-      <div className="d-flex justify-content-center my-5">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading labeler data...</span>
-        </div>
-      </div>
-    );
-  }
-
-  // Prepare assigned labelers data for rendering
   const assignedLabelerRows = assignments
     .filter(
       (assignment) => assignment.labelers && assignment.labelers.length > 0
@@ -287,9 +233,6 @@ const ProjectLabelersTab = ({ projectId, onSuccess, onError }) => {
 
   return (
     <div className="labelers">
-      {/* Remove the error alert since we're using notifications now */}
-
-      {/* Assignment form */}
       <div className="card shadow-sm mb-4" style={{ marginTop: "25px" }}>
         <div
           className="card-header text-white"
@@ -298,12 +241,11 @@ const ProjectLabelersTab = ({ projectId, onSuccess, onError }) => {
           <h5 className="card-title mb-0">Assign Labeler to Assignment</h5>
         </div>
         <div className="card-body">
-          {/* Remove the assignmentError alert since we're using notifications now */}
           <div className="assignment-form">
             <div className="row mb-3">
               <div className="col-md-6">
                 <label htmlFor="labelerSelect" className="form-label">
-                  Select Labeler:
+                  {t('projects:labeler_tab.select_labeler')}:
                 </label>
                 <select
                   id="labelerSelect"
@@ -311,7 +253,7 @@ const ProjectLabelersTab = ({ projectId, onSuccess, onError }) => {
                   value={selectedLabeler}
                   onChange={(e) => setSelectedLabeler(e.target.value)}
                 >
-                  <option value="">-- Select Labeler --</option>
+                  <option value="">-- {t('projects:labeler_tab.select_labeler')} --</option>
                   {labelers.map((labeler) => (
                     <option key={labeler.id} value={labeler.id}>
                       {labeler.name} (ID: {labeler.id})
@@ -321,7 +263,7 @@ const ProjectLabelersTab = ({ projectId, onSuccess, onError }) => {
               </div>
               <div className="col-md-6">
                 <label htmlFor="assignmentSelect" className="form-label">
-                  Select Assignment:
+                  {t('projects:labeler_tab.select_assignment')}:
                 </label>
                 <select
                   id="assignmentSelect"
@@ -329,7 +271,7 @@ const ProjectLabelersTab = ({ projectId, onSuccess, onError }) => {
                   value={selectedAssignment}
                   onChange={(e) => setSelectedAssignment(e.target.value)}
                 >
-                  <option value="">-- Select Assignment --</option>
+                  <option value="">-- {t('projects:labeler_tab.select_assignment')} --</option>
                   {assignments.map((assignment) => (
                     <option key={assignment.id} value={assignment.id}>
                       {formatAssignmentOption(assignment)}
@@ -350,12 +292,11 @@ const ProjectLabelersTab = ({ projectId, onSuccess, onError }) => {
         </div>
       </div>
 
-      {/* Unassigned Labelers section */}
       <div
         className="d-flex justify-content-between align-items-center m-3"
         style={{ minHeight: "56px" }}
       >
-        <h3 className="mb-0">Unassigned Labelers</h3>
+        <h3 className="mb-0">{t('projects:labeler_tab.unassigned_labelers')}</h3>
         <div className="d-flex align-items-center gap-2">
           {unassignedLabelers.length > 0 && (
             <button
@@ -363,7 +304,7 @@ const ProjectLabelersTab = ({ projectId, onSuccess, onError }) => {
               onClick={handleDistributeLabelers}
             >
               <i className="fa-solid fa-wand-magic-sparkles me-2"></i>
-              Distribute Labelers
+              {t('projects:labeler_tab.distribute_labelers')}
             </button>
           )}
 
@@ -373,7 +314,7 @@ const ProjectLabelersTab = ({ projectId, onSuccess, onError }) => {
               onClick={handleAllSelectedAssignments}
             >
               <i className="fas fa-user-plus me-2"></i>
-              Assign all selected
+              {t('projects:labeler_tab.assign_all_selected')}
             </button>
           )}
         </div>
@@ -388,16 +329,15 @@ const ProjectLabelersTab = ({ projectId, onSuccess, onError }) => {
       ) : (
         <div className="alert alert-info">
           <i className="fas fa-info-circle me-2"></i>
-          There are no labelers awaiting assignment
+          {t('projects:not_found.unassigned_labelers')}
         </div>
       )}
 
-      {/* All Labelers section */}
       <div
         className="d-flex justify-content-between align-items-center m-3 mt-5"
         style={{ minHeight: "56px" }}
       >
-        <h3 className="mb-0">All Labelers</h3>
+        <h3 className="mb-0">{t('projects:labeler_tab.all_labelers')}</h3>
         <div className="d-flex align-items-center gap-2">
           {labelers.length > 0 &&
             Object.keys(selectedCustomAssignments).length > 0 && (
@@ -406,7 +346,7 @@ const ProjectLabelersTab = ({ projectId, onSuccess, onError }) => {
                 onClick={handleAllSelectedAssignments}
               >
                 <i className="fas fa-user-plus me-2"></i>
-                Assign all selected
+                {t('projects:labeler_tab.assign_all_selected')}
               </button>
             )}
         </div>
@@ -421,14 +361,13 @@ const ProjectLabelersTab = ({ projectId, onSuccess, onError }) => {
       ) : (
         <div className="alert alert-info">
           <i className="fas fa-info-circle me-2"></i>
-          No labelers available in this project
+          {t('projects:not_found.all_labelers')}
         </div>
       )}
 
-      {/* Assigned Labelers section */}
       <div className="row align-items-center mb-3 mt-4">
         <div className="col">
-          <h3 className="mb-0">Assigned Labelers</h3>
+          <h3 className="mb-0">{t('projects:labeler_tab.assigned_labelers')}</h3>
         </div>
         <div className="col-auto">
           {hasAssignedLabelers && (
@@ -437,7 +376,7 @@ const ProjectLabelersTab = ({ projectId, onSuccess, onError }) => {
               onClick={handleUnassignAllLabelers}
             >
               <i className="fa-solid fa-user-xmark me-1"></i>
-              Unassign All Labelers
+              {t('projects:labeler_tab.unassign_all')}
             </button>
           )}
         </div>
@@ -452,7 +391,7 @@ const ProjectLabelersTab = ({ projectId, onSuccess, onError }) => {
       ) : (
         <div className="alert alert-info">
           <i className="fas fa-info-circle me-2"></i>
-          No labelers found in assignments
+          {t('projects:not_found.assigned_labelers')}
         </div>
       )}
     </div>

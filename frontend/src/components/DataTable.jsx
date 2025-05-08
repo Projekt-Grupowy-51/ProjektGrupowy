@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import './css/DataTable.css';
+import { useTranslation} from "react-i18next";
 
 const DataTable = ({
                      columns,
@@ -7,24 +8,25 @@ const DataTable = ({
                      navigateButton,
                      deleteButton,
                      tableClassName = "normal-table",
-                     showRowNumbers = false
+                     showRowNumbers = false,
+                     defaultSort = null 
                    }) => {
   const showActions = navigateButton || deleteButton;
+  const {t} = useTranslation(['common']);
 
   const [sortConfig, setSortConfig] = useState({
-    key: null,
-    direction: 'desc'
+    key: defaultSort?.key || null,
+    direction: defaultSort?.direction || 'desc'
   });
 
-  // Initialize sort with first column if none is selected.
   useEffect(() => {
     if (columns.length > 0 && sortConfig.key === null) {
       setSortConfig({
-        key: columns[0].field,
-        direction: 'desc'
+        key: defaultSort?.key || columns[0].field,
+        direction: defaultSort?.direction || 'desc'
       });
     }
-  }, [columns, sortConfig.key]);
+  }, [columns, sortConfig.key, defaultSort]);
 
   const handleSort = (key) => {
     let direction = 'asc';
@@ -85,7 +87,7 @@ const DataTable = ({
                 </div>
               </th>
           ))}
-          {showActions && <th>Actions</th>}
+          {showActions && <th>{t('common:actions')}</th>}
         </tr>
         </thead>
         <tbody>

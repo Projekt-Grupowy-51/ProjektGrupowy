@@ -1,8 +1,10 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const NavigateButton = ({ path, actionType = 'Back', className = '', value, style = {} }) => {
     const navigate = useNavigate();
+    const {t} = useTranslation(['common']);
 
     const handleClick = () => {
         if (path) {
@@ -16,7 +18,7 @@ const NavigateButton = ({ path, actionType = 'Back', className = '', value, styl
     let buttonText = value || actionType;
     let buttonClass = 'btn ';
     let iconClass = '';
-
+    
     switch (actionType) {
         case 'Add':
             buttonClass += 'btn-primary';

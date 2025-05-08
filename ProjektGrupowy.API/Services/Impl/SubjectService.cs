@@ -1,21 +1,58 @@
-﻿using ProjektGrupowy.API.DTOs.Subject;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using ProjektGrupowy.API.Authorization;
+using ProjektGrupowy.API.DTOs.Subject;
+using ProjektGrupowy.API.Exceptions;
 using ProjektGrupowy.API.Models;
 using ProjektGrupowy.API.Repositories;
+using ProjektGrupowy.API.SignalR;
 using ProjektGrupowy.API.Utils;
 
 namespace ProjektGrupowy.API.Services.Impl;
 
-public class SubjectService(ISubjectRepository subjectRepository, IProjectRepository projectRepository)
+public class SubjectService(
+    ISubjectRepository subjectRepository,
+    IProjectRepository projectRepository,
+    IMessageService messageService,
+    ICurrentUserService currentUserService,
+    IAuthorizationService authorizationService,
+    UserManager<User> userManager)
     : ISubjectService
 {
     public async Task<Optional<IEnumerable<Subject>>> GetSubjectsAsync()
     {
-        return await subjectRepository.GetSubjectsAsync();
+        var subjectsOpt = await subjectRepository.GetSubjectsAsync();
+        if (subjectsOpt.IsFailure)
+        {
+            return subjectsOpt;
+        }
+
+        var subjects = subjectsOpt.GetValueOrThrow();
+        var authResult = await authorizationService.AuthorizeAsync(currentUserService.User, subjects, new ResourceOperationRequirement(ResourceOperation.Read));
+        if (!authResult.Succeeded)
+        {
+            throw new ForbiddenException();
+        }
+
+        return subjectsOpt;
     }
 
     public async Task<Optional<Subject>> GetSubjectAsync(int id)
     {
-        return await subjectRepository.GetSubjectAsync(id);
+        var subjectOpt = await subjectRepository.GetSubjectAsync(id);
+        if (subjectOpt.IsFailure)
+        {
+            return subjectOpt;
+        }
+
+        var subject = subjectOpt.GetValueOrThrow();
+        var authResult = await authorizationService.AuthorizeAsync(currentUserService.User, subject, new ResourceOperationRequirement(ResourceOperation.Read));
+        if (!authResult.Succeeded)
+        {
+            throw new ForbiddenException();
+        }
+
+        return subjectOpt;
     }
 
     public async Task<Optional<Subject>> AddSubjectAsync(SubjectRequest subjectRequest)
@@ -31,10 +68,23 @@ public class SubjectService(ISubjectRepository subjectRepository, IProjectReposi
         {
             Name = subjectRequest.Name,
             Description = subjectRequest.Description,
-            Project = projectOptional.GetValueOrThrow()
+            Project = projectOptional.GetValueOrThrow(),
+            CreatedById = currentUserService.UserId,
         };
 
-        return await subjectRepository.AddSubjectAsync(subject);
+        var result = await subjectRepository.AddSubjectAsync(subject);
+        if (result.IsFailure)
+        {
+            await messageService.SendErrorAsync(
+                currentUserService.UserId,
+                "Failed to add subject");
+            return result;
+        }
+        await messageService.SendSuccessAsync(
+            currentUserService.UserId,
+            "Subject added successfully");
+        return result;
+
     }
 
     public async Task<Optional<Subject>> UpdateSubjectAsync(int subjectId, SubjectRequest subjectRequest)
@@ -47,41 +97,102 @@ public class SubjectService(ISubjectRepository subjectRepository, IProjectReposi
         }
 
         var subject = subjectOptional.GetValueOrThrow();
+        var authResult = await authorizationService.AuthorizeAsync(currentUserService.User, subject, new ResourceOperationRequirement(ResourceOperation.Update));
+        if (!authResult.Succeeded)
+        {
+            throw new ForbiddenException();
+        }
 
         var projectOptional = await projectRepository.GetProjectAsync(subjectRequest.ProjectId);
-
         if (projectOptional.IsFailure)
         {
             return Optional<Subject>.Failure("No project found!");
         }
 
+        var project = projectOptional.GetValueOrThrow();
+        var authResultProject = await authorizationService.AuthorizeAsync(currentUserService.User, project, new ResourceOperationRequirement(ResourceOperation.Update));
+        if (!authResultProject.Succeeded)
+        {
+            throw new ForbiddenException();
+        }
+
         subject.Name = subjectRequest.Name;
         subject.Description = subjectRequest.Description;
         subject.Project = projectOptional.GetValueOrThrow();
+        subject.CreatedById = currentUserService.UserId;
 
-        return await subjectRepository.UpdateSubjectAsync(subject);
+        // return await subjectRepository.UpdateSubjectAsync(subject);
+        var result = await subjectRepository.UpdateSubjectAsync(subject);
+        if (result.IsFailure)
+        {
+            await messageService.SendErrorAsync(
+                currentUserService.UserId,
+                "Failed to update subject");
+            return result;
+        }
+        await messageService.SendInfoAsync(
+            currentUserService.UserId,
+            "Subject updated successfully");
+        return result;
     }
 
     public async Task<Optional<IEnumerable<Subject>>> GetSubjectsByProjectAsync(int projectId)
-        => await subjectRepository.GetSubjectsByProjectAsync(projectId);
+    {
+        var subjects = await subjectRepository.GetSubjectsByProjectAsync(projectId);
+        if (subjects.IsFailure)
+        {
+            return subjects;
+        }
 
-    public async Task<Optional<IEnumerable<Subject>>> GetSubjectsByProjectAsync(Project project)
-        => await subjectRepository.GetSubjectsByProjectAsync(project);
+        var authResult = await authorizationService.AuthorizeAsync(currentUserService.User, subjects.GetValueOrThrow(), new ResourceOperationRequirement(ResourceOperation.Read));
+        if (!authResult.Succeeded)
+        {
+            throw new ForbiddenException();
+        }
+
+        return subjects;
+    }
 
     public async Task DeleteSubjectAsync(int id)
     {
         var subject = await subjectRepository.GetSubjectAsync(id);
-        if (subject.IsSuccess)
-            await subjectRepository.DeleteSubjectAsync(subject.GetValueOrThrow());
+
+        if (subject.IsFailure)
+        {
+            await messageService.SendErrorAsync(
+                currentUserService.UserId,
+                "Failed to delete subject");
+            return;
+        }
+
+        var authResult = await authorizationService.AuthorizeAsync(currentUserService.User, subject.GetValueOrThrow(), new ResourceOperationRequirement(ResourceOperation.Delete));
+        if (!authResult.Succeeded)
+        {
+            throw new ForbiddenException();
+        }
+
+        await messageService.SendInfoAsync(
+            currentUserService.UserId,
+            "Subject deleted successfully");
+
+        await subjectRepository.DeleteSubjectAsync(subject.GetValueOrThrow());
     }
 
-    public async Task<Optional<IEnumerable<Subject>>> GetSubjectsByScientistId(int scientistId)
-    {
-        return await subjectRepository.GetSubjectsByScientistId(scientistId);
-    }
-    
     public async Task<Optional<IEnumerable<Label>>> GetSubjectLabelsAsync(int subjectId)
     {
-        return await subjectRepository.GetSubjectLabelsAsync(subjectId);
+        var labelsOpt = await subjectRepository.GetSubjectLabelsAsync(subjectId);
+        if (labelsOpt.IsFailure)
+        {
+            return labelsOpt;
+        }
+
+        var labels = labelsOpt.GetValueOrThrow();
+        var authResult = await authorizationService.AuthorizeAsync(currentUserService.User, labels, new ResourceOperationRequirement(ResourceOperation.Read));
+        if (!authResult.Succeeded)
+        {
+            throw new ForbiddenException();
+        }
+
+        return labelsOpt;
     }
 }

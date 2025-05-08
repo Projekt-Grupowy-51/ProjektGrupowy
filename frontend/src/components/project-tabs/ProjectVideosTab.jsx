@@ -3,66 +3,40 @@ import NavigateButton from "../../components/NavigateButton";
 import DeleteButton from "../../components/DeleteButton";
 import DataTable from "../../components/DataTable";
 import httpClient from "../../httpclient";
-import { useNotification } from "../../context/NotificationContext";
+import { useTranslation } from "react-i18next";
 
 const ProjectVideosTab = ({ projectId }) => {
   const [videoGroups, setVideoGroups] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const { addNotification } = useNotification();
+  const { t } = useTranslation(['common', 'projects']);
 
-  // Define columns for video groups table
   const videoGroupColumns = [
-    { field: "name", header: "Name" },
-    { field: "description", header: "Description" },
+    { field: "name", header: t('common:name') },
+    { field: "description", header: t('common:description') },
   ];
 
   const fetchVideoGroups = async () => {
-    try {
-      setLoading(true);
-      const response = await httpClient.get(
-        `/project/${projectId}/videogroups`
-      );
-      setVideoGroups(response.data);
-    } catch (error) {
-      addNotification("Failed to load video groups", "error");
-    } finally {
-      setLoading(false);
-    }
+    const response = await httpClient.get(
+      `/project/${projectId}/videogroups`
+    );
+    setVideoGroups(response.data);
   };
 
   const handleDeleteVideoGroup = async (videoGroupId) => {
-    try {
-      await httpClient.delete(`/videogroup/${videoGroupId}`);
-      setVideoGroups(videoGroups.filter((group) => group.id !== videoGroupId));
-    } catch (error) {
-      addNotification(
-        error.response?.data?.message || "Failed to delete video group",
-        "error"
-      );
-    }
+    await httpClient.delete(`/videogroup/${videoGroupId}`);
+    setVideoGroups(videoGroups.filter((group) => group.id !== videoGroupId));
   };
 
   useEffect(() => {
     fetchVideoGroups();
   }, [projectId]);
 
-  if (loading) {
-    return (
-      <div className="d-flex justify-content-center my-5">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading video groups...</span>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="videos">
       <div className="d-flex justify-content-end mb-3">
         <NavigateButton
-          actionType="Add"
+          actionType='Add'
           path={`/video-groups/add?projectId=${projectId}`}
-          value="Add Video Group"
+          value={t('projects:add.video_group')}
         />
       </div>
       {videoGroups.length > 0 ? (
@@ -73,19 +47,20 @@ const ProjectVideosTab = ({ projectId }) => {
           navigateButton={(video) => (
             <NavigateButton
               path={`/video-groups/${video.id}`}
-              actionType="Details"
+              actionType='Details'
+              value={t('common:buttons.details')}
             />
           )}
           deleteButton={(video) => (
             <DeleteButton
               onClick={() => handleDeleteVideoGroup(video.id)}
-              itemType="video group"
+              itemType={t('projects:add.video_group')}
             />
           )}
         />
       ) : (
         <div className="alert alert-info">
-          <i className="fas fa-info-circle me-2"></i>No video groups found
+          <i className="fas fa-info-circle me-2"></i>{t('projects:not_found.video_group')}
         </div>
       )}
     </div>

@@ -1,6 +1,11 @@
-﻿using ProjektGrupowy.API.DTOs.AssignedLabel;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using ProjektGrupowy.API.Authorization;
+using ProjektGrupowy.API.DTOs.AssignedLabel;
+using ProjektGrupowy.API.Exceptions;
 using ProjektGrupowy.API.Models;
 using ProjektGrupowy.API.Repositories;
+using ProjektGrupowy.API.SignalR;
 using ProjektGrupowy.API.Utils;
 
 namespace ProjektGrupowy.API.Services.Impl;
@@ -8,19 +13,48 @@ namespace ProjektGrupowy.API.Services.Impl;
 public class AssignedLabelService(
     IAssignedLabelRepository assignedLabelRepository,
     ILabelRepository labelRepository,
-    ILabelerRepository labelerRepository,
     ISubjectVideoGroupAssignmentRepository subjectVideoGroupAssignmentRepository,
+    UserManager<User> userManager,
+    IMessageService messageService,
+    ICurrentUserService currentUserService,
+    IAuthorizationService authorizationService,
     IVideoRepository videoRepository) : IAssignedLabelService
 
 {
     public async Task<Optional<IEnumerable<AssignedLabel>>> GetAssignedLabelsAsync()
     {
-        return await assignedLabelRepository.GetAssignedLabelsAsync();
+        var assignedLabelsOpt = await assignedLabelRepository.GetAssignedLabelsAsync();
+        if (assignedLabelsOpt.IsFailure)
+        {
+            return assignedLabelsOpt;
+        }
+
+        var assignedLabels = assignedLabelsOpt.GetValueOrThrow();
+        var authResult = await authorizationService.AuthorizeAsync(currentUserService.User, assignedLabels, new ResourceOperationRequirement(ResourceOperation.Read));
+        if (!authResult.Succeeded)
+        {
+            throw new ForbiddenException();
+        }
+
+        return assignedLabelsOpt;
     }
 
     public async Task<Optional<AssignedLabel>> GetAssignedLabelAsync(int id)
     {
-        return await assignedLabelRepository.GetAssignedLabelAsync(id);
+        var assignedLabelOpt = await assignedLabelRepository.GetAssignedLabelAsync(id);
+        if (assignedLabelOpt.IsFailure)
+        {
+            return assignedLabelOpt;
+        }
+
+        var assignedLabel = assignedLabelOpt.GetValueOrThrow();
+        var authResult = await authorizationService.AuthorizeAsync(currentUserService.User, assignedLabel, new ResourceOperationRequirement(ResourceOperation.Read));
+        if (!authResult.Succeeded)
+        {
+            throw new ForbiddenException();
+        }
+
+        return assignedLabelOpt;
     }
 
     public async Task<Optional<AssignedLabel>> AddAssignedLabelAsync(AssignedLabelRequest assignedLabelRequest)
@@ -32,49 +66,11 @@ public class AssignedLabelService(
             return Optional<AssignedLabel>.Failure("No label found");
         }
 
-        var labelerOptional = await labelerRepository.GetLabelerAsync(assignedLabelRequest.LabelerId);
-        if (labelerOptional.IsFailure)
+        var label = labelOptional.GetValueOrThrow();
+        var authResult = await authorizationService.AuthorizeAsync(currentUserService.User, label, new ResourceOperationRequirement(ResourceOperation.Create));
+        if (!authResult.Succeeded)
         {
-            return Optional<AssignedLabel>.Failure("No labeler found");
-        }
-
-        var subjectVideoGroupAssignmentOptional = await videoRepository.GetVideoAsync(assignedLabelRequest.VideoId);
-        if (subjectVideoGroupAssignmentOptional.IsFailure)
-        {
-            return Optional<AssignedLabel>.Failure("No subject video group assignment found");
-        }
-
-        var assignedLabel = new AssignedLabel
-        {
-            Label = labelOptional.GetValueOrThrow(),
-            Labeler = labelerOptional.GetValueOrThrow(),
-            Video = subjectVideoGroupAssignmentOptional.GetValueOrThrow(),
-            Start = assignedLabelRequest.Start,
-            End = assignedLabelRequest.End
-        };
-
-        return await assignedLabelRepository.AddAssignedLabelAsync(assignedLabel);
-    }
-
-    public async Task<Optional<AssignedLabel>> UpdateAssignedLabelAsync(int assignedLabelId, AssignedLabelRequest assignedLabelRequest)
-    {
-        var assignedLabelOptional = await assignedLabelRepository.GetAssignedLabelAsync(assignedLabelId);
-        if (assignedLabelOptional.IsFailure) {
-            return assignedLabelOptional;
-        }
-
-        var assignedLabel = assignedLabelOptional.GetValueOrThrow();
-
-        var labelOptional = await labelRepository.GetLabelAsync(assignedLabelRequest.LabelId);
-        if (labelOptional.IsFailure)
-        {
-            return Optional<AssignedLabel>.Failure("No label found");
-        }
-
-        var labelerOptional = await labelerRepository.GetLabelerAsync(assignedLabelRequest.LabelerId);
-        if (labelerOptional.IsFailure)
-        {
-            return Optional<AssignedLabel>.Failure("No labeler found");
+            throw new ForbiddenException();
         }
 
         var videoOptional = await videoRepository.GetVideoAsync(assignedLabelRequest.VideoId);
@@ -83,38 +79,95 @@ public class AssignedLabelService(
             return Optional<AssignedLabel>.Failure("No subject video group assignment found");
         }
 
-        var label = labelOptional.GetValueOrThrow();
-        var labeler = labelerOptional.GetValueOrThrow();
         var video = videoOptional.GetValueOrThrow();
+        var authResultVideo = await authorizationService.AuthorizeAsync(currentUserService.User, video, new ResourceOperationRequirement(ResourceOperation.Create));
+        if (!authResultVideo.Succeeded)
+        {
+            throw new ForbiddenException();
+        }
 
-        assignedLabel.Label = label;
-        assignedLabel.Labeler = labeler;
-        assignedLabel.Video = video;
-        assignedLabel.Start = assignedLabelRequest.Start;
-        assignedLabel.End = assignedLabelRequest.End;
+        var assignedLabel = new AssignedLabel
+        {
+            Label = labelOptional.GetValueOrThrow(),
+            CreatedById = currentUserService.UserId,
+            Video = video,
+            Start = assignedLabelRequest.Start,
+            End = assignedLabelRequest.End
+        };
 
-        return await assignedLabelRepository.UpdateAssignedLabelAsync(assignedLabel);
+        var result = await assignedLabelRepository.AddAssignedLabelAsync(assignedLabel);
+        if (result.IsFailure)
+        {
+            await messageService.SendErrorAsync(
+                currentUserService.UserId,
+                "Failed to add assigned label");
+            return result;
+        }
+
+        await messageService.SendSuccessAsync(
+            currentUserService.UserId,
+            "Assigned label added successfully");
+        return result;
     }
 
     public async Task DeleteAssignedLabelAsync(int id)
     {
-        var assignedLabel = await assignedLabelRepository.GetAssignedLabelAsync(id);
-        if (assignedLabel.IsSuccess)
-            await assignedLabelRepository.DeleteAssignedLabelAsync(assignedLabel.GetValueOrThrow());
-    }
+        var assignedLabelOpt = await assignedLabelRepository.GetAssignedLabelAsync(id);
+        if (assignedLabelOpt.IsFailure)
+        {
+            await messageService.SendErrorAsync(
+                currentUserService.UserId,
+                "No assigned label found");
+            return;
+        }
 
-    public async Task<Optional<IEnumerable<AssignedLabel>>> GetAssignedLabelsByScientistIdAsync(int scientistId)
-    {
-        return await assignedLabelRepository.GetAssignedLabelsByScientistIdAsync(scientistId);
-    }
+        var assignedLabel = assignedLabelOpt.GetValueOrThrow();
+        var authResult = await authorizationService.AuthorizeAsync(currentUserService.User, assignedLabel, new ResourceOperationRequirement(ResourceOperation.Delete));
+        if (!authResult.Succeeded)
+        {
+            throw new ForbiddenException();
+        }
 
-    public async Task<Optional<IEnumerable<AssignedLabel>>> GetAssignedLabelsByLabelerIdAsync(int labelerId)
-    {
-        return await assignedLabelRepository.GetAssignedLabelsByLabelerIdAsync(labelerId);
+        await messageService.SendInfoAsync(
+            currentUserService.UserId,
+            "Assigned label deleted successfully");
+
+        await assignedLabelRepository.DeleteAssignedLabelAsync(assignedLabel);
     }
 
     public async Task<Optional<IEnumerable<AssignedLabel>>> GetAssignedLabelsByVideoIdAsync(int videoId)
     {
-        return await assignedLabelRepository.GetAssignedLabelsByVideoIdAsync(videoId);
+        var assignedLabelsOpt = await assignedLabelRepository.GetAssignedLabelsByVideoIdAsync(videoId);
+        if (assignedLabelsOpt.IsFailure)
+        {
+            return assignedLabelsOpt;
+        }
+
+        var assignedLabels = assignedLabelsOpt.GetValueOrThrow();
+        var authResult = await authorizationService.AuthorizeAsync(currentUserService.User, assignedLabels, new ResourceOperationRequirement(ResourceOperation.Read));
+        if (!authResult.Succeeded)
+        {
+            throw new ForbiddenException();
+        }
+
+        return assignedLabelsOpt;
+    }
+
+     public async Task<Optional<IEnumerable<AssignedLabel>>> GetAssignedLabelsByVideoIdAndSubjectIdAsync(int videoId, int subjectId)
+    {
+        var assignedLabelsOpt = await assignedLabelRepository.GetAssignedLabelsByVideoIdAndSubjectIdAsync(videoId, subjectId);
+        if (assignedLabelsOpt.IsFailure)
+        {
+            return assignedLabelsOpt;
+        }
+
+        var assignedLabels = assignedLabelsOpt.GetValueOrThrow();
+        var authResult = await authorizationService.AuthorizeAsync(currentUserService.User, assignedLabels, new ResourceOperationRequirement(ResourceOperation.Read));
+        if (!authResult.Succeeded)
+        {
+            throw new ForbiddenException();
+        }
+
+        return assignedLabelsOpt;
     }
 }

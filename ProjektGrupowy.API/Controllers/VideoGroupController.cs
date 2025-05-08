@@ -6,32 +6,25 @@ using ProjektGrupowy.API.DTOs.VideoGroup;
 using ProjektGrupowy.API.Filters;
 using ProjektGrupowy.API.Services;
 using ProjektGrupowy.API.Utils.Constants;
+using ProjektGrupowy.API.Utils.Extensions;
 
 namespace ProjektGrupowy.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
 [ServiceFilter(typeof(ValidateModelStateFilter))]
+[ServiceFilter(typeof(NonSuccessGetFilter))]
 [Authorize]
 public class VideoGroupController(
     IVideoGroupService videoGroupService,
     IVideoService videoService,
-    IAuthorizationHelper authHelper,
     IMapper mapper) : ControllerBase
 {
     [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<VideoGroupResponse>>> GetVideoGroupsAsync()
     {
-        var checkResult = await authHelper.CheckGeneralAccessAsync(User);
-        if (checkResult.Error != null)
-        {
-            return checkResult.Error;
-        }
-
-        var videoGroups = checkResult.IsAdmin
-            ? await videoGroupService.GetVideoGroupsAsync()
-            : await videoGroupService.GetVideoGroupsByScientistIdAsync(checkResult.Scientist!.Id);
+        var videoGroups = await videoGroupService.GetVideoGroupsAsync();
 
         return videoGroups.IsSuccess
             ? Ok(mapper.Map<IEnumerable<VideoGroupResponse>>(videoGroups.GetValueOrThrow()))
@@ -41,30 +34,6 @@ public class VideoGroupController(
     [HttpGet("{id:int}")]
     public async Task<ActionResult<VideoGroupResponse>> GetVideoGroupAsync(int id)
     {
-        var checkResult = await authHelper.CheckGeneralAccessAsync(User);
-        if (checkResult.Error != null)
-        {
-            return checkResult.Error;
-        }
-
-        if (checkResult.IsScientist)
-        {
-            var authResult = await authHelper.EnsureScientistOwnsVideoGroupAsync(User, id);
-            if (authResult != null)
-            {
-                return authResult;
-            }
-        }
-
-        if (checkResult.IsLabeler)
-        {
-            var authResult = await authHelper.CanLabelerAccessVideoGroupAsync(User, id);
-            if (!authResult)
-            {
-                return Forbid();
-            }
-        }
-
         var videoGroupResult = await videoGroupService.GetVideoGroupAsync(id);
         return videoGroupResult.IsSuccess
             ? Ok(mapper.Map<VideoGroupResponse>(videoGroupResult.GetValueOrThrow()))
@@ -75,21 +44,6 @@ public class VideoGroupController(
     [HttpPost]
     public async Task<ActionResult<VideoGroupResponse>> PostVideoGroupAsync(VideoGroupRequest videoGroupRequest)
     {
-        var checkResult = await authHelper.CheckGeneralAccessAsync(User);
-        if (checkResult.Error != null)
-        {
-            return checkResult.Error;
-        }
-
-        if (checkResult.IsScientist)
-        {
-            var authResult = await authHelper.EnsureScientistOwnsProjectAsync(User, videoGroupRequest.ProjectId);
-            if (authResult != null)
-            {
-                return authResult;
-            }
-        }
-
         var result = await videoGroupService.AddVideoGroupAsync(videoGroupRequest);
         if (result.IsFailure)
             return BadRequest(result.GetErrorOrThrow());
@@ -104,31 +58,10 @@ public class VideoGroupController(
     [HttpPut("{id:int}")]
     public async Task<IActionResult> PutVideoGroupAsync(int id, VideoGroupRequest videoGroupRequest)
     {
-        var checkResult = await authHelper.CheckGeneralAccessAsync(User);
-        if (checkResult.Error != null)
-        {
-            return checkResult.Error;
-        }
-
         var videoGroupResult = await videoGroupService.GetVideoGroupAsync(id);
         if (videoGroupResult.IsFailure)
         {
-            return NotFound(new { Message = "VideoGroup not found" });
-        }
-
-        if (checkResult.IsScientist)
-        {
-            var authResult = await authHelper.EnsureScientistOwnsVideoGroupAsync(User, id);
-            if (authResult != null)
-            {
-                return authResult;
-            }
-            
-            var projectAuthResult = await authHelper.EnsureScientistOwnsProjectAsync(User, videoGroupRequest.ProjectId);
-            if (projectAuthResult != null)
-            {
-                return projectAuthResult;
-            }
+            return NotFound(videoGroupResult.GetErrorOrThrow());
         }
 
         var result = await videoGroupService.UpdateVideoGroupAsync(id, videoGroupRequest);
@@ -141,25 +74,10 @@ public class VideoGroupController(
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteVideoGroupAsync(int id)
     {
-        var checkResult = await authHelper.CheckGeneralAccessAsync(User);
-        if (checkResult.Error != null)
-        {
-            return checkResult.Error;
-        }
-
         var videoGroupResult = await videoGroupService.GetVideoGroupAsync(id);
         if (videoGroupResult.IsFailure)
         {
-            return NotFound(new { Message = "VideoGroup not found" });
-        }
-
-        if (checkResult.IsScientist)
-        {
-            var authResult = await authHelper.EnsureScientistOwnsVideoGroupAsync(User, id);
-            if (authResult != null)
-            {
-                return authResult;
-            }
+            return NotFound(videoGroupResult.GetErrorOrThrow());
         }
 
         await videoGroupService.DeleteVideoGroupAsync(id);
@@ -169,30 +87,6 @@ public class VideoGroupController(
     [HttpGet("{id:int}/videos")]
     public async Task<ActionResult<IEnumerable<VideoResponse>>> GetVideosByVideoGroupIdAsync(int id)
     {
-        var checkResult = await authHelper.CheckGeneralAccessAsync(User);
-        if (checkResult.Error != null)
-        {
-            return checkResult.Error;
-        }
-
-        if (checkResult.IsScientist)
-        {
-            var authResult = await authHelper.EnsureScientistOwnsVideoGroupAsync(User, id);
-            if (authResult != null)
-            {
-                return authResult;
-            }
-        }
-
-        if (checkResult.IsLabeler)
-        {
-            var authResult = await authHelper.CanLabelerAccessVideoGroupAsync(User, id);
-            if (!authResult)
-            {
-                return Forbid();
-            }
-        }
-
         var videosResult = await videoGroupService.GetVideosByVideoGroupIdAsync(id);
         return videosResult.IsSuccess
             ? Ok(mapper.Map<IEnumerable<VideoResponse>>(videosResult.GetValueOrThrow()))

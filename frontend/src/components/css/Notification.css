@@ -30,6 +30,16 @@
   color: white;
 }
 
+.notification-info {
+  background-color: #17a2b8;
+  color: white;
+}
+
+.notification-warning {
+  background-color: #ffc107;
+  color: black;
+}
+
 .notification-message {
   flex: 1;
   margin-right: 10px;
@@ -63,4 +73,19 @@
     transform: translateX(0);
     opacity: 1;
   }
+}
+
+@keyframes slide-out {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+}
+
+.notification-exit {
+  animation: slide-out 0.3s ease-in forwards !important; /* Add !important to ensure it overrides other styles */
 }

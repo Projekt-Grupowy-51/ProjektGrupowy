@@ -1,7 +1,12 @@
-﻿using ProjektGrupowy.API.DTOs.AccessCode;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using ProjektGrupowy.API.Authorization;
+using ProjektGrupowy.API.DTOs.AccessCode;
 using ProjektGrupowy.API.Enums;
+using ProjektGrupowy.API.Exceptions;
 using ProjektGrupowy.API.Models;
 using ProjektGrupowy.API.Repositories;
+using ProjektGrupowy.API.SignalR;
 using ProjektGrupowy.API.Utils;
 
 namespace ProjektGrupowy.API.Services.Impl;
@@ -9,6 +14,10 @@ namespace ProjektGrupowy.API.Services.Impl;
 public class ProjectAccessCodeService(
     IProjectAccessCodeRepository repository,
     IProjectRepository projectRepository,
+    UserManager<User> userManager,
+    IMessageService messageService,
+    ICurrentUserService currentUserService,
+    IAuthorizationService authorizationService,
     ILogger<ProjectAccessCodeService> logger) : IProjectAccessCodeService
 {
     public async Task<bool> ValidateAccessCode(AccessCodeRequest accessCodeRequest)
@@ -20,6 +29,7 @@ public class ProjectAccessCodeService(
                 return false;
 
             var accessCode = accessCodeOpt.GetValueOrThrow();
+            var authResult = await authorizationService.AuthorizeAsync(currentUserService.User, accessCode, new ResourceOperationRequirement(ResourceOperation.Read));
 
             return accessCode.IsValid;
         }
@@ -30,8 +40,23 @@ public class ProjectAccessCodeService(
         }
     }
 
-    public async Task<Optional<IEnumerable<ProjectAccessCode>>> GetAccessCodesByProjectAsync(int projectId) =>
-        await repository.GetAccessCodesByProjectAsync(projectId);
+    public async Task<Optional<IEnumerable<ProjectAccessCode>>> GetAccessCodesByProjectAsync(int projectId)
+    {
+        var accessCodeOpt = await repository.GetAccessCodesByProjectAsync(projectId);
+        if (accessCodeOpt.IsFailure)
+        {
+            return accessCodeOpt;
+        }
+
+        var accessCodes = accessCodeOpt.GetValueOrThrow();
+        var authResult = await authorizationService.AuthorizeAsync(currentUserService.User, accessCodes, new ResourceOperationRequirement(ResourceOperation.Read));
+        if (!authResult.Succeeded)
+        {
+            throw new ForbiddenException("You do not have permission to access this projects access codes.");
+        }
+
+        return accessCodeOpt;
+    }
 
     public async Task<Optional<ProjectAccessCode>> AddValidCodeToProjectAsync(CreateAccessCodeRequest createCodeRequest)
     {
@@ -39,7 +64,6 @@ public class ProjectAccessCodeService(
 
         try
         {
-            // 1. Check if project exists
             var projectOpt = await projectRepository.GetProjectAsync(createCodeRequest.ProjectId);
             if (projectOpt.IsFailure)
             {
@@ -48,6 +72,12 @@ public class ProjectAccessCodeService(
             }
 
             var project = projectOpt.GetValueOrThrow();
+            var authResult = await authorizationService.AuthorizeAsync(currentUserService.User, project, new ResourceOperationRequirement(ResourceOperation.Update));
+            if (!authResult.Succeeded)
+            {
+                await transaction.RollbackAsync();
+                throw new ForbiddenException("You do not have permission to access this project.");
+            }
 
             // 2. Check if there is a valid access code for this project
             var accessCodeOpt = await repository.GetValidAccessCodeByProjectAsync(project.Id);
@@ -58,6 +88,7 @@ public class ProjectAccessCodeService(
                 var expirationDate = GetExpirationDate(createCodeRequest.Expiration, createCodeRequest.CustomExpiration);
 
                 var newAccessCode = AccessCodeGenerator.Create(project, expirationDate);
+                newAccessCode.CreatedById = currentUserService.UserId;
                 var newAddedAccessCodeOpt = await repository.AddAccessCodeAsync(newAccessCode);
 
                 if (newAddedAccessCodeOpt.IsFailure)
@@ -67,6 +98,10 @@ public class ProjectAccessCodeService(
                 }
 
                 await transaction.CommitAsync();
+                await messageService.SendSuccessAsync(
+                    currentUserService.UserId,
+                    "Access code added successfully");
+
                 return newAddedAccessCodeOpt;
             }
             else
@@ -87,6 +122,7 @@ public class ProjectAccessCodeService(
                 var expirationDate = GetExpirationDate(createCodeRequest.Expiration, createCodeRequest.CustomExpiration);
                 var newAccessCode = AccessCodeGenerator.Create(project, expirationDate);
 
+                newAccessCode.CreatedById = currentUserService.UserId;
                 var newAddedAccessCodeOpt = await repository.AddAccessCodeAsync(newAccessCode);
                 if (newAddedAccessCodeOpt.IsFailure)
                 {
@@ -95,6 +131,10 @@ public class ProjectAccessCodeService(
                 }
 
                 await transaction.CommitAsync();
+                await messageService.SendSuccessAsync(
+                    currentUserService.UserId,
+                    "Access code added successfully");
+                Console.WriteLine("Access code added successfully");
                 return newAddedAccessCodeOpt;
             }
         }
@@ -103,7 +143,7 @@ public class ProjectAccessCodeService(
             logger.LogError(e, "Error while adding access code to project");
             await transaction.RollbackAsync();
 
-            return Optional<ProjectAccessCode>.Failure(e.Message);
+            return Optional<ProjectAccessCode>.Failure("Error while adding access code to project");
         }
     }
 
@@ -114,15 +154,30 @@ public class ProjectAccessCodeService(
             return Optional<ProjectAccessCode>.Failure("Access code not found");
 
         var accessCode = result.GetValueOrThrow();
+        var authResult = await authorizationService.AuthorizeAsync(currentUserService.User, accessCode, new ResourceOperationRequirement(ResourceOperation.Update));
+        if (!authResult.Succeeded)
+        {
+            throw new ForbiddenException("You do not have permission to access this access code.");
+        }
 
         if (!accessCode.IsValid)
+        {
             return Optional<ProjectAccessCode>.Failure("Access code is already retired");
+        }
 
         accessCode.Retire();
         var updatedAccessCodeOpt = await repository.UpdateAccessCodeAsync(accessCode);
-        return updatedAccessCodeOpt.IsFailure
-            ? Optional<ProjectAccessCode>.Failure(updatedAccessCodeOpt.GetErrorOrThrow())
-            : updatedAccessCodeOpt;
+        if (updatedAccessCodeOpt.IsFailure)
+        {
+            return Optional<ProjectAccessCode>.Failure(updatedAccessCodeOpt.GetErrorOrThrow());
+        }
+        else
+        {
+            await messageService.SendInfoAsync(
+                currentUserService.UserId,
+                "Access code retired successfully");
+            return updatedAccessCodeOpt;
+        }
     }
 
     private static DateTime? GetExpirationDate(AccessCodeExpiration expiration, int days = -1) =>

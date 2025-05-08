@@ -3,23 +3,15 @@ import httpClient from "../../httpclient";
 import NavigateButton from "../NavigateButton";
 import DeleteButton from "../DeleteButton";
 import DataTable from "../DataTable";
-import { useNotification } from "../../context/NotificationContext";
+import { useTranslation } from "react-i18next";
 
 const ProjectSubjectsTab = ({ projectId }) => {
   const [subjects, setSubjects] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const { addNotification } = useNotification();
+  const { t } = useTranslation(['common', 'projects']);
 
   const fetchSubjects = async () => {
-    try {
-      setLoading(true);
-      const response = await httpClient.get(`/project/${projectId}/subjects`);
-      setSubjects(response.data);
-    } catch (error) {
-      addNotification("Failed to load subjects", "error");
-    } finally {
-      setLoading(false);
-    }
+    const response = await httpClient.get(`/project/${projectId}/subjects`);
+    setSubjects(response.data);
   };
 
   useEffect(() => {
@@ -27,41 +19,22 @@ const ProjectSubjectsTab = ({ projectId }) => {
   }, [projectId]);
 
   const handleDeleteSubject = async (subjectId) => {
-    try {
-      await httpClient.delete(`/subject/${subjectId}`);
-      setSubjects(subjects.filter((subject) => subject.id !== subjectId));
-      // DeleteButton will show success notification automatically
-    } catch (error) {
-      addNotification(
-        error.response?.data?.message || "Failed to delete subject",
-        "error"
-      );
-    }
+    await httpClient.delete(`/subject/${subjectId}`);
+    setSubjects(subjects.filter((subject) => subject.id !== subjectId));
   };
-
-  // Define columns for subjects table
+  
   const subjectColumns = [
-    { field: "name", header: "Name" },
-    { field: "description", header: "Description" },
+    { field: "name", header: t('common:name') },
+    { field: "description", header: t('common:description') },
   ];
-
-  if (loading) {
-    return (
-      <div className="d-flex justify-content-center my-5">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading subjects...</span>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="subjects">
       <div className="d-flex justify-content-end mb-3">
         <NavigateButton
-          actionType="Add"
+          actionType='Add'
           path={`/subjects/add?projectId=${projectId}`}
-          value="Add Subject"
+          value={t('projects:add.subject')}
         />
       </div>
       {subjects.length > 0 ? (
@@ -72,7 +45,8 @@ const ProjectSubjectsTab = ({ projectId }) => {
           navigateButton={(subject) => (
             <NavigateButton
               path={`/subjects/${subject.id}`}
-              actionType="Details"
+              actionType='Details'
+              value={t('common:buttons.details')}
             />
           )}
           deleteButton={(subject) => (
@@ -84,7 +58,7 @@ const ProjectSubjectsTab = ({ projectId }) => {
         />
       ) : (
         <div className="alert alert-info">
-          <i className="fas fa-info-circle me-2"></i>No subjects found
+          <i className="fas fa-info-circle me-2"></i>{t('projects:not_found.subject')}
         </div>
       )}
     </div>

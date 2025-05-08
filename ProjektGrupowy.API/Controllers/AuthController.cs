@@ -1,29 +1,32 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
+using Microsoft.EntityFrameworkCore;
 using ProjektGrupowy.API.Data;
 using ProjektGrupowy.API.DTOs.Auth;
-using ProjektGrupowy.API.DTOs.Labeler;
-using ProjektGrupowy.API.DTOs.Scientist;
 using ProjektGrupowy.API.Filters;
 using ProjektGrupowy.API.Models;
 using ProjektGrupowy.API.Services;
 using ProjektGrupowy.API.Utils.Constants;
 using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 
 namespace ProjektGrupowy.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-[ServiceFilter(typeof(ValidateModelStateFilter))] // ValidateModelStateFilter is a custom filter to validate model state
+[ServiceFilter(typeof(ValidateModelStateFilter))]
 [Authorize]
-public class AuthController(UserManager<User> userManager, RoleManager<IdentityRole> roleManager,
-                                AppDbContext context, IConfiguration configuration, IScientistService scientistService, ILabelerService labelerService) : ControllerBase
+public class AuthController(
+    UserManager<User> userManager,
+    RoleManager<IdentityRole> roleManager,
+    AppDbContext context,
+    ITokenService tokenService,
+    IConfiguration configuration) : ControllerBase
 {
     private readonly string JwtCookieName = configuration["JWT:JwtCookieName"];
+    private readonly string RefreshCookieName = configuration["JWT:RefreshCookieName"];
+    private readonly bool IsProduction = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production";
+    private readonly string ScientistCreateToken = configuration["JWT:ScientistCreateToken"];
 
     [HttpPost("Register")]
     [AllowAnonymous]
@@ -31,13 +34,23 @@ public class AuthController(UserManager<User> userManager, RoleManager<IdentityR
     {
         var userExists = await userManager.FindByNameAsync(model.UserName);
         if (userExists != null)
-            return StatusCode(500, new { status = "Error", message = "User already exists!" });
+            return StatusCode(403, new { status = "Error", message = "User already exists!" });
+
+        if (model.Role == RoleConstants.Admin)
+            return StatusCode(403, new { status = "Error", message = "Creating users with Admin role is not allowed." });
+
+        if (model.Role == RoleConstants.Scientist && string.IsNullOrEmpty(model.ScientistCreateToken))
+            return StatusCode(403, new { status = "Error", message = "Creating Scientist role requires a valid token." });
+
+        if (model.Role == RoleConstants.Scientist && model.ScientistCreateToken != ScientistCreateToken)
+            return StatusCode(403, new { status = "Error", message = "Invalid token for creating Scientist role." });
 
         var user = new User
         {
             UserName = model.UserName,
             Email = model.Email,
-            SecurityStamp = Guid.NewGuid().ToString()
+            SecurityStamp = Guid.NewGuid().ToString(),
+            RegistrationDate = DateTime.UtcNow
         };
 
         await using var transaction = await context.Database.BeginTransactionAsync();
@@ -55,42 +68,6 @@ public class AuthController(UserManager<User> userManager, RoleManager<IdentityR
         if (!roleResult.Succeeded)
             return StatusCode(500, new { status = "Error", message = "Failed to assign role to user." });
 
-        if (model.Role == RoleConstants.Scientist)
-        {
-            var scientistRequest = new ScientistRequest
-            {
-                FirstName = model.UserName,
-                LastName = model.UserName
-            };
-
-            var scientistResult = await scientistService.AddScientistWithUser(scientistRequest, user);
-
-            if (scientistResult.IsFailure)
-                return BadRequest(scientistResult.GetErrorOrThrow());
-
-            var createdScientist = scientistResult.GetValueOrThrow();
-            user.Scientist = createdScientist;
-
-            await context.SaveChangesAsync();
-        }
-        else if (model.Role == RoleConstants.Labeler)
-        {
-            var labelerRequest = new LabelerRequest
-            {
-                Name = model.UserName
-            };
-
-            var labelerResult = await labelerService.AddLabelerWithUser(labelerRequest, user);
-
-            if (labelerResult.IsFailure)
-                return BadRequest(labelerResult.GetErrorOrThrow());
-
-            var createdLabeler = labelerResult.GetValueOrThrow();
-            user.Labeler = createdLabeler;
-
-            await context.SaveChangesAsync();
-        }
-
         await transaction.CommitAsync();
 
         return Ok(new { status = "Success", message = "User created and assigned to role successfully!" });
@@ -104,148 +81,124 @@ public class AuthController(UserManager<User> userManager, RoleManager<IdentityR
         if (user == null || !await userManager.CheckPasswordAsync(user, model.Password))
             return Unauthorized(new { status = "Error", message = "Invalid UserName or password!" });
 
-        var authClaims = new List<Claim>
-            {
-                new(ClaimTypes.Name, user.UserName),
-                new(ClaimTypes.NameIdentifier, user.Id),
-                new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            };
+        var accessToken = await tokenService.CreateAccessTokenAsync(user);
+        var refreshToken = tokenService.GenerateRefreshToken(user.Id);
 
-        var userRoles = await userManager.GetRolesAsync(user);
-        authClaims.AddRange(userRoles.Select(userRole => new Claim(ClaimTypes.Role, userRole)));
+        var oldTokens = await context.RefreshTokens
+            .Where(rt => rt.UserId == user.Id && !rt.IsUsed && !rt.IsRevoked)
+            .ToListAsync();
 
-        var token = GenerateJwtToken(authClaims);
-
-        // Ustawienie tokenu jako ciasteczko HTTP Only
-        Response.Cookies.Append(JwtCookieName, new JwtSecurityTokenHandler().WriteToken(token), new CookieOptions
+        foreach (var oldToken in oldTokens)
         {
-            HttpOnly = true,
-            Secure = false, // Używaj tylko w przypadku HTTPS
-            SameSite = SameSiteMode.Strict,
-            Expires = token.ValidTo
-        });
+            oldToken.IsRevoked = true;
+            context.RefreshTokens.Update(oldToken);
+        }
+
+        context.RefreshTokens.Add(refreshToken);
+        await context.SaveChangesAsync();
+
+        SetCookie(JwtCookieName, new JwtSecurityTokenHandler().WriteToken(accessToken));
+        SetCookie(RefreshCookieName, refreshToken.Token);
 
         return Ok(new
         {
-            Message = "Login successful!",
-            ExpiresAt = token.ValidTo // Zwróć czas wygaśnięcia tokena
+            message = "Login successful!",
+            roles = await userManager.GetRolesAsync(user),
         });
     }
 
     [HttpPost("Logout")]
-    public IActionResult Logout()
+    public async Task<IActionResult> Logout()
     {
-        // Usuń ciasteczko JWT
+        var refreshTokenFromClient = Request.Cookies[RefreshCookieName];
+
+        if (!string.IsNullOrEmpty(refreshTokenFromClient))
+        {
+            var storedToken = await context.RefreshTokens
+                .FirstOrDefaultAsync(rt => rt.Token == refreshTokenFromClient);
+            if (storedToken != null)
+            {
+                storedToken.IsRevoked = true;
+                context.RefreshTokens.Update(storedToken);
+                await context.SaveChangesAsync();
+            }
+        }
+
         Response.Cookies.Delete(JwtCookieName);
-        return Ok(new { Message = "Logout successful!" });
+        Response.Cookies.Delete(RefreshCookieName);
+
+        return Ok(new { message = "Logout successful!" });
     }
 
+
     [HttpPost("RefreshToken")]
+    [AllowAnonymous]
     public async Task<IActionResult> RefreshToken()
     {
-        var jwtToken = Request.Cookies[JwtCookieName];
-        if (string.IsNullOrEmpty(jwtToken))
-            return Unauthorized(new { status = "Error", message = "No token provided." });
+        var accessToken = Request.Cookies[JwtCookieName];
+        var refreshTokenFromClient = Request.Cookies[RefreshCookieName];
 
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var validationParameters = GetTokenValidationParameters();
+        if (string.IsNullOrEmpty(accessToken) || string.IsNullOrEmpty(refreshTokenFromClient))
+            return Unauthorized(new { status = "Error", message = "Tokens not provided." });
 
-        var principal = tokenHandler.ValidateToken(jwtToken, validationParameters, out var validatedToken);
-
-        if (!(validatedToken is JwtSecurityToken jwtSecurityToken) ||
-            !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
-        {
-            return Unauthorized(new { status = "Error", message = "Invalid token." });
-        }
+        var principal = tokenService.ValidateExpiredToken(accessToken);
+        if (principal == null || principal.Identity?.Name == null)
+            return Unauthorized(new { status = "Error", message = "Invalid access token." });
 
         var user = await userManager.FindByNameAsync(principal.Identity.Name);
         if (user == null)
             return Unauthorized(new { status = "Error", message = "User not found." });
 
-        var authClaims = new List<Claim>
-            {
-                new(ClaimTypes.Name, user.UserName),
-                new(ClaimTypes.NameIdentifier, user.Id),
-                new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            };
+        var storedRefreshToken = await context.RefreshTokens
+            .Where(rt => rt.Token == refreshTokenFromClient && rt.UserId == user.Id)
+            .FirstOrDefaultAsync();
 
-        var userRoles = await userManager.GetRolesAsync(user);
-        authClaims.AddRange(userRoles.Select(role => new Claim(ClaimTypes.Role, role)));
+        if (storedRefreshToken == null || storedRefreshToken.IsUsed || storedRefreshToken.IsRevoked || storedRefreshToken.Expires < DateTime.UtcNow)
+            return Unauthorized(new { status = "Error", message = "Invalid or expired refresh token." });
 
-        var newToken = GenerateJwtToken(authClaims);
+        storedRefreshToken.IsUsed = true;
+        context.RefreshTokens.Update(storedRefreshToken);
 
-        Response.Cookies.Append(JwtCookieName, new JwtSecurityTokenHandler().WriteToken(newToken), new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = false,
-            SameSite = SameSiteMode.Strict,
-            Expires = newToken.ValidTo
-        });
+        var newAccessToken = await tokenService.CreateAccessTokenAsync(user);
+        var newRefreshToken = tokenService.GenerateRefreshToken(user.Id);
+        context.RefreshTokens.Add(newRefreshToken);
+
+        await context.SaveChangesAsync();
+
+        SetCookie(JwtCookieName, new JwtSecurityTokenHandler().WriteToken(newAccessToken));
+        SetCookie(RefreshCookieName, newRefreshToken.Token);
 
         return Ok(new
         {
             message = "Token refreshed successfully!",
-            ExpiresAt = newToken.ValidTo
         });
     }
 
-    [HttpGet("VerifyToken")]
-    public async Task<IActionResult> VerifyToken()
+    [HttpGet("CheckAuth")]
+    public async Task<IActionResult> CheckAuth()
     {
-        var jwtToken = Request.Cookies[JwtCookieName];
-        if (string.IsNullOrEmpty(jwtToken))
-            return Unauthorized(new { IsAuthenticated = false });
+        var user = await userManager.GetUserAsync(User);
 
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var validationParameters = GetTokenValidationParameters();
-
-        var principal = tokenHandler.ValidateToken(jwtToken, validationParameters, out var validatedToken);
-
-        if (!(validatedToken is JwtSecurityToken jwtSecurityToken) ||
-            !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
-        {
-            return Unauthorized(new { IsAuthenticated = false });
-        }
-
-        var user = await userManager.FindByNameAsync(principal.Identity.Name);
-        if (user == null)
-            return Unauthorized(new { IsAuthenticated = false });
+        var roles = await userManager.GetRolesAsync(user);
 
         return Ok(new
         {
-            IsAuthenticated = true,
-            Username = user.UserName,
-            Roles = await userManager.GetRolesAsync(user)
+            isAuthenticated = true,
+            roles
         });
     }
 
-    private TokenValidationParameters GetTokenValidationParameters()
+    private void SetCookie(string name, string value)
     {
-        return new TokenValidationParameters
+        var expiresInDays = int.TryParse(configuration["JWT:RefreshTokenExpiresInDays"], out var exp) 
+            ? exp 
+            : 7;
+        Response.Cookies.Append(name, value, new CookieOptions
         {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = configuration["JWT:ValidIssuer"],
-            ValidAudience = configuration["JWT:ValidAudience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Secret"])),
-            ClockSkew = TimeSpan.Zero // Brak tolerancji dla czasu wygaśnięcia
-        };
-    }
-
-    private JwtSecurityToken GenerateJwtToken(IEnumerable<Claim> authClaims)
-    {
-        var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Secret"]));
-
-        var token = new JwtSecurityToken(
-            issuer: configuration["JWT:ValidIssuer"],
-            audience: configuration["JWT:ValidAudience"],
-            expires: DateTime.Now.AddMinutes(6),
-            claims: authClaims,
-            signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
-        );
-
-        return token;
+            HttpOnly = true,
+            Secure = false,
+            SameSite = SameSiteMode.Strict,
+            Expires = DateTime.UtcNow.AddDays(7)
+        });
     }
 }

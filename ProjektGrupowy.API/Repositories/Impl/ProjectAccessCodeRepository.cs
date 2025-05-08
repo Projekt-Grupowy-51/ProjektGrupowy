@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore.Storage;
 using ProjektGrupowy.API.Data;
 using ProjektGrupowy.API.Models;
+using ProjektGrupowy.API.Services;
 using ProjektGrupowy.API.Utils;
 using System.Linq;
 
@@ -9,14 +10,15 @@ namespace ProjektGrupowy.API.Repositories.Impl;
 
 public class ProjectAccessCodeRepository(
     AppDbContext dbContext,
-    ILogger<ProjectAccessCodeRepository> logger) : IProjectAccessCodeRepository
+    ILogger<ProjectAccessCodeRepository> logger,
+    ICurrentUserService currentUserService) : IProjectAccessCodeRepository
 {
     public async Task<Optional<ProjectAccessCode>> GetAccessCodeByCodeAsync(string code)
     {
         try
         {
             var accessCode = await dbContext
-                .ProjectAccessCodes
+                .ProjectAccessCodes.FilteredProjectAccessCodes(currentUserService.UserId, currentUserService.IsAdmin)
                 .FirstOrDefaultAsync(p => p.Code == code);
 
             return accessCode is null
@@ -26,7 +28,7 @@ public class ProjectAccessCodeRepository(
         catch (Exception e)
         {
             logger.LogError(e, "An error occurred while getting the access code by code.");
-            return Optional<ProjectAccessCode>.Failure(e.Message);
+            return Optional<ProjectAccessCode>.Failure("An error occurred while getting the access code by code.");
         }
     }
 
@@ -35,7 +37,7 @@ public class ProjectAccessCodeRepository(
         try
         {
             var accessCodes = await dbContext
-                .ProjectAccessCodes
+                .ProjectAccessCodes.FilteredProjectAccessCodes(currentUserService.UserId, currentUserService.IsAdmin)
                 .Where(p => p.Project.Id == projectId)
                 .ToArrayAsync();
 
@@ -44,7 +46,7 @@ public class ProjectAccessCodeRepository(
         catch (Exception e)
         {
             logger.LogError(e, "An error occurred while getting the access codes by project.");
-            return Optional<IEnumerable<ProjectAccessCode>>.Failure(e.Message);
+            return Optional<IEnumerable<ProjectAccessCode>>.Failure("An error occurred while getting the access codes by project.");
         }
     }
 
@@ -53,7 +55,7 @@ public class ProjectAccessCodeRepository(
         try
         {
             var validAccessCode = await dbContext
-                .ProjectAccessCodes
+                .ProjectAccessCodes.FilteredProjectAccessCodes(currentUserService.UserId, currentUserService.IsAdmin)
                 .Where(p => p.Project.Id == projectId)
                 .Where(p => (p.ExpiresAtUtc == null || p.ExpiresAtUtc > DateTime.UtcNow))
                 .SingleOrDefaultAsync();
@@ -65,7 +67,7 @@ public class ProjectAccessCodeRepository(
         catch (Exception e)
         {
             logger.LogError(e, "An error occurred while getting the valid access code by project.");
-            return Optional<ProjectAccessCode>.Failure(e.Message);
+            return Optional<ProjectAccessCode>.Failure("An error occurred while getting the valid access code by project.");
         }
     }
 
@@ -81,7 +83,7 @@ public class ProjectAccessCodeRepository(
         catch (Exception e)
         {
             logger.LogError(e, "An error occurred while adding the access code.");
-            return Optional<ProjectAccessCode>.Failure(e.Message);
+            return Optional<ProjectAccessCode>.Failure("An error occurred while adding the access code.");
         }
     }
 
@@ -97,7 +99,7 @@ public class ProjectAccessCodeRepository(
         catch (Exception e)
         {
             logger.LogError(e, "An error occurred while updating the access code.");
-            return Optional<ProjectAccessCode>.Failure(e.Message);
+            return Optional<ProjectAccessCode>.Failure("An error occurred while updating the access code.");
         }
     }
 

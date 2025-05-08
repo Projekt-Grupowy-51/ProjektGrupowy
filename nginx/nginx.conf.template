@@ -1,0 +1,56 @@
+worker_processes 1;
+
+events {
+  worker_connections 1024;
+}
+
+http {
+  include       mime.types;
+  default_type  application/octet-stream;
+
+  server {
+    listen ${NGINX_PORT};
+    server_name ${NGINX_HOST};
+
+    location / {
+      root /usr/share/nginx/html;
+      index index.html;
+    }
+
+    location /videos/ {
+        root /mnt;
+        autoindex on;
+
+        add_header 'Access-Control-Allow-Origin' $http_origin always;
+        add_header 'Access-Control-Allow-Credentials' 'true' always;
+        add_header 'Access-Control-Allow-Methods' 'GET, OPTIONS' always;
+        add_header 'Access-Control-Allow-Headers' 'Origin, Content-Type, Accept, Range' always;
+        add_header 'Access-Control-Expose-Headers' 'Content-Length, Content-Range' always;
+
+        if ($request_method = OPTIONS) {
+            add_header 'Access-Control-Max-Age' 1728000;
+            add_header 'Content-Type' 'text/plain; charset=UTF-8';
+            add_header 'Content-Length' 0;
+            return 204;
+        }
+    }
+
+    location /reports/ {
+        root /mnt;
+        autoindex on;
+
+        add_header 'Access-Control-Allow-Origin' $http_origin always;
+        add_header 'Access-Control-Allow-Credentials' 'true' always;
+        add_header 'Access-Control-Allow-Methods' 'GET, OPTIONS' always;
+        add_header 'Access-Control-Allow-Headers' 'Origin, Content-Type, Accept, Range' always;
+        add_header 'Access-Control-Expose-Headers' 'Content-Length, Content-Range' always;
+
+        if ($request_method = OPTIONS) {
+            add_header 'Access-Control-Max-Age' 1728000;
+            add_header 'Content-Type' 'text/plain; charset=UTF-8';
+            add_header 'Content-Length' 0;
+            return 204;
+        }
+    }
+  }
+}

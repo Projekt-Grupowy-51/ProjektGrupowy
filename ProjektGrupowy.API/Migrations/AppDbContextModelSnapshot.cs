@@ -25,36 +25,6 @@ namespace ProjektGrupowy.API.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("LabelerProject", b =>
-                {
-                    b.Property<int>("ProjectLabelersId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("ProjectLabelersId1")
-                        .HasColumnType("integer");
-
-                    b.HasKey("ProjectLabelersId", "ProjectLabelersId1");
-
-                    b.HasIndex("ProjectLabelersId1");
-
-                    b.ToTable("LabelerProject");
-                });
-
-            modelBuilder.Entity("LabelerSubjectVideoGroupAssignment", b =>
-                {
-                    b.Property<int>("LabelersId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("SubjectVideoGroupsId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("LabelersId", "SubjectVideoGroupsId");
-
-                    b.HasIndex("SubjectVideoGroupsId");
-
-                    b.ToTable("LabelerSubjectVideoGroupAssignment");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
@@ -187,6 +157,21 @@ namespace ProjektGrupowy.API.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("ProjectUser", b =>
+                {
+                    b.Property<int>("LabeledProjectsId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ProjectLabelersId")
+                        .HasColumnType("text");
+
+                    b.HasKey("LabeledProjectsId", "ProjectLabelersId");
+
+                    b.HasIndex("ProjectLabelersId");
+
+                    b.ToTable("ProjectLabelers", (string)null);
+                });
+
             modelBuilder.Entity("ProjektGrupowy.API.Models.AssignedLabel", b =>
                 {
                     b.Property<int>("Id")
@@ -194,6 +179,13 @@ namespace ProjektGrupowy.API.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CreatedById")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("DelDate")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("End")
                         .IsRequired()
@@ -205,9 +197,6 @@ namespace ProjektGrupowy.API.Migrations
                     b.Property<int>("LabelId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("LabelerId")
-                        .HasColumnType("integer");
-
                     b.Property<string>("Start")
                         .IsRequired()
                         .HasColumnType("text");
@@ -217,13 +206,54 @@ namespace ProjektGrupowy.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("LabelId");
+                    b.HasIndex("CreatedById");
 
-                    b.HasIndex("LabelerId");
+                    b.HasIndex("LabelId");
 
                     b.HasIndex("VideoId");
 
                     b.ToTable("AssignedLabels");
+                });
+
+            modelBuilder.Entity("ProjektGrupowy.API.Models.GeneratedReport", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedById")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("DelDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Path")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("ProjectId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedById");
+
+                    b.HasIndex("Path")
+                        .IsUnique();
+
+                    b.HasIndex("ProjectId");
+
+                    b.ToTable("GeneratedReports");
                 });
 
             modelBuilder.Entity("ProjektGrupowy.API.Models.Label", b =>
@@ -238,6 +268,13 @@ namespace ProjektGrupowy.API.Migrations
                         .IsRequired()
                         .HasMaxLength(7)
                         .HasColumnType("character varying(7)");
+
+                    b.Property<string>("CreatedById")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("DelDate")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -255,33 +292,11 @@ namespace ProjektGrupowy.API.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CreatedById");
+
                     b.HasIndex("SubjectId");
 
                     b.ToTable("Labels");
-                });
-
-            modelBuilder.Entity("ProjektGrupowy.API.Models.Labeler", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId")
-                        .IsUnique();
-
-                    b.ToTable("Labelers");
                 });
 
             modelBuilder.Entity("ProjektGrupowy.API.Models.Project", b =>
@@ -292,8 +307,15 @@ namespace ProjektGrupowy.API.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("CreatedById")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<DateOnly>("CreationDate")
                         .HasColumnType("date");
+
+                    b.Property<DateTime?>("DelDate")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -311,12 +333,9 @@ namespace ProjektGrupowy.API.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 
-                    b.Property<int>("ScientistId")
-                        .HasColumnType("integer");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("ScientistId");
+                    b.HasIndex("CreatedById");
 
                     b.ToTable("Projects");
                 });
@@ -337,6 +356,13 @@ namespace ProjektGrupowy.API.Migrations
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("CreatedById")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("DelDate")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<DateTime?>("ExpiresAtUtc")
                         .HasColumnType("timestamp with time zone");
 
@@ -349,12 +375,14 @@ namespace ProjektGrupowy.API.Migrations
                         .IsUnique()
                         .HasDatabaseName("IX_ProjectAccessCode_Code");
 
+                    b.HasIndex("CreatedById");
+
                     b.HasIndex("ProjectId");
 
                     b.ToTable("ProjectAccessCodes");
                 });
 
-            modelBuilder.Entity("ProjektGrupowy.API.Models.Scientist", b =>
+            modelBuilder.Entity("ProjektGrupowy.API.Models.RefreshToken", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -362,15 +390,21 @@ namespace ProjektGrupowy.API.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("FirstName")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("LastName")
+                    b.Property<DateTime>("Expires")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsRevoked")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsUsed")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Token")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
+                        .HasColumnType("text");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -378,10 +412,9 @@ namespace ProjektGrupowy.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId")
-                        .IsUnique();
+                    b.HasIndex("UserId");
 
-                    b.ToTable("Scientists");
+                    b.ToTable("RefreshTokens");
                 });
 
             modelBuilder.Entity("ProjektGrupowy.API.Models.Subject", b =>
@@ -391,6 +424,13 @@ namespace ProjektGrupowy.API.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CreatedById")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("DelDate")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -406,6 +446,8 @@ namespace ProjektGrupowy.API.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CreatedById");
+
                     b.HasIndex("ProjectId");
 
                     b.ToTable("Subjects");
@@ -419,8 +461,15 @@ namespace ProjektGrupowy.API.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("CreatedById")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<DateOnly>("CreationDate")
                         .HasColumnType("date");
+
+                    b.Property<DateTime?>("DelDate")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateOnly?>("ModificationDate")
                         .HasColumnType("date");
@@ -432,6 +481,8 @@ namespace ProjektGrupowy.API.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CreatedById");
 
                     b.HasIndex("SubjectId");
 
@@ -519,6 +570,13 @@ namespace ProjektGrupowy.API.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("CreatedById")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("DelDate")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Path")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -537,6 +595,8 @@ namespace ProjektGrupowy.API.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CreatedById");
+
                     b.HasIndex("VideoGroupId", "PositionInQueue");
 
                     b.ToTable("Videos");
@@ -549,6 +609,13 @@ namespace ProjektGrupowy.API.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CreatedById")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("DelDate")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -563,39 +630,26 @@ namespace ProjektGrupowy.API.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CreatedById");
+
                     b.HasIndex("ProjectId");
 
                     b.ToTable("VideoGroups");
                 });
 
-            modelBuilder.Entity("LabelerProject", b =>
+            modelBuilder.Entity("SubjectVideoGroupAssignmentUser", b =>
                 {
-                    b.HasOne("ProjektGrupowy.API.Models.Labeler", null)
-                        .WithMany()
-                        .HasForeignKey("ProjectLabelersId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Property<int>("LabeledAssignmentsId")
+                        .HasColumnType("integer");
 
-                    b.HasOne("ProjektGrupowy.API.Models.Project", null)
-                        .WithMany()
-                        .HasForeignKey("ProjectLabelersId1")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
+                    b.Property<string>("LabelersId")
+                        .HasColumnType("text");
 
-            modelBuilder.Entity("LabelerSubjectVideoGroupAssignment", b =>
-                {
-                    b.HasOne("ProjektGrupowy.API.Models.Labeler", null)
-                        .WithMany()
-                        .HasForeignKey("LabelersId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.HasKey("LabeledAssignmentsId", "LabelersId");
 
-                    b.HasOne("ProjektGrupowy.API.Models.SubjectVideoGroupAssignment", null)
-                        .WithMany()
-                        .HasForeignKey("SubjectVideoGroupsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.HasIndex("LabelersId");
+
+                    b.ToTable("LabelersAssignments", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -649,17 +703,32 @@ namespace ProjektGrupowy.API.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ProjektGrupowy.API.Models.AssignedLabel", b =>
+            modelBuilder.Entity("ProjectUser", b =>
                 {
-                    b.HasOne("ProjektGrupowy.API.Models.Label", "Label")
-                        .WithMany("AssignedLabels")
-                        .HasForeignKey("LabelId")
+                    b.HasOne("ProjektGrupowy.API.Models.Project", null)
+                        .WithMany()
+                        .HasForeignKey("LabeledProjectsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ProjektGrupowy.API.Models.Labeler", "Labeler")
+                    b.HasOne("ProjektGrupowy.API.Models.User", null)
+                        .WithMany()
+                        .HasForeignKey("ProjectLabelersId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ProjektGrupowy.API.Models.AssignedLabel", b =>
+                {
+                    b.HasOne("ProjektGrupowy.API.Models.User", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ProjektGrupowy.API.Models.Label", "Label")
                         .WithMany("AssignedLabels")
-                        .HasForeignKey("LabelerId")
+                        .HasForeignKey("LabelId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -669,62 +738,86 @@ namespace ProjektGrupowy.API.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Label");
+                    b.Navigation("CreatedBy");
 
-                    b.Navigation("Labeler");
+                    b.Navigation("Label");
 
                     b.Navigation("Video");
                 });
 
+            modelBuilder.Entity("ProjektGrupowy.API.Models.GeneratedReport", b =>
+                {
+                    b.HasOne("ProjektGrupowy.API.Models.User", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ProjektGrupowy.API.Models.Project", "Project")
+                        .WithMany("GeneratedReports")
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("Project");
+                });
+
             modelBuilder.Entity("ProjektGrupowy.API.Models.Label", b =>
                 {
+                    b.HasOne("ProjektGrupowy.API.Models.User", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("ProjektGrupowy.API.Models.Subject", "Subject")
                         .WithMany("Labels")
                         .HasForeignKey("SubjectId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("CreatedBy");
+
                     b.Navigation("Subject");
-                });
-
-            modelBuilder.Entity("ProjektGrupowy.API.Models.Labeler", b =>
-                {
-                    b.HasOne("ProjektGrupowy.API.Models.User", "User")
-                        .WithOne("Labeler")
-                        .HasForeignKey("ProjektGrupowy.API.Models.Labeler", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("ProjektGrupowy.API.Models.Project", b =>
                 {
-                    b.HasOne("ProjektGrupowy.API.Models.Scientist", "Scientist")
-                        .WithMany("Projects")
-                        .HasForeignKey("ScientistId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                    b.HasOne("ProjektGrupowy.API.Models.User", "CreatedBy")
+                        .WithMany("OwnedProjects")
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.SetNull)
                         .IsRequired();
 
-                    b.Navigation("Scientist");
+                    b.Navigation("CreatedBy");
                 });
 
             modelBuilder.Entity("ProjektGrupowy.API.Models.ProjectAccessCode", b =>
                 {
+                    b.HasOne("ProjektGrupowy.API.Models.User", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("ProjektGrupowy.API.Models.Project", "Project")
                         .WithMany("AccessCodes")
                         .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("CreatedBy");
+
                     b.Navigation("Project");
                 });
 
-            modelBuilder.Entity("ProjektGrupowy.API.Models.Scientist", b =>
+            modelBuilder.Entity("ProjektGrupowy.API.Models.RefreshToken", b =>
                 {
                     b.HasOne("ProjektGrupowy.API.Models.User", "User")
-                        .WithOne("Scientist")
-                        .HasForeignKey("ProjektGrupowy.API.Models.Scientist", "UserId")
+                        .WithMany("RefreshTokens")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -733,17 +826,31 @@ namespace ProjektGrupowy.API.Migrations
 
             modelBuilder.Entity("ProjektGrupowy.API.Models.Subject", b =>
                 {
+                    b.HasOne("ProjektGrupowy.API.Models.User", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("ProjektGrupowy.API.Models.Project", "Project")
                         .WithMany("Subjects")
                         .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("CreatedBy");
+
                     b.Navigation("Project");
                 });
 
             modelBuilder.Entity("ProjektGrupowy.API.Models.SubjectVideoGroupAssignment", b =>
                 {
+                    b.HasOne("ProjektGrupowy.API.Models.User", "CreatedBy")
+                        .WithMany("OwnedAssignments")
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("ProjektGrupowy.API.Models.Subject", "Subject")
                         .WithMany("SubjectVideoGroupAssignments")
                         .HasForeignKey("SubjectId")
@@ -756,6 +863,8 @@ namespace ProjektGrupowy.API.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("CreatedBy");
+
                     b.Navigation("Subject");
 
                     b.Navigation("VideoGroup");
@@ -763,32 +872,58 @@ namespace ProjektGrupowy.API.Migrations
 
             modelBuilder.Entity("ProjektGrupowy.API.Models.Video", b =>
                 {
+                    b.HasOne("ProjektGrupowy.API.Models.User", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("ProjektGrupowy.API.Models.VideoGroup", "VideoGroup")
                         .WithMany("Videos")
                         .HasForeignKey("VideoGroupId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("CreatedBy");
+
                     b.Navigation("VideoGroup");
                 });
 
             modelBuilder.Entity("ProjektGrupowy.API.Models.VideoGroup", b =>
                 {
+                    b.HasOne("ProjektGrupowy.API.Models.User", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("ProjektGrupowy.API.Models.Project", "Project")
                         .WithMany()
                         .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("CreatedBy");
+
                     b.Navigation("Project");
                 });
 
-            modelBuilder.Entity("ProjektGrupowy.API.Models.Label", b =>
+            modelBuilder.Entity("SubjectVideoGroupAssignmentUser", b =>
                 {
-                    b.Navigation("AssignedLabels");
+                    b.HasOne("ProjektGrupowy.API.Models.SubjectVideoGroupAssignment", null)
+                        .WithMany()
+                        .HasForeignKey("LabeledAssignmentsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ProjektGrupowy.API.Models.User", null)
+                        .WithMany()
+                        .HasForeignKey("LabelersId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
-            modelBuilder.Entity("ProjektGrupowy.API.Models.Labeler", b =>
+            modelBuilder.Entity("ProjektGrupowy.API.Models.Label", b =>
                 {
                     b.Navigation("AssignedLabels");
                 });
@@ -797,12 +932,9 @@ namespace ProjektGrupowy.API.Migrations
                 {
                     b.Navigation("AccessCodes");
 
-                    b.Navigation("Subjects");
-                });
+                    b.Navigation("GeneratedReports");
 
-            modelBuilder.Entity("ProjektGrupowy.API.Models.Scientist", b =>
-                {
-                    b.Navigation("Projects");
+                    b.Navigation("Subjects");
                 });
 
             modelBuilder.Entity("ProjektGrupowy.API.Models.Subject", b =>
@@ -814,9 +946,11 @@ namespace ProjektGrupowy.API.Migrations
 
             modelBuilder.Entity("ProjektGrupowy.API.Models.User", b =>
                 {
-                    b.Navigation("Labeler");
+                    b.Navigation("OwnedAssignments");
 
-                    b.Navigation("Scientist");
+                    b.Navigation("OwnedProjects");
+
+                    b.Navigation("RefreshTokens");
                 });
 
             modelBuilder.Entity("ProjektGrupowy.API.Models.Video", b =>

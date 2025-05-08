@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace ProjektGrupowy.API.Models;
 
 [Table("Videos")]
-public class Video
+public class Video : IOwnedEntity
 {
     [Key]
     public int Id { get; set; }
@@ -25,7 +25,12 @@ public class Video
     public string ContentType { get; set; }
 
     public int VideoGroupId { get; set; }
-    public virtual ICollection<AssignedLabel>? AssignedLabels { get; set; }
+    public virtual ICollection<AssignedLabel> AssignedLabels { get; set; } = new List<AssignedLabel>();
+    public string CreatedById { get; set; }
+
+    [ForeignKey(nameof(CreatedById))]
+    public virtual User CreatedBy { get; set; }
+    public DateTime? DelDate { get; set; } = null;
 
     public Stream ToStream()
     {

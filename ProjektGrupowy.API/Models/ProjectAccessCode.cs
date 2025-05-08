@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace ProjektGrupowy.API.Models;
 
 [Table("ProjectAccessCodes")]
-public class ProjectAccessCode
+public class ProjectAccessCode : IOwnedEntity
 {
     [Key] public int Id { get; set; }
     public virtual Project Project { get; set; }
@@ -23,4 +23,10 @@ public class ProjectAccessCode
     public bool IsValid => !IsExpired;
 
     public void Retire() => ExpiresAtUtc = DateTime.UtcNow;
+    public string CreatedById { get; set; }
+
+    [ForeignKey(nameof(CreatedById))]
+    public virtual User CreatedBy { get; set; }
+
+    public DateTime? DelDate { get; set; } = null;
 }

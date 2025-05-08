@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import DeleteConfirmationModal from './DeleteConfirmationModal';
-import { useNotification } from '../context/NotificationContext';
+import { useTranslation } from 'react-i18next';
 
-const DeleteButton = ({ onClick, itemType = 'item', buttonText="Delete", className = '', style = {} }) => {
+const DeleteButton = ({ onClick, itemType = 'item', className = '', style = {} }) => {
     const [showModal, setShowModal] = useState(false);
-    const { addNotification } = useNotification();
+    const { t } = useTranslation(['common']);
 
     const handleOpenModal = (e) => {
         e.preventDefault();
@@ -17,13 +17,8 @@ const DeleteButton = ({ onClick, itemType = 'item', buttonText="Delete", classNa
     };
 
     const handleConfirm = async () => {
-        try {
-            await onClick();
-            addNotification(`Successfully deleted ${itemType}`, "success");
-        } catch (error) {
-        } finally {
-            setShowModal(false);
-        }
+        await onClick();
+        setShowModal(false);
     };
 
     return (
@@ -34,7 +29,7 @@ const DeleteButton = ({ onClick, itemType = 'item', buttonText="Delete", classNa
                 onClick={handleOpenModal}
                 style={style}
             >
-                <i className="fas fa-trash-alt"></i> {buttonText}
+                <i className="fas fa-trash-alt"></i> {t('buttons.delete')}
             </button>
 
             <DeleteConfirmationModal

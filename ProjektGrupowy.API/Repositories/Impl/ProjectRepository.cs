@@ -3,11 +3,12 @@ using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
 using ProjektGrupowy.API.Data;
 using ProjektGrupowy.API.Models;
+using ProjektGrupowy.API.Services;
 using ProjektGrupowy.API.Utils;
 
 namespace ProjektGrupowy.API.Repositories.Impl;
 
-public class ProjectRepository(AppDbContext context, ILogger<ProjectRepository> logger) : IProjectRepository
+public class ProjectRepository(AppDbContext context, ILogger<ProjectRepository> logger, ICurrentUserService currentUserService) : IProjectRepository
 {
     public async Task<Optional<Project>> AddProjectAsync(Project project)
     {
@@ -25,44 +26,19 @@ public class ProjectRepository(AppDbContext context, ILogger<ProjectRepository> 
         }
     }
 
-    public async Task<Optional<IEnumerable<Project>>> GetProjectsOfScientist(int scientistId)
-    {
-        try
-        {
-            // Index lookup using "IX_Projects_ScientistId" btree ("ScientistId")
-            var projects = await context.Projects
-                .Where(p => p.Scientist.Id == scientistId)
-                .ToArrayAsync();
-
-            return Optional<IEnumerable<Project>>.Success(projects);
-        }
-        catch (Exception e)
-        {
-            logger.LogError(e, "An error occurred while getting projects of scientist");
-            return Optional<IEnumerable<Project>>.Failure(e.Message);
-        }
-    }
-
-    public Task<Optional<IEnumerable<Project>>> GetProjectsOfScientist(Scientist scientist) =>
-        GetProjectsOfScientist(scientist.Id);
-
     public async Task<Optional<Project>> GetProjectByAccessCodeAsync(string code)
     {
         try
         {
             // Nested loops and two index lookups "IX_ProjectAccessCode_Code" on "ProjectAccessCodes"
             // and "PK_Projects" on "Projects"
-            var validAccessCode = await context
-                .ProjectAccessCodes
-                .AsNoTracking()
-                .Where(p => p.Code == code)
-                .Where(p => p.ExpiresAtUtc == null || p.ExpiresAtUtc > DateTime.UtcNow)
-                .Include(projectAccessCode => projectAccessCode.Project)
+            var project = await context.Projects
+                .Where(p => p.AccessCodes.Any(x => x.Code == code && (x.ExpiresAtUtc == null || x.ExpiresAtUtc > DateTime.UtcNow)))
                 .SingleOrDefaultAsync();
 
-            return validAccessCode is null
+            return project is null
                 ? Optional<Project>.Failure("There is no valid access code for this project.")
-                : Optional<Project>.Success(validAccessCode.Project);
+                : Optional<Project>.Success(project);
         }
         catch (Exception e)
         {
@@ -76,6 +52,7 @@ public class ProjectRepository(AppDbContext context, ILogger<ProjectRepository> 
         try
         {
             var result = await context.SubjectVideoGroupAssignments
+                .FilteredSubjectVideoGroupAssignments(currentUserService.UserId, currentUserService.IsAdmin)
                 .Where(svga => svga.VideoGroup.Project.Id == projectId)
                 .GroupBy(svga => svga.Id)
                 .Select(g => new
@@ -96,36 +73,6 @@ public class ProjectRepository(AppDbContext context, ILogger<ProjectRepository> 
         }
     }
 
-    public async Task<Optional<IEnumerable<Project>>> GetProjectsForLabelerAsync(int labelerId)
-    {
-        try
-        {
-            var projects = await context.Projects
-                .Where(p => p.ProjectLabelers.Any(l => l.Id == labelerId))
-                .ToListAsync();
-
-            return Optional<IEnumerable<Project>>.Success(projects);
-        }
-        catch (Exception e)
-        {
-            logger.LogError(e, "An error occurred while getting projects for labeler");
-            return Optional<IEnumerable<Project>>.Failure(e.Message);
-        }
-    }
-
-    public async Task DeleteScientistAsync(Scientist scientist)
-    {
-        try
-        {
-            context.Scientists.Remove(scientist);
-            await context.SaveChangesAsync();
-        }
-        catch (Exception e)
-        {
-            logger.LogError(e, "Failed to delete scientist");
-        }
-    }
-
     public async Task DeleteProjectAsync(Project project)
     {
         try
@@ -141,11 +88,15 @@ public class ProjectRepository(AppDbContext context, ILogger<ProjectRepository> 
 
     public async Task<IDbContextTransaction> BeginTransactionAsync() => await context.Database.BeginTransactionAsync();
 
-    public async Task<Optional<Project>> GetProjectAsync(int id)
+    public async Task<Optional<Project>> GetProjectAsync(int id, string? userId = null, bool? isAdmin = null)
     {
+        var ownerId = userId ?? currentUserService.UserId;
+        var isOwner = isAdmin ?? currentUserService.IsAdmin;
+
         try
         {
-            var project = await context.Projects.FirstOrDefaultAsync(p => p.Id == id);
+            var project = await context.Projects.FilteredProjects(ownerId, isOwner)
+                .FirstOrDefaultAsync(p => p.Id == id);
             return project is null
                 ? Optional<Project>.Failure("Project not found")
                 : Optional<Project>.Success(project);
@@ -161,7 +112,8 @@ public class ProjectRepository(AppDbContext context, ILogger<ProjectRepository> 
     {
         try
         {
-            var projects = await context.Projects.ToListAsync();
+            var projects = await context.Projects.FilteredProjects(currentUserService.UserId, currentUserService.IsAdmin)
+                .ToListAsync();
             return Optional<IEnumerable<Project>>.Success(projects);
         }
         catch (Exception e)
