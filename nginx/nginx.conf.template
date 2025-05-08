@@ -9,8 +9,8 @@ http {
   default_type  application/octet-stream;
 
   server {
-    listen 80;
-    server_name localhost;
+    listen ${NGINX_PORT};
+    server_name ${NGINX_HOST};
 
     location / {
       root /usr/share/nginx/html;

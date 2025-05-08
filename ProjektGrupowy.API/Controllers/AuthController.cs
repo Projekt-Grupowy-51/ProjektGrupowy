@@ -190,6 +190,9 @@ public class AuthController(
 
     private void SetCookie(string name, string value)
     {
+        var expiresInDays = int.TryParse(configuration["JWT:RefreshTokenExpiresInDays"], out var exp) 
+            ? exp 
+            : 7;
         Response.Cookies.Append(name, value, new CookieOptions
         {
             HttpOnly = true,

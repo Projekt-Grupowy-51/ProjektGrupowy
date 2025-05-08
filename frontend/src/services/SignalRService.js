@@ -1,9 +1,8 @@
 import * as signalR from "@microsoft/signalr";
-import settings from "../config/settings.json";
 
 class SignalRService {
   connection = null;
-  hubUrl = settings.signalR.url;
+  hubUrl = import.meta.env.VITE_SIGNALR_HUB_URL;
 
   constructor(addNotification) {
     this.addNotification = addNotification;
