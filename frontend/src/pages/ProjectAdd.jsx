@@ -75,7 +75,7 @@ function ProjectAdd() {
                       <i className="fas fa-plus-circle me-2"></i>
                       {t('projects:buttons.create')}
                     </button>
-                    <NavigateButton actionType="Back" value={t('common:buttons.cancel')} />
+                    <NavigateButton path="/projects" actionType="Back" value={t('common:buttons.cancel')} />
                   </div>
                 </form>
               </div>

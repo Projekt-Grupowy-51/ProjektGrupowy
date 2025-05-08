@@ -74,7 +74,7 @@ const Navbar = () => {
     return (
         <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
             <div className="container-fluid justify-content-center">
-                <div className="btn-group me-3" role="group" aria-label="Language selector">
+                <div className="btn-group position-absolute start-0 ms-3" role="group" aria-label="Language selector">
                     <button
                         className={`btn ${i18n.language === 'en' ? 'btn-light text-dark' : 'btn-outline-light'}`}
                         onClick={() => changeLanguage('en')}

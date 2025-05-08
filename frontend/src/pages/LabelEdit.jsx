@@ -188,7 +188,7 @@ const LabelEdit = () => {
                       <i className="fas fa-save me-2"></i>
                       {t('labels:buttons.save')}
                     </button>
-                    <NavigateButton actionType="Back" value={t('common:buttons.cancel')} />
+                    <NavigateButton path={`/videos/${videoId}`} actionType="Back" value={t('common:buttons.cancel')} />
                   </div>
                 </form>
               </div>

@@ -51,7 +51,7 @@ const VideoGroupDetails = () => {
             actionType="Add"
             value={t('common:buttons.add')}
           />
-          <NavigateButton actionType="Back" value={t('common:buttons.back')} />
+          <NavigateButton path={`/projects/${videoGroupDetails.projectId}`} actionType="Back" value={t('common:buttons.back')} />
         </div>
 
         {videos.length > 0 ? (

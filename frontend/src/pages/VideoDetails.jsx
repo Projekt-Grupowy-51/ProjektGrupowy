@@ -59,7 +59,7 @@ const VideoDetails = () => {
     return (
         <div className="container">
             <div className="d-flex justify-content-end mb-3">
-                <NavigateButton actionType="Back" />
+                <NavigateButton path={`/video-groups/${videoData.videoGroupId}`} actionType="Back" />
             </div>
 
             <h1 className="text-center mb-4">{videoData.title}</h1>

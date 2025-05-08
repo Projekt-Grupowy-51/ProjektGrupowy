@@ -60,7 +60,7 @@ const ProjectDetailsTab = ({ project, reports, onReportDeleted }) => {
                             value={t('common:buttons.edit')}
                             path={`/projects/edit/${project.id}`}
                         />
-                        <NavigateButton actionType='Back' value={t('common:buttons.back')} />
+                        <NavigateButton path='/projects' actionType='Back' value={t('common:buttons.back')} />
                         <DeleteButton onClick={handleDeleteProject} />
                     </div>
                 </div>
