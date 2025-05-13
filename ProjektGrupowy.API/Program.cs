@@ -171,6 +171,16 @@ static void AddServices(WebApplicationBuilder builder)
             }
         });
     });
+    
+    // Kestrel
+    var maxBodySize = int.TryParse(builder.Configuration["Limits:MaxBodySizeMb"], out var parsedMaxBodySize) 
+        ? parsedMaxBodySize * 1024 * 1024
+        : 500 * 1024 * 1024; // fallback
+    
+    builder.WebHost.ConfigureKestrel(options =>
+    {
+        options.Limits.MaxRequestBodySize = maxBodySize;
+    });
 
     // CORS
     builder.Services.AddCors(options =>
