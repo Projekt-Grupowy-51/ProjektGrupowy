@@ -1,26 +1,24 @@
 services:
   app:
-    build:
-      context: ./ProjektGrupowy.API
-      dockerfile: Dockerfile
+    image: ghcr.io/projekt-grupowy-51/vidmark-app:latest
     extra_hosts:
       - "host.docker.internal:host-gateway"
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:80
 
-      - ConnectionStrings__DefaultConnection=Host=host.docker.internal;Database=vidmark;Username=vidmark1yuser;Password=QW7Eb2r6QRhTk;Port=5432
-      - ConnectionStrings__HangfireConnection=Host=host.docker.internal;Database=vidmark;Username=vidmark1yuser;Password=QW7Eb2r6QRhTk;Port=5432
+      - ConnectionStrings__DefaultConnection=Host=${POSTGRES_HOST};Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASS};Port=${POSTGRES_PORT}
+      - ConnectionStrings__HangfireConnection=Host=${POSTGRES_HOST};Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASS};Port=${POSTGRES_PORT}
 
       - Logging__LogLevel__Default=Information
       - Logging__LogLevel__Microsoft.AspNetCore=Warning
 
       - JWT__ValidIssuer=https://api.vidmark.affectivese.org/
       - JWT__ValidAudience=https://vidmark.affectivese.org/
-      - JWT__Secret=YourSuperSecretKeyThatIsAtLeast16CharactersLong
+      - JWT__Secret=${JWT_SECRET}
       - JWT__JwtCookieName=AuthToken
       - JWT__RefreshCookieName=RefreshToken
-      - JWT__ScientistCreateToken=EH2F3j6xu4HKgE
+      - JWT__ScientistCreateToken=${SCIENTIST_TOKEN}
       - JWT__RegularTokenExpiresInMinutes=15
       - JWT__RefreshTokenExpiresInDays=7
 
@@ -45,12 +43,7 @@ services:
       - reports_data:/app/reports
 
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-      args:
-        VITE_API_BASE_URL: https://api.vidmark.affectivese.org/api
-        VITE_SIGNALR_HUB_URL: https://api.vidmark.affectivese.org/hub/app
+    image: ghcr.io/projekt-grupowy-51/vidmark-frontend:latest
     ports:
       - "18131:80"
     networks:
@@ -59,9 +52,7 @@ services:
       - app
 
   nginx:
-    build:
-      context: ./nginx
-      dockerfile: Dockerfile
+    image: ghcr.io/projekt-grupowy-51/vidmark-nginx:latest
     environment:
       - NGINX_HOST=nginx.vidmark.affectivese.org
       - NGINX_PORT=80
