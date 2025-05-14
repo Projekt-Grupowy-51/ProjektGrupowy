@@ -17,9 +17,13 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
 
+      - name: Ensure /home/vidmark/vidmark-deploy exists on VPS
+        run: |
+          sshpass -p "${{ secrets.VPS_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "mkdir -p /home/vidmark/vidmark-deploy"
+
       - name: Upload docker-compose.prod.yml to VPS
         run: |
-          sshpass -p "${{ secrets.VPS_PASSWORD }}" scp -o StrictHostKeyChecking=no docker-compose.prod.yml ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/vidmark-deploy/docker-compose.prod.yml
+          sshpass -p "${{ secrets.VPS_PASSWORD }}" scp -o StrictHostKeyChecking=no docker-compose.prod.yml ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/home/vidmark/vidmark-deploy/docker-compose.prod.yml
 
       - name: Log in to GHCR
         run: echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
@@ -74,7 +78,7 @@ jobs:
 
       - name: Upload .env to VPS
         run: |
-          sshpass -p "${{ secrets.VPS_PASSWORD }}" scp -o StrictHostKeyChecking=no .env ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/vidmark-deploy/.env
+          sshpass -p "${{ secrets.VPS_PASSWORD }}" scp -o StrictHostKeyChecking=no .env ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/home/vidmark/vidmark-deploy/.env
 
       - name: Deploy and wipe .env on VPS
         env:
@@ -83,7 +87,7 @@ jobs:
         run: |
           sshpass -p "${{ secrets.VPS_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
           echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
-          cd /vidmark-deploy
+          cd /home/vidmark/vidmark-deploy
           docker compose --env-file .env -f docker-compose.prod.yml pull
           docker compose --env-file .env -f docker-compose.prod.yml up -d
           rm -f .env
