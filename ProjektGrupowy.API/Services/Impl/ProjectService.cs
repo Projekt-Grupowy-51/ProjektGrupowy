@@ -157,7 +157,7 @@ public class ProjectService(
 
         await messageService.SendSuccessAsync(
             joinerId,
-            "Labeler added to project successfully");
+            "Successfully joined the project!");
 
         await messageService.SendInfoAsync(
             project.CreatedById,
