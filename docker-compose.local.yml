@@ -61,6 +61,7 @@ services:
     volumes:
       - videos_data:/app/videos
       - reports_data:/app/reports
+      - logs_data:/app/Logs
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:80/health || exit 1"]
       interval: 10s
@@ -100,6 +101,7 @@ volumes:
   postgres_data:
   videos_data:
   reports_data:
+  logs_data:
 
 networks:
   mynetwork:

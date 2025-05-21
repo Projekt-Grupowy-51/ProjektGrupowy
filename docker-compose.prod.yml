@@ -41,6 +41,8 @@ services:
     volumes:
       - videos_data:/app/videos
       - reports_data:/app/reports
+      - logs_data:/app/Logs
+    restart: unless-stopped
 
   frontend:
     image: ghcr.io/projekt-grupowy-51/vidmark-frontend:latest
@@ -50,6 +52,7 @@ services:
       - mynetwork
     depends_on:
       - app
+    restart: unless-stopped
 
   nginx:
     image: ghcr.io/projekt-grupowy-51/vidmark-nginx:latest
@@ -63,10 +66,12 @@ services:
     volumes:
       - videos_data:/mnt/videos:ro
       - reports_data:/mnt/reports:ro
+    restart: unless-stopped
 
 volumes:
   videos_data:
   reports_data:
+  logs_data:
 networks:
   mynetwork:
     driver: bridge
