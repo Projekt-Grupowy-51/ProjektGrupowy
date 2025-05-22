@@ -1,0 +1,45 @@
+﻿{
+  "add_title": "Dodaj nowe przypisanie",
+  "details": {
+    "title": "Szczegóły przypisania #{{id}}",
+    "subject": "Szczegóły tematu",
+    "video_group": "Szczegóły grupy wideo",
+    "assigned_labelers": "Przypisani etykietujący",
+    "name": "Nazwa",
+    "description": "Opis",
+    "no_labelers": "Brak przypisanych etykietujących"
+  },
+  "form": {
+    "subject": "Temat",
+    "video_group": "Grupa wideo",
+    "select_subject": "Wybierz temat",
+    "select_video_group": "Wybierz grupę wideo"
+  },
+  "buttons": {
+    "create": "Utwórz przypisanie",
+    "creating": "Tworzenie...",
+    "refresh": "Odśwież"
+  },
+  "success": {
+    "create": "Przypisanie dodane pomyślnie!",
+    "delete": "Przypisanie usunięte pomyślnie!"
+  },
+  "errors": {
+    "load_data": "Błąd ładowania danych",
+    "selection_required": "Proszę wybrać temat i grupę wideo",
+    "general": "Wystąpił błąd. Spróbuj ponownie",
+    "load_details": "Błąd ładowania szczegółów przypisania",
+    "load_labelers": "Błąd ładowania etykietujących",
+    "not_found": "Przypisanie nie znalezione",
+    "delete": "Błąd usuwania",
+    "load_subject": "Błąd ładowania tematu",
+    "load_video_group": "Błąd ładowania grupy wideo"
+  },
+  "confirm": {
+    "delete": "Czy na pewno chcesz usunąć to przypisanie?"
+  },
+  "columns": {
+    "name": "Nazwa"
+  },
+  "loading": "Ładowanie przypisań..."
+}

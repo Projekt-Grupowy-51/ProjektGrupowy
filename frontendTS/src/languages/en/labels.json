@@ -1,0 +1,39 @@
+﻿{
+  "add_title": "Add New Label",
+  "edit_title": "Edit Label",
+  "form": {
+    "name": "Label Name",
+    "color": "Label Color",
+    "type": "Label Type",
+    "shortcut": "Shortcut Key",
+    "subject": "Subject",
+    "color_format": "Color in hexadecimal format (#RRGGBB)",
+    "shortcut_hint": "Single character used as keyboard shortcut for this label",
+    "type_options": {
+      "range": "Range",
+      "point": "Point"
+    }
+  },
+  "notification": {
+    "create_success": "Label created successfully!",
+    "update_success": "Label updated successfully!",
+    "missing_subject": "Subject ID is required. Please go back and try again.",
+    "load_error": "Failed to load label data",
+    "subject_error": "Failed to load subject information",
+    "validation": {
+      "shortcut": "Shortcut must be exactly one character",
+      "color": "Color must be in the format #RRGGBB",
+      "name": "Label name cannot be empty"
+    }
+  },
+  "buttons": {
+    "add": "Add Label",
+    "save": "Save Changes",
+    "adding": "Adding...",
+    "updating": "Updating..."
+  },
+  "errors": {
+    "required": "Please fill in all required fields",
+    "general": "An error occurred. Please try again."
+  }
+}
