@@ -1,36 +1,17 @@
-﻿import React, { useState, useEffect } from "react";
+﻿import React from "react";
 import { useParams } from "react-router-dom";
-import { API_BASE_URL } from "../httpclient";
 import DeleteButton from "../components/DeleteButton";
 import "./css/ScientistProjects.css";
 import NavigateButton from "../components/NavigateButton";
 import DataTable from "../components/DataTable";
 import { useTranslation } from "react-i18next";
-import { getVideoGroup, getVideoGroupVideos } from "../services/api/videoGroupService";
 import { deleteVideo } from "../services/api/videoService";
+import useVideoGroupDetails from "../hooks/useVideoGroupDetails";
 
 const VideoGroupDetails = () => {
   const { id } = useParams();
-  const [videoGroupDetails, setVideoGroupDetails] = useState(null);
-  const [videos, setVideos] = useState([]);
   const { t } = useTranslation(['videos', 'common']);
-
-  async function fetchVideoGroupDetails() {
-    if (!id) return;
-    const data = await getVideoGroup(parseInt(id));
-    setVideoGroupDetails(data);
-    fetchVideos();
-  }
-
-  async function fetchVideos() {
-    if (!id) return;
-    const data = await getVideoGroupVideos(parseInt(id));
-    setVideos(data);
-  }
-
-  useEffect(() => {
-    if (id) fetchVideoGroupDetails();
-  }, [id]);
+  const { videoGroup, videos, setVideos } = useVideoGroupDetails(id ? parseInt(id) : undefined);
 
   const handleDeleteVideo = async (videoId: number) => {
     await deleteVideo(videoId);
@@ -42,12 +23,12 @@ const VideoGroupDetails = () => {
     { field: "positionInQueue", header: t('videos:table.position') },
   ];
 
-  if (!videoGroupDetails) return null;
+  if (!videoGroup) return null;
 
   return (
     <div className="container">
       <div className="content">
-        <h1 className="heading mb-4">{videoGroupDetails.name}</h1>
+        <h1 className="heading mb-4">{videoGroup.name}</h1>
 
         <div className="d-flex justify-content-between mb-4">
           <NavigateButton
@@ -55,7 +36,7 @@ const VideoGroupDetails = () => {
             actionType="Add"
             value={t('common:buttons.add')}
           />
-          <NavigateButton path={`/projects/${videoGroupDetails.projectId}`} actionType="Back" value={t('common:buttons.back')} />
+          <NavigateButton path={`/projects/${videoGroup.projectId}`} actionType="Back" value={t('common:buttons.back')} />
         </div>
 
         {videos.length > 0 ? (

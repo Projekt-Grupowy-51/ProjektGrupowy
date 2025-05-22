@@ -1,96 +1,14 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import authService from "../auth";
-import { useAuth } from "../context/AuthContext";
-import { useNotification } from "../context/NotificationContext";
+import React from "react";
 import { useTranslation } from 'react-i18next';
+import useAuthForm from "../hooks/useAuthForm";
 import "./css/ScientistProjects.css";
 
-const roleMap = {
-    Labeler: "Labeler",
-    Scientist: "Scientist",
-};
 
 const AuthPage = () => {
-    const [isLoginView, setIsLoginView] = useState(true);
-    const [formData, setFormData] = useState({
-        username: "",
-        email: "",
-        password: "",
-        confirmPassword: "",
-        ScientistCreateToken: "",
-        role: "Labeler",
-    });
-    const [loading, setLoading] = useState(false);
-    const navigate = useNavigate();
-    const { addNotification } = useNotification();
     const { t } = useTranslation(['auth', 'common']);
-    const { handleLogin, roles, isAuthenticated } = useAuth();
-    const [loginSuccess, setLoginSuccess] = useState(false);
+    const { isLoginView, formData, loading, setIsLoginView, handleInputChange, handleSubmit } = useAuthForm();
 
-    const redirectIfAuthenticated = () => {
-        if (isAuthenticated) {
-            if (roles.includes("Scientist")) {
-                navigate("/projects");
-            } else if (roles.includes("Labeler")) {
-                navigate("/labeler-video-groups");
-            } else {
-                addNotification(t('auth:error.no_access'), "error");
-            }
-        }
-    };
-
-    useEffect(() => {
-        redirectIfAuthenticated();
-    }, [isAuthenticated, roles, navigate, t, addNotification]);
-
-    useEffect(() => {
-        if (loginSuccess) {
-            addNotification(t('auth:notification.login_success'), "success");
-            redirectIfAuthenticated();
-            setLoginSuccess(false);
-        }
-    }, [loginSuccess, roles, navigate, t, addNotification]);
-
-    const handleInputChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-
-        if (!isLoginView && formData.password !== formData.confirmPassword) {
-            addNotification(t('auth:error.password_mismatch'), "error");
-            setLoading(false);
-            return;
-        }
-
-        try {
-            if (isLoginView) {
-                await handleLogin(formData.username, formData.password);
-                setLoginSuccess(true);
-            } else {
-                await authService.register({
-                    userName: formData.username,
-                    email: formData.email,
-                    password: formData.password,
-                    role: roleMap[formData.role],
-                    scientistCreateToken: formData.role === "Scientist" ? formData.ScientistCreateToken : undefined,
-                });
-                setIsLoginView(true);
-                setFormData({ ...formData, password: "", confirmPassword: "" });
-                addNotification(t('auth:notification.registration_success'), "success");
-            }
-        } catch (err) {
-            addNotification(
-                err.message || t(isLoginView ? 'auth:error.invalid_credentials' : 'auth:error.registration_failed'),
-                "error"
-            );
-        } finally {
-            setLoading(false);
-        }
-    };
+    // logic is encapsulated in useAuthForm hook
 
     return (
         <div className="container py-5" style={{ maxWidth: "600px" }}>

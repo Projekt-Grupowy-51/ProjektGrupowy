@@ -1,69 +1,13 @@
-import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import React from "react";
+import { useParams } from "react-router-dom";
 import NavigateButton from "../components/NavigateButton";
 import { useTranslation } from 'react-i18next';
-import { useNotification } from "../context/NotificationContext";
-import { getLabel, updateLabel } from "../services/api/labelService";
-import { getSubject } from "../services/api/subjectService";
+import useLabelEdit from "../hooks/useLabelEdit";
 
 const LabelEdit = () => {
   const { id } = useParams();
-  const [labelData, setLabelData] = useState({
-    name: "",
-    colorHex: "#ffffff",
-    type: "range",
-    shortcut: "",
-    subjectId: null,
-  });
-  const [subjectName, setSubjectName] = useState("");
-  const navigate = useNavigate();
   const { t } = useTranslation(['labels', 'common']);
-  const { addNotification } = useNotification();
-
-  useEffect(() => {
-    const fetchLabelData = async () => {
-      if (!id) return;
-      const data = await getLabel(parseInt(id));
-      setLabelData(data);
-      fetchSubjectName(data.subjectId);
-    };
-
-    const fetchSubjectName = async (subjectId: number) => {
-      const subject = await getSubject(subjectId);
-      setSubjectName(subject.name);
-    };
-
-    if (id) fetchLabelData();
-  }, [id]);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setLabelData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const validateForm = () => {
-    if (labelData.shortcut.length !== 1) {
-      addNotification(t('labels:notification.validation.shortcut'), "error");
-      return false;
-    }
-    if (!/^#[0-9A-Fa-f]{6}$/.test(labelData.colorHex)) {
-      addNotification(t('labels:notification.validation.color'), "error");
-      return false;
-    }
-    if (!labelData.name) {
-      addNotification(t('labels:notification.validation.name'), "error");
-      return false;
-    }
-    return true;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validateForm()) return;
-    if (!id) return;
-    await updateLabel(parseInt(id), labelData);
-    navigate(`/subjects/${labelData.subjectId}`);
-  };
+  const { formData: labelData, subjectName, handleChange, handleSubmit } = useLabelEdit(id ? parseInt(id) : undefined);
 
   return (
       <div className="container py-4">

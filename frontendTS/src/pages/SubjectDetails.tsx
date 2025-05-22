@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from "react";
+﻿import React from "react";
 import { useParams } from "react-router-dom";
 import NavigateButton from "../components/NavigateButton";
 import DeleteButton from "../components/DeleteButton";
@@ -6,14 +6,14 @@ import DataTable from "../components/DataTable";
 import "./css/ScientistProjects.css";
 import { useTranslation } from 'react-i18next';
 import useSubject from "../hooks/useSubject";
-import { getSubjectLabels } from "../services/api/subjectService";
 import { deleteLabel } from "../services/api/labelService";
+import useSubjectLabels from "../hooks/useSubjectLabels";
 
 const SubjectDetails = () => {
   const { t } = useTranslation(['subjects', 'common']);
   const { id } = useParams();
   const { subject } = useSubject(id ? parseInt(id) : undefined);
-  const [labels, setLabels] = useState([]);
+  const { labels, fetchLabels } = useSubjectLabels(id ? parseInt(id) : undefined);
 
   const labelColumns = [
     { field: "name", header: t('subjects:columns.name') },
@@ -36,15 +36,7 @@ const SubjectDetails = () => {
     },
   ];
 
-  const fetchLabels = async () => {
-    if (!id) return;
-    const data = await getSubjectLabels(parseInt(id));
-    setLabels(data.filter(l => l.subjectId === parseInt(id)).sort((a, b) => a.id - b.id));
-  };
 
-  useEffect(() => {
-    fetchLabels();
-  }, [id]);
 
   const handleDeleteLabel = async (labelId: number) => {
     await deleteLabel(labelId);

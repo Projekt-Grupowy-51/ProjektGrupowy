@@ -1,43 +1,16 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useRef } from "react";
 import { useParams } from "react-router-dom";
 import "./css/ScientistProjects.css";
 import DataTable from "../components/DataTable";
 import NavigateButton from "../components/NavigateButton";
 import { useTranslation } from "react-i18next";
-import { getVideo, getVideoStream, getAssignedLabels } from "../services/api/videoService";
+import useVideoDetails from "../hooks/useVideoDetails";
 
 const VideoDetails = () => {
-    const { id: videoId } = useParams();
-    const [videoData, setVideoData] = useState(null);
-    const [videoStream, setVideoStream] = useState(null);
-    const [labels, setLabels] = useState([]);
+    const { id } = useParams();
     const videoRef = useRef(null);
     const { t } = useTranslation(['videos', 'common']);
-
-    useEffect(() => {
-        fetchVideoDetails(videoId);
-        fetchVideoStream(videoId);
-        fetchAssignedLabels(videoId);
-    }, [videoId]);
-
-    const fetchVideoDetails = async (videoId: string | undefined) => {
-        if (!videoId) return;
-        const data = await getVideo(parseInt(videoId));
-        setVideoData(data);
-    };
-
-    async function fetchVideoStream(videoId) {
-        if (!videoId) return;
-        const blob = await getVideoStream(parseInt(videoId));
-        const streamUrl = URL.createObjectURL(blob);
-        setVideoStream(streamUrl);
-    }
-
-    const fetchAssignedLabels = async (videoId: string | undefined) => {
-        if (!videoId) return;
-        const data = await getAssignedLabels(parseInt(videoId));
-        setLabels(data);
-    };
+    const { video, stream, labels, loading } = useVideoDetails(id ? parseInt(id) : undefined);
 
     const labelColumns = [
         { field: "labelName", header: t('table.label') },
@@ -53,17 +26,17 @@ const VideoDetails = () => {
         { field: "videoId", header: t('table.videoId')}
     ];
 
-    if (!videoData) {
+    if (loading || !video) {
         return <div className="container text-center">{t('details.loading')}</div>;
     }
 
     return (
         <div className="container">
             <div className="d-flex justify-content-end mb-3">
-                <NavigateButton path={`/video-groups/${videoData.videoGroupId}`} actionType="Back" />
+                <NavigateButton path={`/video-groups/${video.videoGroupId}`} actionType="Back" />
             </div>
 
-            <h1 className="text-center mb-4">{videoData.title}</h1>
+            <h1 className="text-center mb-4">{video.title}</h1>
 
             <div
                 className="video-container mb-4"
@@ -80,7 +53,7 @@ const VideoDetails = () => {
                         objectFit: "contain",
                     }}
                     controls
-                    src={videoStream}
+                    src={stream}
                     type="video/mp4"
                 />
             </div>
