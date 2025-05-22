@@ -1,0 +1,35 @@
+﻿{
+  "add_title": "Add New Subject",
+  "form": {
+    "name": "Subject Name",
+    "description": "Description"
+  },
+  "buttons": {
+    "add": "Add Subject",
+    "adding": "Adding..."
+  },
+  "notifications": {
+    "required_fields": "All fields are required",
+    "add_success": "Subject added successfully!",
+    "add_error": "Failed to add subject",
+    "load_error": "Failed to load subject details",
+    "labels_error": "Failed to load labels",
+    "delete_success": "Label deleted successfully!",
+    "delete_error": "Failed to delete label"
+  },
+  "details": {
+    "title": "Subject Details",
+    "description": "Description"
+  },
+  "labels": {
+    "title": "Labels",
+    "empty": "No labels found for this subject",
+    "label": "label"
+  },
+  "columns": {
+    "name": "Name",
+    "shortcut": "Shortcut",
+    "color": "Color"
+  },
+  "loading": "Loading subjects..."
+}
