@@ -1,68 +1,19 @@
-import React, { useState, useEffect } from "react";
-import { useParams, useLocation } from "react-router-dom";
-import { getProject, getProjectReports } from "../services/api/projectService";
+import React from "react";
+import { useParams } from "react-router-dom";
 import "./css/ScientistProjects.css";
-import { getSignalRService } from "../services/SignalRServiceInstance";
-import { useNotification } from "../context/NotificationContext";
 import { useTranslation } from 'react-i18next';
+import useProjectDetails from "../hooks/useProjectDetails";
 import ProjectDetailsTab from "../components/project-tabs/ProjectDetailsTab";
 import ProjectSubjectsTab from "../components/project-tabs/ProjectSubjectsTab";
 import ProjectVideosTab from "../components/project-tabs/ProjectVideosTab";
 import ProjectAssignmentsTab from "../components/project-tabs/ProjectAssignmentsTab";
 import ProjectLabelersTab from "../components/project-tabs/ProjectLabelersTab";
 import ProjectAccessCodesTab from "../components/project-tabs/ProjectAccessCodesTab";
-import { MessageTypes } from "../config/messageTypes";
 
 const ProjectDetails = () => {
   const { id } = useParams();
-  const [project, setProject] = useState(null);
-  const [reports, setReports] = useState([]);
-  const [activeTab, setActiveTab] = useState("details");
-  const [labelersCount, setLabelersCount] = useState(0);
-  const { addNotification } = useNotification();
   const { t } = useTranslation(['projects', 'common']);
-
-  useEffect(() => {
-    const startSignalR = async () => {
-      const signalRService = getSignalRService(addNotification);
-      signalRService.onMessage(MessageTypes.LabelersCountChanged, (msg) => {
-        setLabelersCount(msg);
-      });
-      signalRService.onMessage(MessageTypes.ReportGenerated, () => {
-        fetchReports();
-      });
-    };
-    startSignalR();
-  }, [id]);
-
-  const fetchReports = async () => {
-    if (!id) return;
-    const data = await getProjectReports(parseInt(id));
-    setReports(data);
-  };
-
-  const fetchBasicProjectData = async () => {
-    if (!id) return;
-    const projectRes = await getProject(parseInt(id));
-    setProject(projectRes);
-    await fetchReports();
-  };
-
-  useEffect(() => {
-    fetchBasicProjectData();
-  }, [id]);
-
-  useEffect(() => {
-    const cachedTab = localStorage.getItem(`project_${id}_activeTab`);
-    if (cachedTab) {
-      setActiveTab(cachedTab);
-    }
-  }, [id]);
-  
-  const handleTabChange = (tabName) => {
-    setActiveTab(tabName);
-    localStorage.setItem(`project_${id}_activeTab`, tabName);
-  };
+  const { project, reports, activeTab, handleTabChange, labelersCount, setLabelersCount, fetchReports } = useProjectDetails(id ? parseInt(id) : undefined);
 
   if (!project) {
     return (

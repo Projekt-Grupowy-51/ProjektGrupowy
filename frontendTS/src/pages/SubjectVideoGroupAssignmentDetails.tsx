@@ -1,55 +1,29 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "./css/ScientistProjects.css";
 import DeleteButton from "../components/DeleteButton";
 import DataTable from "../components/DataTable";
 import NavigateButton from "../components/NavigateButton";
 import { useTranslation } from 'react-i18next';
-import { getAssignment, deleteAssignment, getAssignmentLabelers } from "../services/api/assignmentService";
-import { getSubject } from "../services/api/subjectService";
-import { getVideoGroup } from "../services/api/videoGroupService";
+import useAssignmentDetails from "../hooks/useAssignmentDetails";
 
 const SubjectVideoGroupAssignmentDetails = () => {
   const { t } = useTranslation(['assignments', 'common']);
   const { id } = useParams();
   const navigate = useNavigate();
-  const [assignmentDetails, setAssignmentDetails] = useState(null);
-  const [subject, setSubject] = useState(null);
-  const [videoGroup, setVideoGroup] = useState(null);
-  const [labelers, setLabelers] = useState([]);
+  const { assignment, subject, videoGroup, labelers, fetchData, handleDelete } = useAssignmentDetails(id ? parseInt(id) : undefined);
 
   const labelerColumns = [
     { field: "name", header: t('assignments:columns.name') },
   ];
 
-  const fetchData = async () => {
-    if (!id) return;
-    const assignment = await getAssignment(parseInt(id));
-    setAssignmentDetails(assignment);
-
-    const [subjectData, videoGroupData, labelersData] = await Promise.all([
-      getSubject(assignment.subjectId),
-      getVideoGroup(assignment.videoGroupId),
-      getAssignmentLabelers(parseInt(id)),
-    ]);
-
-    setSubject(subjectData);
-    setVideoGroup(videoGroupData);
-    setLabelers(labelersData);
-  };
-
-  useEffect(() => {
-    if (id) fetchData();
-  }, [id]);
-
-  const handleDelete = async () => {
+  const onDelete = async () => {
     if (!window.confirm(t('assignments:confirm.delete'))) return;
-    if (!id) return;
-    await deleteAssignment(parseInt(id));
+    await handleDelete();
     navigate(-1);
   };
 
-  if (!assignmentDetails) {
+  if (!assignment) {
     return null;
   }
 
@@ -59,14 +33,14 @@ const SubjectVideoGroupAssignmentDetails = () => {
         <div className="col">
           <div className="d-flex justify-content-between align-items-center">
             <h1 className="heading mb-0">
-              {t('assignments:details.title', { id: assignmentDetails.id })}
+              {t('assignments:details.title', { id: assignment.id })}
             </h1>
             <div className="d-flex justify-content-end">
-              <DeleteButton onConfirm={handleDelete} />
+              <DeleteButton onConfirm={onDelete} />
               <button className="btn btn-secondary me-2 text-nowrap" onClick={fetchData}>
                 <i className="fas fa-sync-alt me-1"></i> {t('common:buttons.refresh')}
               </button>
-              <NavigateButton path={`/projects/${assignmentDetails.projectId}`} actionType="Back" />
+              <NavigateButton path={`/projects/${assignment.projectId}`} actionType="Back" />
             </div>
           </div>
         </div>

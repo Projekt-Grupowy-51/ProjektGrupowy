@@ -1,60 +1,14 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React from "react";
+import { useLocation } from "react-router-dom";
 import "./css/ScientistProjects.css";
 import NavigateButton from "../components/NavigateButton";
 import { useTranslation } from 'react-i18next';
-import { getProjectSubjects, getProjectVideoGroups } from "../services/api/projectService";
-import { createAssignment } from "../services/api/assignmentService";
+import useAssignmentAdd from "../hooks/useAssignmentAdd";
 
 const SubjectVideoGroupAssignmentAdd = () => {
   const { t } = useTranslation(['assignments', 'common']);
-  const [formData, setFormData] = useState({
-    subjectId: "",
-    videoGroupId: "",
-  });
-  const [subjects, setSubjects] = useState([]);
-  const [videoGroups, setVideoGroups] = useState([]);
-  const [projectId, setProjectId] = useState(null);
-  const navigate = useNavigate();
   const location = useLocation();
-
-  useEffect(() => {
-    const queryParams = new URLSearchParams(location.search);
-    const projectIdParam = queryParams.get("projectId");
-    if (projectIdParam) {
-      setProjectId(parseInt(projectIdParam));
-      fetchSubjectsAndVideoGroups(parseInt(projectIdParam));
-    }
-  }, [location.search]);
-
-  const fetchSubjectsAndVideoGroups = async (projectId: number) => {
-    const [subjectsData, videoGroupsData] = await Promise.all([
-      getProjectSubjects(projectId),
-      getProjectVideoGroups(projectId),
-    ]);
-
-    setSubjects(subjectsData);
-    setVideoGroups(videoGroupsData);
-  };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (!formData.subjectId || !formData.videoGroupId) {
-      return;
-    }
-
-    await createAssignment({
-      subjectId: parseInt(formData.subjectId),
-      videoGroupId: parseInt(formData.videoGroupId),
-    });
-    navigate(`/projects/${projectId}`);
-  };
+  const { formData, subjects, videoGroups, projectId, handleChange, handleSubmit } = useAssignmentAdd(location.search);
 
   return (
     <div className="container py-4">

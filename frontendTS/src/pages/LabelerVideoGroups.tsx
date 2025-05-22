@@ -1,98 +1,27 @@
-import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { getProjects, joinProject } from "../services/api/projectService";
-import { getAssignments } from "../services/api/assignmentService";
+import React from "react";
 import "./css/ScientistProjects.css";
 import NavigateButton from "../components/NavigateButton";
 import DataTable from "../components/DataTable";
-import { useNotification } from "../context/NotificationContext";
 import { useTranslation } from 'react-i18next';
+import useLabelerVideoGroups from "../hooks/useLabelerVideoGroups";
 
 const LabelerVideoGroups = () => {
-  const { labelerId } = useParams();
-  const [projects, setProjects] = useState([]);
-  const [assignments, setAssignments] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [accessCode, setAccessCode] = useState("");
-  const [expandedProjects, setExpandedProjects] = useState({});
-  const navigate = useNavigate();
-  const { addNotification } = useNotification();
   const { t } = useTranslation(['labeler', 'common']);
+  const {
+    projects,
+    loading,
+    accessCode,
+    setAccessCode,
+    expandedProjects,
+    toggleProjectExpand,
+    getProjectAssignments,
+    handleJoinProject,
+  } = useLabelerVideoGroups();
 
   const assignmentsColumns = [
     { field: "subjectName", header: t('labeler:projects.columns.subject') },
     { field: "videoGroupName", header: t('labeler:projects.columns.video_group') }
   ];
-
-  const handleJoinProject = async () => {
-    if (!accessCode.trim()) {
-      addNotification(t('labeler:join_project.required_code'), "error");
-      return;
-    }
-
-    try {
-      await joinProject(accessCode.trim());
-      addNotification(t('labeler:join_project.success'), "success");
-      setAccessCode("");
-      fetchProjects();
-    } catch (error) {
-      addNotification(
-          error.response?.data?.message || t('labeler:join_project.invalid_code'),
-          "error"
-      );
-    }
-  };
-
-  const fetchProjects = async () => {
-    setLoading(true);
-    try {
-      const response = await getProjects();
-      setProjects(response);
-      const expanded = {};
-      response.forEach((project) => {
-        expanded[project.id] = false;
-      });
-      setExpandedProjects(expanded);
-      await fetchAssignments();
-    } catch (error) {
-      addNotification(
-          error.response?.data?.message || t('labeler:errors.load_projects'),
-          "error"
-      );
-      setLoading(false);
-    }
-  };
-
-  const fetchAssignments = async () => {
-    try {
-      const response = await getAssignments();
-      setAssignments(response);
-    } catch (error) {
-      addNotification(
-          error.response?.data?.message || t('labeler:errors.load_assignments'),
-          "error"
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const toggleProjectExpand = (projectId) => {
-    setExpandedProjects((prev) => ({
-      ...prev,
-      [projectId]: !prev[projectId],
-    }));
-  };
-
-  const getProjectAssignments = (projectId) => {
-    return assignments.filter(
-      (assignment) => assignment.projectId === projectId
-    );
-  };
-
-  useEffect(() => {
-    fetchProjects();
-  }, [labelerId]);
 
   if (loading) {
     return (
