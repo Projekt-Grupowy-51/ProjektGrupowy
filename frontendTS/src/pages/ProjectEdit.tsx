@@ -1,13 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import httpClient from "../httpclient";
 import "./css/ScientistProjects.css";
 import NavigateButton from "../components/NavigateButton";
 import { useTranslation } from 'react-i18next';
+import useProject from "../hooks/useProject";
+import { updateProject } from "../services/api/projectService";
 
 function ProjectEdit() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { project } = useProject(id ? parseInt(id) : undefined);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -15,22 +17,20 @@ function ProjectEdit() {
   });
   const { t } = useTranslation(['projects', 'common']);
 
-  useEffect(() => {
-    const fetchProject = async () => {
-      const response = await httpClient.get(`/Project/${id}`);
-      const data = response.data;
+  React.useEffect(() => {
+    if (project) {
       setFormData({
-        name: data.name,
-        description: data.description,
-        finished: data.finished,
+        name: project.name,
+        description: project.description,
+        finished: project.finished,
       });
-    };
-    fetchProject();
-  }, [id]);
+    }
+  }, [project]);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await httpClient.put(`/Project/${id}`, formData);
+    if (!id) return;
+    await updateProject(parseInt(id), formData);
     navigate(`/projects/${id}`);
   };
 

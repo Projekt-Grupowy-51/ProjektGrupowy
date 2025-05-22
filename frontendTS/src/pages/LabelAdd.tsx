@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import httpClient from "../httpclient";
 import "./css/ScientistProjects.css";
 import NavigateButton from "../components/NavigateButton";
 import { useNotification } from "../context/NotificationContext";
 import { useTranslation } from 'react-i18next';
+import { createLabel } from "../services/api/labelService";
+import { getSubject } from "../services/api/subjectService";
 
 const LabelAdd = () => {
   const [formData, setFormData] = useState({
@@ -30,9 +31,9 @@ const LabelAdd = () => {
     }
   }, [location.search]);
 
-  const fetchSubjectName = async (id) => {
-    const response = await httpClient.get(`/subject/${id}`);
-    setSubjectName(response.data.name);
+  const fetchSubjectName = async (id: number) => {
+    const subject = await getSubject(id);
+    setSubjectName(subject.name);
   };
 
   const handleChange = (e) => {
@@ -56,14 +57,14 @@ const LabelAdd = () => {
     return true;
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!validateForm() || !formData.name || !formData.type || !formData.subjectId) {
       return;
     }
     
-    await httpClient.post("/label", formData);
+    await createLabel(formData);
     navigate(`/subjects/${formData.subjectId}`);
   };
 

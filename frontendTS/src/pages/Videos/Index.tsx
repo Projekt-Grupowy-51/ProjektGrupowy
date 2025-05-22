@@ -7,7 +7,7 @@ import VideoPlayers from "./components/VideoPlayers";
 import ProgressBar from "./components/ProgressBar";
 import BatchNavigation from "./components/BatchNavigation";
 import LabelInterface from "./components/LabelInterface";
-import httpClient from "../../httpclient";
+import { getAssignment } from "../../services/api/assignmentService";
 
 const Videos = () => {
     const { id: assignmentId } = useParams();
@@ -39,12 +39,10 @@ const Videos = () => {
     useEffect(() => {
         const fetchAssignment = async () => {
             try {
-                const response = await httpClient.get(
-                    `/SubjectVideoGroupAssignment/${assignmentId}`
-                );
+                const data = await getAssignment(parseInt(assignmentId));
                 setAssignment({
-                    subjectId: response.data.subjectId,
-                    videoGroupId: response.data.videoGroupId,
+                    subjectId: data.subjectId,
+                    videoGroupId: data.videoGroupId,
                 });
             } catch (error) {
                 console.error(error);

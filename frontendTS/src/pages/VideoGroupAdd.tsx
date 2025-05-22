@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import httpClient from "../httpclient";
 import "./css/ScientistProjects.css";
 import NavigateButton from "../components/NavigateButton";
 import { useTranslation } from "react-i18next";
+import { createVideoGroup } from "../services/api/videoGroupService";
 
 const VideoGroupAdd = () => {
   const [formData, setFormData] = useState({
@@ -28,9 +28,9 @@ const VideoGroupAdd = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await httpClient.post("/videogroup", formData);
+    await createVideoGroup(formData);
     navigate(`/projects/${formData.projectId}`);
   };
 

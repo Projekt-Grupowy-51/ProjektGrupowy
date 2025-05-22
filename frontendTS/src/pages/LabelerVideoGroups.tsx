@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import httpClient from "../httpclient";
+import { getProjects, joinProject } from "../services/api/projectService";
+import { getAssignments } from "../services/api/assignmentService";
 import "./css/ScientistProjects.css";
 import NavigateButton from "../components/NavigateButton";
 import DataTable from "../components/DataTable";
@@ -30,9 +31,7 @@ const LabelerVideoGroups = () => {
     }
 
     try {
-      await httpClient.post("/project/join", {
-          AccessCode: accessCode.trim(),
-      });
+      await joinProject(accessCode.trim());
       addNotification(t('labeler:join_project.success'), "success");
       setAccessCode("");
       fetchProjects();
@@ -47,10 +46,10 @@ const LabelerVideoGroups = () => {
   const fetchProjects = async () => {
     setLoading(true);
     try {
-      const response = await httpClient.get("/project");
-      setProjects(response.data);
+      const response = await getProjects();
+      setProjects(response);
       const expanded = {};
-      response.data.forEach((project) => {
+      response.forEach((project) => {
         expanded[project.id] = false;
       });
       setExpandedProjects(expanded);
@@ -66,8 +65,8 @@ const LabelerVideoGroups = () => {
 
   const fetchAssignments = async () => {
     try {
-      const response = await httpClient.get(`/SubjectVideoGroupAssignment`);
-      setAssignments(response.data);
+      const response = await getAssignments();
+      setAssignments(response);
     } catch (error) {
       addNotification(
           error.response?.data?.message || t('labeler:errors.load_assignments'),

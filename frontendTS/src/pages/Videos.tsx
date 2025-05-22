@@ -1,6 +1,10 @@
 ﻿import React, { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
-import httpClient from "../httpclient";
+import { getVideoGroup, getVideoBatch } from "../services/api/videoGroupService";
+import { getVideoStream, getAssignedLabels } from "../services/api/videoService";
+import { getSubjectLabels } from "../services/api/subjectService";
+import { createAssignedLabel, deleteAssignedLabel } from "../services/api/assignedLabelService";
+import { getAssignment } from "../services/api/assignmentService";
 import "./css/ScientistProjects.css";
 import DeleteButton from "../components/DeleteButton";
 import DataTable from "../components/DataTable";
@@ -21,10 +25,8 @@ function useVideoGroup(videoGroupId, currentBatch, setCurrentBatch) {
 
   const fetchVideoGroupDetails = async () => {
     try {
-      const response = await httpClient.get(`/VideoGroup/${videoGroupId}`, {
-        withCredentials: true,
-      });
-      setVideoPositions(response.data.videosAtPositions);
+      const response = await getVideoGroup(videoGroupId);
+      setVideoPositions(response.videosAtPositions);
       fetchVideos(currentBatch);
     } catch (error) {
       console.error("Failed to load video group details");
@@ -39,12 +41,9 @@ function useVideoGroup(videoGroupId, currentBatch, setCurrentBatch) {
   const fetchVideos = async (batch) => {
     try {
       const batchToFetch = batch || currentBatch;
-      const response = await httpClient.get(
-        `/Video/batch/${videoGroupId}/${batchToFetch}`,
-        { withCredentials: true }
-      );
-      setVideos(response.data);
-      fetchVideoStreams(response.data);
+      const response = await getVideoBatch(videoGroupId, batchToFetch);
+      setVideos(response);
+      fetchVideoStreams(response);
     } catch (error) {
       console.error("Failed to load video list");
     }
@@ -54,17 +53,8 @@ function useVideoGroup(videoGroupId, currentBatch, setCurrentBatch) {
     const videoIds = videos.slice(0, 4).map((video) => video.id);
     const streamsPromises = videoIds.map(async (videoId) => {
       try {
-        const response = await httpClient.get(`/Video/${videoId}/${subjectId}/stream`, {
-          withCredentials: true,
-          responseType: "blob",
-        });
-
-        if (response.status === 200 && response.data) {
-          return URL.createObjectURL(response.data);
-        } else {
-          console.error(`Failed to fetch stream for video ID ${videoId}`);
-          return null;
-        }
+        const blob = await getVideoStream(videoId);
+        return URL.createObjectURL(blob);
       } catch (error) {
         console.error(`Error fetching stream for video ID ${videoId}`);
         return null;
@@ -108,10 +98,8 @@ function useLabels(videos, subjectId) {
     if (subjectId === null) return;
 
     try {
-      const response = await httpClient.get(`/subject/${subjectId}/label`, {
-        withCredentials: true,
-      });
-      setLabels(response.data || []);
+      const response = await getSubjectLabels(subjectId);
+      setLabels(response || []);
     } catch (error) {
       console.error("Error fetching labels:", error);
     }
@@ -119,14 +107,7 @@ function useLabels(videos, subjectId) {
 
   const fetchAssignedLabels = async () => {
     try {
-      const fetchPromises = videos.map((video) =>
-        httpClient
-          .get(`/video/${video.id}/${subjectId}/assignedlabels`, {
-            withCredentials: true,
-          })
-          .then((response) => response.data)
-      );
-
+      const fetchPromises = videos.map((video) => getAssignedLabels(video.id));
       const results = await Promise.all(fetchPromises);
       setAssignedLabels(results.flat());
     } catch (error) {
@@ -142,12 +123,7 @@ function useLabels(videos, subjectId) {
 
     try {
       const assignPromises = videos.map((video) =>
-        httpClient.post("/AssignedLabel", {
-          labelId,
-          videoId: video.id,
-          start,
-          end,
-        })
+        createAssignedLabel(labelId, video.id, start, end)
       );
 
       await Promise.all(assignPromises);
@@ -187,12 +163,9 @@ const Videos = () => {
 
   const fetchAssignment = async () => {
     try {
-      const response = await httpClient.get(
-        `/SubjectVideoGroupAssignment/${id}`,
-        { withCredentials: true }
-      );
-      setSubjectId(response.data.subjectId || null);
-      setVideoGroupId(response.data.videoGroupId || null);
+      const data = await getAssignment(parseInt(id));
+      setSubjectId(data.subjectId || null);
+      setVideoGroupId(data.videoGroupId || null);
     } catch (error) {
       console.error("Error fetching subject video group assignment:", error);
     }

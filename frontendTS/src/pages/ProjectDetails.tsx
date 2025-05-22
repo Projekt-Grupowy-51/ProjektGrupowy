@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useLocation } from "react-router-dom";
-import httpClient from "../httpclient";
+import { getProject, getProjectReports } from "../services/api/projectService";
 import "./css/ScientistProjects.css";
 import { getSignalRService } from "../services/SignalRServiceInstance";
 import { useNotification } from "../context/NotificationContext";
@@ -36,13 +36,15 @@ const ProjectDetails = () => {
   }, [id]);
 
   const fetchReports = async () => {
-    const response = await httpClient.get(`/project/${id}/reports`);
-    setReports(response.data);
+    if (!id) return;
+    const data = await getProjectReports(parseInt(id));
+    setReports(data);
   };
 
   const fetchBasicProjectData = async () => {
-    const projectRes = await httpClient.get(`/project/${id}`);
-    setProject(projectRes.data);
+    if (!id) return;
+    const projectRes = await getProject(parseInt(id));
+    setProject(projectRes);
     await fetchReports();
   };
 
