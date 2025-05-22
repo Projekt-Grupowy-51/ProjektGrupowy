@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
-import httpClient from "../httpclient";
 import "./css/ScientistProjects.css";
 import DataTable from "../components/DataTable";
 import NavigateButton from "../components/NavigateButton";
 import { useTranslation } from "react-i18next";
+import { getVideo, getVideoStream, getAssignedLabels } from "../services/api/videoService";
 
 const VideoDetails = () => {
     const { id: videoId } = useParams();
@@ -20,22 +20,23 @@ const VideoDetails = () => {
         fetchAssignedLabels(videoId);
     }, [videoId]);
 
-    const fetchVideoDetails = async (videoId) => {
-        const response = await httpClient.get(`/Video/${videoId}`);
-        setVideoData(response.data);
+    const fetchVideoDetails = async (videoId: string | undefined) => {
+        if (!videoId) return;
+        const data = await getVideo(parseInt(videoId));
+        setVideoData(data);
     };
 
     async function fetchVideoStream(videoId) {
-        const response = await httpClient.get(`/Video/${videoId}/stream`, {
-            responseType: "blob",
-        });
-        const streamUrl = URL.createObjectURL(response.data);
+        if (!videoId) return;
+        const blob = await getVideoStream(parseInt(videoId));
+        const streamUrl = URL.createObjectURL(blob);
         setVideoStream(streamUrl);
     }
 
-    const fetchAssignedLabels = async (videoId) => {
-        const response = await httpClient.get(`/Video/${videoId}/assignedlabels`);
-        setLabels(response.data);
+    const fetchAssignedLabels = async (videoId: string | undefined) => {
+        if (!videoId) return;
+        const data = await getAssignedLabels(parseInt(videoId));
+        setLabels(data);
     };
 
     const labelColumns = [

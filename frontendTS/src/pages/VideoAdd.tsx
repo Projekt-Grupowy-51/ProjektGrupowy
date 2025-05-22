@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import httpClient from "../httpclient";
 import "./css/ScientistProjects.css";
 import { useTranslation } from "react-i18next";
 import { useNotification } from "../context/NotificationContext";
 import NavigateButton from "../components/NavigateButton";
+import { createVideo } from "../services/api/videoService";
+import { getVideoGroup } from "../services/api/videoGroupService";
 
 const VideoAdd = () => {
   const [videoGroupId, setVideoGroupId] = useState(null);
@@ -63,10 +64,10 @@ const VideoAdd = () => {
     fetchVideoGroupName(parsedId);
   }, [location.search, t]);
 
-  const fetchVideoGroupName = async (id) => {
+  const fetchVideoGroupName = async (id: number) => {
     try {
-      const response = await httpClient.get(`/videogroup/${id}`);
-      setVideoGroupName(response.data.name);
+      const group = await getVideoGroup(id);
+      setVideoGroupName(group.name);
     } catch {
       setError(t('errors.load_video_group_details'));
     }
@@ -131,20 +132,15 @@ const VideoAdd = () => {
         formDataObj.append("PositionInQueue", video.positionInQueue);
         formDataObj.append("File", video.file);
 
-        return httpClient.post("/video", formDataObj, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-          onUploadProgress: (progressEvent) => {
-            const percentCompleted = Math.round(
-              (progressEvent.loaded * 100) / progressEvent.total
-            );
-            progressPerVideo[index] = percentCompleted;
-            const overallProgress = Math.round(
-              progressPerVideo.reduce((a, b) => a + b, 0) / videos.length
-            );
-            setUploadProgress(overallProgress);
-          },
+        return createVideo(formDataObj, (progressEvent) => {
+          const percentCompleted = Math.round(
+            (progressEvent.loaded * 100) / progressEvent.total
+          );
+          progressPerVideo[index] = percentCompleted;
+          const overallProgress = Math.round(
+            progressPerVideo.reduce((a, b) => a + b, 0) / videos.length
+          );
+          setUploadProgress(overallProgress);
         });
       });
 

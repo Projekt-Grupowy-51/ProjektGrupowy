@@ -1,16 +1,18 @@
 ﻿import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import httpClient from "../httpclient";
 import NavigateButton from "../components/NavigateButton";
 import DeleteButton from "../components/DeleteButton";
 import DataTable from "../components/DataTable";
 import "./css/ScientistProjects.css";
 import { useTranslation } from 'react-i18next';
+import useSubject from "../hooks/useSubject";
+import { getSubjectLabels } from "../services/api/subjectService";
+import { deleteLabel } from "../services/api/labelService";
 
 const SubjectDetails = () => {
   const { t } = useTranslation(['subjects', 'common']);
   const { id } = useParams();
-  const [subjectDetails, setSubjectDetails] = useState({});
+  const { subject } = useSubject(id ? parseInt(id) : undefined);
   const [labels, setLabels] = useState([]);
 
   const labelColumns = [
@@ -34,30 +36,25 @@ const SubjectDetails = () => {
     },
   ];
 
-  const fetchSubjectDetails = async () => {
-    const response = await httpClient.get(`/subject/${id}`);
-    setSubjectDetails(response.data);
-  };
-
   const fetchLabels = async () => {
-    const response = await httpClient.get(`/subject/${id}/label`);
-    setLabels(response.data.filter(l => l.subjectId === parseInt(id)).sort((a, b) => a.id - b.id));
+    if (!id) return;
+    const data = await getSubjectLabels(parseInt(id));
+    setLabels(data.filter(l => l.subjectId === parseInt(id)).sort((a, b) => a.id - b.id));
   };
 
   useEffect(() => {
-    fetchSubjectDetails();
     fetchLabels();
   }, [id]);
 
-  const handleDeleteLabel = async (labelId) => {
-    await httpClient.delete(`/label/${labelId}`);
+  const handleDeleteLabel = async (labelId: number) => {
+    await deleteLabel(labelId);
     fetchLabels();
   };
 
   return (
       <div className="container">
         <div className="content">
-          <h1 className="heading mb-4">{subjectDetails.name}</h1>
+            <h1 className="heading mb-4">{subject?.name}</h1>
 
           <div className="card shadow-sm mb-4">
             <div className="card-header bg-info text-white" style={{ background: "var(--gradient-blue)" }}>
@@ -65,14 +62,14 @@ const SubjectDetails = () => {
             </div>
             <div className="card-body">
               <p className="card-text">
-                <strong>{t('subjects:details.description')}:</strong> {subjectDetails.description}
+                <strong>{t('subjects:details.description')}:</strong> {subject?.description}
               </p>
             </div>
           </div>
 
           <div className="d-flex justify-content-between mb-2">
             <NavigateButton path={`/labels/add?subjectId=${id}`} actionType="Add" />
-            <NavigateButton path={`/projects/${subjectDetails.projectId}`} actionType="Back" />
+            <NavigateButton path={`/projects/${subject?.projectId}`} actionType="Back" />
           </div>
 
           <h2 className="section-title">{t('subjects:labels.title')}</h2>

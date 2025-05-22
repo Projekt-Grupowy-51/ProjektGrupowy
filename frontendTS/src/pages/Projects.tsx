@@ -1,29 +1,20 @@
-import React, { useState, useEffect } from "react";
-import httpClient from "../httpclient";
+import React from "react";
 import DeleteButton from "../components/DeleteButton";
 import DataTable from "../components/DataTable";
 import "./css/ScientistProjects.css";
 import NavigateButton from "../components/NavigateButton";
 import { useTranslation } from 'react-i18next';
+import useProjects from "../hooks/useProjects";
+import { deleteProject } from "../services/api/projectService";
 
 const Projects = () => {
-  const [projects, setProjects] = useState([]);
+  const { projects, setProjects } = useProjects();
   const { t } = useTranslation(['projects', 'common']);
 
-  const fetchProjects = async () => {
-    const response = await httpClient.get("/Project");
-    setProjects(response.data.sort((a, b) => a.id - b.id));
-  };
-
-  const handleDeleteProject = async (projectId) => {
-    await httpClient.delete(`/Project/${projectId}`);
+  const handleDeleteProject = async (projectId: number) => {
+    await deleteProject(projectId);
     setProjects(prev => prev.filter(project => project.id !== projectId));
   };
-
-  useEffect(() => {
-    
-    fetchProjects();
-  }, []);
 
   const columns = [
     { field: "name", header: t('projects:form.name') },

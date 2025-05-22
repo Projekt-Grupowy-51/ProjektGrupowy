@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import httpClient from "../httpclient";
 import "./css/ScientistProjects.css";
 import DeleteButton from "../components/DeleteButton";
 import DataTable from "../components/DataTable";
 import NavigateButton from "../components/NavigateButton";
 import { useTranslation } from 'react-i18next';
+import { getAssignment, deleteAssignment, getAssignmentLabelers } from "../services/api/assignmentService";
+import { getSubject } from "../services/api/subjectService";
+import { getVideoGroup } from "../services/api/videoGroupService";
 
 const SubjectVideoGroupAssignmentDetails = () => {
   const { t } = useTranslation(['assignments', 'common']);
@@ -21,19 +23,19 @@ const SubjectVideoGroupAssignmentDetails = () => {
   ];
 
   const fetchData = async () => {
-    const assignmentResponse = await httpClient.get(`/SubjectVideoGroupAssignment/${id}`);
-    setAssignmentDetails(assignmentResponse.data);
+    if (!id) return;
+    const assignment = await getAssignment(parseInt(id));
+    setAssignmentDetails(assignment);
 
-    const [subjectResponse, videoGroupResponse] = await Promise.all([
-      httpClient.get(`/subject/${assignmentResponse.data.subjectId}`),
-      httpClient.get(`/videogroup/${assignmentResponse.data.videoGroupId}`),
+    const [subjectData, videoGroupData, labelersData] = await Promise.all([
+      getSubject(assignment.subjectId),
+      getVideoGroup(assignment.videoGroupId),
+      getAssignmentLabelers(parseInt(id)),
     ]);
 
-    setSubject(subjectResponse.data);
-    setVideoGroup(videoGroupResponse.data);
-
-    const labelersResponse = await httpClient.get(`/SubjectVideoGroupAssignment/${id}/labelers`);
-    setLabelers(labelersResponse.data);
+    setSubject(subjectData);
+    setVideoGroup(videoGroupData);
+    setLabelers(labelersData);
   };
 
   useEffect(() => {
@@ -42,7 +44,8 @@ const SubjectVideoGroupAssignmentDetails = () => {
 
   const handleDelete = async () => {
     if (!window.confirm(t('assignments:confirm.delete'))) return;
-    await httpClient.delete(`/SubjectVideoGroupAssignment/${id}`);
+    if (!id) return;
+    await deleteAssignment(parseInt(id));
     navigate(-1);
   };
 

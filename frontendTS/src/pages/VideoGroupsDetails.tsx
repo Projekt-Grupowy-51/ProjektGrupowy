@@ -1,11 +1,13 @@
 ﻿import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import httpClient, { API_BASE_URL } from "../httpclient";
+import { API_BASE_URL } from "../httpclient";
 import DeleteButton from "../components/DeleteButton";
 import "./css/ScientistProjects.css";
 import NavigateButton from "../components/NavigateButton";
 import DataTable from "../components/DataTable";
 import { useTranslation } from "react-i18next";
+import { getVideoGroup, getVideoGroupVideos } from "../services/api/videoGroupService";
+import { deleteVideo } from "../services/api/videoService";
 
 const VideoGroupDetails = () => {
   const { id } = useParams();
@@ -14,22 +16,24 @@ const VideoGroupDetails = () => {
   const { t } = useTranslation(['videos', 'common']);
 
   async function fetchVideoGroupDetails() {
-    const response = await httpClient.get(`/videogroup/${id}`);
-    setVideoGroupDetails(response.data);
+    if (!id) return;
+    const data = await getVideoGroup(parseInt(id));
+    setVideoGroupDetails(data);
     fetchVideos();
   }
 
   async function fetchVideos() {
-    const response = await httpClient.get(`/VideoGroup/${id}/videos`);
-    setVideos(response.data);
+    if (!id) return;
+    const data = await getVideoGroupVideos(parseInt(id));
+    setVideos(data);
   }
 
   useEffect(() => {
     if (id) fetchVideoGroupDetails();
   }, [id]);
 
-  const handleDeleteVideo = async (videoId) => {
-    await httpClient.delete(`/video/${videoId}`);
+  const handleDeleteVideo = async (videoId: number) => {
+    await deleteVideo(videoId);
     setVideos(videos.filter((video) => video.id !== videoId));
   };
 

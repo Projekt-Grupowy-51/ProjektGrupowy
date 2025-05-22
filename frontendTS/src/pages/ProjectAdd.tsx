@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import httpClient from "../httpclient";
 import "./css/ScientistProjects.css";
 import NavigateButton from "../components/NavigateButton";
 import { useTranslation } from 'react-i18next';
+import { createProject } from "../services/api/projectService";
 
 function ProjectAdd() {
   const navigate = useNavigate();
@@ -14,9 +14,9 @@ function ProjectAdd() {
   });
   const { t } = useTranslation(['projects', 'common']);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await httpClient.post("/Project", formData);
+    await createProject(formData);
     navigate("/projects");
   };
 

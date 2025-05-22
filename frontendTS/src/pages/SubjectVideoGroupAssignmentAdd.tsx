@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import httpClient from "../httpclient";
 import "./css/ScientistProjects.css";
 import NavigateButton from "../components/NavigateButton";
 import { useTranslation } from 'react-i18next';
+import { getProjectSubjects, getProjectVideoGroups } from "../services/api/projectService";
+import { createAssignment } from "../services/api/assignmentService";
 
 const SubjectVideoGroupAssignmentAdd = () => {
   const { t } = useTranslation(['assignments', 'common']);
@@ -26,14 +27,14 @@ const SubjectVideoGroupAssignmentAdd = () => {
     }
   }, [location.search]);
 
-  const fetchSubjectsAndVideoGroups = async (projectId) => {
-    const [subjectsRes, videoGroupsRes] = await Promise.all([
-      httpClient.get(`/project/${projectId}/subjects`),
-      httpClient.get(`/project/${projectId}/videogroups`),
+  const fetchSubjectsAndVideoGroups = async (projectId: number) => {
+    const [subjectsData, videoGroupsData] = await Promise.all([
+      getProjectSubjects(projectId),
+      getProjectVideoGroups(projectId),
     ]);
 
-    setSubjects(subjectsRes.data);
-    setVideoGroups(videoGroupsRes.data);
+    setSubjects(subjectsData);
+    setVideoGroups(videoGroupsData);
   };
 
   const handleChange = (e) => {
@@ -48,7 +49,7 @@ const SubjectVideoGroupAssignmentAdd = () => {
       return;
     }
 
-    await httpClient.post("/SubjectVideoGroupAssignment", {
+    await createAssignment({
       subjectId: parseInt(formData.subjectId),
       videoGroupId: parseInt(formData.videoGroupId),
     });

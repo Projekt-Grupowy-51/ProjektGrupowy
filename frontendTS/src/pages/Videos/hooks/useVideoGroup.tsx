@@ -1,5 +1,6 @@
-﻿import { useState, useEffect, useCallback } from "react";
-import httpClient from "../../../httpclient";
+import { useState, useEffect, useCallback } from "react";
+import { getVideoGroup, getVideoBatch } from "../../../services/api/videoGroupService";
+import { getVideoStream } from "../../../services/api/videoService";
 
 const useVideoGroup = (videoGroupId) => {
     const [videoGroup, setVideoGroup] = useState({
@@ -17,12 +18,9 @@ const useVideoGroup = (videoGroupId) => {
         const streams = await Promise.all(
             videoIds.map(async (videoId) => {
                 try {
-                    const response = await httpClient.get(`/Video/${videoId}/stream`, {
-                        responseType: "blob",
-                        skipLoadingScreen: true,
-                    });
-                    return URL.createObjectURL(response.data);
-                } catch (error) {
+                    const blob = await getVideoStream(videoId);
+                    return URL.createObjectURL(blob);
+                } catch {
                     return null;
                 }
             })
@@ -36,15 +34,15 @@ const useVideoGroup = (videoGroupId) => {
 
             try {
                 const [groupRes, videosRes] = await Promise.all([
-                    httpClient.get(`/VideoGroup/${videoGroupId}`),
-                    httpClient.get(`/Video/batch/${videoGroupId}/${batch}`),
+                    getVideoGroup(videoGroupId),
+                    getVideoBatch(videoGroupId, batch),
                 ]);
 
-                const streams = await fetchVideoStreams(videosRes.data);
+                const streams = await fetchVideoStreams(videosRes);
 
                 setVideoGroup({
-                    positions: groupRes.data.videosAtPositions,
-                    videos: videosRes.data,
+                    positions: groupRes.videosAtPositions,
+                    videos: videosRes,
                     streams,
                 });
                 setBatchState((prev) => ({ ...prev, currentBatch: batch }));

@@ -1,5 +1,7 @@
-﻿import { useState, useEffect, useRef, useCallback } from "react";
-import httpClient from "../../../httpclient";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { getSubjectLabels } from "../../../services/api/subjectService";
+import { getAssignedLabels } from "../../../services/api/videoService";
+import { createAssignedLabel, deleteAssignedLabel } from "../../../services/api/assignedLabelService";
 import { formatTime } from "../utils";
 
 const useLabels = (subjectId, videos, videoRefs) => {
@@ -11,8 +13,8 @@ const useLabels = (subjectId, videos, videoRefs) => {
     const fetchLabels = useCallback(async () => {
         if (!subjectId) return;
         try {
-            const response = await httpClient.get(`/subject/${subjectId}/label`, {skipLoadingScreen: true});
-            setLabels(response.data || []);
+            const data = await getSubjectLabels(subjectId);
+            setLabels(data || []);
         } catch (error) {
             console.error("Error fetching labels:", error);
         }
@@ -23,18 +25,16 @@ const useLabels = (subjectId, videos, videoRefs) => {
             console.log("Skipping fetchAssignedLabels due to empty videos array or ongoing fetch");
             return;
         }
-        isFetchingLabels.current = true; 
+        isFetchingLabels.current = true;
         try {
             const results = await Promise.all(
-                videos.map((video) =>
-                    httpClient.get(`/video/${video.id}/${subjectId}/assignedlabels`, { skipLoadingScreen: true })
-                )
+                videos.map((video) => getAssignedLabels(video.id))
             );
-            setAssignedLabels(results.flatMap((res) => res.data));
+            setAssignedLabels(results.flatMap((res) => res));
         } catch (error) {
             console.error("Error fetching assigned labels:", error);
         } finally {
-            isFetchingLabels.current = false; 
+            isFetchingLabels.current = false;
         }
     }, [videos]);
 
@@ -68,7 +68,6 @@ const useLabels = (subjectId, videos, videoRefs) => {
 
     const submitLabel = useCallback(
         async (labelId, start, end) => {
-            console.log("Submitting label:", { labelId, start, end, videos });
             if (!videos || videos.length === 0) {
                 console.error("No videos available for label submission");
                 return;
@@ -76,24 +75,19 @@ const useLabels = (subjectId, videos, videoRefs) => {
             try {
                 await Promise.all(
                     videos.map((video) =>
-                        httpClient.post("/AssignedLabel", {
+                        createAssignedLabel(
                             labelId,
-                            videoId: video.id,
-                            start: formatTime(start),
-                            end: formatTime(end),
-                        }, { skipLoadingScreen: true })
+                            video.id,
+                            formatTime(start),
+                            formatTime(end)
+                        )
                     )
                 );
 
-                const fetchPromises = videos.map((video) =>
-                    httpClient.get(`/video/${video.id}/${subjectId}/assignedlabels`, {
-                        withCredentials: true,
-                        skipLoadingScreen: true,
-                    })
+                const results = await Promise.all(
+                    videos.map((video) => getAssignedLabels(video.id))
                 );
-
-                const results = await Promise.all(fetchPromises);
-                const updatedAssignedLabels = results.flatMap((res) => res.data);
+                const updatedAssignedLabels = results.flatMap((res) => res);
 
                 setAssignedLabels(updatedAssignedLabels);
             } catch (error) {
@@ -105,7 +99,7 @@ const useLabels = (subjectId, videos, videoRefs) => {
 
     const handleDeleteLabel = useCallback(async (labelId) => {
         try {
-            await httpClient.delete(`/AssignedLabel/${labelId}`);
+            await deleteAssignedLabel(labelId);
             setAssignedLabels((prev) => prev.filter((l) => l.id !== labelId));
         } catch (error) {
             console.error("Error deleting label:", error);

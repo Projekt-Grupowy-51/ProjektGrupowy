@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import httpClient from "../httpclient";
 import NavigateButton from "../components/NavigateButton";
 import { useTranslation } from 'react-i18next';
 import { useNotification } from "../context/NotificationContext";
+import { getLabel, updateLabel } from "../services/api/labelService";
+import { getSubject } from "../services/api/subjectService";
 
 const LabelEdit = () => {
   const { id } = useParams();
@@ -21,14 +22,15 @@ const LabelEdit = () => {
 
   useEffect(() => {
     const fetchLabelData = async () => {
-      const response = await httpClient.get(`/Label/${id}`);
-      setLabelData(response.data);
-      fetchSubjectName(response.data.subjectId);
+      if (!id) return;
+      const data = await getLabel(parseInt(id));
+      setLabelData(data);
+      fetchSubjectName(data.subjectId);
     };
 
-    const fetchSubjectName = async (subjectId) => {
-      const response = await httpClient.get(`/subject/${subjectId}`);
-      setSubjectName(response.data.name);
+    const fetchSubjectName = async (subjectId: number) => {
+      const subject = await getSubject(subjectId);
+      setSubjectName(subject.name);
     };
 
     if (id) fetchLabelData();
@@ -55,11 +57,11 @@ const LabelEdit = () => {
     return true;
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
-    
-    await httpClient.put(`/Label/${id}`, labelData);
+    if (!id) return;
+    await updateLabel(parseInt(id), labelData);
     navigate(`/subjects/${labelData.subjectId}`);
   };
 

@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import httpClient from "../httpclient";
 import "./css/ScientistProjects.css";
 import NavigateButton from "../components/NavigateButton";
 import { useTranslation } from 'react-i18next';
+import { createSubject } from "../services/api/subjectService";
 
 const AddSubject = () => {
     const location = useLocation();
@@ -21,9 +21,9 @@ const AddSubject = () => {
         setSubjectData((prev) => ({ ...prev, [name]: value }));
     };
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        await httpClient.post("/Subject", subjectData);
+        await createSubject(subjectData);
         navigate(`/projects/${projectId}`);
     };
 
