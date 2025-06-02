@@ -1,4 +1,4 @@
-worker_processes 1;
+worker_processes 4;
 
 events {
   worker_connections 1024;
@@ -21,6 +21,10 @@ http {
         root /mnt;
         autoindex on;
 
+	sendfile on;
+	tcp_nopush on;
+	aio on;
+
         add_header 'Access-Control-Allow-Origin' $http_origin always;
         add_header 'Access-Control-Allow-Credentials' 'true' always;
         add_header 'Access-Control-Allow-Methods' 'GET, OPTIONS' always;
@@ -38,6 +42,10 @@ http {
     location /reports/ {
         root /mnt;
         autoindex on;
+
+	sendfile on;
+	tcp_nopush on;
+	aio on;
 
         add_header 'Access-Control-Allow-Origin' $http_origin always;
         add_header 'Access-Control-Allow-Credentials' 'true' always;
