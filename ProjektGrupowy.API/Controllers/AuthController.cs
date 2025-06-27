@@ -2,12 +2,12 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using ProjektGrupowy.API.Data;
-using ProjektGrupowy.API.DTOs.Auth;
 using ProjektGrupowy.API.Filters;
-using ProjektGrupowy.API.Models;
-using ProjektGrupowy.API.Services;
-using ProjektGrupowy.API.Utils.Constants;
+using ProjektGrupowy.Application.DTOs.Auth;
+using ProjektGrupowy.Application.Services;
+using ProjektGrupowy.Domain.Models;
+using ProjektGrupowy.Domain.Utils.Constants;
+using ProjektGrupowy.Infrastructure.Data;
 using System.IdentityModel.Tokens.Jwt;
 
 namespace ProjektGrupowy.API.Controllers;
@@ -190,8 +190,8 @@ public class AuthController(
 
     private void SetCookie(string name, string value)
     {
-        var expiresInDays = int.TryParse(configuration["JWT:RefreshTokenExpiresInDays"], out var exp) 
-            ? exp 
+        var expiresInDays = int.TryParse(configuration["JWT:RefreshTokenExpiresInDays"], out var exp)
+            ? exp
             : 7;
         Response.Cookies.Append(name, value, new CookieOptions
         {

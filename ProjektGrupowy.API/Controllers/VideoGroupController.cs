@@ -1,12 +1,11 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ProjektGrupowy.API.DTOs.Video;
-using ProjektGrupowy.API.DTOs.VideoGroup;
 using ProjektGrupowy.API.Filters;
-using ProjektGrupowy.API.Services;
-using ProjektGrupowy.API.Utils.Constants;
-using ProjektGrupowy.API.Utils.Extensions;
+using ProjektGrupowy.Application.DTOs.Video;
+using ProjektGrupowy.Application.DTOs.VideoGroup;
+using ProjektGrupowy.Application.Services;
+using ProjektGrupowy.Domain.Utils.Constants;
 
 namespace ProjektGrupowy.API.Controllers;
 

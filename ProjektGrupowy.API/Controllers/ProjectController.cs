@@ -1,18 +1,17 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ProjektGrupowy.API.DTOs.Labeler;
-using ProjektGrupowy.API.DTOs.LabelerAssignment;
-using ProjektGrupowy.API.DTOs.Project;
-using ProjektGrupowy.API.DTOs.ProjectReport;
-using ProjektGrupowy.API.DTOs.Subject;
-using ProjektGrupowy.API.DTOs.SubjectVideoGroupAssignment;
-using ProjektGrupowy.API.DTOs.VideoGroup;
 using ProjektGrupowy.API.Filters;
-using ProjektGrupowy.API.Services;
-using ProjektGrupowy.API.SignalR;
-using ProjektGrupowy.API.Utils.Constants;
-using ProjektGrupowy.API.Utils.Extensions;  // Add this using directive
+using ProjektGrupowy.Application.DTOs.Labeler;
+using ProjektGrupowy.Application.DTOs.LabelerAssignment;
+using ProjektGrupowy.Application.DTOs.Project;
+using ProjektGrupowy.Application.DTOs.ProjectReport;
+using ProjektGrupowy.Application.DTOs.Subject;
+using ProjektGrupowy.Application.DTOs.SubjectVideoGroupAssignment;
+using ProjektGrupowy.Application.DTOs.VideoGroup;
+using ProjektGrupowy.Application.Services;
+using ProjektGrupowy.Application.SignalR;
+using ProjektGrupowy.Domain.Utils.Constants;
 
 namespace ProjektGrupowy.API.Controllers;
 

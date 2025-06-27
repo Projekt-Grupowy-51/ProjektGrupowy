@@ -2,14 +2,15 @@ using AutoMapper;
 using Hangfire;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ProjektGrupowy.API.DTOs.ProjectReport;
 using ProjektGrupowy.API.Filters;
-using ProjektGrupowy.API.Services;
-using ProjektGrupowy.API.Services.Background;
-using ProjektGrupowy.API.SignalR;
-using ProjektGrupowy.API.Utils;
-using ProjektGrupowy.API.Utils.Constants;
-using ProjektGrupowy.API.Utils.Extensions;
+using ProjektGrupowy.Application.DTOs.ProjectReport;
+using ProjektGrupowy.Application.Services;
+using ProjektGrupowy.Application.Services.Background;
+using ProjektGrupowy.Application.SignalR;
+using ProjektGrupowy.Domain.Services;
+using ProjektGrupowy.Domain.Utils;
+using ProjektGrupowy.Domain.Utils.Constants;
+using ProjektGrupowy.Domain.Utils.Extensions;
 
 namespace ProjektGrupowy.API.Controllers;
 
@@ -30,11 +31,11 @@ public class ProjectReportController(
     public async Task<IActionResult> GetProjectReports(int projectId)
     {
         var result = await projectReportService.GetReportsAsync(projectId);
-        return result.IsSuccess 
-            ? Ok(mapper.Map<IEnumerable<GeneratedReportResponse>>(result.GetValueOrThrow())) 
+        return result.IsSuccess
+            ? Ok(mapper.Map<IEnumerable<GeneratedReportResponse>>(result.GetValueOrThrow()))
             : NotFound(result.GetValueOrThrow());
     }
-    
+
     [HttpGet("{reportId:int}")]
     public async Task<IActionResult> GetReport(int reportId)
     {
@@ -52,8 +53,8 @@ public class ProjectReportController(
             return NotFound(result.GetErrorOrThrow());
 
         var report = result.GetValueOrThrow();
-        
-        if (DockerDetector.IsRunningInDocker()) 
+
+        if (DockerDetector.IsRunningInDocker())
         {
             var baseUrl = configuration["Reports:NginxUrl"];
             var path = $"{baseUrl}/{Path.GetFileName(report.Path)}";
@@ -78,7 +79,7 @@ public class ProjectReportController(
         else
         {
             await messageService.SendInfoAsync(
-                User.GetUserId(), 
+                User.GetUserId(),
                 "Report generation job has been enqueued.");
             return Accepted("Report generation job has been enqueued.");
         }

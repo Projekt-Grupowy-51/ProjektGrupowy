@@ -1,12 +1,10 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.CodeAnalysis;
-using ProjektGrupowy.API.DTOs.AccessCode;
 using ProjektGrupowy.API.Filters;
-using ProjektGrupowy.API.Services;
-using ProjektGrupowy.API.Utils.Constants;
-using ProjektGrupowy.API.Utils.Extensions;
+using ProjektGrupowy.Application.DTOs.AccessCode;
+using ProjektGrupowy.Application.Services;
+using ProjektGrupowy.Domain.Utils.Constants;
 
 namespace ProjektGrupowy.API.Controllers;
 
@@ -16,7 +14,7 @@ namespace ProjektGrupowy.API.Controllers;
 [ServiceFilter(typeof(NonSuccessGetFilter))]
 [Authorize]
 public class AccessCodeController(
-    IProjectAccessCodeService service, 
+    IProjectAccessCodeService service,
     IProjectService projectService,
     IMapper mapper) : ControllerBase
 {
@@ -60,10 +58,10 @@ public class AccessCodeController(
         var result = await service.AddValidCodeToProjectAsync(createCodeRequest);
         if (result.IsFailure)
             return BadRequest(result.GetErrorOrThrow());
-            
+
         var createdAccessCode = result.GetValueOrThrow();
         var accessCodeResponse = mapper.Map<AccessCodeResponse>(createdAccessCode);
-        
+
 
         return CreatedAtAction(
             "GetAccessCodesByProject",

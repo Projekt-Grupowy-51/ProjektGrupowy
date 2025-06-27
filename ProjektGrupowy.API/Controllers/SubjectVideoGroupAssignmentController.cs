@@ -2,14 +2,12 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using ProjektGrupowy.API.DTOs.AssignedLabel;
-using ProjektGrupowy.API.DTOs.Labeler;
-using ProjektGrupowy.API.DTOs.SubjectVideoGroupAssignment;
 using ProjektGrupowy.API.Filters;
-using ProjektGrupowy.API.Models;
-using ProjektGrupowy.API.Services;
-using ProjektGrupowy.API.Utils.Constants;
-using ProjektGrupowy.API.Utils.Extensions;
+using ProjektGrupowy.Application.DTOs.Labeler;
+using ProjektGrupowy.Application.DTOs.SubjectVideoGroupAssignment;
+using ProjektGrupowy.Application.Services;
+using ProjektGrupowy.Domain.Models;
+using ProjektGrupowy.Domain.Utils.Constants;
 
 namespace ProjektGrupowy.API.Controllers;
 
@@ -19,7 +17,7 @@ namespace ProjektGrupowy.API.Controllers;
 [ServiceFilter(typeof(NonSuccessGetFilter))]
 [Authorize]
 public class SubjectVideoGroupAssignmentController(
-    ISubjectVideoGroupAssignmentService subjectVideoGroupAssignmentService, 
+    ISubjectVideoGroupAssignmentService subjectVideoGroupAssignmentService,
     UserManager<User> userManager,
     IMapper mapper) : ControllerBase
 {
@@ -58,9 +56,9 @@ public class SubjectVideoGroupAssignmentController(
     {
         var result = await subjectVideoGroupAssignmentService.AddSubjectVideoGroupAssignmentAsync(subjectVideoGroupAssignmentRequest);
 
-        if (result.IsFailure) 
+        if (result.IsFailure)
             return BadRequest(result.GetErrorOrThrow());
-        
+
         var createdAssignment = result.GetValueOrThrow();
         var response = mapper.Map<SubjectVideoGroupAssignmentResponse>(createdAssignment);
 

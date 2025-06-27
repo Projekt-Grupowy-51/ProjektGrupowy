@@ -1,12 +1,11 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ProjektGrupowy.API.DTOs.Label;
-using ProjektGrupowy.API.DTOs.Subject;
 using ProjektGrupowy.API.Filters;
-using ProjektGrupowy.API.Services;
-using ProjektGrupowy.API.Utils.Constants;
-using ProjektGrupowy.API.Utils.Extensions;
+using ProjektGrupowy.Application.DTOs.Label;
+using ProjektGrupowy.Application.DTOs.Subject;
+using ProjektGrupowy.Application.Services;
+using ProjektGrupowy.Domain.Utils.Constants;
 
 namespace ProjektGrupowy.API.Controllers;
 
@@ -35,8 +34,8 @@ public class SubjectController(
     public async Task<ActionResult<SubjectResponse>> GetSubjectAsync(int id)
     {
         var subject = await subjectService.GetSubjectAsync(id);
-        return subject.IsSuccess 
-            ? Ok(mapper.Map<SubjectResponse>(subject.GetValueOrThrow())) 
+        return subject.IsSuccess
+            ? Ok(mapper.Map<SubjectResponse>(subject.GetValueOrThrow()))
             : NotFound(subject.GetErrorOrThrow());
     }
 

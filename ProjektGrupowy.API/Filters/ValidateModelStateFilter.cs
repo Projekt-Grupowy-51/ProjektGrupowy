@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using ProjektGrupowy.API.Services;
-using ProjektGrupowy.API.SignalR;
-using ProjektGrupowy.API.Utils;
+using ProjektGrupowy.Application.SignalR;
+using ProjektGrupowy.Domain.Services;
+using ProjektGrupowy.Domain.Utils;
 
 namespace ProjektGrupowy.API.Filters;
 
@@ -18,5 +18,5 @@ public class ValidateModelStateFilter(IMessageService messageService, ICurrentUs
         }
 
         await next();
-    } 
+    }
 }

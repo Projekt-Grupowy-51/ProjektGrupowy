@@ -1,14 +1,9 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ProjektGrupowy.API.DTOs.AssignedLabel;
-using ProjektGrupowy.API.DTOs.Label;
 using ProjektGrupowy.API.Filters;
-using ProjektGrupowy.API.Models;
-using ProjektGrupowy.API.Services;
-using ProjektGrupowy.API.Utils.Constants;
-using ProjektGrupowy.API.Utils.Extensions;
-using System.Security.Claims;
+using ProjektGrupowy.Application.DTOs.AssignedLabel;
+using ProjektGrupowy.Application.Services;
 
 namespace ProjektGrupowy.API.Controllers;
 
@@ -26,19 +21,19 @@ public class AssignedLabelController(
     [HttpGet]
     public async Task<ActionResult<IEnumerable<AssignedLabelResponse>>> GetAssignedLabelsAsync()
     {
-            var assignedLabels = await assignedLabelService.GetAssignedLabelsAsync();
-                
-            return assignedLabels.IsSuccess 
-                ? Ok(mapper.Map<IEnumerable<AssignedLabelResponse>>(assignedLabels.GetValueOrThrow())) 
-                : NotFound(assignedLabels.GetErrorOrThrow());
+        var assignedLabels = await assignedLabelService.GetAssignedLabelsAsync();
+
+        return assignedLabels.IsSuccess
+            ? Ok(mapper.Map<IEnumerable<AssignedLabelResponse>>(assignedLabels.GetValueOrThrow()))
+            : NotFound(assignedLabels.GetErrorOrThrow());
     }
 
     [HttpGet("{id:int}")]
     public async Task<ActionResult<AssignedLabelResponse>> GetAssignedLabelAsync(int id)
     {
         var assignedLabel = await assignedLabelService.GetAssignedLabelAsync(id);
-        return assignedLabel.IsSuccess 
-            ? Ok(mapper.Map<AssignedLabelResponse>(assignedLabel.GetValueOrThrow())) 
+        return assignedLabel.IsSuccess
+            ? Ok(mapper.Map<AssignedLabelResponse>(assignedLabel.GetValueOrThrow()))
             : NotFound(assignedLabel.GetErrorOrThrow());
     }
 
@@ -52,12 +47,12 @@ public class AssignedLabelController(
         var video = await videoService.GetVideoAsync(assignedLabelRequest.VideoId);
         if (!video.IsSuccess)
             return NotFound(video.GetErrorOrThrow());
-        
+
         var result = await assignedLabelService.AddAssignedLabelAsync(assignedLabelRequest);
 
-        if (result.IsFailure) 
+        if (result.IsFailure)
             return BadRequest(result.GetErrorOrThrow());
-        
+
         var createdAssignedLabel = result.GetValueOrThrow();
         var assignedLabelResponse = mapper.Map<AssignedLabelResponse>(createdAssignedLabel);
 

@@ -1,13 +1,12 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ProjektGrupowy.API.DTOs.AssignedLabel;
-using ProjektGrupowy.API.DTOs.Video;
 using ProjektGrupowy.API.Filters;
-using ProjektGrupowy.API.Services;
-using ProjektGrupowy.API.Utils;
-using ProjektGrupowy.API.Utils.Constants;
-using ProjektGrupowy.API.Utils.Extensions;
+using ProjektGrupowy.Application.DTOs.AssignedLabel;
+using ProjektGrupowy.Application.DTOs.Video;
+using ProjektGrupowy.Application.Services;
+using ProjektGrupowy.Domain.Utils;
+using ProjektGrupowy.Domain.Utils.Constants;
 
 namespace ProjektGrupowy.API.Controllers;
 
@@ -27,7 +26,7 @@ public class VideoController(
     public async Task<ActionResult<IEnumerable<VideoResponse>>> GetVideosAsync()
     {
         var videos = await videoService.GetVideosAsync();
-            
+
         return videos.IsSuccess
             ? Ok(mapper.Map<IEnumerable<VideoResponse>>(videos.GetValueOrThrow()))
             : NotFound(videos.GetErrorOrThrow());
@@ -92,11 +91,11 @@ public class VideoController(
         }
 
         var video = videoOptional.GetValueOrThrow();
-        
+
         if (DockerDetector.IsRunningInDocker())
         {
             var baseUrl = configuration["Videos:NginxUrl"];
-            var path = $"{baseUrl}/{video.VideoGroup.Project.Id}/{video.VideoGroupId}/{Path.GetFileName(video.Path)}";            
+            var path = $"{baseUrl}/{video.VideoGroup.Project.Id}/{video.VideoGroupId}/{Path.GetFileName(video.Path)}";
             return Redirect(path);
         }
         else

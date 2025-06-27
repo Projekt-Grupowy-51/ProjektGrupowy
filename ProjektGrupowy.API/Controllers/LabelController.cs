@@ -1,11 +1,10 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ProjektGrupowy.API.DTOs.Label;
 using ProjektGrupowy.API.Filters;
-using ProjektGrupowy.API.Services;
-using ProjektGrupowy.API.Utils.Constants;
-using ProjektGrupowy.API.Utils.Extensions;
+using ProjektGrupowy.Application.DTOs.Label;
+using ProjektGrupowy.Application.Services;
+using ProjektGrupowy.Domain.Utils.Constants;
 
 namespace ProjektGrupowy.API.Controllers;
 
@@ -45,9 +44,9 @@ public class LabelController(
     {
         var result = await labelService.AddLabelAsync(labelRequest);
 
-        if (result.IsFailure) 
+        if (result.IsFailure)
             return BadRequest(result.GetErrorOrThrow());
-        
+
         var createdLabel = result.GetValueOrThrow();
         var labelResponse = mapper.Map<LabelResponse>(createdLabel);
 
