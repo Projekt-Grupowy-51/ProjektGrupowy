@@ -8,7 +8,7 @@ using ProjektGrupowy.Infrastructure.Repositories;
 using ProjektGrupowy.Application.SignalR;
 using ProjektGrupowy.Domain.Utils;
 using ProjektGrupowy.Domain.Utils;
-using ProjektGrupowy.Domain.Services;
+using ProjektGrupowy.Application.Services;
 
 namespace ProjektGrupowy.Application.Services.Impl;
 
@@ -23,7 +23,7 @@ public class SubjectService(
 {
     public async Task<Optional<IEnumerable<Subject>>> GetSubjectsAsync()
     {
-        var subjectsOpt = await subjectRepository.GetSubjectsAsync();
+        var subjectsOpt = await subjectRepository.GetSubjectsAsync(currentUserService.UserId, currentUserService.IsAdmin);
         if (subjectsOpt.IsFailure)
         {
             return subjectsOpt;
@@ -41,7 +41,7 @@ public class SubjectService(
 
     public async Task<Optional<Subject>> GetSubjectAsync(int id)
     {
-        var subjectOpt = await subjectRepository.GetSubjectAsync(id);
+        var subjectOpt = await subjectRepository.GetSubjectAsync(id, currentUserService.UserId, currentUserService.IsAdmin);
         if (subjectOpt.IsFailure)
         {
             return subjectOpt;
@@ -59,7 +59,7 @@ public class SubjectService(
 
     public async Task<Optional<Subject>> AddSubjectAsync(SubjectRequest subjectRequest)
     {
-        var projectOptional = await projectRepository.GetProjectAsync(subjectRequest.ProjectId);
+        var projectOptional = await projectRepository.GetProjectAsync(subjectRequest.ProjectId, currentUserService.UserId, currentUserService.IsAdmin);
 
         if (projectOptional.IsFailure)
         {
@@ -91,7 +91,7 @@ public class SubjectService(
 
     public async Task<Optional<Subject>> UpdateSubjectAsync(int subjectId, SubjectRequest subjectRequest)
     {
-        var subjectOptional = await subjectRepository.GetSubjectAsync(subjectId);
+        var subjectOptional = await subjectRepository.GetSubjectAsync(subjectId, currentUserService.UserId, currentUserService.IsAdmin);
 
         if (subjectOptional.IsFailure)
         {
@@ -105,7 +105,7 @@ public class SubjectService(
             throw new ForbiddenException();
         }
 
-        var projectOptional = await projectRepository.GetProjectAsync(subjectRequest.ProjectId);
+        var projectOptional = await projectRepository.GetProjectAsync(subjectRequest.ProjectId, currentUserService.UserId, currentUserService.IsAdmin);
         if (projectOptional.IsFailure)
         {
             return Optional<Subject>.Failure("No project found!");
@@ -140,7 +140,7 @@ public class SubjectService(
 
     public async Task<Optional<IEnumerable<Subject>>> GetSubjectsByProjectAsync(int projectId)
     {
-        var subjects = await subjectRepository.GetSubjectsByProjectAsync(projectId);
+        var subjects = await subjectRepository.GetSubjectsByProjectAsync(projectId, currentUserService.UserId, currentUserService.IsAdmin);
         if (subjects.IsFailure)
         {
             return subjects;
@@ -157,7 +157,7 @@ public class SubjectService(
 
     public async Task DeleteSubjectAsync(int id)
     {
-        var subject = await subjectRepository.GetSubjectAsync(id);
+        var subject = await subjectRepository.GetSubjectAsync(id, currentUserService.UserId, currentUserService.IsAdmin);
 
         if (subject.IsFailure)
         {
@@ -182,7 +182,7 @@ public class SubjectService(
 
     public async Task<Optional<IEnumerable<Label>>> GetSubjectLabelsAsync(int subjectId)
     {
-        var labelsOpt = await subjectRepository.GetSubjectLabelsAsync(subjectId);
+        var labelsOpt = await subjectRepository.GetSubjectLabelsAsync(subjectId, currentUserService.UserId, currentUserService.IsAdmin);
         if (labelsOpt.IsFailure)
         {
             return labelsOpt;

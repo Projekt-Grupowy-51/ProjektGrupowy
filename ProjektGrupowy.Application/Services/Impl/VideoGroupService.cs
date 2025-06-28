@@ -8,7 +8,7 @@ using ProjektGrupowy.Infrastructure.Repositories;
 using ProjektGrupowy.Application.SignalR;
 using ProjektGrupowy.Domain.Utils;
 using ProjektGrupowy.Domain.Utils;
-using ProjektGrupowy.Domain.Services;
+using ProjektGrupowy.Application.Services;
 
 namespace ProjektGrupowy.Application.Services.Impl;
 
@@ -22,7 +22,7 @@ public class VideoGroupService(
 {
     public async Task<Optional<IEnumerable<VideoGroup>>> GetVideoGroupsAsync()
     {
-        var videoGroupsOpt = await videoGroupRepository.GetVideoGroupsAsync();
+        var videoGroupsOpt = await videoGroupRepository.GetVideoGroupsAsync(currentUserService.UserId, currentUserService.IsAdmin);
         if (videoGroupsOpt.IsFailure)
         {
             return videoGroupsOpt;
@@ -40,7 +40,7 @@ public class VideoGroupService(
 
     public async Task<Optional<VideoGroup>> GetVideoGroupAsync(int id)
     {
-        var videoGroupOpt = await videoGroupRepository.GetVideoGroupAsync(id);
+        var videoGroupOpt = await videoGroupRepository.GetVideoGroupAsync(id, currentUserService.UserId, currentUserService.IsAdmin);
         if (videoGroupOpt.IsFailure)
         {
             return videoGroupOpt;
@@ -56,7 +56,7 @@ public class VideoGroupService(
 
     public async Task<Optional<VideoGroup>> AddVideoGroupAsync(VideoGroupRequest videoGroupRequest)
     {
-        var projectOptional = await projectRepository.GetProjectAsync(videoGroupRequest.ProjectId);
+        var projectOptional = await projectRepository.GetProjectAsync(videoGroupRequest.ProjectId, currentUserService.UserId, currentUserService.IsAdmin);
 
         if (projectOptional.IsFailure)
         {
@@ -94,7 +94,7 @@ public class VideoGroupService(
 
     public async Task<Optional<VideoGroup>> UpdateVideoGroupAsync(int videoGroupId, VideoGroupRequest videoGroupRequest)
     {
-        var videoGroupOptional = await videoGroupRepository.GetVideoGroupAsync(videoGroupId);
+        var videoGroupOptional = await videoGroupRepository.GetVideoGroupAsync(videoGroupId, currentUserService.UserId, currentUserService.IsAdmin);
 
         if (videoGroupOptional.IsFailure)
         {
@@ -108,7 +108,7 @@ public class VideoGroupService(
             throw new ForbiddenException();
         }
 
-        var projectOptional = await projectRepository.GetProjectAsync(videoGroupRequest.ProjectId);
+        var projectOptional = await projectRepository.GetProjectAsync(videoGroupRequest.ProjectId, currentUserService.UserId, currentUserService.IsAdmin);
         if (projectOptional.IsFailure)
         {
             return Optional<VideoGroup>.Failure("No project found!");
@@ -142,7 +142,7 @@ public class VideoGroupService(
 
     public async Task<Optional<IEnumerable<VideoGroup>>> GetVideoGroupsByProjectAsync(int projectId)
     {
-        var videoGroupsOpt = await videoGroupRepository.GetVideoGroupsByProjectAsync(projectId);
+        var videoGroupsOpt = await videoGroupRepository.GetVideoGroupsByProjectAsync(projectId, currentUserService.UserId, currentUserService.IsAdmin);
         if (videoGroupsOpt.IsFailure)
         {
             return videoGroupsOpt;
@@ -160,7 +160,7 @@ public class VideoGroupService(
 
     public async Task DeleteVideoGroupAsync(int id)
     {
-        var videoGroupOpt = await videoGroupRepository.GetVideoGroupAsync(id);
+        var videoGroupOpt = await videoGroupRepository.GetVideoGroupAsync(id, currentUserService.UserId, currentUserService.IsAdmin);
 
         if (videoGroupOpt.IsFailure)
         {
@@ -186,7 +186,7 @@ public class VideoGroupService(
 
     public async Task<Optional<IEnumerable<Video>>> GetVideosByVideoGroupIdAsync(int id)
     {
-        var videosOpt = await videoGroupRepository.GetVideosByVideoGroupIdAsync(id);
+        var videosOpt = await videoGroupRepository.GetVideosByVideoGroupIdAsync(id, currentUserService.UserId, currentUserService.IsAdmin);
         if (videosOpt.IsFailure)
         {
             return videosOpt;

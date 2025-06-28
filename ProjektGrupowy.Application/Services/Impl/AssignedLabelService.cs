@@ -8,7 +8,7 @@ using ProjektGrupowy.Infrastructure.Repositories;
 using ProjektGrupowy.Application.SignalR;
 using ProjektGrupowy.Domain.Utils;
 using ProjektGrupowy.Domain.Utils;
-using ProjektGrupowy.Domain.Services;
+using ProjektGrupowy.Application.Services;
 
 namespace ProjektGrupowy.Application.Services.Impl;
 
@@ -25,7 +25,7 @@ public class AssignedLabelService(
 {
     public async Task<Optional<IEnumerable<AssignedLabel>>> GetAssignedLabelsAsync()
     {
-        var assignedLabelsOpt = await assignedLabelRepository.GetAssignedLabelsAsync();
+        var assignedLabelsOpt = await assignedLabelRepository.GetAssignedLabelsAsync(currentUserService.UserId, currentUserService.IsAdmin);
         if (assignedLabelsOpt.IsFailure)
         {
             return assignedLabelsOpt;
@@ -43,7 +43,7 @@ public class AssignedLabelService(
 
     public async Task<Optional<AssignedLabel>> GetAssignedLabelAsync(int id)
     {
-        var assignedLabelOpt = await assignedLabelRepository.GetAssignedLabelAsync(id);
+        var assignedLabelOpt = await assignedLabelRepository.GetAssignedLabelAsync(id, currentUserService.UserId, currentUserService.IsAdmin);
         if (assignedLabelOpt.IsFailure)
         {
             return assignedLabelOpt;
@@ -61,7 +61,7 @@ public class AssignedLabelService(
 
     public async Task<Optional<AssignedLabel>> AddAssignedLabelAsync(AssignedLabelRequest assignedLabelRequest)
     {
-        var labelOptional = await labelRepository.GetLabelAsync(assignedLabelRequest.LabelId);
+        var labelOptional = await labelRepository.GetLabelAsync(assignedLabelRequest.LabelId, currentUserService.UserId, currentUserService.IsAdmin);
 
         if (labelOptional.IsFailure)
         {
@@ -75,7 +75,7 @@ public class AssignedLabelService(
             throw new ForbiddenException();
         }
 
-        var videoOptional = await videoRepository.GetVideoAsync(assignedLabelRequest.VideoId);
+        var videoOptional = await videoRepository.GetVideoAsync(assignedLabelRequest.VideoId, currentUserService.UserId, currentUserService.IsAdmin);
         if (videoOptional.IsFailure)
         {
             return Optional<AssignedLabel>.Failure("No subject video group assignment found");
@@ -114,7 +114,7 @@ public class AssignedLabelService(
 
     public async Task DeleteAssignedLabelAsync(int id)
     {
-        var assignedLabelOpt = await assignedLabelRepository.GetAssignedLabelAsync(id);
+        var assignedLabelOpt = await assignedLabelRepository.GetAssignedLabelAsync(id, currentUserService.UserId, currentUserService.IsAdmin);
         if (assignedLabelOpt.IsFailure)
         {
             await messageService.SendErrorAsync(
@@ -139,7 +139,7 @@ public class AssignedLabelService(
 
     public async Task<Optional<IEnumerable<AssignedLabel>>> GetAssignedLabelsByVideoIdAsync(int videoId)
     {
-        var assignedLabelsOpt = await assignedLabelRepository.GetAssignedLabelsByVideoIdAsync(videoId);
+        var assignedLabelsOpt = await assignedLabelRepository.GetAssignedLabelsByVideoIdAsync(videoId, currentUserService.UserId, currentUserService.IsAdmin);
         if (assignedLabelsOpt.IsFailure)
         {
             return assignedLabelsOpt;
@@ -157,7 +157,7 @@ public class AssignedLabelService(
 
      public async Task<Optional<IEnumerable<AssignedLabel>>> GetAssignedLabelsByVideoIdAndSubjectIdAsync(int videoId, int subjectId)
     {
-        var assignedLabelsOpt = await assignedLabelRepository.GetAssignedLabelsByVideoIdAndSubjectIdAsync(videoId, subjectId);
+        var assignedLabelsOpt = await assignedLabelRepository.GetAssignedLabelsByVideoIdAndSubjectIdAsync(videoId, subjectId, currentUserService.UserId, currentUserService.IsAdmin);
         if (assignedLabelsOpt.IsFailure)
         {
             return assignedLabelsOpt;

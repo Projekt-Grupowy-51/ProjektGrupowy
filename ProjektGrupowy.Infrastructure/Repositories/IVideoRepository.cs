@@ -5,9 +5,9 @@ namespace ProjektGrupowy.Infrastructure.Repositories;
 
 public interface IVideoRepository 
 {
-    Task<Optional<IEnumerable<Video>>> GetVideosAsync();
-    Task<Optional<IEnumerable<Video>>> GetVideosAsync(int videoGroupId, int positionInQueue);
-    Task<Optional<Video>> GetVideoAsync(int id);
+    Task<Optional<IEnumerable<Video>>> GetVideosAsync(string userId, bool isAdmin);
+    Task<Optional<IEnumerable<Video>>> GetVideosAsync(int videoGroupId, int positionInQueue, string userId, bool isAdmin);
+    Task<Optional<Video>> GetVideoAsync(int id, string userId, bool isAdmin);
     Task<Optional<Video>> AddVideoAsync(Video video);
     Task<Optional<Video>> UpdateVideoAsync(Video video);
     Task DeleteVideoAsync(Video video);

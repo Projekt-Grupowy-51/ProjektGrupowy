@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using ProjektGrupowy.Domain.Models;
-using ProjektGrupowy.Domain.Services;
 using ProjektGrupowy.Domain.Utils;
 using ProjektGrupowy.Infrastructure.Data;
 
@@ -11,14 +10,13 @@ namespace ProjektGrupowy.Infrastructure.Repositories.Impl;
 public class SubjectVideoGroupAssignmentRepository(
     AppDbContext context,
     ILogger<SubjectVideoGroupAssignmentRepository> logger,
-    UserManager<User> userManager,
-    ICurrentUserService currentUserService) : ISubjectVideoGroupAssignmentRepository
+    UserManager<User> userManager) : ISubjectVideoGroupAssignmentRepository
 {
-    public async Task<Optional<IEnumerable<SubjectVideoGroupAssignment>>> GetSubjectVideoGroupAssignmentsAsync()
+    public async Task<Optional<IEnumerable<SubjectVideoGroupAssignment>>> GetSubjectVideoGroupAssignmentsAsync(string userId, bool isAdmin)
     {
         try
         {
-            var subjectVideoGroupAssignments = await context.SubjectVideoGroupAssignments.FilteredSubjectVideoGroupAssignments(currentUserService.UserId, currentUserService.IsAdmin)
+            var subjectVideoGroupAssignments = await context.SubjectVideoGroupAssignments.FilteredSubjectVideoGroupAssignments(userId, isAdmin)
                 .ToListAsync();
             return Optional<IEnumerable<SubjectVideoGroupAssignment>>.Success(subjectVideoGroupAssignments);
         }
@@ -29,12 +27,12 @@ public class SubjectVideoGroupAssignmentRepository(
         }
     }
 
-    public async Task<Optional<SubjectVideoGroupAssignment>> GetSubjectVideoGroupAssignmentAsync(int id)
+    public async Task<Optional<SubjectVideoGroupAssignment>> GetSubjectVideoGroupAssignmentAsync(int id, string userId, bool isAdmin)
     {
         try
         {
             var subjectVideoGroupAssignment =
-                await context.SubjectVideoGroupAssignments.FilteredSubjectVideoGroupAssignments(currentUserService.UserId, currentUserService.IsAdmin)
+                await context.SubjectVideoGroupAssignments.FilteredSubjectVideoGroupAssignments(userId, isAdmin)
                 .FirstOrDefaultAsync(x => x.Id == id);
             return subjectVideoGroupAssignment is null
                 ? Optional<SubjectVideoGroupAssignment>.Failure("Subject video group assignment not found")
@@ -94,11 +92,11 @@ public class SubjectVideoGroupAssignmentRepository(
         }
     }
 
-    public async Task<Optional<IEnumerable<SubjectVideoGroupAssignment>>> GetSubjectVideoGroupAssignmentsByProjectAsync(int projectId)
+    public async Task<Optional<IEnumerable<SubjectVideoGroupAssignment>>> GetSubjectVideoGroupAssignmentsByProjectAsync(int projectId, string userId, bool isAdmin)
     {
         try
         {
-            var assignments = await context.SubjectVideoGroupAssignments.FilteredSubjectVideoGroupAssignments(currentUserService.UserId, currentUserService.IsAdmin)
+            var assignments = await context.SubjectVideoGroupAssignments.FilteredSubjectVideoGroupAssignments(userId, isAdmin)
                 .Where(x => x.Subject.Project.Id == projectId)
                 .ToListAsync();
 
@@ -110,11 +108,11 @@ public class SubjectVideoGroupAssignmentRepository(
             return Optional<IEnumerable<SubjectVideoGroupAssignment>>.Failure(e.Message);
         }
     }
-    public async Task<Optional<IEnumerable<User>>> GetSubjectVideoGroupAssignmentsLabelersAsync(int id)
+    public async Task<Optional<IEnumerable<User>>> GetSubjectVideoGroupAssignmentsLabelersAsync(int id, string userId, bool isAdmin)
     {
         try
         {
-            var labelers = await context.SubjectVideoGroupAssignments.FilteredSubjectVideoGroupAssignments(currentUserService.UserId, currentUserService.IsAdmin)
+            var labelers = await context.SubjectVideoGroupAssignments.FilteredSubjectVideoGroupAssignments(userId, isAdmin)
                 .Where(x => x.Id == id)
                 .SelectMany(x => x.Labelers)
                 .ToListAsync();
@@ -128,9 +126,9 @@ public class SubjectVideoGroupAssignmentRepository(
         }
     }
 
-    public async Task<Optional<SubjectVideoGroupAssignment>> AssignLabelerToAssignmentAsync(int assignmentId, string labelerId)
+    public async Task<Optional<SubjectVideoGroupAssignment>> AssignLabelerToAssignmentAsync(int assignmentId, string labelerId, string userId, bool isAdmin)
     {
-        var assignment = await context.SubjectVideoGroupAssignments.FilteredSubjectVideoGroupAssignments(currentUserService.UserId, currentUserService.IsAdmin)
+        var assignment = await context.SubjectVideoGroupAssignments.FilteredSubjectVideoGroupAssignments(userId, isAdmin)
             .FirstOrDefaultAsync(a => a.Id == assignmentId);
 
         if (assignment == null)
@@ -156,11 +154,11 @@ public class SubjectVideoGroupAssignmentRepository(
         return Optional<SubjectVideoGroupAssignment>.Failure("Labeler is already assigned to this SubjectVideoGroupAssignment");
     }
 
-    public async Task<Optional<SubjectVideoGroupAssignment>> UnassignLabelerFromAssignmentAsync(int assignmentId, string labelerId)
+    public async Task<Optional<SubjectVideoGroupAssignment>> UnassignLabelerFromAssignmentAsync(int assignmentId, string labelerId, string userId, bool isAdmin)
     {
         try
         {
-            var assignment = await context.SubjectVideoGroupAssignments.FilteredSubjectVideoGroupAssignments(currentUserService.UserId, currentUserService.IsAdmin)
+            var assignment = await context.SubjectVideoGroupAssignments.FilteredSubjectVideoGroupAssignments(userId, isAdmin)
                 .FirstOrDefaultAsync(a => a.Id == assignmentId);
 
             if (assignment == null)

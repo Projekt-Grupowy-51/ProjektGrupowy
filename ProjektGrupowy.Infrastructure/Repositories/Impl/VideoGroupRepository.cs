@@ -1,20 +1,19 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using ProjektGrupowy.Domain.Models;
-using ProjektGrupowy.Domain.Services;
 using ProjektGrupowy.Domain.Utils;
 using ProjektGrupowy.Infrastructure.Data;
 
 namespace ProjektGrupowy.Infrastructure.Repositories.Impl;
 
-public class VideoGroupRepository(AppDbContext context, ILogger<VideoGroupRepository> logger, ICurrentUserService currentUserService)
+public class VideoGroupRepository(AppDbContext context, ILogger<VideoGroupRepository> logger)
     : IVideoGroupRepository
 {
-    public async Task<Optional<IEnumerable<VideoGroup>>> GetVideoGroupsAsync()
+    public async Task<Optional<IEnumerable<VideoGroup>>> GetVideoGroupsAsync(string userId, bool isAdmin)
     {
         try
         {
-            var videoGroups = await context.VideoGroups.FilteredVideoGroups(currentUserService.UserId, currentUserService.IsAdmin)
+            var videoGroups = await context.VideoGroups.FilteredVideoGroups(userId, isAdmin)
                 .ToListAsync();
             return Optional<IEnumerable<VideoGroup>>.Success(videoGroups);
         }
@@ -25,11 +24,11 @@ public class VideoGroupRepository(AppDbContext context, ILogger<VideoGroupReposi
         }
     }
 
-    public async Task<Optional<VideoGroup>> GetVideoGroupAsync(int id)
+    public async Task<Optional<VideoGroup>> GetVideoGroupAsync(int id, string userId, bool isAdmin)
     {
         try
         {
-            var videoGroup = await context.VideoGroups.FilteredVideoGroups(currentUserService.UserId, currentUserService.IsAdmin)
+            var videoGroup = await context.VideoGroups.FilteredVideoGroups(userId, isAdmin)
                 .FirstOrDefaultAsync(v => v.Id == id);
             return videoGroup is null
                 ? Optional<VideoGroup>.Failure("Video group not found")
@@ -74,13 +73,13 @@ public class VideoGroupRepository(AppDbContext context, ILogger<VideoGroupReposi
         }
     }
 
-    public async Task<Optional<IEnumerable<VideoGroup>>> GetVideoGroupsByProjectAsync(int projectId)
+    public async Task<Optional<IEnumerable<VideoGroup>>> GetVideoGroupsByProjectAsync(int projectId, string userId, bool isAdmin)
     {
         try
         {
             // This is efficient because it uses an indexed column ("IX_VideoGroups_ProjectId" btree ("ProjectId"))
             // Check with psql: mydatabase=# EXPLAIN SELECT * FROM "VideoGroups" WHERE "ProjectId" = ...;
-            var videoGroups = await context.VideoGroups.FilteredVideoGroups(currentUserService.UserId, currentUserService.IsAdmin)
+            var videoGroups = await context.VideoGroups.FilteredVideoGroups(userId, isAdmin)
                 .Where(v => v.Project.Id == projectId)
                 .ToArrayAsync();
 
@@ -106,11 +105,11 @@ public class VideoGroupRepository(AppDbContext context, ILogger<VideoGroupReposi
         }
     }
 
-    public async Task<Optional<IEnumerable<Video>>> GetVideosByVideoGroupIdAsync(int id)
+    public async Task<Optional<IEnumerable<Video>>> GetVideosByVideoGroupIdAsync(int id, string userId, bool isAdmin)
     {
         try
         {
-            var videoGroup = await context.VideoGroups.FilteredVideoGroups(currentUserService.UserId, currentUserService.IsAdmin)
+            var videoGroup = await context.VideoGroups.FilteredVideoGroups(userId, isAdmin)
                 .FirstOrDefaultAsync(vg => vg.Id == id);
 
             if (videoGroup is null)

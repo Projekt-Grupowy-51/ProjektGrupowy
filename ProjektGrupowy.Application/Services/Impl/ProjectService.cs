@@ -9,7 +9,7 @@ using ProjektGrupowy.Infrastructure.Repositories;
 using ProjektGrupowy.Application.SignalR;
 using ProjektGrupowy.Domain.Utils;
 using ProjektGrupowy.Domain.Utils;
-using ProjektGrupowy.Domain.Services;
+using ProjektGrupowy.Application.Services;
 
 namespace ProjektGrupowy.Application.Services.Impl;
 
@@ -23,7 +23,7 @@ public class ProjectService(
 {
     public async Task<Optional<IEnumerable<Project>>> GetProjectsAsync()
     {
-        var projectsOptional = await projectRepository.GetProjectsAsync();
+        var projectsOptional = await projectRepository.GetProjectsAsync(currentUserService.UserId, currentUserService.IsAdmin);
         if (projectsOptional.IsFailure)
         {
             return projectsOptional;
@@ -40,7 +40,7 @@ public class ProjectService(
         return projectsOptional;
     }
 
-    public async Task<Optional<Project>> GetProjectAsync(int id, string? userId = null, bool? isAdmin = null)
+    public async Task<Optional<Project>> GetProjectAsync(int id, string userId = null, bool isAdmin)
     {
         var projectOptional = await projectRepository.GetProjectAsync(id, userId, isAdmin);
         if (projectOptional.IsFailure)
@@ -92,7 +92,7 @@ public class ProjectService(
 
     public async Task<Optional<Project>> UpdateProjectAsync(int projectId, ProjectRequest projectRequest)
     {
-        var projectOptional = await projectRepository.GetProjectAsync(projectId);
+        var projectOptional = await projectRepository.GetProjectAsync(projectId, currentUserService.UserId, currentUserService.IsAdmin);
 
         if (projectOptional.IsFailure)
         {
@@ -175,7 +175,7 @@ public class ProjectService(
 
     public async Task<Optional<IEnumerable<User>>> GetUnassignedLabelersOfProjectAsync(int id)
     {
-        var projectOptional = await projectRepository.GetProjectAsync(id);
+        var projectOptional = await projectRepository.GetProjectAsync(id, currentUserService.UserId, currentUserService.IsAdmin);
         if (projectOptional.IsFailure)
         {
             return Optional<IEnumerable<User>>.Failure("No project found!");
@@ -200,7 +200,7 @@ public class ProjectService(
 
     public async Task DeleteProjectAsync(int id)
     {
-        var projectOpt = await projectRepository.GetProjectAsync(id);
+        var projectOpt = await projectRepository.GetProjectAsync(id, currentUserService.UserId, currentUserService.IsAdmin);
 
         if (projectOpt.IsFailure)
         {
@@ -224,7 +224,7 @@ public class ProjectService(
 
     public async Task<Optional<bool>> UnassignLabelersFromProjectAsync(int projectId)
     {
-        var projectOpt = await projectRepository.GetProjectAsync(projectId);
+        var projectOpt = await projectRepository.GetProjectAsync(projectId, currentUserService.UserId, currentUserService.IsAdmin);
         if (projectOpt.IsFailure)
         {
             return Optional<bool>.Failure("No project found!");
@@ -255,7 +255,7 @@ public class ProjectService(
 
     public async Task<Optional<bool>> DistributeLabelersEquallyAsync(int projectId)
     {
-        var projectOptional = await projectRepository.GetProjectAsync(projectId);
+        var projectOptional = await projectRepository.GetProjectAsync(projectId, currentUserService.UserId, currentUserService.IsAdmin);
         if (projectOptional.IsFailure)
         {
             return Optional<bool>.Failure("No project found!");
@@ -311,7 +311,7 @@ public class ProjectService(
             return Optional<bool>.Success(true);
         }
 
-        var countResult = await projectRepository.GetLabelerCountForAssignments(projectId);
+        var countResult = await projectRepository.GetLabelerCountForAssignments(projectId, currentUserService.UserId, currentUserService.IsAdmin);
         if (countResult.IsFailure)
         {
             return Optional<bool>.Failure("Failed to get labeler count for assignments");
@@ -380,7 +380,7 @@ public class ProjectService(
     private async Task<Optional<bool>> AssignLabelerToAssignmentAsync(int assignmentId, IEnumerable<User> labelers)
     {
         var assignmentOptional =
-            await subjectVideoGroupAssignmentRepository.GetSubjectVideoGroupAssignmentAsync(assignmentId);
+            await subjectVideoGroupAssignmentRepository.GetSubjectVideoGroupAssignmentAsync(assignmentId, currentUserService.UserId, currentUserService.IsAdmin);
         if (assignmentOptional.IsFailure)
         {
             return Optional<bool>.Failure("No assignment found!");
@@ -405,7 +405,7 @@ public class ProjectService(
 
     public async Task<Optional<IEnumerable<User>>> GetLabelersByProjectAsync(int projectId)
     {
-        var projectOptional = await projectRepository.GetProjectAsync(projectId);
+        var projectOptional = await projectRepository.GetProjectAsync(projectId, currentUserService.UserId, currentUserService.IsAdmin);
         if (projectOptional.IsFailure)
         {
             return Optional<IEnumerable<User>>.Failure("No project found!");

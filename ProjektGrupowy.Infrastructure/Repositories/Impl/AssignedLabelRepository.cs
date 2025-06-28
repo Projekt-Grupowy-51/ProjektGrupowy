@@ -1,19 +1,18 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using ProjektGrupowy.Domain.Models;
-using ProjektGrupowy.Domain.Services;
 using ProjektGrupowy.Domain.Utils;
 using ProjektGrupowy.Infrastructure.Data;
 
 namespace ProjektGrupowy.Infrastructure.Repositories.Impl;
 
-public class AssignedLabelRepository(AppDbContext context, ILogger<AssignedLabelRepository> logger, ICurrentUserService currentUserService) : IAssignedLabelRepository
+public class AssignedLabelRepository(AppDbContext context, ILogger<AssignedLabelRepository> logger) : IAssignedLabelRepository
 {
-    public async Task<Optional<IEnumerable<AssignedLabel>>> GetAssignedLabelsAsync()
+    public async Task<Optional<IEnumerable<AssignedLabel>>> GetAssignedLabelsAsync(string userId, bool isAdmin)
     {
         try
         {
-            var assignedLabels = await context.AssignedLabels.FilteredAssignedLabels(currentUserService.UserId, currentUserService.IsAdmin)
+            var assignedLabels = await context.AssignedLabels.FilteredAssignedLabels(userId, isAdmin)
                 .OrderByDescending(a => a.InsDate)
                 .ToListAsync();
             return Optional<IEnumerable<AssignedLabel>>.Success(assignedLabels);
@@ -25,11 +24,11 @@ public class AssignedLabelRepository(AppDbContext context, ILogger<AssignedLabel
         }
     }
 
-    public async Task<Optional<AssignedLabel>> GetAssignedLabelAsync(int id)
+    public async Task<Optional<AssignedLabel>> GetAssignedLabelAsync(int id, string userId, bool isAdmin)
     {
         try
         {
-            var assignedLabel = await context.AssignedLabels.FilteredAssignedLabels(currentUserService.UserId, currentUserService.IsAdmin).FirstOrDefaultAsync(a => a.Id == id);
+            var assignedLabel = await context.AssignedLabels.FilteredAssignedLabels(userId, isAdmin).FirstOrDefaultAsync(a => a.Id == id);
             return assignedLabel is null
                 ? Optional<AssignedLabel>.Failure("Assigned label not found")
                 : Optional<AssignedLabel>.Success(assignedLabel);
@@ -86,11 +85,11 @@ public class AssignedLabelRepository(AppDbContext context, ILogger<AssignedLabel
         }
     }
 
-    public async Task<Optional<IEnumerable<AssignedLabel>>> GetAssignedLabelsByVideoIdAsync(int videoId)
+    public async Task<Optional<IEnumerable<AssignedLabel>>> GetAssignedLabelsByVideoIdAsync(int videoId, string userId, bool isAdmin)
     {
         try
         {
-            var assignedLabels = await context.AssignedLabels.FilteredAssignedLabels(currentUserService.UserId, currentUserService.IsAdmin)
+            var assignedLabels = await context.AssignedLabels.FilteredAssignedLabels(userId, isAdmin)
                 .Where(a => a.Video.Id == videoId)
                 .OrderByDescending(a => a.InsDate)
                 .ToListAsync();
@@ -103,11 +102,11 @@ public class AssignedLabelRepository(AppDbContext context, ILogger<AssignedLabel
         }
     }
 
-    public async Task<Optional<IEnumerable<AssignedLabel>>> GetAssignedLabelsByVideoIdAndSubjectIdAsync(int videoId, int subjectId)
+    public async Task<Optional<IEnumerable<AssignedLabel>>> GetAssignedLabelsByVideoIdAndSubjectIdAsync(int videoId, int subjectId, string userId, bool isAdmin)
     {
         try
         {
-            var assignedLabels = await context.AssignedLabels.FilteredAssignedLabels(currentUserService.UserId, currentUserService.IsAdmin)
+            var assignedLabels = await context.AssignedLabels.FilteredAssignedLabels(userId, isAdmin)
                 .Where(a => a.Video.Id == videoId && a.Label.Subject.Id == subjectId)
                 .OrderByDescending(a => a.InsDate)
                 .ToListAsync();

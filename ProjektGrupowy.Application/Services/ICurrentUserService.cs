@@ -1,6 +1,6 @@
 using System.Security.Claims;
 
-namespace ProjektGrupowy.Domain.Services;
+namespace ProjektGrupowy.Application.Services;
 
 public interface ICurrentUserService
 {

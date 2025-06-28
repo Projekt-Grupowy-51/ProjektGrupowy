@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using ProjektGrupowy.Domain.Utils.Constants;
 using System.Security.Claims;
 
-namespace ProjektGrupowy.Domain.Services.Impl;
+namespace ProjektGrupowy.Application.Services.Impl;
 
 public class CurrentUserService(IHttpContextAccessor httpContextAccessor) : ICurrentUserService
 {

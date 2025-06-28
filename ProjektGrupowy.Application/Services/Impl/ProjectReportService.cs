@@ -6,7 +6,7 @@ using ProjektGrupowy.Infrastructure.Repositories;
 using ProjektGrupowy.Application.SignalR;
 using ProjektGrupowy.Domain.Utils;
 using ProjektGrupowy.Domain.Utils;
-using ProjektGrupowy.Domain.Services;
+using ProjektGrupowy.Application.Services;
 
 namespace ProjektGrupowy.Application.Services.Impl;
 
@@ -18,7 +18,7 @@ public class ProjectReportService(
 {
     public async Task<Optional<IEnumerable<GeneratedReport>>> GetReportsAsync(int projectId)
     {
-        var reportsOpt = await projectReportRepository.GetReportsAsync(projectId);
+        var reportsOpt = await projectReportRepository.GetReportsAsync(projectId, currentUserService.UserId, currentUserService.IsAdmin);
         if (reportsOpt.IsFailure)
         {
             return reportsOpt;
@@ -36,7 +36,7 @@ public class ProjectReportService(
 
     public async Task<Optional<GeneratedReport>> GetReportAsync(int reportId)
     {
-        var reportOpt = await projectReportRepository.GetReportAsync(reportId);
+        var reportOpt = await projectReportRepository.GetReportAsync(reportId, currentUserService.UserId, currentUserService.IsAdmin);
         if (reportOpt.IsFailure)
         {
             return reportOpt;
@@ -52,7 +52,7 @@ public class ProjectReportService(
 
     public async Task DeleteReportAsync(int reportId)
     {
-        var reportOpt = await projectReportRepository.GetReportAsync(reportId);
+        var reportOpt = await projectReportRepository.GetReportAsync(reportId, currentUserService.UserId, currentUserService.IsAdmin);
         if (reportOpt.IsFailure)
         {
             await messageService.SendInfoAsync(currentUserService.UserId, "Error while deleting report.");

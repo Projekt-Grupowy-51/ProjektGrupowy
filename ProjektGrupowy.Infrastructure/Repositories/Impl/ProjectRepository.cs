@@ -2,13 +2,12 @@
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 using ProjektGrupowy.Domain.Models;
-using ProjektGrupowy.Domain.Services;
 using ProjektGrupowy.Domain.Utils;
 using ProjektGrupowy.Infrastructure.Data;
 
 namespace ProjektGrupowy.Infrastructure.Repositories.Impl;
 
-public class ProjectRepository(AppDbContext context, ILogger<ProjectRepository> logger, ICurrentUserService currentUserService) : IProjectRepository
+public class ProjectRepository(AppDbContext context, ILogger<ProjectRepository> logger) : IProjectRepository
 {
     public async Task<Optional<Project>> AddProjectAsync(Project project)
     {
@@ -47,12 +46,12 @@ public class ProjectRepository(AppDbContext context, ILogger<ProjectRepository> 
         }
     }
 
-    public async Task<Optional<Dictionary<int, int>>> GetLabelerCountForAssignments(int projectId)
+    public async Task<Optional<Dictionary<int, int>>> GetLabelerCountForAssignments(int projectId, string userId, bool isAdmin)
     {
         try
         {
             var result = await context.SubjectVideoGroupAssignments
-                .FilteredSubjectVideoGroupAssignments(currentUserService.UserId, currentUserService.IsAdmin)
+                .FilteredSubjectVideoGroupAssignments(userId, isAdmin)
                 .Where(svga => svga.VideoGroup.Project.Id == projectId)
                 .GroupBy(svga => svga.Id)
                 .Select(g => new
@@ -88,14 +87,11 @@ public class ProjectRepository(AppDbContext context, ILogger<ProjectRepository> 
 
     public async Task<IDbContextTransaction> BeginTransactionAsync() => await context.Database.BeginTransactionAsync();
 
-    public async Task<Optional<Project>> GetProjectAsync(int id, string? userId = null, bool? isAdmin = null)
+    public async Task<Optional<Project>> GetProjectAsync(int id, string userId, bool isAdmin)
     {
-        var ownerId = userId ?? currentUserService.UserId;
-        var isOwner = isAdmin ?? currentUserService.IsAdmin;
-
         try
         {
-            var project = await context.Projects.FilteredProjects(ownerId, isOwner)
+            var project = await context.Projects.FilteredProjects(userId, isAdmin)
                 .FirstOrDefaultAsync(p => p.Id == id);
             return project is null
                 ? Optional<Project>.Failure("Project not found")
@@ -108,11 +104,11 @@ public class ProjectRepository(AppDbContext context, ILogger<ProjectRepository> 
         }
     }
 
-    public async Task<Optional<IEnumerable<Project>>> GetProjectsAsync()
+    public async Task<Optional<IEnumerable<Project>>> GetProjectsAsync(string userId, bool isAdmin)
     {
         try
         {
-            var projects = await context.Projects.FilteredProjects(currentUserService.UserId, currentUserService.IsAdmin)
+            var projects = await context.Projects.FilteredProjects(userId, isAdmin)
                 .ToListAsync();
             return Optional<IEnumerable<Project>>.Success(projects);
         }

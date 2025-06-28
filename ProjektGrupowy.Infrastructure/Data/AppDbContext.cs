@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using ProjektGrupowy.Domain.Models;
-using ProjektGrupowy.Domain.Services;
 
 namespace ProjektGrupowy.Infrastructure.Data;
 

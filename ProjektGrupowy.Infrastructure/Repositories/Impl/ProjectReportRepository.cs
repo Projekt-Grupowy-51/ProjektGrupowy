@@ -1,18 +1,17 @@
 using Microsoft.EntityFrameworkCore;
 using ProjektGrupowy.Domain.Models;
-using ProjektGrupowy.Domain.Services;
 using ProjektGrupowy.Domain.Utils;
 using ProjektGrupowy.Infrastructure.Data;
 
 namespace ProjektGrupowy.Infrastructure.Repositories.Impl;
 
-public class ProjectReportRepository(AppDbContext dbContext, ICurrentUserService currentUserService) : IProjectReportRepository
+public class ProjectReportRepository(AppDbContext dbContext) : IProjectReportRepository
 {
-    public async Task<Optional<IEnumerable<GeneratedReport>>> GetReportsAsync(int projectId)
+    public async Task<Optional<IEnumerable<GeneratedReport>>> GetReportsAsync(int projectId, string userId, bool isAdmin)
     {
         try
         {
-            var project = await dbContext.Projects.FilteredProjects(currentUserService.UserId, currentUserService.IsAdmin)
+            var project = await dbContext.Projects.FilteredProjects(userId, isAdmin)
                 .SingleOrDefaultAsync(p => p.Id == projectId);
 
             return project is null
@@ -25,11 +24,11 @@ public class ProjectReportRepository(AppDbContext dbContext, ICurrentUserService
         }
     }
 
-    public async Task<Optional<GeneratedReport>> GetReportAsync(int reportId)
+    public async Task<Optional<GeneratedReport>> GetReportAsync(int reportId, string userId, bool isAdmin)
     {
         try
         {
-            var report = await dbContext.GeneratedReports.FilteredGeneratedReports(currentUserService.UserId, currentUserService.IsAdmin).SingleOrDefaultAsync(r => r.Id == reportId);
+            var report = await dbContext.GeneratedReports.FilteredGeneratedReports(userId, isAdmin).SingleOrDefaultAsync(r => r.Id == reportId);
             return report is null
                 ? Optional<GeneratedReport>.Failure($"Report with id {reportId} was not found")
                 : Optional<GeneratedReport>.Success(report);

@@ -9,7 +9,7 @@ using ProjektGrupowy.Infrastructure.Repositories;
 using ProjektGrupowy.Application.SignalR;
 using ProjektGrupowy.Domain.Utils;
 using ProjektGrupowy.Domain.Utils;
-using ProjektGrupowy.Domain.Services;
+using ProjektGrupowy.Application.Services;
 using Microsoft.Extensions.Logging;
 
 namespace ProjektGrupowy.Application.Services.Impl;
@@ -27,7 +27,7 @@ public class ProjectAccessCodeService(
     {
         try
         {
-            var accessCodeOpt = await repository.GetAccessCodeByCodeAsync(accessCodeRequest.Code);
+            var accessCodeOpt = await repository.GetAccessCodeByCodeAsync(accessCodeRequest.Code, currentUserService.UserId, currentUserService.IsAdmin);
             if (accessCodeOpt.IsFailure)
                 return false;
 
@@ -45,7 +45,7 @@ public class ProjectAccessCodeService(
 
     public async Task<Optional<IEnumerable<ProjectAccessCode>>> GetAccessCodesByProjectAsync(int projectId)
     {
-        var accessCodeOpt = await repository.GetAccessCodesByProjectAsync(projectId);
+        var accessCodeOpt = await repository.GetAccessCodesByProjectAsync(projectId, currentUserService.UserId, currentUserService.IsAdmin);
         if (accessCodeOpt.IsFailure)
         {
             return accessCodeOpt;
@@ -67,7 +67,7 @@ public class ProjectAccessCodeService(
 
         try
         {
-            var projectOpt = await projectRepository.GetProjectAsync(createCodeRequest.ProjectId);
+            var projectOpt = await projectRepository.GetProjectAsync(createCodeRequest.ProjectId, currentUserService.UserId, currentUserService.IsAdmin);
             if (projectOpt.IsFailure)
             {
                 await transaction.RollbackAsync();
@@ -83,7 +83,7 @@ public class ProjectAccessCodeService(
             }
 
             // 2. Check if there is a valid access code for this project
-            var accessCodeOpt = await repository.GetValidAccessCodeByProjectAsync(project.Id);
+            var accessCodeOpt = await repository.GetValidAccessCodeByProjectAsync(project.Id, currentUserService.UserId, currentUserService.IsAdmin);
 
             if (accessCodeOpt.IsFailure)
             {
@@ -152,7 +152,7 @@ public class ProjectAccessCodeService(
 
     public async Task<Optional<ProjectAccessCode>> RetireAccessCodeAsync(string code)
     {
-        var result = await repository.GetAccessCodeByCodeAsync(code);
+        var result = await repository.GetAccessCodeByCodeAsync(code, currentUserService.UserId, currentUserService.IsAdmin);
         if (result.IsFailure)
             return Optional<ProjectAccessCode>.Failure("Access code not found");
 

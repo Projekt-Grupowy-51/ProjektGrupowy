@@ -1,19 +1,18 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using ProjektGrupowy.Domain.Models;
-using ProjektGrupowy.Domain.Services;
 using ProjektGrupowy.Domain.Utils;
 using ProjektGrupowy.Infrastructure.Data;
 
 namespace ProjektGrupowy.Infrastructure.Repositories.Impl;
 
-public class LabelRepository(AppDbContext context, ILogger<LabelRepository> logger, ICurrentUserService currentUserService) : ILabelRepository
+public class LabelRepository(AppDbContext context, ILogger<LabelRepository> logger) : ILabelRepository
 {
-    public async Task<Optional<IEnumerable<Label>>> GetLabelsAsync()
+    public async Task<Optional<IEnumerable<Label>>> GetLabelsAsync(string userId, bool isAdmin)
     {
         try
         {
-            var labels = await context.Labels.FilteredLabels(currentUserService.UserId, currentUserService.IsAdmin).ToListAsync();
+            var labels = await context.Labels.FilteredLabels(userId, isAdmin).ToListAsync();
             return Optional<IEnumerable<Label>>.Success(labels);
         }
         catch (Exception e)
@@ -23,11 +22,11 @@ public class LabelRepository(AppDbContext context, ILogger<LabelRepository> logg
         }
     }
 
-    public async Task<Optional<Label>> GetLabelAsync(int id)
+    public async Task<Optional<Label>> GetLabelAsync(int id, string userId, bool isAdmin)
     {
         try
         {
-            var label = await context.Labels.FilteredLabels(currentUserService.UserId, currentUserService.IsAdmin).FirstOrDefaultAsync(l => l.Id == id);
+            var label = await context.Labels.FilteredLabels(userId, isAdmin).FirstOrDefaultAsync(l => l.Id == id);
             return label is null
                 ? Optional<Label>.Failure("Label not found")
                 : Optional<Label>.Success(label);

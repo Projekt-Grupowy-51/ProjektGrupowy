@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using ProjektGrupowy.Domain.Models;
-using ProjektGrupowy.Domain.Services;
+using ProjektGrupowy.Application.Services;
 
 namespace ProjektGrupowy.Application.Authorization
 {

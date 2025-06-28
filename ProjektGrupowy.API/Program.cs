@@ -199,7 +199,7 @@ static void AddServices(WebApplicationBuilder builder)
     });
 
     builder.Services.AddHttpContextAccessor();
-    builder.Services.AddTransient<ICurrentUserService, CurrentUserService>();
+    builder.Services.AddTransient<ProjektGrupowy.Application.Services.ICurrentUserService, ProjektGrupowy.Application.Services.Impl.CurrentUserService>();
     builder.Services.AddScoped<IAuthorizationHandler, CustomAuthorizationHandler>();
 
     // Repositories

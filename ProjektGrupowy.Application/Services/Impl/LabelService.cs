@@ -5,7 +5,7 @@ using ProjektGrupowy.Application.DTOs.Label;
 using ProjektGrupowy.Application.Exceptions;
 using ProjektGrupowy.Application.SignalR;
 using ProjektGrupowy.Domain.Models;
-using ProjektGrupowy.Domain.Services;
+using ProjektGrupowy.Application.Services;
 using ProjektGrupowy.Domain.Utils;
 using ProjektGrupowy.Infrastructure.Repositories;
 
@@ -15,7 +15,7 @@ public class LabelService(ILabelRepository labelRepository, IMessageService mess
 {
     public async Task<Optional<IEnumerable<Label>>> GetLabelsAsync()
     {
-        var labelsOpt = await labelRepository.GetLabelsAsync();
+        var labelsOpt = await labelRepository.GetLabelsAsync(currentUserService.UserId, currentUserService.IsAdmin);
         if (labelsOpt.IsFailure)
         {
             return labelsOpt;
@@ -33,7 +33,7 @@ public class LabelService(ILabelRepository labelRepository, IMessageService mess
 
     public async Task<Optional<Label>> GetLabelAsync(int id)
     {
-        var labelOpt = await labelRepository.GetLabelAsync(id);
+        var labelOpt = await labelRepository.GetLabelAsync(id, currentUserService.UserId, currentUserService.IsAdmin);
         if (labelOpt.IsFailure)
         {
             return labelOpt;
@@ -49,7 +49,7 @@ public class LabelService(ILabelRepository labelRepository, IMessageService mess
 
     public async Task<Optional<Label>> AddLabelAsync(LabelRequest labelRequest)
     {
-        var subjectOptional = await subjectRepository.GetSubjectAsync(labelRequest.SubjectId);
+        var subjectOptional = await subjectRepository.GetSubjectAsync(labelRequest.SubjectId, currentUserService.UserId, currentUserService.IsAdmin);
 
         if (subjectOptional.IsFailure)
         {
@@ -93,7 +93,7 @@ public class LabelService(ILabelRepository labelRepository, IMessageService mess
 
     public async Task<Optional<Label>> UpdateLabelAsync(int labelId, LabelRequest labelRequest)
     {
-        var labelOptional = await labelRepository.GetLabelAsync(labelId);
+        var labelOptional = await labelRepository.GetLabelAsync(labelId, currentUserService.UserId, currentUserService.IsAdmin);
 
         if (labelOptional.IsFailure)
         {
@@ -107,7 +107,7 @@ public class LabelService(ILabelRepository labelRepository, IMessageService mess
             throw new ForbiddenException();
         }
 
-        var subjectOptional = await subjectRepository.GetSubjectAsync(labelRequest.SubjectId);
+        var subjectOptional = await subjectRepository.GetSubjectAsync(labelRequest.SubjectId, currentUserService.UserId, currentUserService.IsAdmin);
         if (subjectOptional.IsFailure)
         {
             return Optional<Label>.Failure("No subject found!");
@@ -146,7 +146,7 @@ public class LabelService(ILabelRepository labelRepository, IMessageService mess
 
     public async Task DeleteLabelAsync(int id)
     {
-        var label = await labelRepository.GetLabelAsync(id);
+        var label = await labelRepository.GetLabelAsync(id, currentUserService.UserId, currentUserService.IsAdmin);
 
         if (label.IsFailure)
         {

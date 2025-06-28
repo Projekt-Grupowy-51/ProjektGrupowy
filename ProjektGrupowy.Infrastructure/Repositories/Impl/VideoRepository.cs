@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using ProjektGrupowy.Domain.Models;
-using ProjektGrupowy.Domain.Services;
 using ProjektGrupowy.Domain.Utils;
 using ProjektGrupowy.Infrastructure.Data;
 
@@ -11,20 +10,18 @@ public class VideoRepository : IVideoRepository
 {
     private readonly AppDbContext _context;
     private readonly ILogger<VideoRepository> _logger;
-    private readonly ICurrentUserService _currentUserService;
 
-    public VideoRepository(AppDbContext dbContext, ILogger<VideoRepository> logger, ICurrentUserService currentUserService)
+    public VideoRepository(AppDbContext dbContext, ILogger<VideoRepository> logger)
     {
         _context = dbContext;
         _logger = logger;
-        _currentUserService = currentUserService;
     }
 
-    public async Task<Optional<IEnumerable<Video>>> GetVideosAsync()
+    public async Task<Optional<IEnumerable<Video>>> GetVideosAsync(string userId, bool isAdmin)
     {
         try
         {
-            var videos = await _context.Videos.FilteredVideos(_currentUserService.UserId, _currentUserService.IsAdmin)
+            var videos = await _context.Videos.FilteredVideos(userId, isAdmin)
                 .ToListAsync();
             return Optional<IEnumerable<Video>>.Success(videos);
         }
@@ -35,12 +32,12 @@ public class VideoRepository : IVideoRepository
         }
     }
 
-    public async Task<Optional<IEnumerable<Video>>> GetVideosAsync(int videoGroupId, int positionInQueue)
+    public async Task<Optional<IEnumerable<Video>>> GetVideosAsync(int videoGroupId, int positionInQueue, string userId, bool isAdmin)
     {
         try
         {
             // Index lookup
-            var videos = await _context.Videos.FilteredVideos(_currentUserService.UserId, _currentUserService.IsAdmin)
+            var videos = await _context.Videos.FilteredVideos(userId, isAdmin)
                 .Where(v => v.VideoGroupId == videoGroupId)
                 .Where(v => v.PositionInQueue == positionInQueue)
                 .ToListAsync();
@@ -54,11 +51,11 @@ public class VideoRepository : IVideoRepository
         }
     }
 
-    public async Task<Optional<Video>> GetVideoAsync(int id)
+    public async Task<Optional<Video>> GetVideoAsync(int id, string userId, bool isAdmin)
     {
         try
         {
-            var video = await _context.Videos.FilteredVideos(_currentUserService.UserId, _currentUserService.IsAdmin).FirstOrDefaultAsync(x => x.Id == id);
+            var video = await _context.Videos.FilteredVideos(userId, isAdmin).FirstOrDefaultAsync(x => x.Id == id);
             return video is null
                 ? Optional<Video>.Failure("Video not found")
                 : Optional<Video>.Success(video);

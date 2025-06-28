@@ -1,19 +1,18 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using ProjektGrupowy.Domain.Models;
-using ProjektGrupowy.Domain.Services;
 using ProjektGrupowy.Domain.Utils;
 using ProjektGrupowy.Infrastructure.Data;
 
 namespace ProjektGrupowy.Infrastructure.Repositories.Impl;
 
-public class SubjectRepository(AppDbContext context, ILogger<SubjectRepository> logger, ICurrentUserService currentUserService) : ISubjectRepository
+public class SubjectRepository(AppDbContext context, ILogger<SubjectRepository> logger) : ISubjectRepository
 {
-    public async Task<Optional<IEnumerable<Subject>>> GetSubjectsAsync()
+    public async Task<Optional<IEnumerable<Subject>>> GetSubjectsAsync(string userId, bool isAdmin)
     {
         try
         {
-            var subjects = await context.Subjects.FilteredSubjects(currentUserService.UserId, currentUserService.IsAdmin)
+            var subjects = await context.Subjects.FilteredSubjects(userId, isAdmin)
                 .ToListAsync();
             return Optional<IEnumerable<Subject>>.Success(subjects);
         }
@@ -24,11 +23,11 @@ public class SubjectRepository(AppDbContext context, ILogger<SubjectRepository> 
         }
     }
 
-    public async Task<Optional<Subject>> GetSubjectAsync(int id)
+    public async Task<Optional<Subject>> GetSubjectAsync(int id, string userId, bool isAdmin)
     {
         try
         {
-            var subject = await context.Subjects.FilteredSubjects(currentUserService.UserId, currentUserService.IsAdmin)
+            var subject = await context.Subjects.FilteredSubjects(userId, isAdmin)
                 .FirstOrDefaultAsync(s => s.Id == id);
             return subject is null
                 ? Optional<Subject>.Failure("Subject not found")
@@ -72,12 +71,12 @@ public class SubjectRepository(AppDbContext context, ILogger<SubjectRepository> 
         }
     }
 
-    public async Task<Optional<IEnumerable<Subject>>> GetSubjectsByProjectAsync(int projectId)
+    public async Task<Optional<IEnumerable<Subject>>> GetSubjectsByProjectAsync(int projectId, string userId, bool isAdmin)
     {
         try
         {
             // Index lookup using "IX_Projects_ScientistId" btree ("ScientistId")
-            var subjects = await context.Subjects.FilteredSubjects(currentUserService.UserId, currentUserService.IsAdmin)
+            var subjects = await context.Subjects.FilteredSubjects(userId, isAdmin)
                 .Where(s => s.Project.Id == projectId)
                 .ToArrayAsync();
 
@@ -89,9 +88,6 @@ public class SubjectRepository(AppDbContext context, ILogger<SubjectRepository> 
             return Optional<IEnumerable<Subject>>.Failure(e.Message);
         }
     }
-
-    public async Task<Optional<IEnumerable<Subject>>> GetSubjectsByProjectAsync(Project project)
-        => await GetSubjectsByProjectAsync(project.Id);
 
     public async Task DeleteSubjectAsync(Subject subject)
     {
@@ -106,11 +102,11 @@ public class SubjectRepository(AppDbContext context, ILogger<SubjectRepository> 
         }
     }
 
-    public async Task<Optional<IEnumerable<Label>>> GetSubjectLabelsAsync(int subjectId)
+    public async Task<Optional<IEnumerable<Label>>> GetSubjectLabelsAsync(int subjectId, string userId, bool isAdmin)
     {
         try
         {
-            var labels = await context.Labels.FilteredLabels(currentUserService.UserId, currentUserService.IsAdmin)
+            var labels = await context.Labels.FilteredLabels(userId, isAdmin)
                 .Where(l => l.Subject.Id == subjectId)
                 .ToListAsync();
 

@@ -5,7 +5,7 @@ using ProjektGrupowy.Application.DTOs.SubjectVideoGroupAssignment;
 using ProjektGrupowy.Application.Exceptions;
 using ProjektGrupowy.Application.SignalR;
 using ProjektGrupowy.Domain.Models;
-using ProjektGrupowy.Domain.Services;
+using ProjektGrupowy.Application.Services;
 using ProjektGrupowy.Domain.Utils;
 using ProjektGrupowy.Infrastructure.Repositories;
 
@@ -22,7 +22,7 @@ public class SubjectVideoGroupAssignmentService(
 {
     public async Task<Optional<IEnumerable<SubjectVideoGroupAssignment>>> GetSubjectVideoGroupAssignmentsAsync()
     {
-        var svgaOpt = await subjectVideoGroupAssignmentRepository.GetSubjectVideoGroupAssignmentsAsync();
+        var svgaOpt = await subjectVideoGroupAssignmentRepository.GetSubjectVideoGroupAssignmentsAsync(currentUserService.UserId, currentUserService.IsAdmin);
         if (svgaOpt.IsFailure)
         {
             return svgaOpt;
@@ -40,7 +40,7 @@ public class SubjectVideoGroupAssignmentService(
 
     public async Task<Optional<SubjectVideoGroupAssignment>> GetSubjectVideoGroupAssignmentAsync(int id)
     {
-        var subjectVideoGroupAssignmentOpt = await subjectVideoGroupAssignmentRepository.GetSubjectVideoGroupAssignmentAsync(id);
+        var subjectVideoGroupAssignmentOpt = await subjectVideoGroupAssignmentRepository.GetSubjectVideoGroupAssignmentAsync(id, currentUserService.UserId, currentUserService.IsAdmin);
         if (subjectVideoGroupAssignmentOpt.IsFailure)
         {
             return subjectVideoGroupAssignmentOpt;
@@ -58,7 +58,7 @@ public class SubjectVideoGroupAssignmentService(
 
     public async Task<Optional<SubjectVideoGroupAssignment>> AddSubjectVideoGroupAssignmentAsync(SubjectVideoGroupAssignmentRequest subjectVideoGroupAssignmentRequest)
     {
-        var subjectOptional = await subjectRepository.GetSubjectAsync(subjectVideoGroupAssignmentRequest.SubjectId);
+        var subjectOptional = await subjectRepository.GetSubjectAsync(subjectVideoGroupAssignmentRequest.SubjectId, currentUserService.UserId, currentUserService.IsAdmin);
 
         if (subjectOptional.IsFailure)
         {
@@ -75,7 +75,7 @@ public class SubjectVideoGroupAssignmentService(
             throw new ForbiddenException();
         }
 
-        var videoGroupOptional = await videoGroupRepository.GetVideoGroupAsync(subjectVideoGroupAssignmentRequest.VideoGroupId);
+        var videoGroupOptional = await videoGroupRepository.GetVideoGroupAsync(subjectVideoGroupAssignmentRequest.VideoGroupId, currentUserService.UserId, currentUserService.IsAdmin);
         if (videoGroupOptional.IsFailure)
         {
             await messageService.SendErrorAsync(
@@ -118,7 +118,7 @@ public class SubjectVideoGroupAssignmentService(
 
     public async Task<Optional<SubjectVideoGroupAssignment>> UpdateSubjectVideoGroupAssignmentAsync(int subjectVideoGroupAssignmentId, SubjectVideoGroupAssignmentRequest subjectVideoGroupAssignmentRequest)
     {
-        var subjectVideoGroupAssignmentOptional = await subjectVideoGroupAssignmentRepository.GetSubjectVideoGroupAssignmentAsync(subjectVideoGroupAssignmentId);
+        var subjectVideoGroupAssignmentOptional = await subjectVideoGroupAssignmentRepository.GetSubjectVideoGroupAssignmentAsync(subjectVideoGroupAssignmentId, currentUserService.UserId, currentUserService.IsAdmin);
 
         if (subjectVideoGroupAssignmentOptional.IsFailure)
         {
@@ -135,7 +135,7 @@ public class SubjectVideoGroupAssignmentService(
             throw new ForbiddenException();
         }
 
-        var subjectOptional = await subjectRepository.GetSubjectAsync(subjectVideoGroupAssignmentRequest.SubjectId);
+        var subjectOptional = await subjectRepository.GetSubjectAsync(subjectVideoGroupAssignmentRequest.SubjectId, currentUserService.UserId, currentUserService.IsAdmin);
         if (subjectOptional.IsFailure)
         {
             await messageService.SendErrorAsync(
@@ -151,7 +151,7 @@ public class SubjectVideoGroupAssignmentService(
             throw new ForbiddenException();
         }
 
-        var videoGroupOptional = await videoGroupRepository.GetVideoGroupAsync(subjectVideoGroupAssignmentRequest.VideoGroupId);
+        var videoGroupOptional = await videoGroupRepository.GetVideoGroupAsync(subjectVideoGroupAssignmentRequest.VideoGroupId, currentUserService.UserId, currentUserService.IsAdmin);
         if (videoGroupOptional.IsFailure)
         {
             await messageService.SendErrorAsync(
@@ -191,7 +191,7 @@ public class SubjectVideoGroupAssignmentService(
 
     public async Task DeleteSubjectVideoGroupAssignmentAsync(int subjectVideoGroupAssignmentId)
     {
-        var subjectVideoGroupAssignmentOpt = await subjectVideoGroupAssignmentRepository.GetSubjectVideoGroupAssignmentAsync(subjectVideoGroupAssignmentId);
+        var subjectVideoGroupAssignmentOpt = await subjectVideoGroupAssignmentRepository.GetSubjectVideoGroupAssignmentAsync(subjectVideoGroupAssignmentId, currentUserService.UserId, currentUserService.IsAdmin);
 
         if (subjectVideoGroupAssignmentOpt.IsFailure)
         {
@@ -217,7 +217,7 @@ public class SubjectVideoGroupAssignmentService(
 
     public async Task<Optional<IEnumerable<SubjectVideoGroupAssignment>>> GetSubjectVideoGroupAssignmentsByProjectAsync(int projectId)
     {
-        var subjectVideoGroupAssignmentsOpt = await subjectVideoGroupAssignmentRepository.GetSubjectVideoGroupAssignmentsByProjectAsync(projectId);
+        var subjectVideoGroupAssignmentsOpt = await subjectVideoGroupAssignmentRepository.GetSubjectVideoGroupAssignmentsByProjectAsync(projectId, currentUserService.UserId, currentUserService.IsAdmin);
         if (subjectVideoGroupAssignmentsOpt.IsFailure)
         {
             return subjectVideoGroupAssignmentsOpt;
@@ -235,7 +235,7 @@ public class SubjectVideoGroupAssignmentService(
 
     public async Task<Optional<IEnumerable<User>>> GetSubjectVideoGroupAssignmentsLabelersAsync(int id)
     {
-        var subjectVideoGroupAssignmentOpt = await subjectVideoGroupAssignmentRepository.GetSubjectVideoGroupAssignmentAsync(id);
+        var subjectVideoGroupAssignmentOpt = await subjectVideoGroupAssignmentRepository.GetSubjectVideoGroupAssignmentAsync(id, currentUserService.UserId, currentUserService.IsAdmin);
         if (subjectVideoGroupAssignmentOpt.IsFailure)
         {
             return Optional<IEnumerable<User>>.Failure("No subject video group assignment found!");
@@ -248,12 +248,12 @@ public class SubjectVideoGroupAssignmentService(
             throw new ForbiddenException();
         }
 
-        return await subjectVideoGroupAssignmentRepository.GetSubjectVideoGroupAssignmentsLabelersAsync(id);
+        return await subjectVideoGroupAssignmentRepository.GetSubjectVideoGroupAssignmentsLabelersAsync(id, currentUserService.UserId, currentUserService.IsAdmin);
     }
 
     public async Task<Optional<SubjectVideoGroupAssignment>> AssignLabelerToAssignmentAsync(int assignmentId, string labelerId)
     {
-        var assignmentOpt = await subjectVideoGroupAssignmentRepository.GetSubjectVideoGroupAssignmentAsync(assignmentId);
+        var assignmentOpt = await subjectVideoGroupAssignmentRepository.GetSubjectVideoGroupAssignmentAsync(assignmentId, currentUserService.UserId, currentUserService.IsAdmin);
         if (assignmentOpt.IsFailure)
         {
             return assignmentOpt;
@@ -275,7 +275,7 @@ public class SubjectVideoGroupAssignmentService(
             return Optional<SubjectVideoGroupAssignment>.Failure("No labeler found!");
         }
 
-        var result = await subjectVideoGroupAssignmentRepository.AssignLabelerToAssignmentAsync(assignment.Id, labelerOpt.Id);
+        var result = await subjectVideoGroupAssignmentRepository.AssignLabelerToAssignmentAsync(assignment.Id, labelerOpt.Id, currentUserService.UserId, currentUserService.IsAdmin);
         if (result.IsFailure)
         {
             await messageService.SendWarningAsync(
@@ -294,7 +294,7 @@ public class SubjectVideoGroupAssignmentService(
 
     public async Task<Optional<SubjectVideoGroupAssignment>> UnassignLabelerFromAssignmentAsync(int assignmentId, string labelerId)
     {
-        var assignmentOpt = await subjectVideoGroupAssignmentRepository.GetSubjectVideoGroupAssignmentAsync(assignmentId);
+        var assignmentOpt = await subjectVideoGroupAssignmentRepository.GetSubjectVideoGroupAssignmentAsync(assignmentId, currentUserService.UserId, currentUserService.IsAdmin);
         if (assignmentOpt.IsFailure)
         {
             return assignmentOpt;
@@ -316,6 +316,6 @@ public class SubjectVideoGroupAssignmentService(
             return Optional<SubjectVideoGroupAssignment>.Failure("No labeler found!");
         }
 
-        return await subjectVideoGroupAssignmentRepository.UnassignLabelerFromAssignmentAsync(assignment.Id, labelerOpt.Id);
+        return await subjectVideoGroupAssignmentRepository.UnassignLabelerFromAssignmentAsync(assignment.Id, labelerOpt.Id, currentUserService.UserId, currentUserService.IsAdmin);
     }
 }

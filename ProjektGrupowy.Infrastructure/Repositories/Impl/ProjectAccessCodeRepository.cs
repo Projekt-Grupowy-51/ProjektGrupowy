@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 using ProjektGrupowy.Domain.Models;
-using ProjektGrupowy.Domain.Services;
 using ProjektGrupowy.Domain.Utils;
 using ProjektGrupowy.Infrastructure.Data;
 
@@ -10,15 +9,14 @@ namespace ProjektGrupowy.Infrastructure.Repositories.Impl;
 
 public class ProjectAccessCodeRepository(
     AppDbContext dbContext,
-    ILogger<ProjectAccessCodeRepository> logger,
-    ICurrentUserService currentUserService) : IProjectAccessCodeRepository
+    ILogger<ProjectAccessCodeRepository> logger) : IProjectAccessCodeRepository
 {
-    public async Task<Optional<ProjectAccessCode>> GetAccessCodeByCodeAsync(string code)
+    public async Task<Optional<ProjectAccessCode>> GetAccessCodeByCodeAsync(string code, string userId, bool isAdmin)
     {
         try
         {
             var accessCode = await dbContext
-                .ProjectAccessCodes.FilteredProjectAccessCodes(currentUserService.UserId, currentUserService.IsAdmin)
+                .ProjectAccessCodes.FilteredProjectAccessCodes(userId, isAdmin)
                 .FirstOrDefaultAsync(p => p.Code == code);
 
             return accessCode is null
@@ -32,12 +30,12 @@ public class ProjectAccessCodeRepository(
         }
     }
 
-    public async Task<Optional<IEnumerable<ProjectAccessCode>>> GetAccessCodesByProjectAsync(int projectId)
+    public async Task<Optional<IEnumerable<ProjectAccessCode>>> GetAccessCodesByProjectAsync(int projectId, string userId, bool isAdmin)
     {
         try
         {
             var accessCodes = await dbContext
-                .ProjectAccessCodes.FilteredProjectAccessCodes(currentUserService.UserId, currentUserService.IsAdmin)
+                .ProjectAccessCodes.FilteredProjectAccessCodes(userId, isAdmin)
                 .Where(p => p.Project.Id == projectId)
                 .ToArrayAsync();
 
@@ -50,12 +48,12 @@ public class ProjectAccessCodeRepository(
         }
     }
 
-    public async Task<Optional<ProjectAccessCode>> GetValidAccessCodeByProjectAsync(int projectId)
+    public async Task<Optional<ProjectAccessCode>> GetValidAccessCodeByProjectAsync(int projectId, string userId, bool isAdmin)
     {
         try
         {
             var validAccessCode = await dbContext
-                .ProjectAccessCodes.FilteredProjectAccessCodes(currentUserService.UserId, currentUserService.IsAdmin)
+                .ProjectAccessCodes.FilteredProjectAccessCodes(userId, isAdmin)
                 .Where(p => p.Project.Id == projectId)
                 .Where(p => (p.ExpiresAtUtc == null || p.ExpiresAtUtc > DateTime.UtcNow))
                 .SingleOrDefaultAsync();
