@@ -4,7 +4,7 @@ namespace ProjektGrupowy.Application.SignalR;
 
 public class RedisClientManager(IConnectionMultiplexer redis) : IConnectedClientManager
 {
-    private readonly IDatabase _db = redis.GetDatabase();
+    private readonly IDatabase _database = redis.GetDatabase();
     private const string OnlineUsersKey = "online_users";
 
     public async Task AddClientAsync(string userId, string connectionId)
@@ -12,44 +12,47 @@ public class RedisClientManager(IConnectionMultiplexer redis) : IConnectedClient
         var userKey = $"user:{userId}";
         var connectionKey = $"connection:{connectionId}";
 
-        var batch = _db.CreateBatch();
-        await batch.SetAddAsync(userKey, connectionId);
-        await batch.StringSetAsync(connectionKey, userId);
-        await batch.SetAddAsync(OnlineUsersKey, userId);
+        var batch = _database.CreateBatch();
+
+        var addToUserSetTask = batch.SetAddAsync(userKey, connectionId);
+        var setConnectionMappingTask = batch.StringSetAsync(connectionKey, userId);
+        var addToOnlineUsersTask = batch.SetAddAsync(OnlineUsersKey, userId);
+
         batch.Execute();
-        await Task.CompletedTask;
+
+        await Task.WhenAll(addToUserSetTask, setConnectionMappingTask, addToOnlineUsersTask);
     }
 
     public async Task RemoveClientAsync(string connectionId)
     {
         var connectionKey = $"connection:{connectionId}";
-        var userId = await _db.StringGetAsync(connectionKey);
+        var userId = await _database.StringGetAsync(connectionKey);
 
         if (userId.IsNullOrEmpty)
             return;
 
-        string userKey = $"user:{userId}";
+        var userKey = $"user:{userId}";
 
-        await _db.SetRemoveAsync(userKey, connectionId);
-        await _db.KeyDeleteAsync(connectionKey);
+        await _database.SetRemoveAsync(userKey, connectionId);
+        await _database.KeyDeleteAsync(connectionKey);
 
-        if (await _db.SetLengthAsync(userKey) == 0)
+        if (await _database.SetLengthAsync(userKey) == 0)
         {
-            await _db.KeyDeleteAsync(userKey);
-            await _db.SetRemoveAsync(OnlineUsersKey, userId);
+            await _database.KeyDeleteAsync(userKey);
+            await _database.SetRemoveAsync(OnlineUsersKey, userId);
         }
     }
 
     public async Task<IReadOnlyList<string>> GetConnectionIdsAsync(string userId)
     {
         string userKey = $"user:{userId}";
-        var members = await _db.SetMembersAsync(userKey);
+        var members = await _database.SetMembersAsync(userKey);
         return members.Select(x => x.ToString()).ToList();
     }
 
     public async Task<IEnumerable<string>> GetOnlineUsersAsync()
     {
-        var members = await _db.SetMembersAsync(OnlineUsersKey);
+        var members = await _database.SetMembersAsync(OnlineUsersKey);
         return members.Select(x => x.ToString());
     }
 }
