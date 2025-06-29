@@ -1,6 +1,6 @@
 using System.Security.Claims;
 
-namespace ProjektGrupowy.Domain.Utils.Extensions
+namespace ProjektGrupowy.Application.Utils.Extensions
 {
     public static class ClaimsPrincipalExtensions
     {

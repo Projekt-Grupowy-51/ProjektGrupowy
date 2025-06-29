@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc.Filters;
 using ProjektGrupowy.Application.SignalR;
 using ProjektGrupowy.Application.Services;
-using ProjektGrupowy.Domain.Utils;
+using ProjektGrupowy.Application.Utils;
 
 namespace ProjektGrupowy.API.Filters;
 

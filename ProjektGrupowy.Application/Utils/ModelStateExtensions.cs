@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
 
-namespace ProjektGrupowy.Domain.Utils;
+namespace ProjektGrupowy.Application.Utils;
 
 public static class ModelStateExtensions
 {

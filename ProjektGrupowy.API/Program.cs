@@ -267,6 +267,7 @@ static void AddServices(WebApplicationBuilder builder)
         cfg.AddProfile<LabelerMap>();
         cfg.AddProfile<LabelMap>();
         cfg.AddProfile<ProjectMap>();
+        cfg.AddProfile<ReportMap>();
         cfg.AddProfile<SubjectMap>();
         cfg.AddProfile<SubjectVideoGroupAssignmentMap>();
         cfg.AddProfile<VideoGroupMap>();

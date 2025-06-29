@@ -1,7 +1,7 @@
 ﻿using ProjektGrupowy.Domain.Models;
 using System.Security.Cryptography;
 
-namespace ProjektGrupowy.Domain.Utils;
+namespace ProjektGrupowy.Application.Utils;
 
 public static class AccessCodeGenerator
 {

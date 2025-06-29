@@ -5,7 +5,7 @@ using ProjektGrupowy.API.Filters;
 using ProjektGrupowy.Application.DTOs.AssignedLabel;
 using ProjektGrupowy.Application.DTOs.Video;
 using ProjektGrupowy.Application.Services;
-using ProjektGrupowy.Domain.Utils;
+using ProjektGrupowy.Application.Utils;
 using ProjektGrupowy.Domain.Utils.Constants;
 
 namespace ProjektGrupowy.API.Controllers;

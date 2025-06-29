@@ -7,9 +7,9 @@ using ProjektGrupowy.Application.DTOs.ProjectReport;
 using ProjektGrupowy.Application.Services;
 using ProjektGrupowy.Application.Services.Background;
 using ProjektGrupowy.Application.SignalR;
-using ProjektGrupowy.Domain.Utils;
+using ProjektGrupowy.Application.Utils;
+using ProjektGrupowy.Application.Utils.Extensions;
 using ProjektGrupowy.Domain.Utils.Constants;
-using ProjektGrupowy.Domain.Utils.Extensions;
 
 namespace ProjektGrupowy.API.Controllers;
 
