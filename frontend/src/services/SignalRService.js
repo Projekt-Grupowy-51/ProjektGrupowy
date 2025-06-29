@@ -4,14 +4,31 @@ class SignalRService {
   connection = null;
   hubUrl = import.meta.env.VITE_SIGNALR_HUB_URL;
 
-  constructor(addNotification) {
+  constructor(addNotification, getToken, isAuthenticated) {
     this.addNotification = addNotification;
+    this.getToken = getToken;
+    this.isAuthenticated = isAuthenticated;
+    
     console.log("SignalRService constructor called");
     console.log("SignalR hub URL:", this.hubUrl);
+    
+    if (!this.hubUrl) {
+      throw new Error("VITE_SIGNALR_HUB_URL environment variable is not defined. Please check your .env file.");
+    }
+    
     this.connection = new signalR.HubConnectionBuilder()
       .withUrl(this.hubUrl, {
-        skipNegotiation: true,
-        transport: signalR.HttpTransportType.WebSockets,
+        accessTokenFactory: async () => {
+          try {
+            // Pobierz token bez automatycznego odświeżania
+            const token = this.getToken();
+            console.log("SignalR using token:", token ? "Token present" : "No token");
+            return token;
+          } catch (error) {
+            console.error("Failed to get token for SignalR:", error);
+            return null;
+          }
+        }
       })
       .withAutomaticReconnect()
       .configureLogging(signalR.LogLevel.Information)
@@ -31,10 +48,22 @@ class SignalRService {
     }
 
     try {
+      // Sprawdź czy użytkownik jest zalogowany przed próbą połączenia
+      if (!this.isAuthenticated()) {
+        throw new Error("User is not authenticated. Cannot connect to SignalR hub.");
+      }
+
       await this.connection.start();
-      console.log("SignalR connection started.");
+      console.log("SignalR connection started successfully.");
     } catch (error) {
       console.error("Error starting SignalR connection:", error);
+      
+      // Jeśli błąd dotyczy autoryzacji, zaloguj dodatkowe informacje
+      if (error.message.includes("Unauthorized") || error.message.includes("401")) {
+        console.error("SignalR connection failed due to authorization. Check if token is valid.");
+      }
+      
+      throw error;
     }
   }
 

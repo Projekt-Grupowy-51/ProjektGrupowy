@@ -20,35 +20,41 @@ services:
       timeout: 5s
       retries: 5
 
-  app:
-    build:
-      context: ./ProjektGrupowy.API
-      dockerfile: Dockerfile
+  #app:
+  #  build:
+  #    context: ./ProjektGrupowy.API
+  #    dockerfile: Dockerfile
+  #  environment:
+  #    - ASPNETCORE_ENVIRONMENT=Development
+  #    - ConnectionStrings__DefaultConnection=Host=db;Database=mydatabase;Username=myuser;Password=mypassword
+  #    - ASPNETCORE_URLS=http://+:80
+  #  ports:
+  #    - "5000:80"
+  #  networks:
+  #    - mynetwork
+  #  depends_on:
+  #    - db
+  #  volumes:
+  #    - videos_data:/app/videos
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0
+    container_name: keycloak
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Host=db;Database=mydatabase;UserName=myuser;Password=mypassword
-      - ASPNETCORE_URLS=http://+:80
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://db:5432/mydatabase
+      KC_DB_USERNAME: myuser
+      KC_DB_PASSWORD: mypassword
+      KC_HOSTNAME: localhost
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
     ports:
-      - "5000:80"
+      - "8080:8080"
     networks:
       - mynetwork
     depends_on:
       - db
-    volumes:
-      - videos_data:/app/videos
-
-  # frontend:
-  #   build:
-  #       context: ./frontend
-  #       dockerfile: Dockerfile
-  #   ports:
-  #       - "3000:3000"
-  #   networks:
-  #       - mynetwork
-  #   depends_on:
-  #       - app
-
-
+    command: start-dev
 
 volumes:
   postgres_data:
@@ -56,3 +62,4 @@ volumes:
 
 networks:
   mynetwork:
+    driver: bridge

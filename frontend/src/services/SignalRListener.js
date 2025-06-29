@@ -2,11 +2,11 @@ import { useNotification } from "../context/NotificationContext";
 import { getSignalRService } from "./SignalRServiceInstance";
 import { useEffect, useRef } from "react";
 import { MessageTypes } from "../config/messageTypes";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../KeycloakProvider";
 
 const SignalRListener = () => {
   const { addNotification } = useNotification();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, getToken } = useAuth();
   const hasStartedRef = useRef(false);
   const signalRServiceRef = useRef(null);
 
@@ -23,7 +23,11 @@ const SignalRListener = () => {
     const startConnection = async () => {
       if (!isAuthenticated || hasStartedRef.current) return;
 
-      const signalRService = getSignalRService(addNotification);
+      const signalRService = getSignalRService(
+        addNotification,
+        getToken,
+        () => isAuthenticated
+      );
       signalRServiceRef.current = signalRService;
 
       signalRService.onMessage(MessageTypes.Success, function (msg) {

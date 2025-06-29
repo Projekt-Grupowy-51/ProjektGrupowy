@@ -1,5 +1,6 @@
 import axios from "axios";
 import { startRequest, endRequest } from "./services/loadingService";
+import keycloak from "./keycloak";
 
 export const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
@@ -7,7 +8,6 @@ export const API_BASE_URL =
 
 const httpClient = axios.create({
   baseURL: API_BASE_URL,
-  withCredentials: true,
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
@@ -17,6 +17,12 @@ const httpClient = axios.create({
 httpClient.interceptors.request.use(
   (config) => {
     if (!config.skipLoadingScreen) startRequest();
+    
+    // Dodaj token Keycloak do nagłówków
+    if (keycloak.token) {
+      config.headers.Authorization = `Bearer ${keycloak.token}`;
+    }
+    
     return config;
   },
   (error) => {
@@ -38,27 +44,24 @@ httpClient.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        await axios.post(
-          `${API_BASE_URL}/Auth/RefreshToken`,
-          {},
-          { withCredentials: true }
-        );
-        return httpClient(originalRequest);
-      } catch (refreshError) {
-        if (
-          window.location.pathname !== "/login" &&
-          window.location.pathname !== "/forbidden" &&
-          window.location.pathname !== "error"
-        ) {
-          window.location.href = "/login";
+        // Spróbuj odnowić token w Keycloak
+        const refreshed = await keycloak.updateToken(70);
+        
+        if (refreshed) {
+          // Token został odnowiony, zaktualizuj nagłówek i ponów żądanie
+          originalRequest.headers.Authorization = `Bearer ${keycloak.token}`;
+          return httpClient(originalRequest);
         }
-
+      } catch (refreshError) {
+        console.error('Token refresh failed:', refreshError);
+        
+        // Jeśli odświeżenie nie powiodło się, przekieruj do logowania
+        if (keycloak.authenticated) {
+          keycloak.logout();
+        }
+        
         return Promise.reject(refreshError);
       }
-    }
-
-    if (window.location.pathname === "/login") {
-      return Promise.reject(error);
     }
 
     if (error.response?.status === 403) {

@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ProjektGrupowy.Domain.Models;
 
-[Table("user_entity", Schema = "keycloak")]
+[Table("user_entity")]
 public class User
 {
     [Key]

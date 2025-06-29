@@ -37,9 +37,16 @@ public class ProjectService(
         return projectsOptional;
     }
 
-    public async Task<Optional<Project>> GetProjectAsync(int id, string userId = null, bool isAdmin)
+    public async Task<Optional<Project>> GetProjectAsync(int id, string? userId = null, bool? isAdmin = null)
     {
-        var projectOptional = await projectRepository.GetProjectAsync(id, userId, isAdmin);
+        bool isAdminVal = isAdmin ?? currentUserService.IsAdmin;
+
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            userId = currentUserService.UserId;
+        }
+
+        var projectOptional = await projectRepository.GetProjectAsync(id, userId, isAdminVal);
         if (projectOptional.IsFailure)
         {
             return projectOptional;

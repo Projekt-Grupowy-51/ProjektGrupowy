@@ -32,10 +32,20 @@ public class ProjectController(
     [HttpGet]
     public async Task<ActionResult<IEnumerable<ProjectResponse>>> GetProjectsAsync()
     {
-        var projects = await projectService.GetProjectsAsync();
-        return projects.IsSuccess
-            ? Ok(mapper.Map<IEnumerable<ProjectResponse>>(projects.GetValueOrThrow()))
-            : NotFound(projects.GetErrorOrThrow());
+        try
+        {
+            var projects = await projectService.GetProjectsAsync();
+            if (!projects.IsSuccess)
+                return NotFound(projects.GetErrorOrThrow());
+
+            var result = mapper.Map<IEnumerable<ProjectResponse>>(projects.GetValueOrThrow());
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            // Tutaj możesz zalogować błąd lub zwrócić szczegóły w dev mode
+            return StatusCode(500, $"Internal error: {ex.Message}");
+        }
     }
 
     [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]

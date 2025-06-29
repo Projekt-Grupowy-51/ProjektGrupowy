@@ -63,7 +63,7 @@ public class AppDbContext : DbContext
 
         // Configure User as read-only view from Keycloak
         modelBuilder.Entity<User>()
-            .ToView("user_entity", "keycloak")
+            .ToView("user_entity")
             .HasKey(u => u.Id);
 
         modelBuilder.Entity<Project>()

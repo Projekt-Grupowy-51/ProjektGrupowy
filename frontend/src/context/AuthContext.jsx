@@ -1,36 +1,53 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
 import authService from "../auth";
+import keycloak from "../keycloak";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(null);
     const [roles, setRoles] = useState([]);
+    const [keycloakInitialized, setKeycloakInitialized] = useState(false);
 
     useEffect(() => {
-        const checkAuthStatus = async () => {
+        const initKeycloak = async () => {
             try {
-                const authData = await authService.checkAuth();
-                if (authData && authData.isAuthenticated) {
-                    setIsAuthenticated(true);
-                    setRoles(authData.roles);
-                } else {
-                    setIsAuthenticated(false);
-                    setRoles([]);
+                const authenticated = await keycloak.init({
+                    onLoad: 'check-sso',
+                    checkLoginIframe: false,
+                });
+                
+                setKeycloakInitialized(true);
+                setIsAuthenticated(authenticated);
+                
+                if (authenticated) {
+                    setRoles(authService.getRoles());
+                    
+                    // Automatyczne odświeżanie tokenu
+                    const interval = setInterval(() => {
+                        authService.updateToken().catch(() => {
+                            authService.logout();
+                        });
+                    }, 60000);
+                    
+                    return () => clearInterval(interval);
                 }
             } catch (error) {
+                console.error('Keycloak initialization failed:', error);
+                setKeycloakInitialized(true);
                 setIsAuthenticated(false);
                 setRoles([]);
             }
         };
-        checkAuthStatus();
+
+        initKeycloak();
     }, []);
 
-    const handleLogin = useCallback(async (username, password) => {
+    const handleLogin = useCallback(async () => {
         try {
-            const response = await authService.login(username, password);
+            await authService.login();
             setIsAuthenticated(true);
-            setRoles(response.roles);
+            setRoles(authService.getRoles());
         } catch (error) {
             throw error;
         }
@@ -46,7 +63,11 @@ export const AuthProvider = ({ children }) => {
         }
     }, []);
 
-    const hasRole = useCallback((role) => roles.includes(role), [roles]);
+    const hasRole = useCallback((role) => authService.hasRole(role), []);
+
+    if (!keycloakInitialized) {
+        return <div>Loading Keycloak...</div>;
+    }
 
     return (
         <AuthContext.Provider
@@ -56,6 +77,7 @@ export const AuthProvider = ({ children }) => {
                 handleLogin,
                 handleLogout,
                 hasRole,
+                userInfo: authService.getUserInfo(),
             }}
         >
             {children}

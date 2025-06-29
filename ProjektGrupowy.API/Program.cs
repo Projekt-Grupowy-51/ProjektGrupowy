@@ -1,6 +1,8 @@
-﻿using Hangfire;
+﻿using AutoMapper;
+using Hangfire;
 using Hangfire.MemoryStorage;
 using Hangfire.PostgreSql;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Diagnostics;
@@ -12,6 +14,7 @@ using ProjektGrupowy.API.Authentication;
 using ProjektGrupowy.API.Filters;
 using ProjektGrupowy.Application.Authorization;
 using ProjektGrupowy.Application.Exceptions;
+using ProjektGrupowy.Application.Mapper;
 using ProjektGrupowy.Application.Services;
 using ProjektGrupowy.Application.Services.Background;
 using ProjektGrupowy.Application.Services.Background.Impl;
@@ -257,7 +260,20 @@ static void AddServices(WebApplicationBuilder builder)
     builder.Services.AddSingleton<IMessageService, MessageService>();
 
     // AutoMapper
-    builder.Services.AddAutoMapper(typeof(Program).Assembly);
+    var mapperConfig = new MapperConfiguration(cfg =>
+    {
+        cfg.AddProfile<AccessCodeMap>();
+        cfg.AddProfile<AssignedLabelMap>();
+        cfg.AddProfile<LabelerMap>();
+        cfg.AddProfile<LabelMap>();
+        cfg.AddProfile<ProjectMap>();
+        cfg.AddProfile<SubjectMap>();
+        cfg.AddProfile<SubjectVideoGroupAssignmentMap>();
+        cfg.AddProfile<VideoGroupMap>();
+        cfg.AddProfile<VideoMap>();
+    });
+    var mapper = mapperConfig.CreateMapper();
+    builder.Services.AddSingleton(mapper);
 
     // Filters
     builder.Services.AddScoped<ValidateModelStateFilter>();
@@ -294,7 +310,7 @@ static void AddServices(WebApplicationBuilder builder)
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,
-                    ValidateAudience = true,
+                    ValidateAudience = false,
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
                     ValidIssuer = keycloakIssuer ?? keycloakAuthority,

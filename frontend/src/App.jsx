@@ -1,10 +1,4 @@
-import React, {
-    useEffect,
-    useState,
-    createContext,
-    useContext,
-    useCallback,
-} from "react";
+import React from "react";
 import {
     BrowserRouter as Router,
     Routes,
@@ -14,7 +8,6 @@ import {
     Outlet,
     useLocation,
 } from "react-router-dom";
-import authService from "./auth";
 import Projects from "./pages/Projects";
 import SubjectDetails from "./pages/SubjectDetails";
 import ProjectDetails from "./pages/ProjectDetails";
@@ -41,7 +34,7 @@ import NotificationSystem from "./components/NotificationSystem";
 import SignalRListener from "../src/services/SignalRListener";
 import { useTranslation } from 'react-i18next';
 import './i18n.js'
-import { AuthProvider, useAuth } from "./context/AuthContext";
+import KeycloakProvider, { useAuth } from "./KeycloakProvider";
 import { LoadingProvider } from './context/LoadingContext';
 import LoadingScreen from './components/LoadingScreen';
 
@@ -152,7 +145,7 @@ const Navbar = () => {
 function App() {
     return (
         <NotificationProvider>
-            <AuthProvider>
+            <KeycloakProvider>
                 <SignalRListener />
                 <Router>
                     <LoadingProvider>
@@ -195,7 +188,7 @@ function App() {
                         </ModalProvider>
                     </LoadingProvider>
                 </Router>
-            </AuthProvider>
+            </KeycloakProvider>
         </NotificationProvider>
     );
 }

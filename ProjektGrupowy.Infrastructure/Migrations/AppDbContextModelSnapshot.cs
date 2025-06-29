@@ -2,163 +2,28 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using ProjektGrupowy.Infrastructure.Data;
 
 #nullable disable
 
-namespace ProjektGrupowy.API.Migrations
+namespace ProjektGrupowy.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250422192735_RelationUserAssignment")]
-    partial class RelationUserAssignment
+    partial class AppDbContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.10")
+                .HasAnnotation("ProductVersion", "9.0.6")
                 .HasAnnotation("Proxies:ChangeTracking", false)
                 .HasAnnotation("Proxies:CheckEquality", false)
                 .HasAnnotation("Proxies:LazyLoading", true)
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Name")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<string>("NormalizedName")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("NormalizedName")
-                        .IsUnique()
-                        .HasDatabaseName("RoleNameIndex");
-
-                    b.ToTable("AspNetRoles", (string)null);
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ClaimType")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ClaimValue")
-                        .HasColumnType("text");
-
-                    b.Property<string>("RoleId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RoleId");
-
-                    b.ToTable("AspNetRoleClaims", (string)null);
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ClaimType")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ClaimValue")
-                        .HasColumnType("text");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("AspNetUserClaims", (string)null);
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
-                {
-                    b.Property<string>("LoginProvider")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ProviderKey")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ProviderDisplayName")
-                        .HasColumnType("text");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("LoginProvider", "ProviderKey");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("AspNetUserLogins", (string)null);
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
-                {
-                    b.Property<string>("UserId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("RoleId")
-                        .HasColumnType("text");
-
-                    b.HasKey("UserId", "RoleId");
-
-                    b.HasIndex("RoleId");
-
-                    b.ToTable("AspNetUserRoles", (string)null);
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
-                {
-                    b.Property<string>("UserId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("LoginProvider")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Value")
-                        .HasColumnType("text");
-
-                    b.HasKey("UserId", "LoginProvider", "Name");
-
-                    b.ToTable("AspNetUserTokens", (string)null);
-                });
 
             modelBuilder.Entity("ProjectUser", b =>
                 {
@@ -175,13 +40,17 @@ namespace ProjektGrupowy.API.Migrations
                     b.ToTable("ProjectLabelers", (string)null);
                 });
 
-            modelBuilder.Entity("ProjektGrupowy.API.Models.AssignedLabel", b =>
+            modelBuilder.Entity("ProjektGrupowy.Domain.Models.AssignedLabel", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CreatedById")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<DateTime?>("DelDate")
                         .HasColumnType("timestamp with time zone");
@@ -196,10 +65,6 @@ namespace ProjektGrupowy.API.Migrations
                     b.Property<int>("LabelId")
                         .HasColumnType("integer");
 
-                    b.Property<string>("OwnerId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<string>("Start")
                         .IsRequired()
                         .HasColumnType("text");
@@ -209,16 +74,57 @@ namespace ProjektGrupowy.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("LabelId");
+                    b.HasIndex("CreatedById");
 
-                    b.HasIndex("OwnerId");
+                    b.HasIndex("LabelId");
 
                     b.HasIndex("VideoId");
 
-                    b.ToTable("AssignedLabels");
+                    b.ToTable("AssignedLabels", (string)null);
                 });
 
-            modelBuilder.Entity("ProjektGrupowy.API.Models.Label", b =>
+            modelBuilder.Entity("ProjektGrupowy.Domain.Models.GeneratedReport", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedById")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("DelDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Path")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("ProjectId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedById");
+
+                    b.HasIndex("Path")
+                        .IsUnique();
+
+                    b.HasIndex("ProjectId");
+
+                    b.ToTable("GeneratedReports", (string)null);
+                });
+
+            modelBuilder.Entity("ProjektGrupowy.Domain.Models.Label", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -231,14 +137,14 @@ namespace ProjektGrupowy.API.Migrations
                         .HasMaxLength(7)
                         .HasColumnType("character varying(7)");
 
+                    b.Property<string>("CreatedById")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<DateTime?>("DelDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("OwnerId")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -254,20 +160,24 @@ namespace ProjektGrupowy.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("OwnerId");
+                    b.HasIndex("CreatedById");
 
                     b.HasIndex("SubjectId");
 
-                    b.ToTable("Labels");
+                    b.ToTable("Labels", (string)null);
                 });
 
-            modelBuilder.Entity("ProjektGrupowy.API.Models.Project", b =>
+            modelBuilder.Entity("ProjektGrupowy.Domain.Models.Project", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CreatedById")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<DateOnly>("CreationDate")
                         .HasColumnType("date");
@@ -291,18 +201,14 @@ namespace ProjektGrupowy.API.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 
-                    b.Property<string>("OwnerId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("OwnerId");
+                    b.HasIndex("CreatedById");
 
-                    b.ToTable("Projects");
+                    b.ToTable("Projects", (string)null);
                 });
 
-            modelBuilder.Entity("ProjektGrupowy.API.Models.ProjectAccessCode", b =>
+            modelBuilder.Entity("ProjektGrupowy.Domain.Models.ProjectAccessCode", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -318,15 +224,15 @@ namespace ProjektGrupowy.API.Migrations
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("CreatedById")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<DateTime?>("DelDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("ExpiresAtUtc")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("OwnerId")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.Property<int>("ProjectId")
                         .HasColumnType("integer");
@@ -337,20 +243,24 @@ namespace ProjektGrupowy.API.Migrations
                         .IsUnique()
                         .HasDatabaseName("IX_ProjectAccessCode_Code");
 
-                    b.HasIndex("OwnerId");
+                    b.HasIndex("CreatedById");
 
                     b.HasIndex("ProjectId");
 
-                    b.ToTable("ProjectAccessCodes");
+                    b.ToTable("ProjectAccessCodes", (string)null);
                 });
 
-            modelBuilder.Entity("ProjektGrupowy.API.Models.Subject", b =>
+            modelBuilder.Entity("ProjektGrupowy.Domain.Models.Subject", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CreatedById")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<DateTime?>("DelDate")
                         .HasColumnType("timestamp with time zone");
@@ -364,29 +274,29 @@ namespace ProjektGrupowy.API.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 
-                    b.Property<string>("OwnerId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<int>("ProjectId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("OwnerId");
+                    b.HasIndex("CreatedById");
 
                     b.HasIndex("ProjectId");
 
-                    b.ToTable("Subjects");
+                    b.ToTable("Subjects", (string)null);
                 });
 
-            modelBuilder.Entity("ProjektGrupowy.API.Models.SubjectVideoGroupAssignment", b =>
+            modelBuilder.Entity("ProjektGrupowy.Domain.Models.SubjectVideoGroupAssignment", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CreatedById")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<DateOnly>("CreationDate")
                         .HasColumnType("date");
@@ -397,10 +307,6 @@ namespace ProjektGrupowy.API.Migrations
                     b.Property<DateOnly?>("ModificationDate")
                         .HasColumnType("date");
 
-                    b.Property<string>("OwnerId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<int>("SubjectId")
                         .HasColumnType("integer");
 
@@ -409,83 +315,54 @@ namespace ProjektGrupowy.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("OwnerId");
+                    b.HasIndex("CreatedById");
 
                     b.HasIndex("SubjectId");
 
                     b.HasIndex("VideoGroupId");
 
-                    b.ToTable("SubjectVideoGroupAssignments");
+                    b.ToTable("SubjectVideoGroupAssignments", (string)null);
                 });
 
-            modelBuilder.Entity("ProjektGrupowy.API.Models.User", b =>
+            modelBuilder.Entity("ProjektGrupowy.Domain.Models.User", b =>
                 {
                     b.Property<string>("Id")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("id");
 
-                    b.Property<int>("AccessFailedCount")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken()
-                        .HasColumnType("text");
+                    b.Property<long>("CreatedTimestamp")
+                        .HasColumnType("bigint")
+                        .HasColumnName("created_timestamp");
 
                     b.Property<string>("Email")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
+                        .HasColumnType("text")
+                        .HasColumnName("email");
 
-                    b.Property<bool>("EmailConfirmed")
-                        .HasColumnType("boolean");
+                    b.Property<bool>("Enabled")
+                        .HasColumnType("boolean")
+                        .HasColumnName("enabled");
 
-                    b.Property<bool>("LockoutEnabled")
-                        .HasColumnType("boolean");
+                    b.Property<string>("FirstName")
+                        .HasColumnType("text")
+                        .HasColumnName("first_name");
 
-                    b.Property<DateTimeOffset?>("LockoutEnd")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("NormalizedEmail")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<string>("NormalizedUserName")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<string>("PasswordHash")
-                        .HasColumnType("text");
-
-                    b.Property<string>("PhoneNumber")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("PhoneNumberConfirmed")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTime>("RegistrationDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("SecurityStamp")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("TwoFactorEnabled")
-                        .HasColumnType("boolean");
+                    b.Property<string>("LastName")
+                        .HasColumnType("text")
+                        .HasColumnName("last_name");
 
                     b.Property<string>("UserName")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("username");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("NormalizedEmail")
-                        .HasDatabaseName("EmailIndex");
+                    b.ToTable("user_entity", (string)null);
 
-                    b.HasIndex("NormalizedUserName")
-                        .IsUnique()
-                        .HasDatabaseName("UserNameIndex");
-
-                    b.ToTable("AspNetUsers", (string)null);
+                    b.ToView("user_entity", (string)null);
                 });
 
-            modelBuilder.Entity("ProjektGrupowy.API.Models.Video", b =>
+            modelBuilder.Entity("ProjektGrupowy.Domain.Models.Video", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -497,12 +374,12 @@ namespace ProjektGrupowy.API.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("DelDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("OwnerId")
+                    b.Property<string>("CreatedById")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<DateTime?>("DelDate")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Path")
                         .IsRequired()
@@ -522,20 +399,24 @@ namespace ProjektGrupowy.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("OwnerId");
+                    b.HasIndex("CreatedById");
 
                     b.HasIndex("VideoGroupId", "PositionInQueue");
 
-                    b.ToTable("Videos");
+                    b.ToTable("Videos", (string)null);
                 });
 
-            modelBuilder.Entity("ProjektGrupowy.API.Models.VideoGroup", b =>
+            modelBuilder.Entity("ProjektGrupowy.Domain.Models.VideoGroup", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CreatedById")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<DateTime?>("DelDate")
                         .HasColumnType("timestamp with time zone");
@@ -548,20 +429,16 @@ namespace ProjektGrupowy.API.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("OwnerId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<int>("ProjectId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("OwnerId");
+                    b.HasIndex("CreatedById");
 
                     b.HasIndex("ProjectId");
 
-                    b.ToTable("VideoGroups");
+                    b.ToTable("VideoGroups", (string)null);
                 });
 
             modelBuilder.Entity("SubjectVideoGroupAssignmentUser", b =>
@@ -579,279 +456,249 @@ namespace ProjektGrupowy.API.Migrations
                     b.ToTable("LabelersAssignments", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
-                {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
-                        .WithMany()
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
-                {
-                    b.HasOne("ProjektGrupowy.API.Models.User", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
-                {
-                    b.HasOne("ProjektGrupowy.API.Models.User", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
-                {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
-                        .WithMany()
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ProjektGrupowy.API.Models.User", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
-                {
-                    b.HasOne("ProjektGrupowy.API.Models.User", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("ProjectUser", b =>
                 {
-                    b.HasOne("ProjektGrupowy.API.Models.Project", null)
+                    b.HasOne("ProjektGrupowy.Domain.Models.Project", null)
                         .WithMany()
                         .HasForeignKey("LabeledProjectsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ProjektGrupowy.API.Models.User", null)
+                    b.HasOne("ProjektGrupowy.Domain.Models.User", null)
                         .WithMany()
                         .HasForeignKey("ProjectLabelersId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ProjektGrupowy.API.Models.AssignedLabel", b =>
+            modelBuilder.Entity("ProjektGrupowy.Domain.Models.AssignedLabel", b =>
                 {
-                    b.HasOne("ProjektGrupowy.API.Models.Label", "Label")
+                    b.HasOne("ProjektGrupowy.Domain.Models.User", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ProjektGrupowy.Domain.Models.Label", "Label")
                         .WithMany("AssignedLabels")
                         .HasForeignKey("LabelId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ProjektGrupowy.API.Models.User", "Owner")
-                        .WithMany()
-                        .HasForeignKey("OwnerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ProjektGrupowy.API.Models.Video", "Video")
+                    b.HasOne("ProjektGrupowy.Domain.Models.Video", "Video")
                         .WithMany("AssignedLabels")
                         .HasForeignKey("VideoId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Label");
+                    b.Navigation("CreatedBy");
 
-                    b.Navigation("Owner");
+                    b.Navigation("Label");
 
                     b.Navigation("Video");
                 });
 
-            modelBuilder.Entity("ProjektGrupowy.API.Models.Label", b =>
+            modelBuilder.Entity("ProjektGrupowy.Domain.Models.GeneratedReport", b =>
                 {
-                    b.HasOne("ProjektGrupowy.API.Models.User", "Owner")
+                    b.HasOne("ProjektGrupowy.Domain.Models.User", "CreatedBy")
                         .WithMany()
-                        .HasForeignKey("OwnerId")
+                        .HasForeignKey("CreatedById")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ProjektGrupowy.API.Models.Subject", "Subject")
+                    b.HasOne("ProjektGrupowy.Domain.Models.Project", "Project")
+                        .WithMany("GeneratedReports")
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("Project");
+                });
+
+            modelBuilder.Entity("ProjektGrupowy.Domain.Models.Label", b =>
+                {
+                    b.HasOne("ProjektGrupowy.Domain.Models.User", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ProjektGrupowy.Domain.Models.Subject", "Subject")
                         .WithMany("Labels")
                         .HasForeignKey("SubjectId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Owner");
+                    b.Navigation("CreatedBy");
 
                     b.Navigation("Subject");
                 });
 
-            modelBuilder.Entity("ProjektGrupowy.API.Models.Project", b =>
+            modelBuilder.Entity("ProjektGrupowy.Domain.Models.Project", b =>
                 {
-                    b.HasOne("ProjektGrupowy.API.Models.User", "Owner")
+                    b.HasOne("ProjektGrupowy.Domain.Models.User", "CreatedBy")
                         .WithMany("OwnedProjects")
-                        .HasForeignKey("OwnerId")
+                        .HasForeignKey("CreatedById")
                         .OnDelete(DeleteBehavior.SetNull)
                         .IsRequired();
 
-                    b.Navigation("Owner");
+                    b.Navigation("CreatedBy");
                 });
 
-            modelBuilder.Entity("ProjektGrupowy.API.Models.ProjectAccessCode", b =>
+            modelBuilder.Entity("ProjektGrupowy.Domain.Models.ProjectAccessCode", b =>
                 {
-                    b.HasOne("ProjektGrupowy.API.Models.User", "Owner")
+                    b.HasOne("ProjektGrupowy.Domain.Models.User", "CreatedBy")
                         .WithMany()
-                        .HasForeignKey("OwnerId")
+                        .HasForeignKey("CreatedById")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ProjektGrupowy.API.Models.Project", "Project")
+                    b.HasOne("ProjektGrupowy.Domain.Models.Project", "Project")
                         .WithMany("AccessCodes")
                         .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Owner");
+                    b.Navigation("CreatedBy");
 
                     b.Navigation("Project");
                 });
 
-            modelBuilder.Entity("ProjektGrupowy.API.Models.Subject", b =>
+            modelBuilder.Entity("ProjektGrupowy.Domain.Models.Subject", b =>
                 {
-                    b.HasOne("ProjektGrupowy.API.Models.User", "Owner")
+                    b.HasOne("ProjektGrupowy.Domain.Models.User", "CreatedBy")
                         .WithMany()
-                        .HasForeignKey("OwnerId")
+                        .HasForeignKey("CreatedById")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ProjektGrupowy.API.Models.Project", "Project")
+                    b.HasOne("ProjektGrupowy.Domain.Models.Project", "Project")
                         .WithMany("Subjects")
                         .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Owner");
+                    b.Navigation("CreatedBy");
 
                     b.Navigation("Project");
                 });
 
-            modelBuilder.Entity("ProjektGrupowy.API.Models.SubjectVideoGroupAssignment", b =>
+            modelBuilder.Entity("ProjektGrupowy.Domain.Models.SubjectVideoGroupAssignment", b =>
                 {
-                    b.HasOne("ProjektGrupowy.API.Models.User", "Owner")
+                    b.HasOne("ProjektGrupowy.Domain.Models.User", "CreatedBy")
                         .WithMany("OwnedAssignments")
-                        .HasForeignKey("OwnerId")
+                        .HasForeignKey("CreatedById")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("ProjektGrupowy.API.Models.Subject", "Subject")
+                    b.HasOne("ProjektGrupowy.Domain.Models.Subject", "Subject")
                         .WithMany("SubjectVideoGroupAssignments")
                         .HasForeignKey("SubjectId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ProjektGrupowy.API.Models.VideoGroup", "VideoGroup")
+                    b.HasOne("ProjektGrupowy.Domain.Models.VideoGroup", "VideoGroup")
                         .WithMany("SubjectVideoGroupAssignments")
                         .HasForeignKey("VideoGroupId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Owner");
+                    b.Navigation("CreatedBy");
 
                     b.Navigation("Subject");
 
                     b.Navigation("VideoGroup");
                 });
 
-            modelBuilder.Entity("ProjektGrupowy.API.Models.Video", b =>
+            modelBuilder.Entity("ProjektGrupowy.Domain.Models.Video", b =>
                 {
-                    b.HasOne("ProjektGrupowy.API.Models.User", "Owner")
+                    b.HasOne("ProjektGrupowy.Domain.Models.User", "CreatedBy")
                         .WithMany()
-                        .HasForeignKey("OwnerId")
+                        .HasForeignKey("CreatedById")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ProjektGrupowy.API.Models.VideoGroup", "VideoGroup")
+                    b.HasOne("ProjektGrupowy.Domain.Models.VideoGroup", "VideoGroup")
                         .WithMany("Videos")
                         .HasForeignKey("VideoGroupId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Owner");
+                    b.Navigation("CreatedBy");
 
                     b.Navigation("VideoGroup");
                 });
 
-            modelBuilder.Entity("ProjektGrupowy.API.Models.VideoGroup", b =>
+            modelBuilder.Entity("ProjektGrupowy.Domain.Models.VideoGroup", b =>
                 {
-                    b.HasOne("ProjektGrupowy.API.Models.User", "Owner")
+                    b.HasOne("ProjektGrupowy.Domain.Models.User", "CreatedBy")
                         .WithMany()
-                        .HasForeignKey("OwnerId")
+                        .HasForeignKey("CreatedById")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ProjektGrupowy.API.Models.Project", "Project")
+                    b.HasOne("ProjektGrupowy.Domain.Models.Project", "Project")
                         .WithMany()
                         .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Owner");
+                    b.Navigation("CreatedBy");
 
                     b.Navigation("Project");
                 });
 
             modelBuilder.Entity("SubjectVideoGroupAssignmentUser", b =>
                 {
-                    b.HasOne("ProjektGrupowy.API.Models.SubjectVideoGroupAssignment", null)
+                    b.HasOne("ProjektGrupowy.Domain.Models.SubjectVideoGroupAssignment", null)
                         .WithMany()
                         .HasForeignKey("LabeledAssignmentsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ProjektGrupowy.API.Models.User", null)
+                    b.HasOne("ProjektGrupowy.Domain.Models.User", null)
                         .WithMany()
                         .HasForeignKey("LabelersId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ProjektGrupowy.API.Models.Label", b =>
+            modelBuilder.Entity("ProjektGrupowy.Domain.Models.Label", b =>
                 {
                     b.Navigation("AssignedLabels");
                 });
 
-            modelBuilder.Entity("ProjektGrupowy.API.Models.Project", b =>
+            modelBuilder.Entity("ProjektGrupowy.Domain.Models.Project", b =>
                 {
                     b.Navigation("AccessCodes");
+
+                    b.Navigation("GeneratedReports");
 
                     b.Navigation("Subjects");
                 });
 
-            modelBuilder.Entity("ProjektGrupowy.API.Models.Subject", b =>
+            modelBuilder.Entity("ProjektGrupowy.Domain.Models.Subject", b =>
                 {
                     b.Navigation("Labels");
 
                     b.Navigation("SubjectVideoGroupAssignments");
                 });
 
-            modelBuilder.Entity("ProjektGrupowy.API.Models.User", b =>
+            modelBuilder.Entity("ProjektGrupowy.Domain.Models.User", b =>
                 {
                     b.Navigation("OwnedAssignments");
 
                     b.Navigation("OwnedProjects");
                 });
 
-            modelBuilder.Entity("ProjektGrupowy.API.Models.Video", b =>
+            modelBuilder.Entity("ProjektGrupowy.Domain.Models.Video", b =>
                 {
                     b.Navigation("AssignedLabels");
                 });
 
-            modelBuilder.Entity("ProjektGrupowy.API.Models.VideoGroup", b =>
+            modelBuilder.Entity("ProjektGrupowy.Domain.Models.VideoGroup", b =>
                 {
                     b.Navigation("SubjectVideoGroupAssignments");
 
