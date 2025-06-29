@@ -10,12 +10,13 @@ public class AppHub(IConnectedClientManager clientManager) : Hub
     {
         var userId = Context.UserIdentifier ?? string.Empty;
         var connectionId = Context.ConnectionId;
-        clientManager.AddClient(userId, connectionId);
+        await clientManager.AddClientAsync(userId, connectionId);
         await base.OnConnectedAsync();
     }
 
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
+        await clientManager.RemoveClientAsync(Context.ConnectionId);
         await base.OnDisconnectedAsync(exception);
     }
 }

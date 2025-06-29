@@ -26,6 +26,8 @@ using ProjektGrupowy.Infrastructure.Repositories;
 using ProjektGrupowy.Infrastructure.Repositories.Impl;
 using Serilog;
 using System.Text.Json.Serialization;
+using ProjektGrupowy.Application.Redis;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -88,7 +90,8 @@ app.UseExceptionHandler(errorApp =>
             {
                 context.Response.StatusCode = StatusCodes.Status403Forbidden;
 
-                await messageService.SendErrorAsync(currentUserService.UserId, "You do not have permission to perform this action.");
+                await messageService.SendErrorAsync(currentUserService.UserId,
+                    "You do not have permission to perform this action.");
 
                 await context.Response.WriteAsJsonAsync(new
                 {
@@ -120,10 +123,7 @@ static void AddServices(WebApplicationBuilder builder)
 {
     builder.Services
         .AddControllers()
-        .AddJsonOptions(options =>
-        {
-            options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-        });
+        .AddJsonOptions(options => { options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles; });
 
     builder.Services.AddHealthChecks();
 
@@ -147,10 +147,7 @@ static void AddServices(WebApplicationBuilder builder)
         });
     }
 
-    builder.Services.AddHangfireServer(options =>
-    {
-        options.WorkerCount = 1;
-    });
+    builder.Services.AddHangfireServer(options => { options.WorkerCount = 1; });
 
     // ========== Done with hangfire ========== //
 
@@ -200,10 +197,7 @@ static void AddServices(WebApplicationBuilder builder)
         ? parsedMaxBodySize * 1024 * 1024
         : 500 * 1024 * 1024; // fallback
 
-    builder.WebHost.ConfigureKestrel(options =>
-    {
-        options.Limits.MaxRequestBodySize = maxBodySize;
-    });
+    builder.WebHost.ConfigureKestrel(options => { options.Limits.MaxRequestBodySize = maxBodySize; });
 
     // CORS
     builder.Services.AddCors(options =>
@@ -214,9 +208,9 @@ static void AddServices(WebApplicationBuilder builder)
             var allowedProdOrigin = builder.Configuration["Cors:AllowedProductionOrigin"];
 
             policy.WithOrigins(allowedDevOrigin!, allowedProdOrigin!)
-                  .AllowAnyHeader()
-                  .AllowAnyMethod()
-                  .AllowCredentials();
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials();
         });
     });
 
@@ -249,7 +243,7 @@ static void AddServices(WebApplicationBuilder builder)
     builder.Services.AddScoped<IReportGenerator, ReportGenerator>();
     builder.Services.AddScoped<IProjectReportService, ProjectReportService>();
 
-    builder.Services.AddSingleton<IConnectedClientManager, ConnectedClientManager>();
+    builder.Services.AddSingleton<IConnectedClientManager, RedisClientManager>();
     builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
     builder.Services.AddSignalR(options =>
     {
@@ -257,7 +251,11 @@ static void AddServices(WebApplicationBuilder builder)
         options.KeepAliveInterval = TimeSpan.FromSeconds(15);
         options.HandshakeTimeout = TimeSpan.FromSeconds(15);
     });
-    builder.Services.AddSingleton<IMessageService, MessageService>();
+
+    // Redis Connection
+    builder.Services.AddSingleton<IConnectionMultiplexer>(
+        ConnectionMultiplexer.Connect(builder.Configuration["Redis:ConnectionString"]!));
+    builder.Services.AddSingleton<IMessageService, RedisMessageService>();
 
     // AutoMapper
     var mapperConfig = new MapperConfiguration(cfg =>
@@ -295,8 +293,10 @@ static void AddServices(WebApplicationBuilder builder)
     // Make Keycloak optional in development
     if (!builder.Environment.IsDevelopment())
     {
-        if (string.IsNullOrEmpty(keycloakAuthority)) throw new ArgumentNullException("Keycloak:Authority is missing in configuration.");
-        if (string.IsNullOrEmpty(keycloakAudience)) throw new ArgumentNullException("Keycloak:Audience is missing in configuration.");
+        if (string.IsNullOrEmpty(keycloakAuthority))
+            throw new ArgumentNullException("Keycloak:Authority is missing in configuration.");
+        if (string.IsNullOrEmpty(keycloakAudience))
+            throw new ArgumentNullException("Keycloak:Audience is missing in configuration.");
     }
 
     if (!string.IsNullOrEmpty(keycloakAuthority) && !string.IsNullOrEmpty(keycloakAudience))
@@ -332,6 +332,7 @@ static void AddServices(WebApplicationBuilder builder)
                                 context.Token = accessToken;
                             }
                         }
+
                         return Task.CompletedTask;
                     },
                     OnAuthenticationFailed = context =>
@@ -370,10 +371,7 @@ static void AddServices(WebApplicationBuilder builder)
     });
 
     // Response Compression
-    builder.Services.AddResponseCompression(options =>
-    {
-        options.EnableForHttps = true;
-    });
+    builder.Services.AddResponseCompression(options => { options.EnableForHttps = true; });
 }
 
 static async Task MigrateDatabase(IServiceProvider serviceProvider)
