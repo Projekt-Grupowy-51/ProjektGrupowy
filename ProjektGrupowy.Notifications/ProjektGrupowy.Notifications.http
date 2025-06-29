@@ -1,0 +1,6 @@
+@ProjektGrupowy.Notifications_HostAddress = http://localhost:5204
+
+GET {{ProjektGrupowy.Notifications_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
