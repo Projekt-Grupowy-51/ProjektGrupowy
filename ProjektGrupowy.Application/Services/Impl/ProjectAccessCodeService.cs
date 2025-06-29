@@ -1,23 +1,19 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 using ProjektGrupowy.Application.Authorization;
 using ProjektGrupowy.Application.DTOs.AccessCode;
 using ProjektGrupowy.Application.Enums;
 using ProjektGrupowy.Application.Exceptions;
-using ProjektGrupowy.Domain.Models;
-using ProjektGrupowy.Infrastructure.Repositories;
 using ProjektGrupowy.Application.SignalR;
+using ProjektGrupowy.Domain.Models;
 using ProjektGrupowy.Domain.Utils;
-using ProjektGrupowy.Domain.Utils;
-using ProjektGrupowy.Application.Services;
-using Microsoft.Extensions.Logging;
+using ProjektGrupowy.Infrastructure.Repositories;
 
 namespace ProjektGrupowy.Application.Services.Impl;
 
 public class ProjectAccessCodeService(
     IProjectAccessCodeRepository repository,
     IProjectRepository projectRepository,
-    UserManager<User> userManager,
     IMessageService messageService,
     ICurrentUserService currentUserService,
     IAuthorizationService authorizationService,
@@ -137,7 +133,6 @@ public class ProjectAccessCodeService(
                 await messageService.SendSuccessAsync(
                     currentUserService.UserId,
                     "Access code added successfully");
-                Console.WriteLine("Access code added successfully");
                 return newAddedAccessCodeOpt;
             }
         }

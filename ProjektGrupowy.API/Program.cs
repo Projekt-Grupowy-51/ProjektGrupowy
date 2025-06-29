@@ -1,33 +1,28 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Hangfire;
+using Hangfire.MemoryStorage;
+using Hangfire.PostgreSql;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using ProjektGrupowy.Infrastructure.Data;
-using ProjektGrupowy.Api.Filters;
-using ProjektGrupowy.Domain.Models;
-using ProjektGrupowy.Infrastructure.Repositories;
-using ProjektGrupowy.Infrastructure.Repositories.Impl;
-using ProjektGrupowy.Application.Services;
-using ProjektGrupowy.Application.Services.Impl;
-using Serilog;
-using System.Text;
-using System.Text.Json.Serialization;
-using ProjektGrupowy.Application.SignalR;
-using Azure.Core;
-using Hangfire;
-using Hangfire.MemoryStorage;
-using Hangfire.PostgreSql;
-using Microsoft.AspNetCore.SignalR;
-using ProjektGrupowy.Domain.Utils.Extensions;
-using ProjektGrupowy.Application.Services.Background;
-using ProjektGrupowy.Application.Services.Background.Impl;
+using ProjektGrupowy.API.Authentication;
+using ProjektGrupowy.API.Filters;
 using ProjektGrupowy.Application.Authorization;
 using ProjektGrupowy.Application.Exceptions;
+using ProjektGrupowy.Application.Services;
+using ProjektGrupowy.Application.Services.Background;
+using ProjektGrupowy.Application.Services.Background.Impl;
+using ProjektGrupowy.Application.Services.Impl;
+using ProjektGrupowy.Application.SignalR;
 using ProjektGrupowy.Domain.Utils.Constants;
-using ProjektGrupowy.API.Filters;
+using ProjektGrupowy.Infrastructure.Data;
+using ProjektGrupowy.Infrastructure.Repositories;
+using ProjektGrupowy.Infrastructure.Repositories.Impl;
+using Serilog;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -49,9 +44,8 @@ app.UseHangfireDashboard();
 
 app.MapHealthChecks("/health");
 
-// Seed the database and create roles
+// Seed the database
 await MigrateDatabase(app.Services);
-await CreateRoles(app.Services);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -129,11 +123,11 @@ static void AddServices(WebApplicationBuilder builder)
         });
 
     builder.Services.AddHealthChecks();
-    
+
     // ========== Hangfire ========== //
 
     builder.Services.AddHangfire(config => config.UseSerilogLogProvider());
-    
+
     if (builder.Environment.IsDevelopment())
     {
         builder.Services.AddHangfire(config => config.UseMemoryStorage());
@@ -144,7 +138,7 @@ static void AddServices(WebApplicationBuilder builder)
         {
             config.UseSimpleAssemblyNameTypeSerializer();
             config.UseRecommendedSerializerSettings();
-            
+
             var hangfireConnectionString = builder.Configuration.GetConnectionString("HangfireConnection");
             config.UsePostgreSqlStorage(c => c.UseNpgsqlConnection(hangfireConnectionString));
         });
@@ -154,7 +148,7 @@ static void AddServices(WebApplicationBuilder builder)
     {
         options.WorkerCount = 1;
     });
-    
+
     // ========== Done with hangfire ========== //
 
     builder.Services.AddEndpointsApiExplorer();
@@ -171,13 +165,38 @@ static void AddServices(WebApplicationBuilder builder)
                 Email = "support@projektgrupowy.com"
             }
         });
+
+        c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+        {
+            Description = "JWT Authorization header using the Bearer scheme.",
+            Name = "Authorization",
+            In = ParameterLocation.Header,
+            Type = SecuritySchemeType.Http,
+            Scheme = "bearer",
+            BearerFormat = "JWT"
+        });
+
+        c.AddSecurityRequirement(new OpenApiSecurityRequirement
+        {
+            {
+                new OpenApiSecurityScheme
+                {
+                    Reference = new OpenApiReference
+                    {
+                        Type = ReferenceType.SecurityScheme,
+                        Id = "Bearer"
+                    }
+                },
+                Array.Empty<string>()
+            }
+        });
     });
-    
+
     // Kestrel
-    var maxBodySize = int.TryParse(builder.Configuration["Limits:MaxBodySizeMb"], out var parsedMaxBodySize) 
+    var maxBodySize = int.TryParse(builder.Configuration["Limits:MaxBodySizeMb"], out var parsedMaxBodySize)
         ? parsedMaxBodySize * 1024 * 1024
         : 500 * 1024 * 1024; // fallback
-    
+
     builder.WebHost.ConfigureKestrel(options =>
     {
         options.Limits.MaxRequestBodySize = maxBodySize;
@@ -199,10 +218,11 @@ static void AddServices(WebApplicationBuilder builder)
     });
 
     builder.Services.AddHttpContextAccessor();
-    builder.Services.AddTransient<ProjektGrupowy.Application.Services.ICurrentUserService, ProjektGrupowy.Application.Services.Impl.CurrentUserService>();
+    builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
     builder.Services.AddScoped<IAuthorizationHandler, CustomAuthorizationHandler>();
 
     // Repositories
+    builder.Services.AddScoped<IKeycloakUserRepository, KeycloakUserRepository>();
     builder.Services.AddScoped<IAssignedLabelRepository, AssignedLabelRepository>();
     builder.Services.AddScoped<ILabelRepository, LabelRepository>();
     builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
@@ -214,6 +234,7 @@ static void AddServices(WebApplicationBuilder builder)
     builder.Services.AddScoped<IProjectReportRepository, ProjectReportRepository>();
 
     // Services
+    builder.Services.AddScoped<IKeycloakUserService, KeycloakUserService>();
     builder.Services.AddScoped<IAssignedLabelService, AssignedLabelService>();
     builder.Services.AddScoped<ILabelService, LabelService>();
     builder.Services.AddScoped<IProjectService, ProjectService>();
@@ -224,14 +245,13 @@ static void AddServices(WebApplicationBuilder builder)
     builder.Services.AddScoped<IProjectAccessCodeService, ProjectAccessCodeService>();
     builder.Services.AddScoped<IReportGenerator, ReportGenerator>();
     builder.Services.AddScoped<IProjectReportService, ProjectReportService>();
-    builder.Services.AddScoped<ITokenService, TokenService>();
 
     builder.Services.AddSingleton<IConnectedClientManager, ConnectedClientManager>();
     builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
     builder.Services.AddSignalR(options =>
     {
         options.EnableDetailedErrors = true;
-        options.KeepAliveInterval = TimeSpan.FromSeconds(15); // Default is 15 seconds
+        options.KeepAliveInterval = TimeSpan.FromSeconds(15);
         options.HandshakeTimeout = TimeSpan.FromSeconds(15);
     });
     builder.Services.AddSingleton<IMessageService, MessageService>();
@@ -250,89 +270,86 @@ static void AddServices(WebApplicationBuilder builder)
             .UseLazyLoadingProxies()
     );
 
-    // Identity
-    builder.Services.AddIdentity<User, IdentityRole>(options =>
+    // Keycloak JWT Authentication
+    var keycloakAuthority = builder.Configuration["Keycloak:Authority"];
+    var keycloakAudience = builder.Configuration["Keycloak:Audience"];
+    var keycloakIssuer = builder.Configuration["Keycloak:Issuer"];
+
+    // Make Keycloak optional in development
+    if (!builder.Environment.IsDevelopment())
     {
-        options.Password.RequireDigit = true;
-        options.Password.RequiredLength = 8;
-        options.Password.RequireNonAlphanumeric = false;
-        options.Password.RequireUppercase = true;
-        options.Password.RequireLowercase = true;
-        options.User.RequireUniqueEmail = true;
-    })
-    .AddEntityFrameworkStores<AppDbContext>()
-    .AddDefaultTokenProviders();
+        if (string.IsNullOrEmpty(keycloakAuthority)) throw new ArgumentNullException("Keycloak:Authority is missing in configuration.");
+        if (string.IsNullOrEmpty(keycloakAudience)) throw new ArgumentNullException("Keycloak:Audience is missing in configuration.");
+    }
 
-    // JWT Authentication
-    var jwtSecret = builder.Configuration["JWT:Secret"];
-    var jwtIssuer = builder.Configuration["JWT:ValidIssuer"];
-    var jwtAudience = builder.Configuration["JWT:ValidAudience"];
-    var jwtCookieName = builder.Configuration["JWT:JwtCookieName"];
-
-    if (string.IsNullOrEmpty(jwtSecret)) throw new ArgumentNullException("JWT:Secret is missing in configuration.");
-    if (string.IsNullOrEmpty(jwtIssuer)) throw new ArgumentNullException("JWT:ValidIssuer is missing in configuration.");
-    if (string.IsNullOrEmpty(jwtAudience)) throw new ArgumentNullException("JWT:ValidAudience is missing in configuration.");
-
-    builder.Services.AddAuthentication(options =>
-        {
-            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-        })
-        .AddJwtBearer(options =>
-        {
-            options.TokenValidationParameters = new TokenValidationParameters
+    if (!string.IsNullOrEmpty(keycloakAuthority) && !string.IsNullOrEmpty(keycloakAudience))
+    {
+        builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
             {
-                ValidateIssuer = true,
-                ValidateAudience = true,
-                ValidateLifetime = true,
-                ValidateIssuerSigningKey = true,
-                ValidIssuer = jwtIssuer,
-                ValidAudience = jwtAudience,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
-                ClockSkew = TimeSpan.Zero
-            };
+                options.Authority = keycloakAuthority;
+                options.Audience = keycloakAudience;
+                options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
 
-            options.Events = new JwtBearerEvents
-            {
-                OnMessageReceived = context =>
+                options.TokenValidationParameters = new TokenValidationParameters
                 {
-                    var token = context.Request.Cookies[jwtCookieName];
-                    
-                    var path = context.HttpContext.Request.Path;
-                    if (!string.IsNullOrEmpty(token) && path.ToString().Contains("/hub/app"))
-                    {
-                        context.Token = token;
-                    }
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = keycloakIssuer ?? keycloakAuthority,
+                    ValidAudience = keycloakAudience,
+                    ClockSkew = TimeSpan.FromMinutes(1)
+                };
 
-                    if (!string.IsNullOrEmpty(token))
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
                     {
-                        context.Token = token;
+                        var path = context.HttpContext.Request.Path;
+                        if (path.ToString().Contains("/hub/app"))
+                        {
+                            var accessToken = context.Request.Query["access_token"];
+                            if (!string.IsNullOrEmpty(accessToken))
+                            {
+                                context.Token = accessToken;
+                            }
+                        }
+                        return Task.CompletedTask;
+                    },
+                    OnAuthenticationFailed = context =>
+                    {
+                        Log.Error("Authentication failed: {Exception}", context.Exception);
+                        return Task.CompletedTask;
+                    },
+                    OnTokenValidated = context =>
+                    {
+                        Log.Information("Token validated for user: {Username}", context.Principal?.Identity?.Name);
+                        return Task.CompletedTask;
                     }
-                    return Task.CompletedTask;
-                },
-                OnAuthenticationFailed = context =>
-                {
-                    Log.Error("Authentication failed: {Exception}", context.Exception);
-                    return Task.CompletedTask;
-                },
-                OnTokenValidated = context =>
-                {
-                    Log.Information("Token validated for user: {Username}", context.Principal.Identity.Name);
-                    return Task.CompletedTask;
-                }
-            };
-        });
+                };
+            });
+    }
+    else
+    {
+        // Fallback for development without Keycloak
+        builder.Services.AddAuthentication("Test")
+            .AddScheme<AuthenticationSchemeOptions, TestAuthenticationHandler>("Test", options => { });
+    }
 
     builder.Services.AddAuthorization(options =>
     {
         options.DefaultPolicy = new AuthorizationPolicyBuilder()
-            .RequireRole(RoleConstants.Admin, RoleConstants.Scientist, RoleConstants.Labeler)
+            .RequireAuthenticatedUser()
             .Build();
 
         options.AddPolicy(PolicyConstants.RequireAdminOrScientist, policy =>
             policy.RequireAssertion(context =>
-                context.User.IsInRole(RoleConstants.Admin) ||
-                context.User.IsInRole(RoleConstants.Scientist)));
+            {
+                var user = context.User;
+                var roles = GetKeycloakRoles(user);
+                return roles.Contains(RoleConstants.Admin) || roles.Contains(RoleConstants.Scientist);
+            }));
     });
 
     // Response Compression
@@ -349,29 +366,29 @@ static async Task MigrateDatabase(IServiceProvider serviceProvider)
     await context.Database.MigrateAsync();
 }
 
-static async Task CreateRoles(IServiceProvider serviceProvider)
+static IEnumerable<string> GetKeycloakRoles(System.Security.Claims.ClaimsPrincipal user)
 {
-    using var scope = serviceProvider.CreateScope();
-    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-
-    foreach (var roleName in RoleConstants.AllRoles)
+    // Try to get roles from realm_access claim
+    var realmAccessClaim = user.FindFirst("realm_access")?.Value;
+    if (!string.IsNullOrEmpty(realmAccessClaim))
     {
-        var roleExist = await roleManager.RoleExistsAsync(roleName);
-        if (!roleExist)
+        try
         {
-            var roleResult = await roleManager.CreateAsync(new IdentityRole(roleName));
-            if (roleResult.Succeeded)
+            var json = System.Text.Json.JsonDocument.Parse(realmAccessClaim);
+            if (json.RootElement.TryGetProperty("roles", out var rolesElement))
             {
-                Log.Information($"Rola {roleName} została pomyślnie utworzona.");
-            }
-            else
-            {
-                Log.Error($"Błąd przy tworzeniu roli {roleName}: {string.Join(", ", roleResult.Errors.Select(e => e.Description))}");
+                return rolesElement.EnumerateArray()
+                    .Select(role => role.GetString())
+                    .Where(role => !string.IsNullOrEmpty(role))
+                    .Cast<string>();
             }
         }
-        else
+        catch
         {
-            Log.Information($"Rola {roleName} już istnieje.");
+            // Fallback to standard role claims
         }
     }
+
+    // Fallback to standard role claims
+    return user.FindAll(System.Security.Claims.ClaimTypes.Role)?.Select(c => c.Value) ?? Enumerable.Empty<string>();
 }

@@ -1,10 +1,9 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using ProjektGrupowy.Domain.Models;
 
 namespace ProjektGrupowy.Infrastructure.Data;
 
-public class AppDbContext : IdentityDbContext<User>
+public class AppDbContext : DbContext
 {
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options)
@@ -20,7 +19,7 @@ public class AppDbContext : IdentityDbContext<User>
     public DbSet<VideoGroup> VideoGroups { get; set; }
     public DbSet<ProjectAccessCode> ProjectAccessCodes { get; set; }
     public DbSet<GeneratedReport> GeneratedReports { get; set; }
-    public DbSet<RefreshToken> RefreshTokens { get; set; }
+    public DbSet<User> Users { get; set; }
 
     public override int SaveChanges()
     {
@@ -58,12 +57,15 @@ public class AppDbContext : IdentityDbContext<User>
         modelBuilder.Entity<ProjectAccessCode>().HasQueryFilter(pac => pac.DelDate == null);
         modelBuilder.Entity<GeneratedReport>().HasQueryFilter(re => re.DelDate == null);
     }
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
-        // === Relacja 1:N - Właściciel projektu ===
+        // Configure User as read-only view from Keycloak
+        modelBuilder.Entity<User>()
+            .ToView("user_entity", "keycloak")
+            .HasKey(u => u.Id);
+
         modelBuilder.Entity<Project>()
             .HasOne(p => p.CreatedBy)
             .WithMany(u => u.OwnedProjects) // Musi istnieć w User.cs

@@ -1,11 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using ProjektGrupowy.Application.Authorization;
 using ProjektGrupowy.Application.DTOs.SubjectVideoGroupAssignment;
 using ProjektGrupowy.Application.Exceptions;
 using ProjektGrupowy.Application.SignalR;
 using ProjektGrupowy.Domain.Models;
-using ProjektGrupowy.Application.Services;
 using ProjektGrupowy.Domain.Utils;
 using ProjektGrupowy.Infrastructure.Repositories;
 
@@ -18,7 +16,7 @@ public class SubjectVideoGroupAssignmentService(
     IMessageService messageService,
     ICurrentUserService currentUserService,
     IAuthorizationService authorizationService,
-    UserManager<User> userManager) : ISubjectVideoGroupAssignmentService
+    IKeycloakUserService keycloakUserService) : ISubjectVideoGroupAssignmentService
 {
     public async Task<Optional<IEnumerable<SubjectVideoGroupAssignment>>> GetSubjectVideoGroupAssignmentsAsync()
     {
@@ -266,7 +264,7 @@ public class SubjectVideoGroupAssignmentService(
             throw new ForbiddenException();
         }
 
-        var labelerOpt = await userManager.FindByIdAsync(labelerId);
+        var labelerOpt = await keycloakUserService.FindByIdAsync(labelerId);
         if (labelerOpt == null)
         {
             await messageService.SendWarningAsync(
@@ -307,7 +305,7 @@ public class SubjectVideoGroupAssignmentService(
             throw new ForbiddenException();
         }
 
-        var labelerOpt = await userManager.FindByIdAsync(labelerId);
+        var labelerOpt = await keycloakUserService.FindByIdAsync(labelerId);
         if (labelerOpt == null)
         {
             await messageService.SendWarningAsync(

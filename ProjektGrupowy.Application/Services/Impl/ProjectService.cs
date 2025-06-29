@@ -1,15 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using ProjektGrupowy.Application.Authorization;
 using ProjektGrupowy.Application.DTOs.LabelerAssignment;
 using ProjektGrupowy.Application.DTOs.Project;
 using ProjektGrupowy.Application.Exceptions;
-using ProjektGrupowy.Domain.Models;
-using ProjektGrupowy.Infrastructure.Repositories;
 using ProjektGrupowy.Application.SignalR;
+using ProjektGrupowy.Domain.Models;
 using ProjektGrupowy.Domain.Utils;
-using ProjektGrupowy.Domain.Utils;
-using ProjektGrupowy.Application.Services;
+using ProjektGrupowy.Infrastructure.Repositories;
 
 namespace ProjektGrupowy.Application.Services.Impl;
 
@@ -19,7 +16,7 @@ public class ProjectService(
     ISubjectVideoGroupAssignmentRepository subjectVideoGroupAssignmentRepository,
     ICurrentUserService currentUserService,
     IAuthorizationService authorizationService,
-    UserManager<User> userManager) : IProjectService
+    IKeycloakUserService keycloakUserService) : IProjectService
 {
     public async Task<Optional<IEnumerable<Project>>> GetProjectsAsync()
     {
@@ -36,7 +33,7 @@ public class ProjectService(
         {
             throw new ForbiddenException();
         }
-        
+
         return projectsOptional;
     }
 
@@ -80,7 +77,7 @@ public class ProjectService(
                 currentUserService.UserId,
                 "Failed to create project");
         }
-        else 
+        else
         {
             await messageService.SendSuccessAsync(
                 currentUserService.UserId,
@@ -120,7 +117,7 @@ public class ProjectService(
                 currentUserService.UserId,
                 "Failed to update project");
         }
-        else 
+        else
         {
             await messageService.SendSuccessAsync(
                 currentUserService.UserId,
@@ -136,7 +133,7 @@ public class ProjectService(
 
         var projectByCodeOpt = await projectRepository.GetProjectByAccessCodeAsync(labelerAssignmentDto.AccessCode);
 
-        var labelerOpt = await userManager.FindByIdAsync(joinerId);
+        var labelerOpt = await keycloakUserService.FindByIdAsync(joinerId);
 
         if (labelerOpt == null)
         {
@@ -166,7 +163,7 @@ public class ProjectService(
             $"Labeler \"{labelerOpt.UserName}\" joined the project \"{project.Name}\"");
 
         await messageService.SendMessageAsync(
-            project.CreatedById, 
+            project.CreatedById,
             MessageTypes.LabelersCountChanged,
             project.ProjectLabelers.Count);
 
@@ -218,7 +215,7 @@ public class ProjectService(
         }
 
         await messageService.SendInfoAsync(currentUserService.UserId, $"Project \"{project.Name}\" deleted successfully");
-        
+
         await projectRepository.DeleteProjectAsync(project);
     }
 
@@ -260,7 +257,7 @@ public class ProjectService(
         {
             return Optional<bool>.Failure("No project found!");
         }
-        
+
         var project = projectOptional.GetValueOrThrow();
 
         var authResult = await authorizationService.AuthorizeAsync(currentUserService.User, project, new ResourceOperationRequirement(ResourceOperation.Update));
@@ -294,7 +291,7 @@ public class ProjectService(
                 currentUserService.UserId,
                 "Failed to assign labelers");
         }
-        else 
+        else
         {
             await messageService.SendSuccessAsync(
                 currentUserService.UserId,

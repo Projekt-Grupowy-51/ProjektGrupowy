@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using ProjektGrupowy.API.Filters;
 using ProjektGrupowy.Application.DTOs.Labeler;
@@ -18,7 +17,6 @@ namespace ProjektGrupowy.API.Controllers;
 [Authorize]
 public class SubjectVideoGroupAssignmentController(
     ISubjectVideoGroupAssignmentService subjectVideoGroupAssignmentService,
-    UserManager<User> userManager,
     IMapper mapper) : ControllerBase
 {
     [HttpGet]

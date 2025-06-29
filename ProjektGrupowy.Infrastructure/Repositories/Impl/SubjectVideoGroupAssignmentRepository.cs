@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using ProjektGrupowy.Domain.Models;
 using ProjektGrupowy.Domain.Utils;
@@ -10,7 +9,7 @@ namespace ProjektGrupowy.Infrastructure.Repositories.Impl;
 public class SubjectVideoGroupAssignmentRepository(
     AppDbContext context,
     ILogger<SubjectVideoGroupAssignmentRepository> logger,
-    UserManager<User> userManager) : ISubjectVideoGroupAssignmentRepository
+    IKeycloakUserRepository keycloakUserRepository) : ISubjectVideoGroupAssignmentRepository
 {
     public async Task<Optional<IEnumerable<SubjectVideoGroupAssignment>>> GetSubjectVideoGroupAssignmentsAsync(string userId, bool isAdmin)
     {
@@ -136,7 +135,7 @@ public class SubjectVideoGroupAssignmentRepository(
             return Optional<SubjectVideoGroupAssignment>.Failure("SubjectVideoGroupAssignment not found");
         }
 
-        var labeler = await userManager.FindByIdAsync(labelerId);
+        var labeler = await keycloakUserRepository.FindByIdAsync(labelerId);
         if (labeler == null)
         {
             return Optional<SubjectVideoGroupAssignment>.Failure("Labeler not found");
@@ -166,7 +165,7 @@ public class SubjectVideoGroupAssignmentRepository(
                 return Optional<SubjectVideoGroupAssignment>.Failure("SubjectVideoGroupAssignment not found");
             }
 
-            var labeler = await userManager.FindByIdAsync(labelerId);
+            var labeler = await keycloakUserRepository.FindByIdAsync(labelerId);
             if (labeler == null)
             {
                 return Optional<SubjectVideoGroupAssignment>.Failure("Labeler not found");

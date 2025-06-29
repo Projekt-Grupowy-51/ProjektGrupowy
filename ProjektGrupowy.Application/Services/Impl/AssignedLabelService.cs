@@ -1,12 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using ProjektGrupowy.Application.Authorization;
 using ProjektGrupowy.Application.DTOs.AssignedLabel;
 using ProjektGrupowy.Application.Exceptions;
 using ProjektGrupowy.Domain.Models;
 using ProjektGrupowy.Infrastructure.Repositories;
 using ProjektGrupowy.Application.SignalR;
-using ProjektGrupowy.Domain.Utils;
 using ProjektGrupowy.Domain.Utils;
 using ProjektGrupowy.Application.Services;
 
@@ -16,7 +14,6 @@ public class AssignedLabelService(
     IAssignedLabelRepository assignedLabelRepository,
     ILabelRepository labelRepository,
     ISubjectVideoGroupAssignmentRepository subjectVideoGroupAssignmentRepository,
-    UserManager<User> userManager,
     IMessageService messageService,
     ICurrentUserService currentUserService,
     IAuthorizationService authorizationService,

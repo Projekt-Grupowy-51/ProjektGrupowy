@@ -1,14 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using ProjektGrupowy.Application.Authorization;
 using ProjektGrupowy.Application.DTOs.VideoGroup;
 using ProjektGrupowy.Application.Exceptions;
-using ProjektGrupowy.Domain.Models;
-using ProjektGrupowy.Infrastructure.Repositories;
 using ProjektGrupowy.Application.SignalR;
+using ProjektGrupowy.Domain.Models;
 using ProjektGrupowy.Domain.Utils;
-using ProjektGrupowy.Domain.Utils;
-using ProjektGrupowy.Application.Services;
+using ProjektGrupowy.Infrastructure.Repositories;
 
 namespace ProjektGrupowy.Application.Services.Impl;
 
@@ -17,8 +14,7 @@ public class VideoGroupService(
     IProjectRepository projectRepository,
     IMessageService messageService,
     ICurrentUserService currentUserService,
-    IAuthorizationService authorizationService,
-    UserManager<User> userManager) : IVideoGroupService
+    IAuthorizationService authorizationService) : IVideoGroupService
 {
     public async Task<Optional<IEnumerable<VideoGroup>>> GetVideoGroupsAsync()
     {

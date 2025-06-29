@@ -1,17 +1,15 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using ProjektGrupowy.Application.Authorization;
 using ProjektGrupowy.Application.DTOs.Label;
 using ProjektGrupowy.Application.Exceptions;
 using ProjektGrupowy.Application.SignalR;
 using ProjektGrupowy.Domain.Models;
-using ProjektGrupowy.Application.Services;
 using ProjektGrupowy.Domain.Utils;
 using ProjektGrupowy.Infrastructure.Repositories;
 
 namespace ProjektGrupowy.Application.Services.Impl;
 
-public class LabelService(ILabelRepository labelRepository, IMessageService messageService, ISubjectRepository subjectRepository, UserManager<User> userManager, ICurrentUserService currentUserService, IAuthorizationService authorizationService) : ILabelService
+public class LabelService(ILabelRepository labelRepository, IMessageService messageService, ISubjectRepository subjectRepository, IKeycloakUserService keycloakUserService, ICurrentUserService currentUserService, IAuthorizationService authorizationService) : ILabelService
 {
     public async Task<Optional<IEnumerable<Label>>> GetLabelsAsync()
     {
