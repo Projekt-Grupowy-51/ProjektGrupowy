@@ -5,6 +5,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="2.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Abstractions" Version="2.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.2.0" />
+    <PackageReference Include="StackExchange.Redis" Version="2.8.41" />
   </ItemGroup>
 
   <ItemGroup>

@@ -11,6 +11,7 @@ using ProjektGrupowy.Application.DTOs.SubjectVideoGroupAssignment;
 using ProjektGrupowy.Application.DTOs.VideoGroup;
 using ProjektGrupowy.Application.Services;
 using ProjektGrupowy.Application.SignalR;
+using ProjektGrupowy.Application.Utils.Extensions;
 using ProjektGrupowy.Domain.Utils.Constants;
 
 namespace ProjektGrupowy.API.Controllers;
@@ -95,10 +96,16 @@ public class ProjectController(
         var projectResult = await projectService.AddProjectAsync(projectRequest);
         if (!projectResult.IsSuccess)
         {
+            await messageService.SendErrorAsync(
+                User.GetUserId(),
+                $"Failed to create project: {projectResult.GetErrorOrThrow()}");
             return BadRequest(projectResult.GetErrorOrThrow());
         }
 
         var createdProject = projectResult.GetValueOrThrow();
+        await messageService.SendSuccessAsync(
+            User.GetUserId(),
+            $"Project '{createdProject.Name}' created successfully");
 
         return CreatedAtAction("GetProject", new { id = createdProject.Id },
             mapper.Map<ProjectResponse>(createdProject));
