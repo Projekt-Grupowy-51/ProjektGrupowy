@@ -13,20 +13,25 @@ public class ConnectedClientManager(IConnectionMultiplexer redis) : IConnectedCl
         var userKey = $"user:{userId}";
         var connectionKey = $"connection:{connectionId}";
 
-        var batch = _database.CreateBatch();
+        var transaction = _database.CreateTransaction();
 
-        var addToUserSetTask = batch.SetAddAsync(userKey, connectionId);
-        var setConnectionMappingTask = batch.StringSetAsync(connectionKey, userId);
-        var addToOnlineUsersTask = batch.SetAddAsync(OnlineUsersKey, userId);
+        var addToUserSetTask = transaction.SetAddAsync(userKey, connectionId);
+        var setConnectionMappingTask = transaction.StringSetAsync(connectionKey, userId);
+        var addToOnlineUsersTask = transaction.SetAddAsync(OnlineUsersKey, userId);
 
-        var expireUserSetTask = batch.KeyExpireAsync(userKey, SlidingTtl);
-        var expireConnectionTask = batch.KeyExpireAsync(connectionKey, SlidingTtl);
-        var expireOnlineUsersTask = batch.KeyExpireAsync(OnlineUsersKey, SlidingTtl);
+        var expireUserSetTask = transaction.KeyExpireAsync(userKey, SlidingTtl);
+        var expireConnectionTask = transaction.KeyExpireAsync(connectionKey, SlidingTtl);
+        var expireOnlineUsersTask = transaction.KeyExpireAsync(OnlineUsersKey, SlidingTtl);
 
-        batch.Execute();
+        bool committed = await transaction.ExecuteAsync();
+
+        if (!committed)
+        {
+            throw new Exception("Failed to add client to Redis transactionally.");
+        }
 
         await Task.WhenAll(addToUserSetTask, setConnectionMappingTask, addToOnlineUsersTask,
-                           expireUserSetTask, expireConnectionTask, expireOnlineUsersTask);
+            expireUserSetTask, expireConnectionTask, expireOnlineUsersTask);
     }
 
     public async Task RemoveClientAsync(string connectionId)
@@ -67,13 +72,19 @@ public class ConnectedClientManager(IConnectionMultiplexer redis) : IConnectedCl
         var userKey = $"user:{userId}";
         var connectionKey = $"connection:{connectionId}";
 
-        var batch = _database.CreateBatch();
+        var transaction = _database.CreateTransaction();
 
-        var refreshUserKeyTtl = batch.KeyExpireAsync(userKey, SlidingTtl);
-        var refreshConnectionKeyTtl = batch.KeyExpireAsync(connectionKey, SlidingTtl);
-        var refreshOnlineUsersTtl = batch.KeyExpireAsync(OnlineUsersKey, SlidingTtl);
+        var refreshUserKeyTtl = transaction.KeyExpireAsync(userKey, SlidingTtl);
+        var refreshConnectionKeyTtl = transaction.KeyExpireAsync(connectionKey, SlidingTtl);
+        var refreshOnlineUsersTtl = transaction.KeyExpireAsync(OnlineUsersKey, SlidingTtl);
 
-        batch.Execute();
+        var success = await transaction.ExecuteAsync();
+
+        if (!success)
+        {
+            throw new Exception("Redis transaction to refresh TTL failed.");
+        }
+
         await Task.WhenAll(refreshUserKeyTtl, refreshConnectionKeyTtl, refreshOnlineUsersTtl);
     }
 }
