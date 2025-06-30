@@ -1,42 +1,79 @@
-
-using System.Collections.Concurrent;
+using StackExchange.Redis;
 
 namespace ProjektGrupowy.Application.SignalR;
 
-public class ConnectedClientManager : IConnectedClientManager
+public class ConnectedClientManager(IConnectionMultiplexer redis) : IConnectedClientManager
 {
-    private readonly ConcurrentDictionary<string, HashSet<string>> _clients = [];
-    public void AddClient(string userId, string connectionId)
+    private readonly IDatabase _database = redis.GetDatabase();
+    private const string OnlineUsersKey = "online_users";
+    private static readonly TimeSpan SlidingTtl = TimeSpan.FromSeconds(60);
+
+    public async Task AddClientAsync(string userId, string connectionId)
     {
-        _clients.AddOrUpdate(userId,
-            _ => [connectionId],
-            (_, set) =>
-            {
-                lock (set) set.Add(connectionId);
-                return set;
-            });
+        var userKey = $"user:{userId}";
+        var connectionKey = $"connection:{connectionId}";
+
+        var batch = _database.CreateBatch();
+
+        var addToUserSetTask = batch.SetAddAsync(userKey, connectionId);
+        var setConnectionMappingTask = batch.StringSetAsync(connectionKey, userId);
+        var addToOnlineUsersTask = batch.SetAddAsync(OnlineUsersKey, userId);
+
+        var expireUserSetTask = batch.KeyExpireAsync(userKey, SlidingTtl);
+        var expireConnectionTask = batch.KeyExpireAsync(connectionKey, SlidingTtl);
+        var expireOnlineUsersTask = batch.KeyExpireAsync(OnlineUsersKey, SlidingTtl);
+
+        batch.Execute();
+
+        await Task.WhenAll(addToUserSetTask, setConnectionMappingTask, addToOnlineUsersTask,
+                           expireUserSetTask, expireConnectionTask, expireOnlineUsersTask);
     }
 
-    public void RemoveClient(string connectionId)
+    public async Task RemoveClientAsync(string connectionId)
     {
-        foreach (var kvp in _clients)
+        var connectionKey = $"connection:{connectionId}";
+        var userId = await _database.StringGetAsync(connectionKey);
+
+        if (userId.IsNullOrEmpty)
+            return;
+
+        var userKey = $"user:{userId}";
+
+        await _database.SetRemoveAsync(userKey, connectionId);
+        await _database.KeyDeleteAsync(connectionKey);
+
+        if (await _database.SetLengthAsync(userKey) == 0)
         {
-            lock (kvp.Value)
-            {
-                if (kvp.Value.Remove(connectionId) && kvp.Value.Count == 0)
-                {
-                    _clients.TryRemove(kvp.Key, out _);
-                }
-            }
+            await _database.KeyDeleteAsync(userKey);
+            await _database.SetRemoveAsync(OnlineUsersKey, userId);
         }
     }
 
-    public IReadOnlyList<string> GetConnectionIds(string userId)
+    public async Task<IReadOnlyList<string>> GetConnectionIdsAsync(string userId)
     {
-        return _clients.TryGetValue(userId, out var set)
-            ? [.. set]
-            : [];
+        var userKey = $"user:{userId}";
+        var members = await _database.SetMembersAsync(userKey);
+        return members.Select(x => x.ToString()).ToList();
     }
 
-    public IEnumerable<string> GetOnlineUsers() => _clients.Keys;
+    public async Task<IEnumerable<string>> GetOnlineUsersAsync()
+    {
+        var members = await _database.SetMembersAsync(OnlineUsersKey);
+        return members.Select(x => x.ToString());
+    }
+
+    public async Task RefreshTtlAsync(string userId, string connectionId)
+    {
+        var userKey = $"user:{userId}";
+        var connectionKey = $"connection:{connectionId}";
+
+        var batch = _database.CreateBatch();
+
+        var refreshUserKeyTtl = batch.KeyExpireAsync(userKey, SlidingTtl);
+        var refreshConnectionKeyTtl = batch.KeyExpireAsync(connectionKey, SlidingTtl);
+        var refreshOnlineUsersTtl = batch.KeyExpireAsync(OnlineUsersKey, SlidingTtl);
+
+        batch.Execute();
+        await Task.WhenAll(refreshUserKeyTtl, refreshConnectionKeyTtl, refreshOnlineUsersTtl);
+    }
 }
