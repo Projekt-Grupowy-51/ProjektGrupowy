@@ -11,7 +11,6 @@ public class AppHub(IConnectedClientManager clientManager) : Hub
         var userId = Context.UserIdentifier ?? string.Empty;
         var connectionId = Context.ConnectionId;
         await clientManager.AddClientAsync(userId, connectionId);
-        var clients = await clientManager.GetOnlineUsersAsync();
         await base.OnConnectedAsync();
     }
 
