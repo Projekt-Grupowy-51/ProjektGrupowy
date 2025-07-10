@@ -26,6 +26,7 @@ using ProjektGrupowy.Infrastructure.Repositories;
 using ProjektGrupowy.Infrastructure.Repositories.Impl;
 using Serilog;
 using System.Text.Json.Serialization;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -249,7 +250,11 @@ static void AddServices(WebApplicationBuilder builder)
     builder.Services.AddScoped<IReportGenerator, ReportGenerator>();
     builder.Services.AddScoped<IProjectReportService, ProjectReportService>();
 
+    builder.Services.AddSingleton<IConnectionMultiplexer>(
+        ConnectionMultiplexer.Connect(builder.Configuration["Redis:ConnectionString"]!));
     builder.Services.AddSingleton<IConnectedClientManager, ConnectedClientManager>();
+    
+    
     builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
     builder.Services.AddSignalR(options =>
     {

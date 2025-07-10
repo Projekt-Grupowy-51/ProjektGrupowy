@@ -22,7 +22,7 @@ public class MessageService(IHubContext<AppHub> hubContext, IConnectedClientMana
     
     public async Task SendMessageAsync<T>(string userId, string method, T message, CancellationToken cancellationToken = default)
     {
-        var connections = clientManager.GetConnectionIds(userId);
+        var connections = await clientManager.GetConnectionIdsAsync(userId);
         var tasks = connections.Select(connectionId =>
             hubContext.Clients.Client(connectionId).SendAsync(method, message, cancellationToken)); // Use SendAsync
         await Task.WhenAll(tasks);

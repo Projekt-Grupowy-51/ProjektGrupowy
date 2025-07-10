@@ -1,4 +1,4 @@
-﻿version: '3.8'
+﻿version: "3.8"
 
 services:
   db:
@@ -20,23 +20,6 @@ services:
       timeout: 5s
       retries: 5
 
-  #app:
-  #  build:
-  #    context: ./ProjektGrupowy.API
-  #    dockerfile: Dockerfile
-  #  environment:
-  #    - ASPNETCORE_ENVIRONMENT=Development
-  #    - ConnectionStrings__DefaultConnection=Host=db;Database=mydatabase;Username=myuser;Password=mypassword
-  #    - ASPNETCORE_URLS=http://+:80
-  #  ports:
-  #    - "5000:80"
-  #  networks:
-  #    - mynetwork
-  #  depends_on:
-  #    - db
-  #  volumes:
-  #    - videos_data:/app/videos
-
   keycloak:
     image: quay.io/keycloak/keycloak:23.0
     container_name: keycloak
@@ -53,8 +36,23 @@ services:
     networks:
       - mynetwork
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     command: start-dev
+
+  redis:
+    image: redis:latest
+    # container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - mynetwork
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
 
 volumes:
   postgres_data:
