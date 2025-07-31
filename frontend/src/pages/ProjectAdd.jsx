@@ -4,6 +4,7 @@ import httpClient from "../httpclient";
 import "./css/ScientistProjects.css";
 import NavigateButton from "../components/NavigateButton";
 import { useTranslation } from 'react-i18next';
+import keycloak from "../keycloak.js";
 
 function ProjectAdd() {
   const navigate = useNavigate();
@@ -16,6 +17,7 @@ function ProjectAdd() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     await httpClient.post("/Project", formData);
     navigate("/projects");
   };

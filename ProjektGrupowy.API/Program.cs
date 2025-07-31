@@ -390,7 +390,9 @@ static async Task MigrateDatabase(IServiceProvider serviceProvider)
 
 static IEnumerable<string> GetKeycloakRoles(System.Security.Claims.ClaimsPrincipal user)
 {
-    // Try to get roles from realm_access claim
+    var roles = new List<string>();
+
+    // Try to get roles from realm_access.claim
     var realmAccessClaim = user.FindFirst("realm_access")?.Value;
     if (!string.IsNullOrEmpty(realmAccessClaim))
     {
@@ -399,18 +401,31 @@ static IEnumerable<string> GetKeycloakRoles(System.Security.Claims.ClaimsPrincip
             var json = System.Text.Json.JsonDocument.Parse(realmAccessClaim);
             if (json.RootElement.TryGetProperty("roles", out var rolesElement))
             {
-                return rolesElement.EnumerateArray()
-                    .Select(role => role.GetString())
-                    .Where(role => !string.IsNullOrEmpty(role))
-                    .Cast<string>();
+                roles.AddRange(
+                    rolesElement.EnumerateArray()
+                        .Select(role => role.GetString())
+                        .Where(role => !string.IsNullOrEmpty(role))
+                        .Cast<string>()
+                );
             }
         }
         catch
         {
-            // Fallback to standard role claims
+            // fallback silently
         }
     }
 
-    // Fallback to standard role claims
-    return user.FindAll(System.Security.Claims.ClaimTypes.Role)?.Select(c => c.Value) ?? Enumerable.Empty<string>();
+    // Add standard role claims (ClaimTypes.Role)
+    roles.AddRange(
+        user.FindAll(System.Security.Claims.ClaimTypes.Role)
+            .Select(c => c.Value)
+    );
+    
+    var userRoleClaim = user.FindFirst("userRole")?.Value;
+    if (!string.IsNullOrEmpty(userRoleClaim))
+    {
+        roles.Add(userRoleClaim);
+    }
+
+    return roles.Distinct();
 }

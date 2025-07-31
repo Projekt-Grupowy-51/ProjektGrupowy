@@ -8,7 +8,7 @@ export const NotificationProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
 
   const addNotification = (message, type = "success") => {
-    const id = Date.now();
+    const id = crypto.randomUUID();
     setNotifications((prev) => [...prev, { id, message, type }]);
 
     setTimeout(() => {

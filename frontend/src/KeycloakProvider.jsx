@@ -32,6 +32,7 @@ const KeycloakProvider = ({ children }) => {
           const realmRoles = keycloak.tokenParsed?.realm_access?.roles || [];
           const clientRoles = keycloak.tokenParsed?.resource_access?.['projektgrupowy-client']?.roles || [];
           const allRoles = [...realmRoles, ...clientRoles];
+          console.log('Roles:', allRoles);
           setRoles(allRoles);
         }
         return;
@@ -57,6 +58,7 @@ const KeycloakProvider = ({ children }) => {
           const realmRoles = keycloak.tokenParsed?.realm_access?.roles || [];
           const clientRoles = keycloak.tokenParsed?.resource_access?.['projektgrupowy-client']?.roles || [];
           const allRoles = [...realmRoles, ...clientRoles];
+          console.log('Roles:', allRoles);
           setRoles(allRoles);
           
           // Automatyczne odświeżanie tokenu
@@ -108,6 +110,10 @@ const KeycloakProvider = ({ children }) => {
     return roles.includes(role);
   };
 
+  const hasUserRole = (role) => {
+    return userInfo.userRole === role;
+  };
+  
   const getToken = () => {
     return keycloak.token;
   };
@@ -166,6 +172,7 @@ const KeycloakProvider = ({ children }) => {
     handleLogin,
     handleLogout,
     hasRole,
+    hasUserRole,
     getToken,
     updateToken,
     

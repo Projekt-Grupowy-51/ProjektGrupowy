@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../KeycloakProvider";
+import KeycloakProvider, { useAuth } from "../KeycloakProvider";
 import { useNotification } from "../context/NotificationContext";
 import { useTranslation } from 'react-i18next';
 import "./css/ScientistProjects.css";
@@ -9,13 +9,14 @@ const AuthPage = () => {
     const navigate = useNavigate();
     const { addNotification } = useNotification();
     const { t } = useTranslation(['auth', 'common']);
-    const { handleLogin, roles, isAuthenticated } = useAuth();
+    const { handleLogin, isAuthenticated, userInfo, hasUserRole } = useAuth();
 
     const redirectIfAuthenticated = () => {
         if (isAuthenticated) {
-            if (roles.includes("Scientist")) {
+            console.log("userInfo:", JSON.stringify(userInfo, null, 2));
+            if (hasUserRole("Scientist")) {
                 navigate("/projects");
-            } else if (roles.includes("Labeler")) {
+            } else if (hasUserRole("Labeler")) {
                 navigate("/labeler-video-groups");
             } else {
                 addNotification(t('auth:error.no_access'), "error");
@@ -25,7 +26,7 @@ const AuthPage = () => {
 
     useEffect(() => {
         redirectIfAuthenticated();
-    }, [isAuthenticated, roles, navigate, t, addNotification]);
+    }, []);
 
     const handleKeycloakLogin = async () => {
         try {
