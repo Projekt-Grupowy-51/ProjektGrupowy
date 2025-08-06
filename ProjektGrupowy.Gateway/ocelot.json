@@ -1,0 +1,43 @@
+{
+  "Routes": [
+    {
+      "DownstreamPathTemplate": "/api/{controller}/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "app",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/api/general-backend/{controller}/{everything}",
+      "UpstreamHttpMethod": [
+        "Get",
+        "Post",
+        "Put",
+        "Delete",
+        "Options"
+      ],
+      "SwaggerKey": "app"
+    },
+    {
+      "DownstreamPathTemplate": "/api/{controller}/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "notifications",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/api/notifications/{controller}/{everything}",
+      "UpstreamHttpMethod": [
+        "Get", 
+        "Post", 
+        "Put",
+        "Delete",
+        "Options"
+      ],
+      "SwaggerKey": "notifications",
+      "UseWebSockets": true
+    }
+  ]
+}

@@ -4,7 +4,7 @@ import keycloak from "./keycloak";
 
 export const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
-  (import.meta.env.DEV ? "http://localhost:5000/api" : "");
+  (import.meta.env.DEV ? "http://localhost:5000/api/general-backend" : "");
 
 const httpClient = axios.create({
   baseURL: API_BASE_URL,
@@ -17,12 +17,12 @@ const httpClient = axios.create({
 httpClient.interceptors.request.use(
   (config) => {
     if (!config.skipLoadingScreen) startRequest();
-    
+
     // Dodaj token Keycloak do nagłówków
     if (keycloak.token) {
       config.headers.Authorization = `Bearer ${keycloak.token}`;
     }
-    
+
     return config;
   },
   (error) => {
@@ -46,20 +46,20 @@ httpClient.interceptors.response.use(
       try {
         // Spróbuj odnowić token w Keycloak
         const refreshed = await keycloak.updateToken(70);
-        
+
         if (refreshed) {
           // Token został odnowiony, zaktualizuj nagłówek i ponów żądanie
           originalRequest.headers.Authorization = `Bearer ${keycloak.token}`;
           return httpClient(originalRequest);
         }
       } catch (refreshError) {
-        console.error('Token refresh failed:', refreshError);
-        
+        console.error("Token refresh failed:", refreshError);
+
         // Jeśli odświeżenie nie powiodło się, przekieruj do logowania
         if (keycloak.authenticated) {
           keycloak.logout();
         }
-        
+
         return Promise.reject(refreshError);
       }
     }

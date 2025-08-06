@@ -3,7 +3,8 @@ import * as signalR from "@microsoft/signalr";
 class SignalRService {
   connection = null;
   hubUrl =
-    import.meta.env.VITE_SIGNALR_HUB_URL ?? "http://localhost:5000/hub/app";
+    import.meta.env.VITE_SIGNALR_HUB_URL ??
+    "http://localhost:5000/notifications/hub/app";
 
   constructor(addNotification, getToken, isAuthenticated) {
     this.addNotification = addNotification;
@@ -48,9 +49,14 @@ class SignalRService {
   async start() {
     const state = this.connection.state;
 
-    if (state !== signalR.HubConnectionState.Disconnected) {
-      console.log(`SignalR is in state: ${state}. Waiting for disconnect...`);
-      await this.waitForDisconnected();
+    if (state === signalR.HubConnectionState.Connected) {
+      console.log("SignalR already connected.");
+      return;
+    }
+
+    if (state === signalR.HubConnectionState.Connecting) {
+      console.log("SignalR is already connecting. Skipping wait.");
+      return;
     }
 
     try {
