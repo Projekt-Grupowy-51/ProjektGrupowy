@@ -1,0 +1,110 @@
+﻿{
+  "details": {
+    "title": "Video Details",
+    "loading": "Loading...",
+    "assigned_labels": "Assigned Labels",
+    "edit_title": "Edit Title",
+    "video_player": "Video Player",
+    "duration": "Duration",
+    "filename": "Filename",
+    "video_not_supported": "Your browser does not support the video tag.",
+    "no_labels": "No labels assigned to this video"
+  },
+  "messages": {
+    "not_found": "Video not found"
+  },
+  "table": {
+    "label": "Label",
+    "labeler": "Labeler",
+    "subject": "Subject",
+    "start": "Start",
+    "end": "End",
+    "timestamp": "Timestamp",
+    "ins_date": "Ins Date",
+    "title": "Title",
+    "position": "Position",
+    "videoId": "Video Id"
+  },
+  "buttons": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "back": "Back",
+    "previous": "Previous",
+    "next": "Next",
+    "play": "Play",
+    "stop": "Stop",
+    "select_files": "Select Files",
+    "upload_all": "Upload All Videos",
+    "uploading": "Uploading...",
+    "remove": "Remove",
+    "adding": "Adding...",
+    "add": "Add Video Group",
+    "add_video": "Add Video"
+  },
+  "video_player": {
+    "rewind_1s": "-1s",
+    "rewind_5s": "-5s",
+    "forward_1s": "+1s",
+    "forward_5s": "+5s",
+    "normal_speed": "1.0x (normal)",
+    "seconds_left": "{{seconds}}s"
+  },
+  "playback_speeds": {
+    "0.25x": "0.25x",
+    "0.5x": "0.5x",
+    "0.75x": "0.75x",
+    "1.0x": "1.0x (normal)",
+    "1.25x": "1.25x",
+    "1.5x": "1.5x",
+    "1.75x": "1.75x",
+    "2.0x": "2.0x"
+  },
+  "labels": {
+    "title": "Assigned Labels:",
+    "no_labels": "No labels assigned yet",
+    "no_labels_available": "No labels available",
+    "point_action": "ADD POINT",
+    "range_start": "START",
+    "range_stop": "STOP"
+  },
+  "video_group": {
+    "add_title": "Add New Video Group",
+    "name": "Group Name",
+    "description": "Description",
+    "details_title": "Video Group Details"
+  },
+  "upload": {
+    "title": "Upload Multiple Videos",
+    "drag_drop": "Drag and drop your videos here",
+    "max_size": "Maximum size: 100MB each",
+    "error_not_video": "{{filename}} is not a valid video.",
+    "error_size": "{{filename}} exceeds 100MB limit.",
+    "error_empty": "Please drag and drop at least one video.",
+    "progress": "Upload Progress",
+    "success": "All videos uploaded successfully!",
+    "error_general": "An error occurred while uploading the videos."
+  },
+  "video_group_details": {
+    "loading": "Loading...",
+    "no_videos": "No videos found in this group. Add some videos to get started.",
+    "video_deleted": "Video deleted successfully!",
+    "add_video": "Add Video"
+  },
+  "errors": {
+    "load_video_details": "Failed to load video details",
+    "load_video_stream": "Error fetching video stream",
+    "load_labels": "Failed to load assigned labels",
+    "update_title": "Error updating title",
+    "title_update_failed": "Failed to update title: {{status}}",
+    "load_video_group": "Failed to fetch video group details",
+    "load_videos": "Failed to load videos",
+    "delete_video": "Failed to delete video",
+    "load_video_list": "Failed to load video list",
+    "load_video_group_details": "Failed to load video group details",
+    "upload_required_fields": "Please fill in all required fields."
+  },
+  "success": {
+    "title_updated": "Title updated successfully",
+    "video_group_added": "Video group added successfully!"
+  }
+}

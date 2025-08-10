@@ -1,0 +1,110 @@
+﻿{
+  "details": {
+    "title": "Szczegóły wideo",
+    "loading": "Ładowanie...",
+    "assigned_labels": "Przypisane etykiety",
+    "edit_title": "Edytuj tytuł",
+    "video_player": "Odtwarzacz wideo",
+    "duration": "Czas trwania",
+    "filename": "Nazwa pliku",
+    "video_not_supported": "Twoja przeglądarka nie obsługuje tagu video.",
+    "no_labels": "Brak etykiet przypisanych do tego wideo"
+  },
+  "messages": {
+    "not_found": "Wideo nie zostało znalezione"
+  },
+  "table": {
+    "label": "Etykieta",
+    "labeler": "Etykietujący",
+    "subject": "Temat",
+    "start": "Start",
+    "end": "Koniec",
+    "timestamp": "Znacznik czasu",
+    "ins_date": "Data dodania",
+    "title": "Tytuł",
+    "position": "Pozycja",
+    "videoId": "ID wideo"
+  },
+  "buttons": {
+    "save": "Zapisz",
+    "cancel": "Anuluj",
+    "back": "Powrót",
+    "previous": "Poprzedni",
+    "next": "Następny",
+    "play": "Odtwórz",
+    "stop": "Zatrzymaj",
+    "select_files": "Wybierz Pliki",
+    "upload_all": "Wgraj Wszystkie Filmy",
+    "uploading": "Wgrywanie...",
+    "remove": "Usuń",
+    "adding": "Dodawanie...",
+    "add": "Dodaj Grupę Filmów",
+    "add_video": "Dodaj Film"
+  },
+  "video_player": {
+    "rewind_1s": "-1s",
+    "rewind_5s": "-5s",
+    "forward_1s": "+1s",
+    "forward_5s": "+5s",
+    "normal_speed": "1.0x (normalna)",
+    "seconds_left": "{{seconds}}s"
+  },
+  "playback_speeds": {
+    "0.25x": "0.25x",
+    "0.5x": "0.5x",
+    "0.75x": "0.75x",
+    "1.0x": "1.0x (normalna)",
+    "1.25x": "1.25x",
+    "1.5x": "1.5x",
+    "1.75x": "1.75x",
+    "2.0x": "2.0x"
+  },
+  "labels": {
+    "title": "Przypisane Etykiety:",
+    "no_labels": "Brak przypisanych etykiet",
+    "no_labels_available": "Brak dostępnych etykiet",
+    "point_action": "DODAJ PUNKT",
+    "range_start": "ROZPOCZNIJ",
+    "range_stop": "ZATRZYMAJ"
+  },
+  "video_group": {
+    "add_title": "Dodaj Nową Grupę Filmów",
+    "name": "Nazwa Grupy",
+    "description": "Opis",
+    "details_title": "Szczegóły Grupy Filmów"
+  },
+  "upload": {
+    "title": "Wgraj Wiele Filmów",
+    "drag_drop": "Przeciągnij i upuść filmy tutaj",
+    "max_size": "Maksymalny rozmiar: 100MB każdy",
+    "error_not_video": "{{filename}} nie jest prawidłowym filmem.",
+    "error_size": "{{filename}} przekracza limit 100MB.",
+    "error_empty": "Proszę przeciągnąć i upuścić co najmniej jeden film.",
+    "progress": "Postęp Wgrywania",
+    "success": "Wszystkie filmy zostały pomyślnie wgrane!",
+    "error_general": "Wystąpił błąd podczas wgrywania filmów."
+  },
+  "video_group_details": {
+    "loading": "Ładowanie...",
+    "no_videos": "Brak filmów w tej grupie. Dodaj filmy, aby rozpocząć.",
+    "video_deleted": "Film został pomyślnie usunięty!",
+    "add_video": "Dodaj Film"
+  },
+  "errors": {
+    "load_video_details": "Nie udało się załadować szczegółów filmu",
+    "load_video_stream": "Błąd podczas pobierania strumienia wideo",
+    "load_labels": "Nie udało się załadować przypisanych etykiet",
+    "update_title": "Błąd podczas aktualizacji tytułu",
+    "title_update_failed": "Nie udało się zaktualizować tytułu: {{status}}",
+    "load_video_group": "Nie udało się pobrać szczegółów grupy filmów",
+    "load_videos": "Nie udało się załadować filmów",
+    "delete_video": "Nie udało się usunąć filmu",
+    "load_video_list": "Nie udało się załadować listy filmów",
+    "load_video_group_details": "Nie udało się załadować szczegółów grupy filmów",
+    "upload_required_fields": "Proszę wypełnić wszystkie wymagane pola."
+  },
+  "success": {
+    "title_updated": "Tytuł został pomyślnie zaktualizowany",
+    "video_group_added": "Grupa filmów została pomyślnie dodana!"
+  }
+}

@@ -1,0 +1,138 @@
+﻿{
+  "add_title": "Add New Project",
+  "edit_title": "Edit Project",
+  "list_title": "Projects",
+  "project_details": "Project Details",
+  "form": {
+    "name": "Project Name",
+    "description": "Description",
+    "finished": "Finished",
+    "status": "Status",
+    "status_options": {
+      "active": "Active",
+      "completed": "Completed"
+    }
+  },
+  "tabs": {
+    "details": "Details",
+    "subjects": "Subjects",
+    "videos": "Video Groups",
+    "assignments": "Assignments",
+    "labelers": "Labelers",
+    "access_codes": "Access Codes"
+  },
+  "buttons": {
+    "create": "Create Project",
+    "save": "Save Changes",
+    "creating": "Creating...",
+    "loading": "Loading projects..."
+  },
+  "notifications": {
+    "create_success": "Project added successfully!",
+    "update_success": "Project updated successfully!",
+    "delete_success": "Project deleted successfully!",
+    "load_error": "Failed to load projects",
+    "details_error": "Failed to load project data"
+  },
+  "no_projects": "No projects found",
+  "messages": {
+    "no_projects": "No projects found",
+    "create_first_project": "Create your first project to get started",
+    "confirm_delete": "Are you sure you want to delete this project? This action cannot be undone.",
+    "project_not_found": "Project not found"
+  },
+  "status": {
+    "in_progress": "In Progress",
+    "finished": "Finished",
+    "active": "Active",
+    "completed": "Completed"
+  },
+  "validation": {
+    "name_required": "Project name is required",
+    "description_required": "Description is required"
+  },
+  "add": {
+    "subject": "Add Subject",
+    "video_group": "Add Video Group",
+    "assignment": "Add assignment"
+  },
+  "not_found": {
+    "subject": "No subjects found",
+    "video_group": "No video groups found",
+    "assignment": "No assignments found",
+    "unassigned_labelers": "There are no labelers awaiting assignment",
+    "all_labelers": "No labelers available in this project",
+    "assigned_labelers": "No labelers found in assignments"
+  },
+  "assignment": {
+    "subject": "Subject",
+    "video_group": "Video group"
+  },
+  "labeler_tab": {
+    "assign_labeler_to_assignment": "Assign Labeler to Assignment",
+    "select_labeler": "Select Labeler",
+    "select_assignment": "Select Assignment",
+    "assign_labeler": "Assign Labeler",
+    "unassigned_labelers": "Unassigned Labelers",
+    "all_labelers": "All Labelers",
+    "assigned_labelers": "Assigned Labelers",
+    "unassign_selected": "Unassign Selected",
+    "unassign_all": "Unassign All Labelers",
+    "assign_all_selected": "Assign all selected",
+    "distribute_labelers": "Distribute labelers"
+  },
+  "access_codes": {
+    "no_codes": "No access codes found",
+    "generate_title": "Generate Access Codes",
+    "loading": "Loading access codes...",
+    "columns": {
+      "code": "Code",
+      "created_at": "Created At",
+      "expires_at": "Expires At",
+      "status": "Valid"
+    },
+    "status": {
+      "valid": "✓ Valid",
+      "invalid": "✗ Invalid"
+    },
+    "durations": {
+      "14_days": "14 Days",
+      "30_days": "30 Days",
+      "custom": "Custom",
+      "unlimited": "Unlimited",
+      "days": "Days"
+    },
+    "expiration": {
+      "never": "Never",
+      "expired": "Expired"
+    },
+    "visibility": {
+      "show": "Show code",
+      "hide": "Hide code"
+    },
+    "buttons": {
+      "generate": "Generate Access Code"
+    },
+    "success": {
+      "created": "Access code created successfully!",
+      "copied": "Code copied to clipboard!",
+      "retired": "Access code retired successfully!"
+    },
+    "errors": {
+      "load_failed": "Failed to load access codes",
+      "create_failed": "Failed to create code",
+      "copy_failed": "Failed to copy code. Please try again."
+    }
+  },
+  "video_groups": {
+    "loading": "Loading video groups..."
+  },
+  "reports": {
+    "title": "Project Reports",
+    "no_reports": "No reports generated yet",
+    "generate": "Generate Report", 
+    "confirm_delete": "Are you sure you want to delete this report?",
+    "quality": "Report Quality",
+    "quality_description": "Higher quality takes longer to generate but provides more detailed analysis."
+  }
+}
