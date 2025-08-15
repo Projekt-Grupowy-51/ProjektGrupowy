@@ -23,7 +23,7 @@ public class HttpMessageService(IHttpMessageClient messageClient) : IMessageServ
     public async Task SendMessageAsync(string userId, string method, string message,
         CancellationToken cancellationToken = default)
     {
-        var messageObject = new HttpMessage("test-user-id", method, message);
+        var messageObject = new HttpMessage(userId, method, message);
         await messageClient.SendMessageAsync(messageObject, cancellationToken);
     }
 }
