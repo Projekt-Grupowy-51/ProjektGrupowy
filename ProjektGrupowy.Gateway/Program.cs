@@ -19,6 +19,8 @@ builder.Configuration.AddJsonFile(jsonFile, optional: false, reloadOnChange: tru
 
 builder.Services.AddOcelot();
 
+builder.Services.AddHealthChecks();
+
 builder.Services.AddAuthorization();
 
 builder.Services.AddCors(options =>
@@ -36,6 +38,8 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+app.MapHealthChecks("/health");
 
 app.UseCors("FrontendPolicy");
 
