@@ -16,6 +16,7 @@ public class AppHub(IConnectedClientManager clientManager) : Hub
 
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
+        await clientManager.RemoveClientAsync(Context.ConnectionId);
         await base.OnDisconnectedAsync(exception);
     }
 

@@ -2,7 +2,10 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
+using Microsoft.Extensions.Internal;
+using Microsoft.Extensions.Logging;
 using ProjektGrupowy.Domain.Utils.Constants;
+using ISystemClock = Microsoft.AspNetCore.Authentication.ISystemClock;
 
 namespace ProjektGrupowy.API.Authentication;
 

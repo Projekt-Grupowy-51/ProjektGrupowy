@@ -172,7 +172,7 @@ public class ProjectService(
         await messageService.SendMessageAsync(
             project.CreatedById,
             MessageTypes.LabelersCountChanged,
-            project.ProjectLabelers.Count);
+            project.ProjectLabelers.Count.ToString());
 
         return Optional<bool>.Success(true);
     }

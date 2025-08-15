@@ -26,7 +26,7 @@ using ProjektGrupowy.Infrastructure.Repositories;
 using ProjektGrupowy.Infrastructure.Repositories.Impl;
 using Serilog;
 using System.Text.Json.Serialization;
-using StackExchange.Redis;
+using ProjektGrupowy.Application.Http;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -113,7 +113,7 @@ app.UseExceptionHandler(errorApp =>
     });
 });
 
-app.MapHub<AppHub>(builder.Configuration["SignalR:HubUrl"] ?? "/hub/app");
+// app.MapHub<AppHub>(builder.Configuration["SignalR:HubUrl"] ?? "/hub/app");
 
 app.Run();
 
@@ -225,6 +225,10 @@ static void AddServices(WebApplicationBuilder builder)
     builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
     builder.Services.AddScoped<IAuthorizationHandler, CustomAuthorizationHandler>();
 
+    // Messaging
+    builder.Services.AddHttpClient();
+    builder.Services.AddScoped<IHttpMessageClient, HttpMessageClient>();
+
     // Repositories
     builder.Services.AddScoped<IKeycloakUserRepository, KeycloakUserRepository>();
     builder.Services.AddScoped<IAssignedLabelRepository, AssignedLabelRepository>();
@@ -250,19 +254,19 @@ static void AddServices(WebApplicationBuilder builder)
     builder.Services.AddScoped<IReportGenerator, ReportGenerator>();
     builder.Services.AddScoped<IProjectReportService, ProjectReportService>();
 
-    builder.Services.AddSingleton<IConnectionMultiplexer>(
-        ConnectionMultiplexer.Connect(builder.Configuration["Redis:ConnectionString"]!));
-    builder.Services.AddSingleton<IConnectedClientManager, ConnectedClientManager>();
+    // builder.Services.AddSingleton<IConnectionMultiplexer>(
+    //     ConnectionMultiplexer.Connect(builder.Configuration["Redis:ConnectionString"]!));
+    // builder.Services.AddSingleton<IConnectedClientManager, ConnectedClientManager>();
     
     
     builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
-    builder.Services.AddSignalR(options =>
-    {
-        options.EnableDetailedErrors = true;
-        options.KeepAliveInterval = TimeSpan.FromSeconds(15);
-        options.HandshakeTimeout = TimeSpan.FromSeconds(15);
-    });
-    builder.Services.AddSingleton<IMessageService, MessageService>();
+    // builder.Services.AddSignalR(options =>
+    // {
+    //     options.EnableDetailedErrors = true;
+    //     options.KeepAliveInterval = TimeSpan.FromSeconds(15);
+    //     options.HandshakeTimeout = TimeSpan.FromSeconds(15);
+    // });
+    builder.Services.AddScoped<IMessageService, HttpMessageService>();
 
     // AutoMapper
     var mapperConfig = new MapperConfiguration(cfg =>
@@ -326,19 +330,19 @@ static void AddServices(WebApplicationBuilder builder)
 
                 options.Events = new JwtBearerEvents
                 {
-                    OnMessageReceived = context =>
-                    {
-                        var path = context.HttpContext.Request.Path;
-                        if (path.ToString().Contains("/hub/app"))
-                        {
-                            var accessToken = context.Request.Query["access_token"];
-                            if (!string.IsNullOrEmpty(accessToken))
-                            {
-                                context.Token = accessToken;
-                            }
-                        }
-                        return Task.CompletedTask;
-                    },
+                    // OnMessageReceived = context =>
+                    // {
+                    //     var path = context.HttpContext.Request.Path;
+                    //     if (path.ToString().Contains("/hub/app"))
+                    //     {
+                    //         var accessToken = context.Request.Query["access_token"];
+                    //         if (!string.IsNullOrEmpty(accessToken))
+                    //         {
+                    //             context.Token = accessToken;
+                    //         }
+                    //     }
+                    //     return Task.CompletedTask;
+                    // },
                     OnAuthenticationFailed = context =>
                     {
                         Log.Error("Authentication failed: {Exception}", context.Exception);

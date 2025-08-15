@@ -1,12 +1,11 @@
 namespace ProjektGrupowy.Application.SignalR;
 public interface IMessageService
 {
-    Task SendMessageAsync<T>(string userId, string method, T message, CancellationToken cancellationToken = default);
-    Task SendMessageToAllAsync<T>(string method, T message, CancellationToken cancellationToken = default);
+    Task SendMessageAsync(string userId, string method, string message, CancellationToken cancellationToken = default);
 
-    Task SendSuccessAsync<T>(string userId, T message, CancellationToken cancellationToken = default);
-    Task SendErrorAsync<T>(string userId, T message, CancellationToken cancellationToken = default);
-    Task SendWarningAsync<T>(string userId, T message, CancellationToken cancellationToken = default);
-    Task SendInfoAsync<T>(string userId, T message, CancellationToken cancellationToken = default);
-    Task SendRegularMessageAsync<T>(string userId, T message, CancellationToken cancellationToken = default);
+    Task SendSuccessAsync(string userId, string message, CancellationToken cancellationToken = default);
+    Task SendErrorAsync(string userId, string message, CancellationToken cancellationToken = default);
+    Task SendWarningAsync(string userId, string message, CancellationToken cancellationToken = default);
+    Task SendInfoAsync(string userId, string message, CancellationToken cancellationToken = default);
+    Task SendRegularMessageAsync(string userId, string message, CancellationToken cancellationToken = default);
 }
