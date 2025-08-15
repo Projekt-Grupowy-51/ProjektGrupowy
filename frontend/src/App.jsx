@@ -39,10 +39,10 @@ import { LoadingProvider } from './context/LoadingContext';
 import LoadingScreen from './components/LoadingScreen';
 
 const RoleProtectedRoute = ({ allowedRoles }) => {
-    const { isAuthenticated, roles } = useAuth();
+    const { isAuthenticated, roles, hasUserRole } = useAuth();
     const location = useLocation();
 
-    const hasAccess = roles.some(role => allowedRoles.includes(role));
+    const hasAccess = roles.some(role => allowedRoles.includes(role)) || allowedRoles.some(role => hasUserRole(role));
 
     if (!isAuthenticated) {
         return <Navigate to="/login" state={{ from: location }} replace />;
@@ -56,7 +56,7 @@ const RoleProtectedRoute = ({ allowedRoles }) => {
 
 
 const Navbar = () => {
-    const { isAuthenticated, hasRole, handleLogout } = useAuth();
+    const { isAuthenticated, hasUserRole, handleLogout } = useAuth();
     const { t, i18n } = useTranslation(['common']);
     const changeLanguage = (lang) => {
         if (i18n.language !== lang) {
@@ -99,7 +99,7 @@ const Navbar = () => {
                     <ul className="navbar-nav">
                         {isAuthenticated ? (
                             <>
-                                {hasRole("Scientist") && (
+                                {hasUserRole("Scientist") && (
                                     <li className="nav-item">
                                         <Link
                                             to="/projects"
@@ -109,7 +109,7 @@ const Navbar = () => {
                                         </Link>
                                     </li>
                                 )}
-                                {hasRole("Labeler") && (
+                                {hasUserRole("Labeler") && (
                                     <li className="nav-item">
                                         <Link
                                             to="/labeler-video-groups"

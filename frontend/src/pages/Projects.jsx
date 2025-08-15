@@ -21,7 +21,7 @@ const Projects = () => {
   };
 
   useEffect(() => {
-    
+
     fetchProjects();
   }, []);
 
