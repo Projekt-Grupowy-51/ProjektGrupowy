@@ -1,0 +1,21 @@
+﻿{
+  "add_title": "Add Video Group",
+  "buttons": {
+    "create": "Create",
+    "saving": "Saving..."
+  },
+  "form": {
+    "name": "Name",
+    "name_placeholder": "Enter group name",
+    "description": "Description",
+    "description_placeholder": "Enter description",
+    "validation": {
+      "name_required": "Name is required",
+      "description_required": "Description is required"
+    }
+  },
+  "errors": {
+    "loadFailed": "Failed to load video group data",
+    "not_found": "Video group not found"
+  }
+}

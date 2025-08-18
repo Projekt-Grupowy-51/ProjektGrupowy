@@ -1,0 +1,22 @@
+﻿{
+  "add_title": "Dodaj grupę wideo",
+  "buttons": {
+    "create": "Utwórz",
+    "saving": "Zapisywanie..."
+  },
+  "form": {
+    "name": "Nazwa",
+    "name_placeholder": "Wprowadź nazwę grupy",
+    "description": "Opis",
+    "description_placeholder": "Wprowadź opis",
+    "validation": {
+      "name_required": "Nazwa jest wymagana",
+      "description_required": "Opis jest wymagany"
+    }
+  },
+  "errors": {
+    "loadFailed": "Nie udało się załadować danych grupy wideo",
+    "not_found": "Nie znaleziono grupy wideo"
+  },
+  "no_videos": "Brak wideo w tej grupie"
+}

@@ -18,6 +18,8 @@ import enAssignments from './languages/en/assignments.json';
 import plAssignments from './languages/pl/assignments.json';
 import enVideos from './languages/en/videos.json';
 import plVideos from './languages/pl/videos.json';
+import enVideoGroups from './languages/en/videoGroups.json';
+import plVideoGroups from './languages/pl/videoGroups.json';
 
 const resources = {
     en: {
@@ -29,6 +31,7 @@ const resources = {
         subjects: enSubjects,
         assignments: enAssignments,
         videos: enVideos,
+        videoGroups: enVideoGroups,
     },
     pl: {
         common: plCommon,
@@ -39,8 +42,10 @@ const resources = {
         subjects: plSubjects,
         assignments: plAssignments,
         videos: plVideos,
+        videoGroups: plVideoGroups,
     }
 };
+
 
 i18n
     .use(LanguageDetector)
@@ -48,7 +53,7 @@ i18n
     .init({
         resources,
         fallbackLng: 'en',
-        ns: ['common', 'auth', 'labels', 'labeler', 'projects', 'subjects', 'assignments', 'videos'],
+        ns: ['common', 'auth', 'labels', 'labeler', 'projects', 'subjects', 'assignments', 'videoGroups', 'videos'],
         defaultNS: 'common',
         detection: {
             order: ['querystring', 'localStorage', 'navigator', 'htmlTag'],

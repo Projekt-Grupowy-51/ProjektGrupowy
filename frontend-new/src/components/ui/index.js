@@ -6,3 +6,4 @@ export { default as Table, TableHead, TableBody, TableRow, TableCell } from './T
 export { default as Alert } from './Alert.jsx';
 export { default as Modal } from './Modal.jsx';
 export { default as Tabs } from './Tabs.jsx';
+export { default as Select } from './Select.jsx';
