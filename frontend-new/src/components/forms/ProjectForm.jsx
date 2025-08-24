@@ -4,13 +4,14 @@ import { useTranslation } from 'react-i18next';
 import { Button, Input } from '../ui';
 
 const ProjectForm = ({
-  initialData = {},
-  onSubmit,
-  onCancel,
-  loading = false,
-  submitText,
-  cancelText
-}) => {
+                       initialData = {},
+                       onSubmit,
+                       onCancel,
+                       loading = false,
+                       submitText,
+                       cancelText,
+                       showFinishedCheckbox = true // new prop
+                     }) => {
   const { t } = useTranslation(['projects', 'common']);
   const [formData, setFormData] = useState({
     name: '',
@@ -21,13 +22,13 @@ const ProjectForm = ({
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
-    setFormData({
-      name: '',
-      description: '',
-      finished: false,
-      ...initialData
-    });
-  }, [initialData]);
+    setFormData(prev => ({
+      name: prev.name || initialData.name || '',
+      description: prev.description || initialData.description || '',
+      finished: prev.finished ?? initialData.finished ?? false
+    }));
+  }, []);
+
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -36,37 +37,22 @@ const ProjectForm = ({
       [name]: type === 'checkbox' ? checked : value
     }));
 
-    // Clear error when user starts typing
     if (errors[name]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: ''
-      }));
+      setErrors(prev => ({ ...prev, [name]: '' }));
     }
   };
 
   const validateForm = () => {
     const newErrors = {};
-
-    if (!formData.name.trim()) {
-      newErrors.name = t('projects:validation.name_required');
-    }
-
-    if (!formData.description.trim()) {
-      newErrors.description = t('projects:validation.description_required');
-    }
-
+    if (!formData.name.trim()) newErrors.name = t('projects:validation.name_required');
+    if (!formData.description.trim()) newErrors.description = t('projects:validation.description_required');
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
-    }
-
+    if (!validateForm()) return;
     try {
       await onSubmit(formData);
     } catch (error) {
@@ -75,69 +61,60 @@ const ProjectForm = ({
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <Input
-        label={t('projects:form.name')}
-        name="name"
-        type="text"
-        value={formData.name}
-        onChange={handleChange}
-        required
-        error={errors.name}
-        disabled={loading}
-      />
-
-      <Input
-        label={t('projects:form.description')}
-        name="description"
-        type="textarea"
-        value={formData.description}
-        onChange={handleChange}
-        required
-        rows={4}
-        error={errors.description}
-        disabled={loading}
-      />
-
-      <div className="mb-3">
-        <div className="form-check">
-          <input
-            className="form-check-input"
-            type="checkbox"
-            id="finished"
-            name="finished"
-            checked={formData.finished}
+      <form onSubmit={handleSubmit}>
+        <Input
+            label={t('projects:form.name')}
+            name="name"
+            type="text"
+            value={formData.name}
             onChange={handleChange}
+            required
+            error={errors.name}
             disabled={loading}
-          />
-          <label className="form-check-label" htmlFor="finished">
-            {t('projects:form.finished')}
-          </label>
-        </div>
-      </div>
+        />
 
-      <div className="d-flex gap-2">
-        <Button
-          type="submit"
-          variant="primary"
-          loading={loading}
-          icon="fas fa-save"
-        >
-          {submitText || t('projects:buttons.save')}
-        </Button>
-        
-        {onCancel && (
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={onCancel}
+        <Input
+            label={t('projects:form.description')}
+            name="description"
+            type="textarea"
+            value={formData.description}
+            onChange={handleChange}
+            required
+            rows={4}
+            error={errors.description}
             disabled={loading}
-          >
-            {cancelText || t('common:buttons.cancel')}
-          </Button>
+        />
+
+        {showFinishedCheckbox && (
+            <div className="mb-3">
+              <div className="form-check">
+                <input
+                    className="form-check-input"
+                    type="checkbox"
+                    id="finished"
+                    name="finished"
+                    checked={formData.finished}
+                    onChange={handleChange}
+                    disabled={loading}
+                />
+                <label className="form-check-label" htmlFor="finished">
+                  {t('projects:form.finished')}
+                </label>
+              </div>
+            </div>
         )}
-      </div>
-    </form>
+
+        <div className="d-flex gap-2">
+          <Button type="submit" variant="primary" loading={loading} icon="fas fa-save">
+            {submitText || t('projects:buttons.save')}
+          </Button>
+          {onCancel && (
+              <Button type="button" variant="secondary" onClick={onCancel} disabled={loading}>
+                {cancelText || t('common:buttons.cancel')}
+              </Button>
+          )}
+        </div>
+      </form>
   );
 };
 
@@ -151,7 +128,8 @@ ProjectForm.propTypes = {
   onCancel: PropTypes.func,
   loading: PropTypes.bool,
   submitText: PropTypes.string,
-  cancelText: PropTypes.string
+  cancelText: PropTypes.string,
+  showFinishedCheckbox: PropTypes.bool
 };
 
 export default ProjectForm;

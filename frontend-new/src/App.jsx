@@ -16,6 +16,7 @@ import VideoGroupAddPage from "./pages/VideoGroupAdd.jsx";
 import VideoGroupDetailsPage from "./pages/VideoGroupDetails.jsx";
 import LabelAddPage from "./pages/LabelAdd.jsx";
 import LabelEditPage from "./pages/LabelEdit.jsx";
+import SubjectVideoGroupAssignmentAddPage from './pages/SubjectVideoGroupAssignmentAdd.jsx';
 import './App.css';
 import './i18n.js';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -36,6 +37,7 @@ function App() {
                     <Route path="/videogroups/:id" element={<VideoGroupDetailsPage />} />
                     <Route path="/labels/add" element={<LabelAddPage />} />
                     <Route path="/labels/:id/edit" element={<LabelEditPage />} />
+                    <Route path="/projects/:projectId/assignments/add" element={<SubjectVideoGroupAssignmentAddPage />} />
                     <Route path="/videos/:id" element={<VideoDetailsPage />} />
                     <Route path="/" element={
                         <div className="container mt-5">
