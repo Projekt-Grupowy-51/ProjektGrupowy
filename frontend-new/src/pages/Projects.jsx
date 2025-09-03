@@ -1,59 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Container, Card, Button } from '../components/ui';
+import { LoadingSpinner, ErrorAlert } from '../components/common';
 import ProjectList from '../components/features/projects/ProjectList.jsx';
-import { FAKE_PROJECTS, removeFromCollection } from '../data/fakeData.js';
+import { useProjects } from '../hooks/useProjects.js';
+import { useNavigation } from '../hooks/common';
 
 const ProjectsPage = () => {
   const { t } = useTranslation(['projects', 'common']);
+  const { goTo } = useNavigation();
   
-  // Stan komponentu
-  const [projects, setProjects] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    // Symulacja ładowania projektów z kolekcji
-    const loadProjects = async () => {
-      setLoading(true);
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setProjects([...FAKE_PROJECTS]); // Kopiujemy kolekcję do stanu
-      setLoading(false);
-    };
-    
-    loadProjects();
-  }, []);
-
-  const deleteProject = async (projectId) => {
-    // Usuwanie z kolekcji
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    const deletedProject = removeFromCollection(FAKE_PROJECTS, projectId);
-    if (deletedProject) {
-      setProjects([...FAKE_PROJECTS]); // Aktualizujemy stan
-      console.log('Deleted project:', projectId);
-      console.log('Current projects collection:', FAKE_PROJECTS);
-    }
-  };
-
-  const handleDeleteProject = async (projectId) => {
-    try {
-      await deleteProject(projectId);
-      // Success handled by the hook
-    } catch (error) {
-      console.error('Failed to delete project:', error);
-      // Here you could add a toast notification
-    }
-  };
+  const {
+    projects,
+    loading,
+    error,
+    handleDelete
+  } = useProjects();
 
   if (loading) {
     return (
       <Container className="py-4">
-        <div className="text-center">
-          <div className="spinner-border" role="status">
-            <span className="visually-hidden">Loading...</span>
-          </div>
-        </div>
+        <LoadingSpinner />
       </Container>
     );
   }
@@ -61,13 +28,7 @@ const ProjectsPage = () => {
   if (error) {
     return (
       <Container className="py-4">
-        <Card>
-          <Card.Body>
-            <div className="alert alert-danger" role="alert">
-              {error}
-            </div>
-          </Card.Body>
-        </Card>
+        <ErrorAlert error={error} />
       </Container>
     );
   }
@@ -79,7 +40,7 @@ const ProjectsPage = () => {
         <Button
           variant="primary"
           icon="fas fa-plus-circle"
-          onClick={() => window.location.href = '/projects/add'}
+          onClick={() => goTo('/projects/add')}
         >
           {t('common:buttons.add')}
         </Button>
@@ -87,7 +48,7 @@ const ProjectsPage = () => {
 
       <ProjectList 
         projects={projects}
-        onDelete={handleDeleteProject}
+        onDelete={handleDelete}
       />
     </Container>
   );

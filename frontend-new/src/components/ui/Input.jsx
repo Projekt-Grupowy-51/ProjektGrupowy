@@ -16,6 +16,10 @@ const Input = ({
   size = 'md',
   className = '',
   rows = 3,
+  checked,
+  multiple = false,
+  accept,
+  options = [],
   ...props
 }) => {
   const inputId = id || name;
@@ -39,6 +43,7 @@ const Input = ({
   };
 
   const renderInput = () => {
+    // Textarea
     if (type === 'textarea') {
       return (
         <textarea
@@ -56,6 +61,90 @@ const Input = ({
       );
     }
 
+    // Checkbox
+    if (type === 'checkbox') {
+      return (
+        <div className="form-check">
+          <input
+            type="checkbox"
+            id={inputId}
+            name={name}
+            className="form-check-input"
+            checked={checked}
+            onChange={onChange}
+            required={required}
+            disabled={disabled}
+            {...props}
+          />
+          {label && (
+            <label className="form-check-label" htmlFor={inputId}>
+              {label}
+              {required && <span className="text-danger ms-1">*</span>}
+            </label>
+          )}
+        </div>
+      );
+    }
+
+    // Select
+    if (type === 'select') {
+      return (
+        <select
+          id={inputId}
+          name={name}
+          className={getInputClasses().replace('form-control', 'form-select')}
+          value={value}
+          onChange={onChange}
+          required={required}
+          disabled={disabled}
+          {...props}
+        >
+          <option value="">Please select...</option>
+          {options.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      );
+    }
+
+    // File input
+    if (type === 'file') {
+      return (
+        <input
+          type="file"
+          id={inputId}
+          name={name}
+          className={getInputClasses()}
+          onChange={onChange}
+          required={required}
+          disabled={disabled}
+          multiple={multiple}
+          accept={accept}
+          {...props}
+        />
+      );
+    }
+
+    // Color input
+    if (type === 'color') {
+      return (
+        <input
+          type="color"
+          id={inputId}
+          name={name}
+          className={[getInputClasses(), 'form-control-color'].join(' ')}
+          value={value}
+          onChange={onChange}
+          required={required}
+          disabled={disabled}
+          {...props}
+        />
+      );
+    }
+
+    // Standard input types
     return (
       <input
         type={type}
@@ -74,7 +163,8 @@ const Input = ({
 
   return (
     <div className="mb-3">
-      {label && (
+      {/* For checkbox, label is rendered inside renderInput() */}
+      {label && type !== 'checkbox' && (
         <label htmlFor={inputId} className="form-label">
           {label}
           {required && <span className="text-danger ms-1">*</span>}
@@ -82,7 +172,7 @@ const Input = ({
       )}
       {renderInput()}
       {error && (
-        <div className="invalid-feedback">
+        <div className="invalid-feedback d-block">
           {error}
         </div>
       )}
@@ -97,7 +187,7 @@ const Input = ({
 
 Input.propTypes = {
   label: PropTypes.string,
-  type: PropTypes.oneOf(['text', 'email', 'password', 'number', 'tel', 'url', 'search', 'textarea']),
+  type: PropTypes.oneOf(['text', 'email', 'password', 'number', 'tel', 'url', 'search', 'textarea', 'checkbox', 'color', 'file', 'select', 'hidden']),
   id: PropTypes.string,
   name: PropTypes.string.isRequired,
   value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
@@ -109,7 +199,14 @@ Input.propTypes = {
   helpText: PropTypes.string,
   size: PropTypes.oneOf(['sm', 'md', 'lg']),
   className: PropTypes.string,
-  rows: PropTypes.number
+  rows: PropTypes.number,
+  checked: PropTypes.bool, // for checkbox
+  multiple: PropTypes.bool, // for file input
+  accept: PropTypes.string, // for file input
+  options: PropTypes.arrayOf(PropTypes.shape({ // for select
+    value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    label: PropTypes.string
+  }))
 };
 
 export default Input;

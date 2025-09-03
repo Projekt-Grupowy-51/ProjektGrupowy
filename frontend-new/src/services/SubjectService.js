@@ -1,41 +1,99 @@
 import apiClient from './ApiClient.js';
 
+/**
+ * SubjectService - Handles research subject operations
+ * Maps to SubjectController endpoints
+ * Most operations require Admin or Scientist role
+ */
 class SubjectService {
-  async getSubjects(projectId = null) {
-    const params = projectId ? { projectId } : {};
-    const response = await apiClient.get('/Subject', { params });
-    return response.data;
+
+  /**
+   * Get all subjects
+   * GET /api/Subject
+   * @returns {Promise<Array>} Array of SubjectResponse objects
+   */
+  async getAll() {
+    try {
+      return await apiClient.get('/Subject');
+    } catch (error) {
+      throw new Error(`Failed to get subjects: ${error.message}`);
+    }
   }
 
-  async getSubject(id) {
-    const response = await apiClient.get(`/subject/${id}`);
-    return response.data;
+  /**
+   * Get specific subject by ID
+   * GET /api/Subject/{id}
+   * @param {number} id - Subject ID
+   * @returns {Promise<Object>} SubjectResponse object
+   */
+  async getById(id) {
+    try {
+      return await apiClient.get(`/Subject/${id}`);
+    } catch (error) {
+      throw new Error(`Failed to get subject ${id}: ${error.message}`);
+    }
   }
 
-  async createSubject(subjectData) {
-    const response = await apiClient.post('/Subject', subjectData);
-    return response.data;
+  /**
+   * Create new subject
+   * POST /api/Subject
+   * @param {Object} subjectRequest - Subject creation request
+   * @param {string} subjectRequest.name - Subject name
+   * @param {string} subjectRequest.description - Subject description
+   * @param {number} subjectRequest.projectId - Project ID
+   * @returns {Promise<Object>} SubjectResponse object
+   */
+  async create(subjectRequest) {
+    try {
+      return await apiClient.post('/Subject', subjectRequest);
+    } catch (error) {
+      throw new Error(`Failed to create subject: ${error.message}`);
+    }
   }
 
-  async updateSubject(id, subjectData) {
-    const response = await apiClient.put(`/Subject/${id}`, subjectData);
-    return response.data;
+  /**
+   * Update subject
+   * PUT /api/Subject/{id}
+   * @param {number} id - Subject ID
+   * @param {Object} subjectRequest - Subject update request
+   * @returns {Promise<void>}
+   */
+  async update(id, subjectRequest) {
+    try {
+      await apiClient.put(`/Subject/${id}`, subjectRequest);
+    } catch (error) {
+      throw new Error(`Failed to update subject ${id}: ${error.message}`);
+    }
   }
 
-  async deleteSubject(id) {
-    await apiClient.delete(`/Subject/${id}`);
-    return { success: true };
+  /**
+   * Delete subject
+   * DELETE /api/Subject/{id}
+   * @param {number} id - Subject ID to delete
+   * @returns {Promise<void>}
+   */
+  async delete(id) {
+    try {
+      await apiClient.delete(`/Subject/${id}`);
+    } catch (error) {
+      throw new Error(`Failed to delete subject ${id}: ${error.message}`);
+    }
   }
 
-  async getSubjectLabels(subjectId) {
-    const response = await apiClient.get(`/subject/${subjectId}/label`);
-    return response.data.filter(l => l.subjectId === parseInt(subjectId)).sort((a, b) => a.id - b.id);
+  /**
+   * Get subject labels
+   * GET /api/Subject/{id}/label
+   * @param {number} id - Subject ID
+   * @returns {Promise<Array>} Array of LabelResponse objects
+   */
+  async getLabels(id) {
+    try {
+      return await apiClient.get(`/Subject/${id}/label`);
+    } catch (error) {
+      throw new Error(`Failed to get labels for subject ${id}: ${error.message}`);
+    }
   }
 
-  async deleteLabel(labelId) {
-    await apiClient.delete(`/label/${labelId}`);
-    return { success: true };
-  }
 }
 
 export default new SubjectService();

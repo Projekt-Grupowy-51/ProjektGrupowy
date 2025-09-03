@@ -149,7 +149,7 @@ const KeycloakProvider = ({ children }) => {
           <small className="text-muted">Error: {initError}</small>
           <br />
           <button 
-            className="btn btn-outline-primary mt-3" 
+            className="btn btn-primary mt-3" 
             onClick={() => window.location.reload()}
           >
             Retry

@@ -2,57 +2,50 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { Card, Button, Alert } from '../../../ui';
+import { Card, Button } from '../../../ui';
+import { EmptyState, TabHeader, TabListGroup } from '../../../common';
 
 const ProjectSubjectsTab = ({ projectId, subjects = [] }) => {
   const { t } = useTranslation(['common', 'projects']);
   const navigate = useNavigate();
 
+  const renderSubjectItem = (subject) => (
+    <>
+      <div>
+        <div className="fw-bold">{subject.name}</div>
+        <small className="text-muted">{subject.email}</small>
+      </div>
+      <div className="d-flex gap-1">
+        <Button
+          size="sm"
+          variant="info"
+          icon="fas fa-eye"
+          onClick={() => navigate(`/subjects/${subject.id}`)}
+        >
+          {t('common:buttons.details')}
+        </Button>
+      </div>
+    </>
+  );
+
   return (
     <Card>
-      <Card.Header>
-        <div className="d-flex justify-content-between align-items-center">
-          <Card.Title level={5}>
-            <i className="fas fa-folder me-2"></i>
-            {t('projects:tabs.subjects')}
-          </Card.Title>
-          <Button
-            variant="primary"
-            size="sm"
-            icon="fas fa-plus"
-            onClick={() => navigate(`/subjects/add?projectId=${projectId}`)}
-          >
-            {t('projects:add.subject')}
-          </Button>
-        </div>
-      </Card.Header>
+      <TabHeader
+        icon="fas fa-folder"
+        title={t('projects:tabs.subjects')}
+        actionText={t('projects:add.subject')}
+        onAction={() => navigate(`/subjects/add?projectId=${projectId}`)}
+      />
       <Card.Body>
         {subjects.length === 0 ? (
-          <Alert variant="info">
-            <i className="fas fa-info-circle me-2"></i>
-            {t('projects:not_found.subject')}
-          </Alert>
+          <EmptyState
+            icon="fas fa-book"
+            message={t('projects:not_found.subject')}
+            actionText={t('projects:add.subject')}
+            onAction={() => navigate(`/subjects/add?projectId=${projectId}`)}
+          />
         ) : (
-          <div className="list-group">
-            {subjects.map((subject) => (
-              <div key={subject.id} className="list-group-item d-flex justify-content-between align-items-center">
-                <div>
-                  <div className="fw-bold">{subject.name}</div>
-                  <small className="text-muted">{subject.email}</small>
-                </div>
-                <div className="d-flex gap-1">
-                  <Button
-                    size="sm"
-                    variant="info"
-                    icon="fas fa-eye"
-                    onClick={() => navigate(`/subjects/${subject.id}`)}
-                  >
-                    {t('common:buttons.details')}
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
+          <TabListGroup items={subjects} renderItem={renderSubjectItem} />
         )}
       </Card.Body>
     </Card>

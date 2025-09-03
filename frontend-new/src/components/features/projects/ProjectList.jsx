@@ -62,7 +62,7 @@ const ProjectList = ({ projects, onDelete }) => {
               <div className="d-flex gap-2">
                 <Button
                   size="sm"
-                  variant="outline-primary"
+                  variant="outline"
                   icon="fas fa-eye"
                   onClick={() => navigate(`/projects/${project.id}`)}
                 >

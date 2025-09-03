@@ -1,94 +1,89 @@
-﻿import React, { useState, useEffect } from 'react';
+﻿import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import { Button, Select } from '../ui';
-
-// Example fake data
-const FAKE_SUBJECTS = [
-    { id: 1, name: 'Math' },
-    { id: 2, name: 'Physics' },
-];
-const FAKE_VIDEOGROUPS = [
-    { id: 1, name: 'Intro Videos' },
-    { id: 2, name: 'Advanced Videos' },
-];
+import { Button, Input, Alert } from '../ui';
+import { useBaseForm } from '../../hooks/forms/useBaseForm.js';
+import { ValidationRules } from '../../utils/formValidation.js';
 
 const SubjectVideoGroupAssignmentForm = ({
                                              projectId,
+                                             subjects = [],
+                                             videoGroups = [],
                                              initialData = {},
                                              onSubmit,
                                              onCancel,
                                              loading = false,
+                                             error,
                                              submitText,
                                              cancelText,
                                          }) => {
     const { t } = useTranslation(['assignments', 'common']);
-    const [formData, setFormData] = useState({
-        subjectId: '',
-        videoGroupId: '',
-        ...initialData,
-    });
-    const [subjects, setSubjects] = useState([]);
-    const [videoGroups, setVideoGroups] = useState([]);
-    const [errors, setErrors] = useState({});
-
-    useEffect(() => {
-        // Replace API call with fake data
-        setSubjects(FAKE_SUBJECTS);
-        setVideoGroups(FAKE_VIDEOGROUPS);
-    }, [projectId]);
-
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
-        if (errors[name]) setErrors((prev) => ({ ...prev, [name]: '' }));
+    
+    // Initialize form data
+    const defaultData = {
+        subjectId: initialData?.subjectId || '',
+        videoGroupId: initialData?.videoGroupId || '',
     };
 
-    const validateForm = () => {
-        const newErrors = {};
-        if (!formData.subjectId) newErrors.subjectId = t('assignments:validation.subject_required');
-        if (!formData.videoGroupId) newErrors.videoGroupId = t('assignments:validation.video_group_required');
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
+    // Setup validation rules
+    const validationRules = {
+        subjectId: ValidationRules.requiredSelect('subject', t),
+        videoGroupId: ValidationRules.requiredSelect('video_group', t)
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        if (!validateForm()) return;
-        onSubmit({
-            subjectId: parseInt(formData.subjectId),
-            videoGroupId: parseInt(formData.videoGroupId),
-        });
-    };
+    // Use base form hook
+    const {
+        formData,
+        errors,
+        isSubmitting,
+        handleChange,
+        handleSubmit
+    } = useBaseForm(defaultData, validationRules);
 
     return (
-        <form onSubmit={handleSubmit}>
-            <Select
+        <form onSubmit={handleSubmit(onSubmit)}>
+            {error && <Alert variant="danger">{error}</Alert>}
+            
+            <Input
                 label={t('assignments:form.subject')}
                 name="subjectId"
+                type="select"
                 value={formData.subjectId}
                 onChange={handleChange}
                 options={subjects.map((s) => ({ value: s.id, label: s.name }))}
                 required
                 error={errors.subjectId}
+                disabled={loading || isSubmitting}
             />
 
-            <Select
+            <Input
                 label={t('assignments:form.video_group')}
                 name="videoGroupId"
+                type="select"
                 value={formData.videoGroupId}
                 onChange={handleChange}
                 options={videoGroups.map((vg) => ({ value: vg.id, label: vg.name }))}
                 required
                 error={errors.videoGroupId}
+                disabled={loading || isSubmitting}
             />
 
             <div className="d-flex gap-2">
-                <Button type="submit" variant="primary" loading={loading} icon="fas fa-save">
+                <Button 
+                    type="submit" 
+                    variant="primary" 
+                    loading={loading || isSubmitting} 
+                    icon="fas fa-save"
+                >
                     {submitText || t('assignments:buttons.create')}
                 </Button>
                 {onCancel && (
-                    <Button type="button" variant="secondary" onClick={onCancel} disabled={loading}>
+                    <Button 
+                        type="button" 
+                        variant="secondary" 
+                        onClick={onCancel} 
+                        disabled={loading || isSubmitting}
+                    >
                         {cancelText || t('common:buttons.cancel')}
                     </Button>
                 )}
@@ -99,6 +94,14 @@ const SubjectVideoGroupAssignmentForm = ({
 
 SubjectVideoGroupAssignmentForm.propTypes = {
     projectId: PropTypes.number.isRequired,
+    subjects: PropTypes.arrayOf(PropTypes.shape({
+        id: PropTypes.number.isRequired,
+        name: PropTypes.string.isRequired
+    })),
+    videoGroups: PropTypes.arrayOf(PropTypes.shape({
+        id: PropTypes.number.isRequired,
+        name: PropTypes.string.isRequired
+    })),
     initialData: PropTypes.shape({
         subjectId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
         videoGroupId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
@@ -106,6 +109,7 @@ SubjectVideoGroupAssignmentForm.propTypes = {
     onSubmit: PropTypes.func.isRequired,
     onCancel: PropTypes.func,
     loading: PropTypes.bool,
+    error: PropTypes.string,
     submitText: PropTypes.string,
     cancelText: PropTypes.string,
 };

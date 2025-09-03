@@ -1,10 +1,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import { Card, Button, Alert } from '../../../ui';
+import { useNavigate } from 'react-router-dom';
+import { Card, Button } from '../../../ui';
+import { EmptyState } from '../../../common';
 
 const ProjectAssignmentsTab = ({ projectId, assignments = [] }) => {
   const { t } = useTranslation(['common', 'projects']);
+  const navigate = useNavigate();
 
   return (
     <Card>
@@ -18,7 +21,7 @@ const ProjectAssignmentsTab = ({ projectId, assignments = [] }) => {
             variant="primary"
             size="sm"
             icon="fas fa-plus"
-            onClick={() => window.location.href = `/projects/${projectId}/assignments/add`}
+            onClick={() => navigate(`/projects/${projectId}/assignments/add`)}
           >
             {t('projects:add.assignment')}
           </Button>
@@ -26,10 +29,12 @@ const ProjectAssignmentsTab = ({ projectId, assignments = [] }) => {
       </Card.Header>
       <Card.Body>
         {assignments.length === 0 ? (
-          <Alert variant="info">
-            <i className="fas fa-info-circle me-2"></i>
-            {t('projects:not_found.assignment')}
-          </Alert>
+          <EmptyState
+            icon="fas fa-tasks"
+            message={t('projects:not_found.assignment')}
+            actionText={t('projects:add.assignment')}
+            onAction={() => navigate(`/projects/${projectId}/assignments/add`)}
+          />
         ) : (
           <div className="list-group">
             {assignments.map((assignment) => (
@@ -56,7 +61,7 @@ const ProjectAssignmentsTab = ({ projectId, assignments = [] }) => {
                     size="sm"
                     variant="info"
                     icon="fas fa-eye"
-                    onClick={() => window.location.href = `/assignments/${assignment.id}`}
+                    onClick={() => navigate(`/assignments/${assignment.id}`)}
                   >
                     {t('common:buttons.details')}
                   </Button>

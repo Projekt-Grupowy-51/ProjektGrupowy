@@ -1,48 +1,61 @@
-﻿import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import SubjectVideoGroupAssignmentForm from '../components/forms/SubjectVideoGroupAssignmentForm.jsx';
 import FormPageWrapper from '../components/forms/FormPageWrapper.jsx';
-import { FAKE_ASSIGNMENTS, addToCollection } from '../data/fakeData.js';
+import { LoadingSpinner, ErrorAlert } from '../components/common';
+import { useSubjectVideoGroupAssignmentAdd } from '../hooks/useSubjectVideoGroupAssignmentAdd.js';
 
 const SubjectVideoGroupAssignmentAddPage = () => {
-    const navigate = useNavigate();
-    const location = useLocation();
     const { t } = useTranslation(['assignments', 'common']);
-    const [loading, setLoading] = useState(false);
-    
-    const queryParams = new URLSearchParams(location.search);
-    const projectId = parseInt(queryParams.get('projectId'), 10);
+    const { 
+        projectId, 
+        subjects, 
+        videoGroups, 
+        dataLoading, 
+        dataError, 
+        handleSubmit, 
+        handleCancel, 
+        loading, 
+        error 
+    } = useSubjectVideoGroupAssignmentAdd();
 
-    const createAssignment = async (assignmentData) => {
-        setLoading(true);
-        await new Promise(resolve => setTimeout(resolve, 1000)); // simulate API
-        addToCollection(FAKE_ASSIGNMENTS, {
-            ...assignmentData,
-            id: Date.now(),
-            createdAt: new Date().toISOString(),
-        });
-        setLoading(false);
-    };
+    if (!projectId) {
+        return (
+            <FormPageWrapper title={t('assignments:add_title')} maxWidth={700}>
+                <div className="alert alert-danger">
+                    <i className="fas fa-exclamation-triangle me-2"></i>
+                    Missing projectId parameter in URL
+                </div>
+            </FormPageWrapper>
+        );
+    }
 
-    const handleSubmit = async (assignmentData) => {
-        try {
-            await createAssignment(assignmentData);
-            navigate(`/projects/${projectId}`);
-        } catch (error) {
-            console.error('Failed to create assignment:', error);
-        }
-    };
+    if (dataLoading) {
+        return (
+            <FormPageWrapper title={t('assignments:add_title')} maxWidth={700}>
+                <LoadingSpinner message="Loading subjects and video groups..." />
+            </FormPageWrapper>
+        );
+    }
 
-    const handleCancel = () => navigate(`/projects/${projectId}`);
+    if (dataError) {
+        return (
+            <FormPageWrapper title={t('assignments:add_title')} maxWidth={700}>
+                <ErrorAlert error={dataError} />
+            </FormPageWrapper>
+        );
+    }
 
     return (
         <FormPageWrapper title={t('assignments:add_title')} maxWidth={700}>
             <SubjectVideoGroupAssignmentForm
                 projectId={projectId}
+                subjects={subjects}
+                videoGroups={videoGroups}
                 onSubmit={handleSubmit}
                 onCancel={handleCancel}
                 loading={loading}
+                error={error}
                 submitText={t('assignments:buttons.create')}
             />
         </FormPageWrapper>

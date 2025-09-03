@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { Button, Input } from '../ui';
+import { useBaseForm } from '../../hooks/forms/useBaseForm.js';
+import { ValidationRules } from '../../utils/formValidation.js';
 
 const ProjectForm = ({
                        initialData = {},
@@ -10,111 +12,102 @@ const ProjectForm = ({
                        loading = false,
                        submitText,
                        cancelText,
-                       showFinishedCheckbox = true // new prop
+                       showFinishedCheckbox = true
                      }) => {
   const { t } = useTranslation(['projects', 'common']);
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    finished: false,
-    ...initialData
-  });
-  const [errors, setErrors] = useState({});
+  
+  // Initialize form data
+  const defaultData = {
+    name: initialData?.name || '',
+    description: initialData?.description || '',
+    finished: initialData?.finished ?? false
+  };
 
+  // Setup validation rules
+  const validationRules = {
+    name: ValidationRules.name(t),
+    description: ValidationRules.description(t)
+  };
+
+  // Use base form hook
+  const {
+    formData,
+    errors,
+    isSubmitting,
+    handleChange,
+    handleSubmit,
+    resetToData
+  } = useBaseForm(defaultData, validationRules);
+
+  // Update form when initialData changes
   useEffect(() => {
-    setFormData(prev => ({
-      name: prev.name || initialData.name || '',
-      description: prev.description || initialData.description || '',
-      finished: prev.finished ?? initialData.finished ?? false
-    }));
-  }, []);
-
-
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
-
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
+    if (initialData && Object.keys(initialData).length > 0) {
+      const updatedData = {
+        name: initialData?.name || '',
+        description: initialData?.description || '',
+        finished: initialData?.finished ?? false
+      };
+      resetToData(updatedData);
     }
-  };
-
-  const validateForm = () => {
-    const newErrors = {};
-    if (!formData.name.trim()) newErrors.name = t('projects:validation.name_required');
-    if (!formData.description.trim()) newErrors.description = t('projects:validation.description_required');
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!validateForm()) return;
-    try {
-      await onSubmit(formData);
-    } catch (error) {
-      console.error('Form submission error:', error);
-    }
-  };
+  }, [initialData, resetToData]);
 
   return (
-      <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <Input
+        label={t('projects:form.name')}
+        name="name"
+        type="text"
+        value={formData.name}
+        onChange={handleChange}
+        required
+        error={errors.name}
+        disabled={loading || isSubmitting}
+      />
+
+      <Input
+        label={t('projects:form.description')}
+        name="description"
+        type="textarea"
+        value={formData.description}
+        onChange={handleChange}
+        required
+        rows={4}
+        error={errors.description}
+        disabled={loading || isSubmitting}
+      />
+
+      {showFinishedCheckbox && (
         <Input
-            label={t('projects:form.name')}
-            name="name"
-            type="text"
-            value={formData.name}
-            onChange={handleChange}
-            required
-            error={errors.name}
-            disabled={loading}
+          label={t('projects:form.finished')}
+          name="finished"
+          type="checkbox"
+          checked={formData.finished}
+          onChange={handleChange}
+          disabled={loading || isSubmitting}
         />
+      )}
 
-        <Input
-            label={t('projects:form.description')}
-            name="description"
-            type="textarea"
-            value={formData.description}
-            onChange={handleChange}
-            required
-            rows={4}
-            error={errors.description}
-            disabled={loading}
-        />
-
-        {showFinishedCheckbox && (
-            <div className="mb-3">
-              <div className="form-check">
-                <input
-                    className="form-check-input"
-                    type="checkbox"
-                    id="finished"
-                    name="finished"
-                    checked={formData.finished}
-                    onChange={handleChange}
-                    disabled={loading}
-                />
-                <label className="form-check-label" htmlFor="finished">
-                  {t('projects:form.finished')}
-                </label>
-              </div>
-            </div>
-        )}
-
-        <div className="d-flex gap-2">
-          <Button type="submit" variant="primary" loading={loading} icon="fas fa-save">
-            {submitText || t('projects:buttons.save')}
+      <div className="d-flex gap-2">
+        <Button 
+          type="submit" 
+          variant="primary" 
+          loading={loading || isSubmitting} 
+          icon="fas fa-save"
+        >
+          {submitText || t('projects:buttons.save')}
+        </Button>
+        {onCancel && (
+          <Button 
+            type="button" 
+            variant="secondary" 
+            onClick={onCancel} 
+            disabled={loading || isSubmitting}
+          >
+            {cancelText || t('common:buttons.cancel')}
           </Button>
-          {onCancel && (
-              <Button type="button" variant="secondary" onClick={onCancel} disabled={loading}>
-                {cancelText || t('common:buttons.cancel')}
-              </Button>
-          )}
-        </div>
-      </form>
+        )}
+      </div>
+    </form>
   );
 };
 

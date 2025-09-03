@@ -1,116 +1,35 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Button, Card, Alert } from '../../../ui';
-import { FAKE_PROJECT_REPORTS, findByProperty, addToCollection, removeFromCollection } from '../../../../data/fakeData.js';
+import { Button, Card } from '../../../ui';
+import { LoadingSpinner, ErrorAlert, EmptyState } from '../../../common';
+import { useProjectReports } from '../../../../hooks/useProjectReports.js';
+import { useConfirmDialog } from '../../../../hooks/common';
 
 const ProjectDetailsTab = ({ project, onDeleteProject }) => {
   const navigate = useNavigate();
   const { t } = useTranslation(['common', 'projects']);
+  const { confirmWithPrompt } = useConfirmDialog();
   
-  // Stan dla raportów
-  const [reports, setReports] = useState([]);
-  const [reportsLoading, setReportsLoading] = useState(false);
-  const [reportsError, setReportsError] = useState(null);
-
-  // Ładowanie raportów dla projektu
-  useEffect(() => {
-    const loadReports = async () => {
-      setReportsLoading(true);
-      await new Promise(resolve => setTimeout(resolve, 500)); // Symulacja opóźnienia
-      
-      try {
-        const projectReports = findByProperty(FAKE_PROJECT_REPORTS, 'projectId', project.id);
-        setReports(projectReports);
-        setReportsError(null);
-      } catch (error) {
-        setReportsError('Failed to load reports');
-      } finally {
-        setReportsLoading(false);
-      }
-    };
-
-    if (project.id) {
-      loadReports();
-    }
-  }, [project.id]);
-
-  const generateReport = async (reportData) => {
-    setReportsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 1000)); // Symulacja opóźnienia
-    
-    try {
-      const newReport = {
-        id: Date.now(), // Prosty generator ID
-        ...reportData,
-        projectId: project.id,
-        createdAt: new Date().toISOString(),
-        url: `/api/projectreport/download/${Date.now()}`
-      };
-      
-      addToCollection(FAKE_PROJECT_REPORTS, newReport);
-      
-      // Aktualizacja lokalnego stanu
-      setReports(prev => [newReport, ...prev]);
-      
-      console.log('Generated report:', newReport);
-    } catch (error) {
-      setReportsError('Failed to generate report');
-      throw error;
-    } finally {
-      setReportsLoading(false);
-    }
-  };
-
-  const deleteReport = async (reportId) => {
-    setReportsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 500)); // Symulacja opóźnienia
-    
-    try {
-      const deletedReport = removeFromCollection(FAKE_PROJECT_REPORTS, reportId);
-      if (deletedReport) {
-        // Aktualizacja lokalnego stanu
-        setReports(prev => prev.filter(r => r.id !== reportId));
-        console.log('Deleted report:', reportId);
-      }
-    } catch (error) {
-      setReportsError('Failed to delete report');
-      throw error;
-    } finally {
-      setReportsLoading(false);
-    }
-  };
+  const {
+    reports,
+    loading: reportsLoading,
+    error: reportsError,
+    generateReport,
+    deleteReport,
+    downloadReport
+  } = useProjectReports(project.id);
 
   const handleDeleteProject = () => {
-    if (window.confirm(t('projects:messages.confirm_delete'))) {
+    confirmWithPrompt(t('projects:messages.confirm_delete'), () => {
       if (onDeleteProject) {
         onDeleteProject(project.id);
       }
       navigate('/projects');
-    }
+    });
   };
 
-  const handleGenerateReport = async () => {
-    try {
-      await generateReport({ 
-        name: `Project Report ${new Date().toLocaleDateString()}`,
-        type: 'progress'
-      });
-    } catch (error) {
-      console.error('Failed to generate report:', error);
-    }
-  };
-
-  const handleDeleteReport = async (reportId) => {
-    if (window.confirm(t('projects:reports.confirm_delete'))) {
-      try {
-        await deleteReport(reportId);
-      } catch (error) {
-        console.error('Failed to delete report:', error);
-      }
-    }
-  };
 
   const formatDate = (dateString) => {
     if (!dateString) return '-';
@@ -179,7 +98,7 @@ const ProjectDetailsTab = ({ project, onDeleteProject }) => {
                 <strong>{t('common:created_at')}:</strong>
               </div>
               <div className="col-sm-9">
-                {formatDate(project.createdAt)}
+                {formatDate(project.creationDate)}
               </div>
             </div>
 
@@ -188,7 +107,7 @@ const ProjectDetailsTab = ({ project, onDeleteProject }) => {
                 <strong>{t('common:updated_at')}:</strong>
               </div>
               <div className="col-sm-9">
-                {formatDate(project.updatedAt)}
+                {formatDate(project.modificationDate)}
               </div>
             </div>
           </Card.Body>
@@ -202,7 +121,7 @@ const ProjectDetailsTab = ({ project, onDeleteProject }) => {
                 {t('common:buttons.edit')}
               </Button>
               <Button
-                variant="outline-danger"
+                variant="outline"
                 icon="fas fa-trash"
                 onClick={handleDeleteProject}
               >
@@ -224,20 +143,15 @@ const ProjectDetailsTab = ({ project, onDeleteProject }) => {
           <Card.Body>
             {reportsLoading ? (
               <div className="text-center py-3">
-                <div className="spinner-border spinner-border-sm text-primary" role="status">
-                  <span className="visually-hidden">{t('common:states.loading')}</span>
-                </div>
+                <LoadingSpinner size="small" />
               </div>
             ) : reportsError ? (
-              <Alert variant="danger">
-                <i className="fas fa-exclamation-triangle me-2"></i>
-                {reportsError}
-              </Alert>
+              <ErrorAlert error={reportsError} />
             ) : reports.length === 0 ? (
-              <Alert variant="info">
-                <i className="fas fa-info-circle me-2"></i>
-                {t('projects:reports.no_reports')}
-              </Alert>
+              <EmptyState
+                icon="fas fa-chart-bar"
+                message={t('projects:reports.no_reports')}
+              />
             ) : (
               <div className="list-group" style={{ maxHeight: '300px', overflowY: 'auto' }}>
                 {reports.map((report) => (
@@ -249,17 +163,17 @@ const ProjectDetailsTab = ({ project, onDeleteProject }) => {
                     <div className="d-flex gap-1">
                       <Button
                         size="sm"
-                        variant="outline-primary"
+                        variant="outline"
                         icon="fas fa-download"
-                        onClick={() => window.open(`/api/projectreport/download/${report.id}`)}
+                        onClick={() => downloadReport(report.id)}
                       >
                         {t('common:buttons.download')}
                       </Button>
                       <Button
                         size="sm"
-                        variant="outline-danger"
+                        variant="outline"
                         icon="fas fa-trash"
-                        onClick={() => handleDeleteReport(report.id)}
+                        onClick={() => deleteReport(report.id, t('projects:reports.confirm_delete'))}
                       >
                         {t('common:buttons.delete')}
                       </Button>
@@ -273,7 +187,7 @@ const ProjectDetailsTab = ({ project, onDeleteProject }) => {
             <Button
               variant="primary"
               icon="fas fa-plus"
-              onClick={handleGenerateReport}
+              onClick={generateReport}
               className="w-100"
               disabled={reportsLoading}
             >

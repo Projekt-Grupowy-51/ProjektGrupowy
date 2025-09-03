@@ -1,94 +1,30 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Container, Card, Button, Table, Alert } from '../components/ui';
-import { FAKE_SUBJECTS, FAKE_LABELS, findById, findByProperty, removeFromCollection } from '../data/fakeData.js';
+import { Container, Card, Button, Table } from '../components/ui';
+import { LoadingSpinner, ErrorAlert, EmptyState } from '../components/common';
+import { useSubjectDetails } from '../hooks/useSubjectDetails.js';
 
 const SubjectDetails = () => {
-  const { id } = useParams();
-  const navigate = useNavigate();
   const { t } = useTranslation(['subjects', 'common']);
-  
-  // Stan komponentu
-  const [subject, setSubject] = useState(null);
-  const [subjectLoading, setSubjectLoading] = useState(true);
-  const [subjectError, setSubjectError] = useState(null);
-  const [labels, setLabels] = useState([]);
-  const [labelsLoading, setLabelsLoading] = useState(true);
-  const [labelsError, setLabelsError] = useState(null);
-
-  useEffect(() => {
-    // Ładowanie subject z kolekcji
-    const loadSubject = async () => {
-      setSubjectLoading(true);
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      const foundSubject = findById(FAKE_SUBJECTS, id);
-      if (foundSubject) {
-        setSubject(foundSubject);
-      } else {
-        setSubjectError('Subject not found');
-      }
-      setSubjectLoading(false);
-    };
-    
-    // Ładowanie labels dla tego subject
-    const loadSubjectLabels = async () => {
-      setLabelsLoading(true);
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      const subjectLabels = findByProperty(FAKE_LABELS, 'subjectId', parseInt(id));
-      setLabels(subjectLabels);
-      setLabelsLoading(false);
-    };
-    
-    if (id) {
-      loadSubject();
-      loadSubjectLabels();
-    }
-  }, [id]);
-
-  const deleteLabel = async (labelId) => {
-    // Usuwanie z kolekcji
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    const deletedLabel = removeFromCollection(FAKE_LABELS, labelId);
-    if (deletedLabel) {
-      // Aktualizacja lokalnego stanu
-      setLabels(prev => prev.filter(l => l.id !== labelId));
-      console.log('Deleted label:', labelId);
-      console.log('Current labels collection:', FAKE_LABELS);
-    }
-  };
-
-  const handleDeleteLabel = async (labelId) => {
-    if (window.confirm(t('subjects:labels.confirm_delete'))) {
-      try {
-        await deleteLabel(labelId);
-      } catch (error) {
-        console.error('Failed to delete label:', error);
-      }
-    }
-  };
-
-  const handleBackToProject = () => {
-    if (subject?.projectId) {
-      navigate(`/projects/${subject.projectId}`);
-    }
-  };
-
-  const handleAddLabel = () => {
-    navigate(`/labels/add?subjectId=${id}`);
-  };
+  const {
+    id,
+    subject,
+    labels,
+    subjectLoading,
+    labelsLoading,
+    subjectError,
+    labelsError,
+    deleteLabel,
+    handleBackToProject,
+    handleAddLabel,
+    handleEditSubject,
+    handleEditLabel
+  } = useSubjectDetails();
 
   if (subjectLoading) {
     return (
       <Container className="py-4">
-        <div className="d-flex justify-content-center">
-          <div className="spinner-border text-primary" role="status">
-            <span className="visually-hidden">{t('common:states.loading')}</span>
-          </div>
-        </div>
+        <LoadingSpinner message={t('common:states.loading')} />
       </Container>
     );
   }
@@ -96,10 +32,7 @@ const SubjectDetails = () => {
   if (subjectError) {
     return (
       <Container className="py-4">
-        <Alert variant="danger">
-          <i className="fas fa-exclamation-triangle me-2"></i>
-          {subjectError}
-        </Alert>
+        <ErrorAlert error={subjectError} />
       </Container>
     );
   }
@@ -107,10 +40,7 @@ const SubjectDetails = () => {
   if (!subject) {
     return (
       <Container className="py-4">
-        <Alert variant="warning">
-          <i className="fas fa-exclamation-triangle me-2"></i>
-          {t('subjects:messages.not_found')}
-        </Alert>
+        <ErrorAlert error={t('subjects:messages.not_found')} />
       </Container>
     );
   }
@@ -129,7 +59,7 @@ const SubjectDetails = () => {
           <Button
             variant="warning"
             icon="fas fa-edit"
-            onClick={() => navigate(`/subjects/${id}/edit`)}
+            onClick={handleEditSubject}
           >
             {t('common:buttons.edit')}
           </Button>
@@ -172,16 +102,9 @@ const SubjectDetails = () => {
       </div>
 
       {labelsLoading ? (
-        <div className="text-center py-3">
-          <div className="spinner-border text-primary" role="status">
-            <span className="visually-hidden">{t('common:states.loading')}</span>
-          </div>
-        </div>
+        <LoadingSpinner message="Loading labels..." size="small" />
       ) : labelsError ? (
-        <Alert variant="danger">
-          <i className="fas fa-exclamation-triangle me-2"></i>
-          {labelsError}
-        </Alert>
+        <ErrorAlert error={labelsError} />
       ) : labels.length > 0 ? (
         <Card>
           <Table striped hover responsive>
@@ -220,7 +143,7 @@ const SubjectDetails = () => {
                         size="sm"
                         variant="warning"
                         icon="fas fa-edit"
-                        onClick={() => navigate(`/labels/${label.id}/edit`)}
+                        onClick={() => handleEditLabel(label.id)}
                       >
                         {t('common:buttons.edit')}
                       </Button>
@@ -228,7 +151,7 @@ const SubjectDetails = () => {
                         size="sm"
                         variant="outline-danger"
                         icon="fas fa-trash"
-                        onClick={() => handleDeleteLabel(label.id)}
+                        onClick={() => deleteLabel(label.id, t('subjects:labels.confirm_delete'))}
                       >
                         {t('common:buttons.delete')}
                       </Button>
@@ -240,10 +163,13 @@ const SubjectDetails = () => {
           </Table>
         </Card>
       ) : (
-        <Alert variant="info">
-          <i className="fas fa-info-circle me-2"></i>
-          {t('subjects:labels.empty')}
-        </Alert>
+        <EmptyState
+          icon="fas fa-tags"
+          title="No labels found"
+          message={t('subjects:labels.empty')}
+          actionText={t('subjects:labels.add')}
+          onAction={handleAddLabel}
+        />
       )}
     </Container>
   );

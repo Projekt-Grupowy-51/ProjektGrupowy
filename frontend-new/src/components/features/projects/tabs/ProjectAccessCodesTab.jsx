@@ -1,86 +1,166 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { useTranslation } from 'react-i18next';
-import { Card, Button, Alert } from '../../../ui';
+import { Card, Button, Table } from '../../../ui';
+import { EmptyState } from '../../../common';
+import { useProjectAccessCodes } from '../../../../hooks/useProjectAccessCodes';
 
-const ProjectAccessCodesTab = ({ projectId, accessCodes = [] }) => {
-  const { t } = useTranslation(['common', 'projects']);
+const ProjectAccessCodesTab = ({ projectId }) => {
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [expirationDays, setExpirationDays] = useState(14);
 
-  const copyToClipboard = (code) => {
-    navigator.clipboard.writeText(code).then(() => {
-      alert(t('projects:access_codes.success.copied'));
-    }).catch(() => {
-      alert(t('projects:access_codes.errors.copy_failed'));
-    });
+  const {
+    accessCodes,
+    visibleCodes,
+    loading,
+    createAccessCode,
+    copyCode,
+    retireCode,
+    toggleVisibility
+  } = useProjectAccessCodes(projectId);
+
+  const handleCreate = async () => {
+    await createAccessCode(expirationDays);
+    setShowCreateForm(false);
   };
 
+  if (loading) return <div>Loading...</div>;
+
   return (
-    <Card>
-      <Card.Header>
-        <div className="d-flex justify-content-between align-items-center">
-          <Card.Title level={5}>
-            <i className="fas fa-key me-2"></i>
-            {t('projects:tabs.access_codes')}
-          </Card.Title>
-          <Button
-            variant="primary"
-            size="sm"
-            icon="fas fa-plus"
-            onClick={() => alert('Generate access code - Not implemented in mock')}
-          >
-            {t('projects:access_codes.buttons.generate')}
-          </Button>
-        </div>
-      </Card.Header>
-      <Card.Body>
-        {accessCodes.length === 0 ? (
-          <Alert variant="info">
-            <i className="fas fa-info-circle me-2"></i>
-            No access codes generated yet
-          </Alert>
-        ) : (
-          <div className="list-group">
-            {accessCodes.map((accessCode) => (
-              <div key={accessCode.id} className="list-group-item d-flex justify-content-between align-items-center">
-                <div>
-                  <div className="fw-bold font-monospace">{accessCode.code}</div>
-                  <small className="text-muted">
-                    Project ID: {accessCode.projectId}
-                  </small>
-                </div>
-                <div className="d-flex gap-1">
-                  {accessCode.active ? (
-                    <span className="badge bg-success">
-                      <i className="fas fa-check me-1"></i>
-                      Active
-                    </span>
-                  ) : (
-                    <span className="badge bg-secondary">
-                      <i className="fas fa-times me-1"></i>
-                      Inactive
-                    </span>
-                  )}
-                  <Button
-                    size="sm"
-                    variant="outline-primary"
-                    icon="fas fa-copy"
-                    onClick={() => copyToClipboard(accessCode.code)}
+    <div>
+      <Card>
+        <Card.Header>
+          <div className="d-flex justify-content-between align-items-center">
+            <Card.Title level={5}>
+              Access Codes ({accessCodes?.length || 0})
+            </Card.Title>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => setShowCreateForm(!showCreateForm)}
+            >
+              {showCreateForm ? 'Cancel' : 'Generate Code'}
+            </Button>
+          </div>
+        </Card.Header>
+        <Card.Body>
+          {showCreateForm && (
+            <div className="mb-4 p-3 bg-light rounded">
+              <div className="row g-3 align-items-end">
+                <div className="col-md-6">
+                  <label className="form-label">Expiration (days)</label>
+                  <select 
+                    className="form-select"
+                    value={expirationDays}
+                    onChange={(e) => setExpirationDays(parseInt(e.target.value))}
                   >
-                    Copy
+                    <option value={14}>14 days</option>
+                    <option value={30}>30 days</option>
+                    <option value={-1}>Never expires</option>
+                  </select>
+                </div>
+                <div className="col-md-6">
+                  <Button
+                    variant="success"
+                    onClick={handleCreate}
+                    className="w-100"
+                  >
+                    Create Access Code
                   </Button>
                 </div>
               </div>
-            ))}
-          </div>
-        )}
-      </Card.Body>
-    </Card>
+            </div>
+          )}
+
+          {!accessCodes || accessCodes.length === 0 ? (
+            <EmptyState
+              icon="fas fa-key"
+              message="No access codes generated yet"
+            />
+          ) : (
+            <Table striped>
+              <Table.Head>
+                <Table.Row>
+                  <Table.Cell header>Code</Table.Cell>
+                  <Table.Cell header>Created</Table.Cell>
+                  <Table.Cell header>Expires</Table.Cell>
+                  <Table.Cell header>Status</Table.Cell>
+                  <Table.Cell header>Actions</Table.Cell>
+                </Table.Row>
+              </Table.Head>
+              <Table.Body>
+                {accessCodes?.map((code) => (
+                  <Table.Row key={code.code}>
+                    <Table.Cell>
+                      <div className="d-flex align-items-center gap-2">
+                        <code
+                          style={{
+                            filter: visibleCodes[code.code] ? "none" : "blur(4px)",
+                            cursor: "pointer"
+                          }}
+                          onClick={() => toggleVisibility(code.code)}
+                        >
+                          {code.code}
+                        </code>
+                        <Button
+                          size="sm"
+                          variant="link"
+                          onClick={() => toggleVisibility(code.code)}
+                        >
+                          {visibleCodes[code.code] ? '👁️' : '🔒'}
+                        </Button>
+                      </div>
+                    </Table.Cell>
+                    <Table.Cell>
+                      {new Date(code.createdAtUtc).toLocaleDateString()}
+                    </Table.Cell>
+                    <Table.Cell>
+                      {code.expiresAtUtc 
+                        ? new Date(code.expiresAtUtc).toLocaleDateString()
+                        : 'Never'
+                      }
+                    </Table.Cell>
+                    <Table.Cell>
+                      <span className={`badge ${code.isValid ? 'bg-success' : 'bg-danger'}`}>
+                        {code.isValid ? 'Valid' : 'Expired'}
+                      </span>
+                    </Table.Cell>
+                    <Table.Cell>
+                      <div className="d-flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="primary"
+                          onClick={() => copyCode(code.code)}
+                        >
+                          Copy
+                        </Button>
+                        {code.isValid && (
+                          <Button
+                            size="sm"
+                            variant="outline-danger"
+                            onClick={() => {
+                              if (confirm('Retire this access code?')) {
+                                retireCode(code.id);
+                              }
+                            }}
+                          >
+                            Retire
+                          </Button>
+                        )}
+                      </div>
+                    </Table.Cell>
+                  </Table.Row>
+                ))}
+              </Table.Body>
+            </Table>
+          )}
+        </Card.Body>
+      </Card>
+    </div>
   );
 };
 
 ProjectAccessCodesTab.propTypes = {
-  projectId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-  accessCodes: PropTypes.array
+  projectId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired
 };
 
 export default ProjectAccessCodesTab;

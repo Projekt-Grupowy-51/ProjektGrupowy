@@ -227,24 +227,48 @@ export const FAKE_ASSIGNMENTS = [
     userId: 1,
     videoGroupId: 1,
     projectId: 1,
+    subjectId: 1,
+    subjectName: 'Matematyka - Algebra',
+    videoGroupName: 'Grupa wideo matematyka podstawy',
     assignedAt: '2024-08-01T10:00:00Z',
-    status: 'in_progress'
+    status: 'in_progress',
+    labelers: [
+      {
+        id: 1,
+        name: 'Jan Kowalski',
+        email: 'jan.kowalski@example.com'
+      }
+    ]
   },
   {
     id: 2,
     userId: 2,
     videoGroupId: 2,
     projectId: 1,
+    subjectId: 2,
+    subjectName: 'Historia - Średniowiecze',
+    videoGroupName: 'Grupa wideo historia',
     assignedAt: '2024-08-05T14:30:00Z',
-    status: 'completed'
+    status: 'completed',
+    labelers: [
+      {
+        id: 2,
+        name: 'Anna Nowak',
+        email: 'anna.nowak@example.com'
+      }
+    ]
   },
   {
     id: 3,
     userId: 1,
     videoGroupId: 3,
     projectId: 2,
+    subjectId: 3,
+    subjectName: 'Biologia - Genetyka',
+    videoGroupName: 'Grupa wideo biologia',
     assignedAt: '2024-08-08T09:15:00Z',
-    status: 'pending'
+    status: 'pending',
+    labelers: []
   }
 ];
 

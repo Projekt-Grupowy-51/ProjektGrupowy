@@ -1,8 +1,9 @@
 import axios from "axios";
+import keycloak from './keycloak.js';
 
 export const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
-  (import.meta.env.DEV ? "http://localhost:5000/api" : "");
+  (import.meta.env.DEV ? "http://localhost:5001/api" : "");
 
 class ApiClient {
   constructor() {
@@ -37,26 +38,45 @@ class ApiClient {
     this.client.interceptors.response.use(
       (response) => response,
       async (error) => {
-        if (error.response?.status === 401) {
-          await this.handleUnauthorized();
+        const originalRequest = error.config;
+        
+        if (error.response?.status === 401 && !originalRequest._retry) {
+          originalRequest._retry = true;
+          
+          try {
+            await this.handleUnauthorized();
+            
+            // If token was refreshed, retry the original request
+            const token = this.getAuthToken();
+            if (token) {
+              originalRequest.headers.Authorization = `Bearer ${token}`;
+              return this.client(originalRequest);
+            }
+          } catch (refreshError) {
+            console.error("Token refresh failed:", refreshError);
+            return Promise.reject(refreshError);
+          }
         } else if (error.response?.status === 403) {
           window.location.href = "/forbidden";
         } else if (error.response?.status >= 500) {
           window.location.href = "/error";
         }
+        
         return Promise.reject(error);
       }
     );
   }
 
   getAuthToken() {
-    // This will be implemented when we add Keycloak integration
-    return null;
+    return keycloak?.token || null;
   }
 
   async handleUnauthorized() {
-    // This will be implemented when we add Keycloak integration
-    console.warn("Unauthorized access");
+    try {
+      await keycloak.updateToken(70);
+    } catch {
+      keycloak.login();
+    }
   }
 
   async get(url, config = {}) {

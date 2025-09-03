@@ -1,6 +1,4 @@
-﻿version: "3.8"
-
-services:
+﻿services:
   db:
     image: postgres:latest
     environment:
@@ -40,7 +38,8 @@ services:
         condition: service_healthy
     command: start-dev --import-realm
     volumes:
-      - ./keycloak-export:/opt/keycloak/data/import
+      - ./keycloak/data:/opt/keycloak/data
+      - ./keycloak/themes:/opt/keycloak/themes
 
   redis:
     image: redis:latest

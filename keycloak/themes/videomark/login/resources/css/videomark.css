@@ -1,0 +1,285 @@
+/* VideoMark – "Tiles on Water" Login/Register Theme for Keycloak
+   Fresh, artistic layout: floating glass tiles over a soft water background.
+   Keeps existing Keycloak classes; no HTML changes required.
+   -------------------------------------------------------------- */
+
+/* =====================
+   CSS Variables (theme)
+   ===================== */
+:root {
+  --water-1: #e6f6ff;   /* very light aqua */
+  --water-2: #eaf3ff;   /* very light blue */
+  --water-3: #dff7f8;   /* minty tint */
+
+  --tile-bg: rgba(255, 255, 255, 0.86);
+  --tile-border: rgba(255, 255, 255, 0.55);
+  --tile-shadow: 0 10px 30px rgba(13, 60, 97, 0.15);
+  --tile-radius: 16px;
+
+  --text-strong: #0f1b2a;
+  --text-muted: #48607a;
+
+  --stroke: #cfe3ef;      /* subtle lines */
+  --input-bg: rgba(255,255,255,0.9);
+  --input-stroke: #d7e6ef;
+  --input-stroke-hover: #b9d2df;
+  --focus: #22b8cf;       /* turquoise focus */
+
+  --btn-bg: #128ca2;      /* primary */
+  --btn-bg-hover: #0e7284;
+  --btn-shadow: 0 8px 18px rgba(18, 140, 162, 0.35);
+}
+
+/* =====================
+   Base & "Water" Backdrop
+   ===================== */
+* { box-sizing: border-box; }
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  color: var(--text-strong);
+  display: grid;
+  place-items: center;
+  line-height: 1.6;
+  background: radial-gradient(1200px 800px at 20% 10%, var(--water-1), transparent 60%),
+              radial-gradient(900px 900px at 80% 0%, var(--water-2), transparent 55%),
+              radial-gradient(1200px 900px at 50% 100%, var(--water-3), transparent 60%),
+              #f6fbff !important;
+  position: relative;
+  overflow: hidden;
+}
+
+/* soft animated ripples */
+body::before,
+body::after {
+  content: "";
+  position: absolute;
+  inset: -40%;
+  background: repeating-radial-gradient(
+    circle at 30% 40%,
+    rgba(255,255,255,0.35) 0 2px,
+    rgba(255,255,255,0.0) 2px 12px
+  );
+  opacity: 0.35;
+  filter: blur(12px);
+  animation: drift 28s linear infinite;
+  pointer-events: none;
+}
+body::after {
+  background: repeating-radial-gradient(
+    circle at 70% 60%,
+    rgba(255,255,255,0.28) 0 2px,
+    rgba(255,255,255,0.0) 2px 16px
+  );
+  animation-duration: 36s;
+  mix-blend-mode: soft-light;
+}
+
+@keyframes drift {
+  0% { transform: translate3d(-2%, -1%, 0) rotate(0.001deg); }
+  50% { transform: translate3d(2%, 1%, 0) rotate(0.001deg); }
+  100% { transform: translate3d(-2%, -1%, 0) rotate(0.001deg); }
+}
+
+/* ===============
+   Layout container
+   =============== */
+#kc-container-wrapper {
+  background: none;
+  min-height: 100vh;
+  width: 100%;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.login-pf .container { max-width: 520px; width: 100%; padding: 0; background: none; }
+
+/* ======================
+   Floating Tile Treatment
+   ====================== */
+.card-pf {
+  background: transparent;  /* tiles will be individual sections */
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* Each section becomes its own tile */
+#kc-header,
+#kc-content,
+#kc-registration,
+#kc-social-providers {
+  background: var(--tile-bg);
+  -webkit-backdrop-filter: saturate(120%) blur(10px);
+  backdrop-filter: saturate(120%) blur(10px);
+  border: 1px solid var(--tile-border);
+  border-radius: var(--tile-radius);
+  box-shadow: var(--tile-shadow);
+}
+
+/* Spacing between tiles to emphasize "floating" look */
+#kc-header { padding: 28px 28px 16px 28px; margin: 0 0 14px 0; text-align: center; }
+#kc-content { padding: 28px; margin: 0 0 14px 0; }
+#kc-registration, #kc-social-providers { padding: 16px 20px; margin: 0 0 12px 0; text-align: center; }
+
+/* Subtle hover lift effect to mimic tiles moving on water */
+#kc-header:hover,
+#kc-content:hover,
+#kc-registration:hover,
+#kc-social-providers:hover {
+  transform: translateY(-4px);
+  transition: transform 220ms ease, box-shadow 220ms ease;
+  box-shadow: 0 14px 34px rgba(13, 60, 97, 0.18);
+}
+
+/* ========
+   Typography
+   ======== */
+#kc-header-wrapper { padding: 0; }
+
+.kc-logo-text {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text-strong);
+  margin: 0 0 6px 0;
+}
+.kc-logo-text:before { content: "🎬"; margin-right: 10px; font-size: 22px; }
+
+#kc-header p { color: var(--text-muted); font-size: 14px; margin: 0; font-weight: 500; }
+
+#kc-content h1 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-strong);
+  margin: 0 0 18px 0;
+  text-align: center;
+}
+
+/* ======
+   Forms
+   ====== */
+.form-group { margin-bottom: 16px; }
+
+.control-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: #1c3245;
+  margin-bottom: 6px;
+}
+
+.form-control {
+  width: 100%;
+  padding: 12px 14px;
+  font-size: 15px;
+  color: var(--text-strong);
+  background: var(--input-bg);
+  border: 1px solid var(--input-stroke);
+  border-radius: 12px;
+  transition: border-color .18s ease, box-shadow .18s ease, background-color .18s ease;
+  outline: none;
+}
+.form-control:hover { border-color: var(--input-stroke-hover); }
+.form-control:focus {
+  border-color: var(--focus);
+  box-shadow: 0 0 0 4px rgba(34, 184, 207, 0.18);
+  background: #fff;
+}
+.form-control::placeholder { color: #7c96ac; }
+
+/* Checkboxes */
+.checkbox { margin: 14px 0; }
+.checkbox label { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #214058; font-weight: 500; cursor: pointer; }
+.checkbox input[type="checkbox"] { width: 16px; height: 16px; border-radius: 4px; accent-color: var(--focus); }
+
+/* Links */
+#kc-content a { color: #0b7691; text-decoration: none; font-weight: 600; }
+#kc-content a:hover { text-decoration: underline; }
+
+/* Buttons */
+.btn-primary {
+  width: 100%;
+  background: var(--btn-bg);
+  color: #fff;
+  border: 1px solid transparent;
+  padding: 12px 20px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
+  box-shadow: var(--btn-shadow);
+}
+.btn-primary:hover { background: var(--btn-bg-hover); transform: translateY(-2px); }
+.btn-primary:active { transform: translateY(0); box-shadow: 0 3px 10px rgba(18,140,162,0.28); }
+.btn-primary:focus { box-shadow: 0 0 0 4px rgba(34,184,207,0.25); }
+.btn-primary[disabled] { background: #95cfd9; cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* Form options area */
+#kc-form-options { margin-bottom: 12px; }
+.kc-form-options-wrapper { text-align: right; }
+#kc-form-buttons { margin-top: 16px; }
+
+/* Alerts */
+.alert { padding: 12px 14px; border-radius: 12px; margin-bottom: 16px; font-size: 14px; border: 1px solid var(--stroke); background: rgba(255,255,255,0.9); }
+.alert-error { background: #fff5f5; color: #b42318; border-left: 4px solid #ef4444; }
+.alert-success { background: #f0fdf4; color: #117a37; border-left: 4px solid #22c55e; }
+.alert-warning { background: #fffbeb; color: #a16207; border-left: 4px solid #f59e0b; }
+.alert-info { background: #eef7ff; color: #1e4b7a; border-left: 4px solid #38bdf8; }
+
+/* Registration & Social */
+#kc-registration { font-size: 14px; color: var(--text-muted); }
+#kc-registration a { color: #0b7691; font-weight: 700; }
+
+#kc-social-providers h4 { font-size: 13px; color: var(--text-muted); margin-bottom: 12px; font-weight: 700; }
+
+/* ===============
+   Subtle micro-anim
+   =============== */
+#kc-header, #kc-content, #kc-registration, #kc-social-providers { will-change: transform; }
+
+/* =============
+   Accessibility
+   ============= */
+input:focus, button:focus, a:focus { outline: 2px solid transparent; outline-offset: 2px; }
+
+/* ============
+   Responsiveness
+   ============ */
+@media (max-width: 520px) {
+  #kc-content { padding: 22px; }
+  #kc-header { padding: 22px 22px 12px; }
+  .kc-logo-text { font-size: 22px; }
+}
+
+/* ========
+   Dark Mode
+   ======== */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --tile-bg: rgba(20, 31, 44, 0.75);
+    --tile-border: rgba(255, 255, 255, 0.08);
+    --text-strong: #e6f0f7;
+    --text-muted: #a1bed4;
+    --input-bg: rgba(255,255,255,0.06);
+    --input-stroke: rgba(255,255,255,0.1);
+    --input-stroke-hover: rgba(255,255,255,0.18);
+    --btn-shadow: 0 8px 18px rgba(34, 184, 207, 0.24);
+  }
+
+  body { background: radial-gradient(1200px 800px at 20% 10%, #0c3850, transparent 60%), radial-gradient(900px 900px at 80% 0%, #0b2e5a, transparent 55%), radial-gradient(1200px 900px at 50% 100%, #0a3c3f, transparent 60%), #06141f !important; }
+
+  #kc-content h1, .kc-logo-text { color: var(--text-strong); }
+  .control-label { color: #cfe3ef; }
+  .form-control { color: var(--text-strong); }
+}

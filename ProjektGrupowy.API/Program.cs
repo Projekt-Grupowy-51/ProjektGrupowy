@@ -259,7 +259,7 @@ static void AddServices(WebApplicationBuilder builder)
     // builder.Services.AddSingleton<IConnectedClientManager, ConnectedClientManager>();
     
     
-    builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
+    builder.Services.AddScoped<IUserIdProvider, CustomUserIdProvider>();
     // builder.Services.AddSignalR(options =>
     // {
     //     options.EnableDetailedErrors = true;

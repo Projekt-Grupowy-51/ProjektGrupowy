@@ -110,3 +110,73 @@ code {
   font-weight: 600;
   color: var(--bs-body-color);
 }
+
+.table {
+  width: 100%;
+  margin-bottom: 1rem;
+  color: #212529;
+  background-color: #fff;
+  border-collapse: separate; /* żeby działały zaokrąglenia */
+  border-spacing: 0;
+  border-radius: 0.5rem;
+  overflow: hidden; /* zaokrąglenia przy hover */
+}
+
+/* Headery */
+.table thead th {
+  background-color: #f1f3f5;
+  color: #495057;
+  font-weight: 600;
+  vertical-align: middle;
+  padding: 0.75rem;
+  border-bottom: 2px solid #dee2e6;
+}
+
+/* Komórki */
+.table td {
+  padding: 0.75rem;
+  vertical-align: middle;
+  border-top: 1px solid #dee2e6;
+}
+
+/* Hover wiersza */
+.table-hover tbody tr:hover {
+  background-color: rgba(13, 110, 253, 0.075); /* lekki niebieski */
+  transition: background-color 0.15s ease-in-out;
+}
+
+/* Tabela z obramowaniem */
+.table-bordered {
+  border: 1px solid #dee2e6;
+}
+.table-bordered td,
+.table-bordered th {
+  border: 1px solid #dee2e6;
+}
+
+/* Striped rows */
+.table-striped tbody tr:nth-of-type(odd) {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Rozmiary */
+.table-sm td, .table-sm th {
+  padding: 0.3rem 0.5rem;
+}
+.table-lg td, .table-lg th {
+  padding: 1rem 1.25rem;
+}
+
+/* Responsywność (gdy w wrapperze .table-responsive) */
+.table-responsive {
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Scroll z maxHeight */
+.table-scroll-wrapper {
+  border-radius: 0.5rem;
+  overflow-y: auto;
+  border: 1px solid #dee2e6;
+}

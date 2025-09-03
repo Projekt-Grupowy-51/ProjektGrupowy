@@ -1,95 +1,42 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Container, Card, Button, Table, Alert } from '../components/ui';
-import { FAKE_VIDEOS, FAKE_VIDEO_ASSIGNED_LABELS, findById, findByProperty } from '../data/fakeData.js';
+import { LoadingSpinner, ErrorAlert } from '../components/common';
+import { useVideoDetails } from '../hooks/useVideoDetails.js';
 
 const VideoDetails = () => {
-  const { id } = useParams();
-  const navigate = useNavigate();
   const { t } = useTranslation(['videos', 'common']);
-  
-  // Stan komponentu
-  const [video, setVideo] = useState(null);
-  const [videoLoading, setVideoLoading] = useState(true);
-  const [videoError, setVideoError] = useState(null);
-  const [assignedLabels, setAssignedLabels] = useState([]);
-  const [labelsLoading, setLabelsLoading] = useState(true);
-  const [labelsError, setLabelsError] = useState(null);
-
-  useEffect(() => {
-    // Ładowanie video z kolekcji
-    const loadVideo = async () => {
-      setVideoLoading(true);
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      const foundVideo = findById(FAKE_VIDEOS, parseInt(id));
-      if (foundVideo) {
-        setVideo(foundVideo);
-      } else {
-        setVideoError('Video not found');
-      }
-      setVideoLoading(false);
-    };
-    
-    // Ładowanie assigned labels dla tego video
-    const loadVideoAssignedLabels = async () => {
-      setLabelsLoading(true);
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      const videoLabels = findByProperty(FAKE_VIDEO_ASSIGNED_LABELS, 'videoId', parseInt(id));
-      setAssignedLabels(videoLabels);
-      setLabelsLoading(false);
-    };
-    
-    if (id) {
-      loadVideo();
-      loadVideoAssignedLabels();
-    }
-  }, [id]);
-
-  const handleBackToVideoGroup = () => {
-    if (video?.videoGroupId) {
-      navigate(`/video-groups/${video.videoGroupId}`);
-    }
-  };
-
-  const formatDuration = (seconds) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-  };
+  const {
+    video,
+    videoLoading,
+    videoError,
+    assignedLabels,
+    labelsLoading,
+    labelsError,
+    handleBackToVideoGroup,
+    formatDuration
+  } = useVideoDetails();
 
   if (videoLoading) {
     return (
-      <Container className="py-4">
-        <div className="d-flex justify-content-center">
-          <div className="spinner-border text-primary" role="status">
-            <span className="visually-hidden">{t('common:states.loading')}</span>
-          </div>
-        </div>
+      <Container>
+        <LoadingSpinner message={t('common:states.loading')} />
       </Container>
     );
   }
 
   if (videoError) {
     return (
-      <Container className="py-4">
-        <Alert variant="danger">
-          <i className="fas fa-exclamation-triangle me-2"></i>
-          {videoError}
-        </Alert>
+      <Container>
+        <ErrorAlert error={videoError} />
       </Container>
     );
   }
 
   if (!video) {
     return (
-      <Container className="py-4">
-        <Alert variant="warning">
-          <i className="fas fa-exclamation-triangle me-2"></i>
-          {t('videos:messages.not_found')}
-        </Alert>
+      <Container>
+        <ErrorAlert error={t('videos:messages.not_found')} />
       </Container>
     );
   }
@@ -144,7 +91,7 @@ const VideoDetails = () => {
                 objectFit: "contain",
               }}
               controls
-              src={`/api/Video/${id}/stream`}
+              src={`/api/Video/${video.id}/stream`}
               type="video/mp4"
             >
               {t('videos:details.video_not_supported')}
@@ -162,16 +109,9 @@ const VideoDetails = () => {
         </Card.Header>
         <Card.Body>
           {labelsLoading ? (
-            <div className="text-center py-3">
-              <div className="spinner-border text-primary" role="status">
-                <span className="visually-hidden">{t('common:states.loading')}</span>
-              </div>
-            </div>
+            <LoadingSpinner message="Loading labels..." size="small" />
           ) : labelsError ? (
-            <Alert variant="danger">
-              <i className="fas fa-exclamation-triangle me-2"></i>
-              {labelsError}
-            </Alert>
+            <ErrorAlert error={labelsError} />
           ) : assignedLabels.length > 0 ? (
             <Table striped hover responsive>
               <Table.Head>

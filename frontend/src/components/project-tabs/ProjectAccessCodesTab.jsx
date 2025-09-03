@@ -78,7 +78,7 @@ const ProjectAccessCodesTab = ({
             <div className="btn-group">
               <button
                 className={`btn ${
-                  codeExpiration === 0 ? "btn-primary" : "btn-outline-primary"
+                  codeExpiration === 0 ? "btn-primary" : "btn-primary"
                 }`}
                 onClick={() => setCodeExpiration(0)}
               >
@@ -86,7 +86,7 @@ const ProjectAccessCodesTab = ({
               </button>
               <button
                 className={`btn ${
-                  codeExpiration === 1 ? "btn-primary" : "btn-outline-primary"
+                  codeExpiration === 1 ? "btn-primary" : "btn-primary"
                 }`}
                 onClick={() => setCodeExpiration(1)}
               >
@@ -94,7 +94,7 @@ const ProjectAccessCodesTab = ({
               </button>
               <button
                 className={`btn ${
-                  codeExpiration === 3 ? "btn-primary" : "btn-outline-primary"
+                  codeExpiration === 3 ? "btn-primary" : "btn-primary"
                 }`}
                 onClick={() => setCodeExpiration(3)}
               >
@@ -102,7 +102,7 @@ const ProjectAccessCodesTab = ({
               </button>
               <button
                 className={`btn ${
-                  codeExpiration === 2 ? "btn-primary" : "btn-outline-primary"
+                  codeExpiration === 2 ? "btn-primary" : "btn-primary"
                 }`}
                 onClick={() => setCodeExpiration(2)}
               >
@@ -210,7 +210,7 @@ const ProjectAccessCodesTab = ({
                   </td>
                   <td>
                     <button
-                      className="btn btn-outline-primary"
+                      className="btn btn-primary"
                       onClick={() => handleCopyCode(code.code)}
                     >
                       <i className="fas fa-copy me-1"></i>{t('common:buttons.copy')}

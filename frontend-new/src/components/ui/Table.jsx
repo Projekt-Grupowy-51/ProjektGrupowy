@@ -8,6 +8,7 @@ const Table = ({
   hover = false, 
   size = '', 
   responsive = false,
+  maxHeight = null, // 🔹 nowy props
   className = '',
   ...props 
 }) => {
@@ -27,6 +28,15 @@ const Table = ({
       {children}
     </table>
   );
+
+  // 🔹 Priorytet: jeśli maxHeight ustawiony -> wrap ze scrollowaniem
+  if (maxHeight) {
+    return (
+      <div style={{ maxHeight, overflowY: 'auto' }}>
+        {table}
+      </div>
+    );
+  }
 
   if (responsive) {
     return (
@@ -91,6 +101,7 @@ Table.propTypes = {
   hover: PropTypes.bool,
   size: PropTypes.oneOf(['', 'sm', 'lg']),
   responsive: PropTypes.bool,
+  maxHeight: PropTypes.oneOfType([PropTypes.string, PropTypes.number]), // 🔹 np. "350px" lub 350
   className: PropTypes.string
 };
 
@@ -107,7 +118,10 @@ TableBody.propTypes = {
 
 TableRow.propTypes = {
   children: PropTypes.node.isRequired,
-  variant: PropTypes.oneOf(['', 'primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark']),
+  variant: PropTypes.oneOf([
+    '', 'primary', 'secondary', 'success', 'danger', 
+    'warning', 'info', 'light', 'dark'
+  ]),
   className: PropTypes.string
 };
 

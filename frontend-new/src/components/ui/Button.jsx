@@ -23,7 +23,8 @@ const Button = ({
       info: 'btn-info',
       light: 'btn-light',
       dark: 'btn-dark',
-      outline: 'btn-outline-primary',
+      link: 'btn-link',
+      outline: 'btn-primary',
       'outline-secondary': 'btn-outline-secondary',
       'outline-success': 'btn-outline-success',
       'outline-danger': 'btn-outline-danger',
@@ -73,7 +74,7 @@ const Button = ({
 Button.propTypes = {
   children: PropTypes.node.isRequired,
   variant: PropTypes.oneOf([
-    'primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark',
+    'primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark', 'link',
     'outline', 'outline-secondary', 'outline-success', 'outline-danger', 
     'outline-warning', 'outline-info', 'outline-light', 'outline-dark'
   ]),
