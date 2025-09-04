@@ -39,10 +39,8 @@ class AssignedLabelService {
    * @param {Object} assignedLabelRequest - Assigned label creation request
    * @param {number} assignedLabelRequest.labelId - Label ID
    * @param {number} assignedLabelRequest.videoId - Video ID
-   * @param {number} assignedLabelRequest.subjectId - Subject ID
-   * @param {string} assignedLabelRequest.labelerId - Labeler ID
-   * @param {number} assignedLabelRequest.timestamp - Timestamp in video
-   * @param {string} assignedLabelRequest.value - Label value
+   * @param {string} assignedLabelRequest.start - Start time for the assigned label
+   * @param {string} assignedLabelRequest.end - End time for the assigned label
    * @returns {Promise<Object>} AssignedLabelResponse object
    */
   async create(assignedLabelRequest) {

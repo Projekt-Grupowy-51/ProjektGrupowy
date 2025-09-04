@@ -3,11 +3,21 @@ import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Card, Button } from '../../../ui';
-import { EmptyState, TabHeader, TabListGroup } from '../../../common';
+import { EmptyState, TabHeader, TabListGroup, LoadingSpinner, ErrorAlert } from '../../../common';
+import { useProjectSubjects } from '../../../../hooks/useProjectSubjects.js';
 
-const ProjectSubjectsTab = ({ projectId, subjects = [] }) => {
+const ProjectSubjectsTab = ({ projectId }) => {
   const { t } = useTranslation(['common', 'projects']);
   const navigate = useNavigate();
+  
+  const {
+    subjects,
+    loading,
+    error
+  } = useProjectSubjects(projectId);
+
+  if (loading) return <LoadingSpinner />;
+  if (error) return <ErrorAlert error={error} />;
 
   const renderSubjectItem = (subject) => (
     <>
@@ -53,8 +63,7 @@ const ProjectSubjectsTab = ({ projectId, subjects = [] }) => {
 };
 
 ProjectSubjectsTab.propTypes = {
-  projectId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-  subjects: PropTypes.array
+  projectId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired
 };
 
 export default ProjectSubjectsTab;

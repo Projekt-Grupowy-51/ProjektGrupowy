@@ -1,10 +1,11 @@
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import { useCallback } from 'react';
 import { useDataFetching, useFormSubmission } from './common';
 import SubjectService from '../services/SubjectService.js';
 
 export const useSubjectEdit = () => {
   const { id } = useParams();
+  const location = useLocation();
   const subjectId = parseInt(id, 10);
 
   const fetchSubject = useCallback(() => SubjectService.getById(subjectId), [subjectId]);
@@ -17,14 +18,19 @@ export const useSubjectEdit = () => {
     return await SubjectService.update(subjectId, formData);
   }, [subject, subjectId]);
 
-  const redirectPath = `/subjects/${subjectId}`;
+  const redirectPath = location.state?.from || `/subjects/${subjectId}`;
 
   const {
     handleSubmit,
-    handleCancel,
+    handleCancel: defaultHandleCancel,
     loading: submitLoading,
     error: submitError
   } = useFormSubmission(submitOperation, redirectPath, redirectPath);
+
+  // Override cancel to use browser back
+  const handleCancel = useCallback(() => {
+    window.history.back();
+  }, []);
 
   return {
     id: subjectId,

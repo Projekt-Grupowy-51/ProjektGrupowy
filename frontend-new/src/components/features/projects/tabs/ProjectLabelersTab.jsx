@@ -12,6 +12,7 @@ const ProjectLabelersTab = ({ projectId }) => {
   
   const {
     labelers,
+    allLabelers,
     assignments,
     unassignedLabelers,
     assignedLabelerRows,
@@ -19,10 +20,26 @@ const ProjectLabelersTab = ({ projectId }) => {
     setSelectedLabeler,
     selectedAssignment,
     setSelectedAssignment,
+    selectedCustomAssignments,
+    handleCustomLabelerAssignmentChange,
     assignLabeler,
     unassignLabeler,
-    loading
+    distributeLabelers,
+    unassignAllLabelers,
+    assignAllSelected,
+    loading,
+    distributeLoading,
+    unassignAllLoading,
+    assignAllSelectedLoading
   } = useProjectLabelers(projectId);
+
+  const formatAssignmentOption = (assignment) => 
+    `Assignment #${assignment.id} - Subject: ${
+      assignment.subjectName || 'Unknown'
+    } (ID: ${assignment.subjectId}), ` +
+    `Video Group: ${assignment.videoGroupName || 'Unknown'} (ID: ${
+      assignment.videoGroupId
+    })`;
 
   const handleAssign = () => {
     assignLabeler(selectedLabeler, selectedAssignment);
@@ -32,6 +49,26 @@ const ProjectLabelersTab = ({ projectId }) => {
     if (confirm('Are you sure you want to unassign this labeler?')) {
       unassignLabeler(assignmentId, labelerId);
     }
+  };
+
+  const handleDistributeLabelers = async () => {
+    if (confirm('Are you sure you want to distribute labelers automatically?')) {
+      await distributeLabelers();
+    }
+  };
+
+  const handleUnassignAllLabelers = async () => {
+    if (confirm('Are you sure you want to unassign all labelers?')) {
+      await unassignAllLabelers();
+    }
+  };
+
+  const handleAssignAllSelected = async () => {
+    if (Object.keys(selectedCustomAssignments).length === 0) {
+      alert('No labelers have been assigned to any assignment.');
+      return;
+    }
+    await assignAllSelected();
   };
 
   if (loading) return <div>Loading...</div>;
@@ -66,7 +103,7 @@ const ProjectLabelersTab = ({ projectId }) => {
                   { value: '', label: 'Select assignment...' },
                   ...(assignments || []).map(assignment => ({
                     value: assignment.id,
-                    label: `${assignment.subjectName} - ${assignment.videoGroupName}`
+                    label: formatAssignmentOption(assignment)
                   }))
                 ]}
               />
@@ -75,7 +112,7 @@ const ProjectLabelersTab = ({ projectId }) => {
               <Button
                 variant="success"
                 disabled={!selectedLabeler || !selectedAssignment}
-                onClick={handleAssign}
+                onClick={() => handleAssign()}
                 className="w-100"
               >
                 Assign
@@ -85,11 +122,106 @@ const ProjectLabelersTab = ({ projectId }) => {
         </Card.Body>
       </Card>
 
+      {/* Unassigned Labelers Section */}
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <h4 className="mb-0">Unassigned Labelers</h4>
+        <div className="d-flex gap-2">
+          {unassignedLabelers?.length > 0 && (
+            <Button
+              variant="primary"
+              onClick={handleDistributeLabelers}
+              disabled={distributeLoading}
+            >
+              <i className="fa-solid fa-wand-magic-sparkles me-2"></i>
+              Distribute Labelers
+            </Button>
+          )}
+          {Object.keys(selectedCustomAssignments).length > 0 && (
+            <Button
+              variant="success"
+              onClick={handleAssignAllSelected}
+              disabled={assignAllSelectedLoading}
+            >
+              <i className="fas fa-user-plus me-2"></i>
+              Assign All Selected
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {!unassignedLabelers || unassignedLabelers.length === 0 ? (
+        <EmptyState
+          icon="fas fa-info-circle"
+          message="No unassigned labelers"
+        />
+      ) : (
+        <Card className="mb-4">
+          <Card.Body>
+            <Table striped>
+              <Table.Head>
+                <Table.Row>
+                  <Table.Cell header>Username</Table.Cell>
+                  <Table.Cell header>Assign labeler</Table.Cell>
+                </Table.Row>
+              </Table.Head>
+              <Table.Body>
+                {unassignedLabelers.map((labeler) => (
+                  <Table.Row key={labeler.id}>
+                    <Table.Cell>{labeler.name}</Table.Cell>
+                    <Table.Cell>
+                      <div className="d-flex justify-content-between align-items-center">
+                        <Select
+                          value={selectedCustomAssignments[labeler.id] || ''}
+                          onChange={(e) => handleCustomLabelerAssignmentChange(labeler.id, e.target.value)}
+                          options={[
+                            { value: '', label: '-- Select Assignment --' },
+                            ...(assignments || []).map(assignment => ({
+                              value: assignment.id,
+                              label: formatAssignmentOption(assignment)
+                            }))
+                          ]}
+                          className="me-2"
+                          style={{ minWidth: '300px' }}
+                        />
+                        <Button
+                          variant="success"
+                          size="sm"
+                          onClick={() => assignLabeler(labeler.id, selectedCustomAssignments[labeler.id])}
+                          disabled={!selectedCustomAssignments[labeler.id]}
+                        >
+                          <i className="fas fa-user-plus me-2"></i>
+                          Assign
+                        </Button>
+                      </div>
+                    </Table.Cell>
+                  </Table.Row>
+                ))}
+              </Table.Body>
+            </Table>
+          </Card.Body>
+        </Card>
+      )}
+
+
       {/* Assigned Labelers */}
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <h4 className="mb-0">Assigned Labelers ({assignedLabelerRows?.length || 0})</h4>
+        {assignedLabelerRows?.length > 0 && (
+          <Button
+            variant="danger"
+            onClick={handleUnassignAllLabelers}
+            disabled={unassignAllLoading}
+          >
+            <i className="fa-solid fa-user-xmark me-1"></i>
+            Unassign All
+          </Button>
+        )}
+      </div>
+      
       <Card>
         <Card.Header>
           <Card.Title level={5}>
-            Assigned Labelers ({assignedLabelerRows?.length || 0})
+            Assigned Labelers List
           </Card.Title>
         </Card.Header>
         <Card.Body>
@@ -139,6 +271,76 @@ const ProjectLabelersTab = ({ projectId }) => {
           )}
         </Card.Body>
       </Card>
+
+      {/* All Labelers Section */}
+      <div className="d-flex justify-content-between align-items-center mb-3 mt-5">
+        <h4 className="mb-0">All Labelers</h4>
+        <div className="d-flex gap-2">
+          {allLabelers?.length > 0 && Object.keys(selectedCustomAssignments).length > 0 && (
+            <Button
+              variant="success"
+              onClick={handleAssignAllSelected}
+              disabled={assignAllSelectedLoading}
+            >
+              <i className="fas fa-user-plus me-2"></i>
+              Assign All Selected
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {!allLabelers || allLabelers.length === 0 ? (
+        <EmptyState
+          icon="fas fa-info-circle"
+          message="No labelers found"
+        />
+      ) : (
+        <Card>
+          <Card.Body>
+            <Table striped>
+              <Table.Head>
+                <Table.Row>
+                  <Table.Cell header>Username</Table.Cell>
+                  <Table.Cell header>Assign labeler</Table.Cell>
+                </Table.Row>
+              </Table.Head>
+              <Table.Body>
+                {allLabelers.map((labeler) => (
+                  <Table.Row key={labeler.id}>
+                    <Table.Cell>{labeler.name}</Table.Cell>
+                    <Table.Cell>
+                      <div className="d-flex justify-content-between align-items-center">
+                        <Select
+                          value={selectedCustomAssignments[labeler.id] || ''}
+                          onChange={(e) => handleCustomLabelerAssignmentChange(labeler.id, e.target.value)}
+                          options={[
+                            { value: '', label: '-- Select Assignment --' },
+                            ...(assignments || []).map(assignment => ({
+                              value: assignment.id,
+                              label: formatAssignmentOption(assignment)
+                            }))
+                          ]}
+                          className="me-2"
+                          style={{ minWidth: '300px' }}
+                        />
+                        <Button
+                          variant="success"
+                          size="sm"
+                          onClick={() => assignLabeler(labeler.id, selectedCustomAssignments[labeler.id])}
+                          disabled={!selectedCustomAssignments[labeler.id]}
+                        >
+                          <i className="fas fa-user-plus me-2"></i>
+                          Assign
+                        </Button>
+                      </div>
+                    </Table.Cell>
+                  </Table.Row>
+                ))}
+              </Table.Body>
+            </Table>
+          </Card.Body>
+        </Card>
+      )}
     </div>
   );
 };

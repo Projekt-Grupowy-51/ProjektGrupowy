@@ -78,7 +78,7 @@ const ProjectDetails = () => {
         <Button
           variant="outline-secondary"
           icon="fas fa-arrow-left"
-          onClick={handleBackToList}
+          onClick={() => handleBackToList()}
         >
           {t('common:buttons.back')}
         </Button>

@@ -65,6 +65,21 @@ class AccessCodeService {
       throw new Error(`Failed to create access code: ${error.message}`);
     }
   }
+
+  /**
+   * Join project using access code
+   * POST /api/Project/join
+   * @param {Object} accessCodeRequest - Access code join request
+   * @param {string} accessCodeRequest.code - Code to use for joining
+   * @returns {Promise<void>} Success response
+   */
+  async joinProject(accessCodeRequest) {
+    try {
+      await apiClient.post('/Project/join', { AccessCode: accessCodeRequest.code });
+    } catch (error) {
+      throw new Error(`Failed to join project: ${error.message}`);
+    }
+  }
 }
 
 export default new AccessCodeService();

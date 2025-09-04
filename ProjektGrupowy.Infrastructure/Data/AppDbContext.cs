@@ -96,6 +96,12 @@ public class AppDbContext : DbContext
 
         // === Pozostałe konfiguracje ===
 
+        // 1:N - Project -> VideoGroups  
+        modelBuilder.Entity<Project>()
+            .HasMany(p => p.VideoGroups)
+            .WithOne(vg => vg.Project)
+            .OnDelete(DeleteBehavior.Cascade);
+
         modelBuilder.Entity<ProjectAccessCode>()
             .HasIndex(p => p.Code)
             .HasDatabaseName("IX_ProjectAccessCode_Code")

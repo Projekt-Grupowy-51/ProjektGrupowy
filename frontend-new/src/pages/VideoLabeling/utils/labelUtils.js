@@ -39,73 +39,11 @@ export const getLabelButtonText = (label, labelState = {}) => {
 
 export const sortAssignedLabels = (labels) => {
   if (!Array.isArray(labels)) return [];
-  return [...labels].sort((a, b) => (a.startTime || 0) - (b.startTime || 0));
+  return [...labels].sort((a, b) => {
+    // Try different possible date field names
+    const dateA = new Date(a.insDate || a.InsDate || a.createdAt || a.timestamp || 0);
+    const dateB = new Date(b.insDate || b.InsDate || b.createdAt || b.timestamp || 0);
+    return dateB - dateA; // Most recent first
+  });
 };
 
-export const generateFakeLabels = () => [
-  {
-    id: 1,
-    name: 'Speaking',
-    shortcut: 'S',
-    type: LABEL_TYPES.RANGE,
-    colorHex: '#3498db',
-    description: 'Person is speaking'
-  },
-  {
-    id: 2,
-    name: 'Gesture',
-    shortcut: 'G',
-    type: LABEL_TYPES.POINT,
-    colorHex: '#e74c3c',
-    description: 'Notable gesture'
-  },
-  {
-    id: 3,
-    name: 'Writing',
-    shortcut: 'W',
-    type: LABEL_TYPES.RANGE,
-    colorHex: '#f39c12',
-    description: 'Writing on board'
-  },
-  {
-    id: 4,
-    name: 'Question',
-    shortcut: 'Q',
-    type: LABEL_TYPES.POINT,
-    colorHex: '#27ae60',
-    description: 'Student asking question'
-  }
-];
-
-export const generateFakeAssignedLabels = (videoIds = [1, 2]) => [
-  {
-    id: 1,
-    labelId: 1,
-    labelName: 'Speaking',
-    videoId: videoIds[0] || 1,
-    startTime: 5.5,
-    endTime: 12.3,
-    colorHex: '#3498db',
-    insDate: new Date().toISOString()
-  },
-  {
-    id: 2,
-    labelId: 2,
-    labelName: 'Gesture',
-    videoId: videoIds[0] || 1,
-    startTime: 8.7,
-    endTime: 8.7,
-    colorHex: '#e74c3c',
-    insDate: new Date().toISOString()
-  },
-  {
-    id: 3,
-    labelId: 3,
-    labelName: 'Writing',
-    videoId: videoIds[1] || 2,
-    startTime: 15.2,
-    endTime: 25.8,
-    colorHex: '#f39c12',
-    insDate: new Date().toISOString()
-  }
-];

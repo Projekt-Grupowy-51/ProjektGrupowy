@@ -28,10 +28,15 @@ export const useLabelAdd = () => {
 
   const { 
     handleSubmit, 
-    handleCancel, 
+    handleCancel: defaultHandleCancel, 
     loading: submitLoading, 
     error: submitError 
   } = useFormSubmission(submitOperation, redirectPath, redirectPath);
+
+  // Override cancel to use browser back
+  const handleCancel = useCallback(() => {
+    window.history.back();
+  }, []);
 
   const error = subjectError || submitError || 
     (!subjectLoading && !subject ? 'Subject not found' : null);

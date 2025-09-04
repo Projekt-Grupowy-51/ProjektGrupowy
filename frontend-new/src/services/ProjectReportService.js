@@ -34,17 +34,17 @@ class ProjectReportService {
   }
 
   /**
-   * Create new project report
-   * POST /api/ProjectReport
-   * @param {Object} reportRequest - Project report creation request
+   * Generate new project report
+   * POST /api/ProjectReport/{projectId}/generate-report
+   * @param {Object} reportRequest - Report generation request
    * @param {number} reportRequest.projectId - Project ID
-   * @param {string} reportRequest.title - Report title
-   * @param {string} reportRequest.description - Report description
-   * @returns {Promise<Object>} ProjectReportResponse object
+   * @param {string} reportRequest.title - Report title (ignored by backend)
+   * @param {string} reportRequest.description - Report description (ignored by backend)
+   * @returns {Promise<Object>} Report generation response
    */
   async create(reportRequest) {
     try {
-      return await apiClient.post('/ProjectReport', reportRequest);
+      return await apiClient.post(`/ProjectReport/${reportRequest.projectId}/generate-report`);
     } catch (error) {
       throw new Error(`Failed to create project report: ${error.message}`);
     }
@@ -81,13 +81,13 @@ class ProjectReportService {
 
   /**
    * Download project report file
-   * GET /api/ProjectReport/{id}/download
+   * GET /api/ProjectReport/download/{id}
    * @param {number} id - Project report ID
    * @returns {Promise<Blob>} Report file blob
    */
   async download(id) {
     try {
-      return await apiClient.get(`/ProjectReport/${id}/download`, {
+      return await apiClient.get(`/ProjectReport/download/${id}`, {
         responseType: 'blob'
       });
     } catch (error) {
@@ -101,7 +101,7 @@ class ProjectReportService {
    * @returns {string} Download URL
    */
   getDownloadUrl(id) {
-    return `${apiClient.client.defaults.baseURL}/ProjectReport/${id}/download`;
+    return `${apiClient.client.defaults.baseURL}/ProjectReport/download/${id}`;
   }
 }
 

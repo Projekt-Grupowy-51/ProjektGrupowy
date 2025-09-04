@@ -55,8 +55,21 @@ export const useProjectReports = (projectId) => {
     [deleteReportOp, confirmWithPrompt, refetch]
   );
 
-  const downloadReport = useCallback((reportId) => {
-    window.open(ProjectReportService.getDownloadUrl(reportId));
+  const downloadReport = useCallback(async (reportId) => {
+    try {
+      const blob = await ProjectReportService.download(reportId);
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `project-report-${reportId}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Download failed:', error);
+      throw error;
+    }
   }, []);
 
   return {

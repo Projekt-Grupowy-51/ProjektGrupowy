@@ -50,21 +50,28 @@ class VideoService {
   }
 
   /**
-   * Create new video
+   * Create new video (upload file)
    * POST /api/Video
    * @param {Object} videoRequest - Video creation request
-   * @param {string} videoRequest.name - Video name
    * @param {string} videoRequest.title - Video title
-   * @param {string} videoRequest.description - Video description
-   * @param {string} videoRequest.url - Video URL
-   * @param {number} videoRequest.duration - Video duration in seconds
+   * @param {File} videoRequest.file - Video file
    * @param {number} videoRequest.videoGroupId - Video group ID
    * @param {number} videoRequest.positionInQueue - Position in queue
    * @returns {Promise<Object>} VideoResponse object
    */
   async create(videoRequest) {
     try {
-      return await apiClient.post('/Video', videoRequest);
+      const formData = new FormData();
+      formData.append('Title', videoRequest.title);
+      formData.append('File', videoRequest.file);
+      formData.append('VideoGroupId', videoRequest.videoGroupId.toString());
+      formData.append('PositionInQueue', videoRequest.positionInQueue.toString());
+
+      return await apiClient.client.post('/Video', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
     } catch (error) {
       throw new Error(`Failed to create video: ${error.message}`);
     }
@@ -93,6 +100,22 @@ class VideoService {
    */
   getStreamUrl(id) {
     return `${apiClient.client.defaults.baseURL}/Video/${id}/stream`;
+  }
+
+  /**
+   * Get video stream as blob with authentication
+   * @param {number} id - Video ID
+   * @returns {Promise<string>} Blob URL
+   */
+  async getStreamBlob(id) {
+    try {
+      const response = await apiClient.client.get(`/Video/${id}/stream`, {
+        responseType: 'blob'
+      });
+      return URL.createObjectURL(response.data);
+    } catch (error) {
+      throw new Error(`Failed to get video stream ${id}: ${error.message}`);
+    }
   }
 
   /**

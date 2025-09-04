@@ -34,8 +34,13 @@ export const useLabelEdit = () => {
 
   const redirectPath = `/subjects/${label?.subjectId}`;
 
-  const { handleSubmit, handleCancel, loading: submitLoading, error: submitError } =
+  const { handleSubmit, handleCancel: defaultHandleCancel, loading: submitLoading, error: submitError } =
     useFormSubmission(submitOperation, redirectPath, redirectPath);
+
+  // Override cancel to use browser back
+  const handleCancel = useCallback(() => {
+    window.history.back();
+  }, []);
 
   return {
     id: labelId,

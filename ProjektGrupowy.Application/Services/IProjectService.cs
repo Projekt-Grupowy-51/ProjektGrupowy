@@ -19,4 +19,5 @@ public interface IProjectService
     Task<Optional<bool>> UnassignLabelersFromProjectAsync(int projectId);
     Task<Optional<bool>> DistributeLabelersEquallyAsync(int projectId);
     Task<Optional<IEnumerable<User>>> GetLabelersByProjectAsync(int projectId);
+    Task<Optional<ProjectStatsResponse>> GetProjectStatsAsync(int projectId);
 }

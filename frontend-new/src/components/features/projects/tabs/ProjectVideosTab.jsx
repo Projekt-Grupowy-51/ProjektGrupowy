@@ -3,11 +3,21 @@ import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Card, Button } from '../../../ui';
-import { EmptyState, TabHeader, TabListGroup } from '../../../common';
+import { EmptyState, TabHeader, TabListGroup, LoadingSpinner, ErrorAlert } from '../../../common';
+import { useProjectVideoGroups } from '../../../../hooks/useProjectVideoGroups.js';
 
-const ProjectVideosTab = ({ projectId, videoGroups = [] }) => {
+const ProjectVideosTab = ({ projectId }) => {
   const { t } = useTranslation(['common', 'projects']);
   const navigate = useNavigate();
+  
+  const {
+    videoGroups,
+    loading,
+    error
+  } = useProjectVideoGroups(projectId);
+
+  if (loading) return <LoadingSpinner />;
+  if (error) return <ErrorAlert error={error} />;
 
   const renderVideoGroupItem = (videoGroup) => (
     <>
@@ -53,8 +63,7 @@ const ProjectVideosTab = ({ projectId, videoGroups = [] }) => {
 };
 
 ProjectVideosTab.propTypes = {
-  projectId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-  videoGroups: PropTypes.array
+  projectId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired
 };
 
 export default ProjectVideosTab;

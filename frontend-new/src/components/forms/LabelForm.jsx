@@ -118,7 +118,7 @@ const LabelForm = ({
           <Button
             type="button"
             variant="secondary"
-            onClick={onCancel}
+            onClick={() => onCancel()}
             disabled={loading || isSubmitting}
           >
             {t('common:buttons.cancel')}

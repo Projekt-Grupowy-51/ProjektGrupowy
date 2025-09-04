@@ -47,7 +47,7 @@ const ProjectsPage = () => {
       </div>
 
       <ProjectList 
-        projects={projects}
+        projects={projects || []}
         onDelete={handleDelete}
       />
     </Container>

@@ -64,7 +64,9 @@ const ProjectList = ({ projects, onDelete }) => {
                   size="sm"
                   variant="outline"
                   icon="fas fa-eye"
-                  onClick={() => navigate(`/projects/${project.id}`)}
+                  onClick={() => navigate(`/projects/${project.id}`, { 
+                    state: { from: '/projects' } 
+                  })}
                 >
                   {t('common:buttons.details')}
                 </Button>
@@ -72,7 +74,9 @@ const ProjectList = ({ projects, onDelete }) => {
                   size="sm"
                   variant="outline-warning"
                   icon="fas fa-edit"
-                  onClick={() => navigate(`/projects/${project.id}/edit`)}
+                  onClick={() => navigate(`/projects/${project.id}/edit`, { 
+                    state: { from: `/projects` } 
+                  })}
                 >
                   {t('common:buttons.edit')}
                 </Button>

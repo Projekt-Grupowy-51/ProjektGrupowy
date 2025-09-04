@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useMultipleDataFetching, useNavigation } from './common';
 import VideoService from '../services/VideoService.js';
@@ -6,6 +6,8 @@ import VideoService from '../services/VideoService.js';
 export const useVideoDetails = () => {
   const { id } = useParams();
   const { goTo } = useNavigation();
+  const [videoStreamUrl, setVideoStreamUrl] = useState(null);
+  const [videoStreamLoading, setVideoStreamLoading] = useState(false);
 
   const fetchVideo = useCallback(() => VideoService.getById(parseInt(id)), [id]);
   const fetchAssignedLabels = useCallback(() => VideoService.getAssignedLabels(parseInt(id)), [id]);
@@ -14,6 +16,34 @@ export const useVideoDetails = () => {
     video: fetchVideo,
     assignedLabels: fetchAssignedLabels
   });
+
+  // Load video stream URL when video data is available
+  useEffect(() => {
+    const loadVideoStream = async () => {
+      if (data.video?.id && !videoStreamUrl) {
+        setVideoStreamLoading(true);
+        try {
+          const streamUrl = await VideoService.getStreamBlob(data.video.id);
+          setVideoStreamUrl(streamUrl);
+        } catch (error) {
+          console.error('Failed to load video stream:', error);
+        } finally {
+          setVideoStreamLoading(false);
+        }
+      }
+    };
+
+    loadVideoStream();
+  }, [data.video?.id, videoStreamUrl]);
+
+  // Cleanup blob URL on unmount
+  useEffect(() => {
+    return () => {
+      if (videoStreamUrl) {
+        URL.revokeObjectURL(videoStreamUrl);
+      }
+    };
+  }, [videoStreamUrl]);
 
   const handleBackToVideoGroup = useCallback(() => {
     const video = data.video;
@@ -35,6 +65,8 @@ export const useVideoDetails = () => {
     assignedLabels: data.assignedLabels || [],
     labelsLoading: loading.assignedLabels,
     labelsError: error.assignedLabels,
+    videoStreamUrl,
+    videoStreamLoading,
     handleBackToVideoGroup,
     formatDuration
   };

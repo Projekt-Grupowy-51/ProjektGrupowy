@@ -43,13 +43,10 @@ export const useVideoAdd = () => {
           setUploadProgress(Math.floor(((i + 0.5) / total) * 100));
 
           await VideoService.create({
-            name: video.title,
             title: video.title,
-            description: `Video: ${video.title}`,
-            url: video.url || `https://example.com/video${Date.now()}.mp4`,
-            duration: video.duration || Math.floor(Math.random() * 3600),
+            file: video.file,
             videoGroupId,
-            positionInQueue: video.positionInQueue
+            positionInQueue: parseInt(video.positionInQueue, 10)
           });
 
           setUploadProgress(Math.floor(((i + 1) / total) * 100));

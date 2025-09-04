@@ -15,6 +15,7 @@ import SubjectAddPage from "./pages/SubjectAdd.jsx";
 import SubjectEditPage from "./pages/SubjectEdit.jsx";
 import VideoDetailsPage from "./pages/VideoDetails.jsx";
 import VideoGroupAddPage from "./pages/VideoGroupAdd.jsx";
+import VideoGroupEditPage from "./pages/VideoGroupEdit.jsx";
 import VideoGroupDetailsPage from "./pages/VideoGroupDetails.jsx";
 import VideoAddPage from "./pages/VideoAdd.jsx";
 import LabelAddPage from "./pages/LabelAdd.jsx";
@@ -47,6 +48,7 @@ function App() {
                         <Route path="/subjects/add" element={<SubjectAddPage />} />
                         <Route path="/videogroups/add" element={<VideoGroupAddPage />} />
                         <Route path="/videogroups/:id" element={<VideoGroupDetailsPage />} />
+                        <Route path="/videogroups/:id/edit" element={<VideoGroupEditPage />} />
                         <Route path="/videos/add" element={<VideoAddPage />} />
                         <Route path="/labels/add" element={<LabelAddPage />} />
                         <Route path="/labels/:id/edit" element={<LabelEditPage />} />

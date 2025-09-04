@@ -427,4 +427,32 @@ public class ProjectService(
 
     public async Task<Optional<Project>> UpdateProjectAsync(Project project) =>
         await projectRepository.UpdateProjectAsync(project);
+
+    public async Task<Optional<ProjectStatsResponse>> GetProjectStatsAsync(int projectId)
+    {
+        var projectOptional = await projectRepository.GetProjectAsync(projectId, currentUserService.UserId, currentUserService.IsAdmin);
+        if (projectOptional.IsFailure)
+        {
+            return Optional<ProjectStatsResponse>.Failure("No project found!");
+        }
+
+        var project = projectOptional.GetValueOrThrow();
+        var authResult = await authorizationService.AuthorizeAsync(currentUserService.User, project, new ResourceOperationRequirement(ResourceOperation.Read));
+        if (!authResult.Succeeded)
+        {
+            throw new ForbiddenException();
+        }
+
+        // Calculate statistics
+        var stats = new ProjectStatsResponse
+        {
+            Subjects = project.Subjects.Count,
+            Videos = project.VideoGroups.Count,
+            Assignments = project.Subjects.SelectMany(s => s.SubjectVideoGroupAssignments).Count(),
+            Labelers = project.ProjectLabelers.Count,
+            AccessCodes = project.AccessCodes.Count
+        };
+
+        return Optional<ProjectStatsResponse>.Success(stats);
+    }
 }

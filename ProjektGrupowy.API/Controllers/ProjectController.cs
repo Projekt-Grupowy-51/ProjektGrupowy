@@ -196,4 +196,14 @@ public class ProjectController(
             ? Ok(mapper.Map<IEnumerable<LabelerResponse>>(labelersResult.GetValueOrThrow()))
             : NotFound(labelersResult.GetErrorOrThrow());
     }
+
+    [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
+    [HttpGet("{projectId:int}/stats")]
+    public async Task<ActionResult<ProjectStatsResponse>> GetProjectStatsAsync(int projectId)
+    {
+        var statsResult = await projectService.GetProjectStatsAsync(projectId);
+        return statsResult.IsSuccess
+            ? Ok(statsResult.GetValueOrThrow())
+            : NotFound(statsResult.GetErrorOrThrow());
+    }
 }

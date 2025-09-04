@@ -1,15 +1,21 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { Card, Button, Table, Alert } from '../../../components/ui';
+import { LoadingSpinner } from '../../../components/common';
 import { sortAssignedLabels } from '../utils/labelUtils.js';
 import { formatTime } from '../utils/timeUtils.js';
 
 const LabelingPanel = ({ 
   labels, 
   assignedLabels, 
-  onDeleteLabel 
+  onDeleteLabel,
+  loading = false,
+  operationLoading = false
 }) => {
-  const sortedAssignedLabels = sortAssignedLabels(assignedLabels);
+  const sortedAssignedLabels = useMemo(() => 
+    sortAssignedLabels(assignedLabels), 
+    [assignedLabels]
+  );
 
   return (
     <div className="labeling-panel">
@@ -33,10 +39,15 @@ const LabelingPanel = ({
                 </Table.Row>
               </Table.Head>
               <Table.Body>
-                {sortedAssignedLabels.map((label) => {
+                {loading ? (
+                  <Table.Row>
+                    <Table.Cell colSpan={4} className="text-center py-4">
+                      <LoadingSpinner size="small" message="Loading labels..." />
+                    </Table.Cell>
+                  </Table.Row>
+                ) : (
+                  sortedAssignedLabels.map((label) => {
                   const matchingLabel = labels.find(l => l.id === label.labelId);
-                  const duration = label.endTime - label.startTime;
-                  const isPoint = duration === 0;
                   
                   return (
                     <Table.Row key={label.id}>
@@ -55,23 +66,29 @@ const LabelingPanel = ({
                         </div>
                       </Table.Cell>
                       <Table.Cell className="font-monospace">
-                        {Math.floor(label.startTime / 60)}:{(label.startTime % 60).toFixed(1).padStart(4, '0')}
+                        {label.start || label.startTime || 'N/A'}
                       </Table.Cell>
                       <Table.Cell className="font-monospace">
-                        {isPoint ? 'Point' : `${Math.floor(label.endTime / 60)}:${(label.endTime % 60).toFixed(1).padStart(4, '0')}`}
+                        {label.end || label.endTime || 'N/A'}
                       </Table.Cell>
                       <Table.Cell>
                         <button
                           className="btn btn-outline-danger btn-sm"
                           onClick={() => onDeleteLabel(label.id)}
                           title="Delete label"
+                          disabled={operationLoading}
                         >
-                          <i className="fas fa-trash"></i>
+                          {operationLoading ? (
+                            <LoadingSpinner size="small" />
+                          ) : (
+                            <i className="fas fa-trash"></i>
+                          )}
                         </button>
                       </Table.Cell>
                     </Table.Row>
                   );
-                })}
+                })
+                )}
               </Table.Body>
             </Table>
           ) : (
@@ -99,13 +116,19 @@ LabelingPanel.propTypes = {
     colorHex: PropTypes.string.isRequired
   })).isRequired,
   assignedLabels: PropTypes.arrayOf(PropTypes.shape({
-    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-    labelId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    id: PropTypes.number.isRequired,
+    labelId: PropTypes.number.isRequired,
     labelName: PropTypes.string.isRequired,
-    startTime: PropTypes.number.isRequired,
-    endTime: PropTypes.number.isRequired
+    videoId: PropTypes.number.isRequired,
+    start: PropTypes.string,
+    end: PropTypes.string,
+    startTime: PropTypes.string,
+    endTime: PropTypes.string,
+    insDate: PropTypes.string
   })).isRequired,
-  onDeleteLabel: PropTypes.func.isRequired
+  onDeleteLabel: PropTypes.func.isRequired,
+  loading: PropTypes.bool,
+  operationLoading: PropTypes.bool
 };
 
 export default LabelingPanel;

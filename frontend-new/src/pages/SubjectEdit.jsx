@@ -7,10 +7,10 @@ import { useSubjectEdit } from '../hooks/useSubjectEdit.js';
 const SubjectEditPage = () => {
   const { t } = useTranslation(['subjects', 'common']);
   const {
-    data: subject,
+    subject,
     loading,
     error,
-    updateLoading,
+    submitLoading,
     handleSubmit,
     handleCancel
   } = useSubjectEdit();
@@ -31,7 +31,7 @@ const SubjectEditPage = () => {
             initialData={subject}
             onSubmit={handleSubmit}
             onCancel={handleCancel}
-            loading={updateLoading}
+            loading={submitLoading}
             submitText={t('common:buttons.save')}
             isEdit
         />

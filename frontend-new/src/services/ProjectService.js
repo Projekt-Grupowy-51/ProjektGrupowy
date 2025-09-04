@@ -81,16 +81,16 @@ class ProjectService {
   }
 
   /**
-   * Get project users
-   * GET /api/Project/{id}/users
+   * Get project labelers
+   * GET /api/Project/{id}/Labelers
    * @param {number} id - Project ID
-   * @returns {Promise<Array>} Array of user objects
+   * @returns {Promise<Array>} Array of LabelerResponse objects
    */
   async getUsers(id) {
     try {
-      return await apiClient.get(`/Project/${id}/users`);
+      return await apiClient.get(`/Project/${id}/Labelers`);
     } catch (error) {
-      throw new Error(`Failed to get users for project ${id}: ${error.message}`);
+      throw new Error(`Failed to get labelers for project ${id}: ${error.message}`);
     }
   }
 
@@ -174,7 +174,7 @@ class ProjectService {
    */
   async getAssignments(id) {
     try {
-      return await apiClient.get(`/Project/${id}/assignments`);
+      return await apiClient.get(`/Project/${id}/SubjectVideoGroupAssignments`);
     } catch (error) {
       throw new Error(`Failed to get assignments for project ${id}: ${error.message}`);
     }
@@ -191,6 +191,48 @@ class ProjectService {
       return await apiClient.get(`/Project/${id}/stats`);
     } catch (error) {
       throw new Error(`Failed to get statistics for project ${id}: ${error.message}`);
+    }
+  }
+
+  /**
+   * Get unassigned labelers for project
+   * GET /api/Project/{id}/unassigned-labelers
+   * @param {number} id - Project ID
+   * @returns {Promise<Array>} Array of unassigned labeler objects
+   */
+  async getUnassignedLabelers(id) {
+    try {
+      return await apiClient.get(`/Project/${id}/unassigned-labelers`);
+    } catch (error) {
+      throw new Error(`Failed to get unassigned labelers for project ${id}: ${error.message}`);
+    }
+  }
+
+  /**
+   * Distribute labelers across assignments
+   * POST /api/Project/{id}/distribute
+   * @param {number} id - Project ID
+   * @returns {Promise<void>}
+   */
+  async distributeLabelers(id) {
+    try {
+      await apiClient.post(`/Project/${id}/distribute`);
+    } catch (error) {
+      throw new Error(`Failed to distribute labelers for project ${id}: ${error.message}`);
+    }
+  }
+
+  /**
+   * Unassign all labelers from assignments
+   * POST /api/Project/{id}/unassign-all
+   * @param {number} id - Project ID
+   * @returns {Promise<void>}
+   */
+  async unassignAllLabelers(id) {
+    try {
+      await apiClient.post(`/Project/${id}/unassign-all`);
+    } catch (error) {
+      throw new Error(`Failed to unassign all labelers for project ${id}: ${error.message}`);
     }
   }
 }

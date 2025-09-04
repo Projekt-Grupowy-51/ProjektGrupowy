@@ -1,11 +1,13 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import { useDataFetching, useAsyncOperation, useNavigation } from './common';
 import ProjectService from '../services/ProjectService.js';
+import { useProjectStats } from './useProjectStats.js';
 
-export const useProjectDetails = () => {
+export const useProjectDetails = (passedProjectId) => {
   const { id } = useParams();
-  const projectId = parseInt(id, 10);
+  const location = useLocation();
+  const projectId = passedProjectId ? parseInt(passedProjectId, 10) : parseInt(id, 10);
   const { goTo } = useNavigation();
   const [activeTab, setActiveTab] = useState('details');
 
@@ -14,11 +16,20 @@ export const useProjectDetails = () => {
     [projectId]
   );
   const { data: project, loading, error } = useDataFetching(fetchProject, [projectId]);
+  const { stats, refetchStats } = useProjectStats(projectId);
 
   useEffect(() => {
-    const savedTab = localStorage.getItem(`projectDetails_${projectId}_activeTab`);
-    if (savedTab) setActiveTab(savedTab);
-  }, [projectId]);
+    // If user came from projects list, always start with 'details' tab
+    // Otherwise, restore the last active tab from localStorage
+    const cameFromProjectsList = location.state?.from === '/projects';
+    
+    if (cameFromProjectsList) {
+      setActiveTab('details');
+    } else {
+      const savedTab = localStorage.getItem(`projectDetails_${projectId}_activeTab`);
+      if (savedTab) setActiveTab(savedTab);
+    }
+  }, [projectId, location.state]);
 
   const handleTabChange = useCallback(
     (tabId) => {
@@ -42,13 +53,13 @@ export const useProjectDetails = () => {
   const handleBackToList = useCallback(() => goTo('/projects'), [goTo]);
 
   const tabs = useMemo(() => project ? [
-    { id: 'details', label: 'Details', icon: 'fas fa-info-circle', data: { project, onDeleteProject: handleDeleteProject } },
-    { id: 'subjects', label: 'Subjects', icon: 'fas fa-book', badge: 0, data: { projectId } },
-    { id: 'videos', label: 'Videos', icon: 'fas fa-video', badge: 0, data: { projectId } },
-    { id: 'assignments', label: 'Assignments', icon: 'fas fa-tasks', badge: 0, data: { projectId } },
-    { id: 'labelers', label: 'Labelers', icon: 'fas fa-users', badge: 0, data: { projectId } },
-    { id: 'access_codes', label: 'Access Codes', icon: 'fas fa-key', badge: 0, data: { projectId } }
-  ] : [], [project, projectId, handleDeleteProject]);
+    { id: 'details', label: 'Details', icon: 'fas fa-info-circle', data: { projectId, onDeleteProject: handleDeleteProject } },
+    { id: 'subjects', label: 'Subjects', icon: 'fas fa-book', badge: stats?.subjects || 0, data: { projectId } },
+    { id: 'videos', label: 'Videos', icon: 'fas fa-video', badge: stats?.videos || 0, data: { projectId } },
+    { id: 'assignments', label: 'Assignments', icon: 'fas fa-tasks', badge: stats?.assignments || 0, data: { projectId } },
+    { id: 'labelers', label: 'Labelers', icon: 'fas fa-users', badge: stats?.labelers || 0, data: { projectId } },
+    { id: 'access_codes', label: 'Access Codes', icon: 'fas fa-key', badge: stats?.access_codes || 0, data: { projectId } }
+  ] : [], [project, projectId, handleDeleteProject, stats]);
 
   return {
     id: projectId,
@@ -60,6 +71,7 @@ export const useProjectDetails = () => {
     tabs,
     handleTabChange,
     handleBackToList,
-    handleDeleteProject
+    handleDeleteProject,
+    refetchStats
   };
 };

@@ -20,7 +20,7 @@ export const useLabelerVideoGroups = () => {
 
   const { data, loading, error, refetchAll } = useMultipleDataFetching(operations);
 
-  const { execute: validateAccessCode, loading: validatingCode, error: validationError } = useAsyncOperation();
+  const { execute: joinProject, loading: joiningProject, error: joinError } = useAsyncOperation();
 
   useEffect(() => {
     if (!data.projects) return;
@@ -32,16 +32,15 @@ export const useLabelerVideoGroups = () => {
     if (!code) return;
 
     try {
-      const isValid = await validateAccessCode(() => AccessCodeService.validateCode({ code }));
-      if (!isValid) return;
-
+      await joinProject(() => AccessCodeService.joinProject({ code }));
+      
       setSuccess(t('labeler:join_project.success'));
       setAccessCode('');
       await refetchAll();
     } catch (err) {
       console.error('Failed to join project:', err);
     }
-  }, [accessCode, validateAccessCode, refetchAll, t]);
+  }, [accessCode, joinProject, refetchAll, t]);
 
   const toggleProjectExpand = useCallback((projectId) => {
     setExpandedProjects(prev => ({ ...prev, [projectId]: !prev[projectId] }));
@@ -57,11 +56,11 @@ export const useLabelerVideoGroups = () => {
     [goTo]
   );
 
-  const isLoading = loading.projects || loading.assignments || validatingCode;
+  const isLoading = loading.projects || loading.assignments || joiningProject;
 
-  const errorMessage = validationError
+  const errorMessage = joinError
     ? t('labeler:join_project.invalid_code')
-    : error.projects || error.assignments || (!accessCode.trim() && !validationError ? t('labeler:join_project.required_code') : '');
+    : error.projects || error.assignments;
 
   return {
     projects: data.projects || [],

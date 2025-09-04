@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { getVideoGridLayout } from '../utils/videoUtils.js';
 
-const VideoGrid = ({ videos, videoRefs, onTimeUpdate, onLoadedMetadata = () => {}, videoHeight = 300, fillSpace = false, displayMode = 'auto' }) => {
+const VideoGrid = ({ videos, videoStreamUrls = {}, videoRefs, onTimeUpdate, onLoadedMetadata = () => {}, videoHeight = 300, fillSpace = false, displayMode = 'auto' }) => {
   const [endedVideos, setEndedVideos] = useState(new Set());
   
   const getGridConfig = (mode, videoCount) => {
@@ -104,8 +104,8 @@ const VideoGrid = ({ videos, videoRefs, onTimeUpdate, onLoadedMetadata = () => {
                 onLoadedMetadata={onLoadedMetadata}
                 onEnded={() => handleVideoEnded(index)}
                 preload="metadata"
+                src={videoStreamUrls[video.id] || video.url}
               >
-                <source src={video.url} type="video/mp4" />
                 Your browser does not support the video tag.
               </video>
               
@@ -139,10 +139,11 @@ const VideoGrid = ({ videos, videoRefs, onTimeUpdate, onLoadedMetadata = () => {
 VideoGrid.propTypes = {
   videos: PropTypes.arrayOf(PropTypes.shape({
     id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    url: PropTypes.string.isRequired,
+    url: PropTypes.string,
     title: PropTypes.string,
     duration: PropTypes.number
   })).isRequired,
+  videoStreamUrls: PropTypes.object,
   videoRefs: PropTypes.object.isRequired,
   onTimeUpdate: PropTypes.func.isRequired,
   onLoadedMetadata: PropTypes.func,

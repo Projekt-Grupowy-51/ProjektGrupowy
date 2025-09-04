@@ -1,36 +1,86 @@
-import React from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Container, Card, Alert } from '../../components/ui';
-import useVideoLabelingSession from './hooks/useVideoLabelingSession.js';
+import { LoadingSpinner } from '../../components/common';
+import { useDataFetching } from '../../hooks/common';
+import { useVideoControls } from './hooks/useVideoControls.js';
+import { useAssignedLabelsState } from './hooks/useAssignedLabelsState.js';
+import { useBatchManagement } from './hooks/useBatchManagement.js';
+import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts.js';
+import { useRangeLabels } from './hooks/useRangeLabels.js';
 import VideoGrid from './components/VideoGrid.jsx';
 import MediaControls from './components/MediaControls.jsx';
 import LabelingPanel from './components/LabelingPanel.jsx';
+import LabelButtons from './components/LabelButtons.jsx';
+import SubjectVideoGroupAssignmentService from '../../services/SubjectVideoGroupAssignmentService.js';
+import SubjectService from '../../services/SubjectService.js';
 
 const VideoLabelingInterface = () => {
   const { assignmentId } = useParams();
   const { t } = useTranslation(['videos', 'common']);
   
-  const session = useVideoLabelingSession(assignmentId);
+  // Fetch assignment and labels directly
+  const fetchAssignment = useCallback(() => {
+    return assignmentId ? SubjectVideoGroupAssignmentService.getById(parseInt(assignmentId)) : Promise.resolve(null);
+  }, [assignmentId]);
+
+  const { data: assignment, loading: assignmentLoading, error: assignmentError } = useDataFetching(
+    fetchAssignment,
+    [assignmentId]
+  );
+
+  const fetchLabels = useCallback(() => {
+    return assignment?.subjectId ? SubjectService.getLabels(assignment.subjectId) : Promise.resolve([]);
+  }, [assignment?.subjectId]);
+
+  const { data: labels, loading: labelsLoading, error: labelsError } = useDataFetching(
+    fetchLabels,
+    [assignment?.subjectId]
+  );
+
+  // Use all hooks independently
+  const videoControls = useVideoControls();
+  const batchManagement = useBatchManagement(assignment);
+  const assignedLabelsState = useAssignedLabelsState(batchManagement.videos, assignment);
+  
+  // Range labels logic
+  const rangeLabels = useRangeLabels(
+    labels,
+    assignedLabelsState,
+    videoControls.playerState.currentTime,
+    assignment
+  );
+
+  // Keyboard shortcuts
+  useKeyboardShortcuts(
+    assignment,
+    videoControls.playerState,
+    labels,
+    videoControls.handlePlayPause,
+    videoControls.handleSeek,
+    rangeLabels.handleLabelAction
+  );
+
+  const loading = assignmentLoading || labelsLoading || batchManagement.loading;
+  const error = assignmentError || labelsError || batchManagement.error;
+
+  useEffect(() => {
+    videoControls.resetPlayerState();
+    videoControls.syncVideos('reset');
+  }, [batchManagement.currentBatch]);
 
   // Loading state
-  if (session.loading) {
+  if (loading) {
     return (
       <Container>
-        <div className="d-flex justify-content-center py-5">
-          <div className="text-center">
-            <div className="spinner-border text-primary mb-3" role="status">
-              <span className="visually-hidden">{t('common:loading')}</span>
-            </div>
-            <p className="text-muted">{t('videos:loading_session')}</p>
-          </div>
-        </div>
+        <LoadingSpinner message={t('videos:loading_session')} />
       </Container>
     );
   }
 
   // Error state
-  if (session.error) {
+  if (error) {
     return (
       <Container>
         <Alert variant="danger" className="mt-4">
@@ -38,7 +88,7 @@ const VideoLabelingInterface = () => {
             <i className="fas fa-exclamation-triangle me-3"></i>
             <div>
               <h5 className="alert-heading mb-1">Failed to Load Session</h5>
-              <p className="mb-0">{session.error}</p>
+              <p className="mb-0">{error}</p>
             </div>
           </div>
         </Alert>
@@ -47,7 +97,7 @@ const VideoLabelingInterface = () => {
   }
 
   // No assignment state
-  if (!session.assignment) {
+  if (!assignment) {
     return (
       <Container>
         <Alert variant="warning" className="mt-4">
@@ -71,15 +121,15 @@ const VideoLabelingInterface = () => {
           <div>
             <h1 className="h4 mb-1">
               <i className="fas fa-video me-2"></i>
-              {session.assignment.subjectName} - {session.assignment.videoGroupName}
+              {assignment.subjectName} - {assignment.videoGroupName}
             </h1>
           </div>
           <div className="d-flex align-items-center gap-3">
             <span className="badge bg-secondary">
-              Assignment #{session.assignment.id}
+              Assignment #{assignment.id}
             </span>
             <span className="badge bg-secondary">
-              Batch {session.currentBatch}/{session.totalBatches}
+              Batch {batchManagement.currentBatch}/{batchManagement.totalBatches}
             </span>
           </div>
         </div>
@@ -90,10 +140,11 @@ const VideoLabelingInterface = () => {
         {/* Left Column - Video Only */}
         <div className="col-lg-9 mb-3">
           <VideoGrid
-            videos={session.videos}
-            videoRefs={session.videoRefs}
-            onTimeUpdate={session.handleTimeUpdate}
-            onLoadedMetadata={session.handleTimeUpdate}
+            videos={batchManagement.videos}
+            videoStreamUrls={batchManagement.videoStreamUrls}
+            videoRefs={videoControls.videoRefs}
+            onTimeUpdate={videoControls.handleTimeUpdate}
+            onLoadedMetadata={videoControls.handleTimeUpdate}
             videoHeight={300}
             fillSpace={true}
             displayMode={'auto'}
@@ -106,12 +157,12 @@ const VideoLabelingInterface = () => {
           <Card className="mb-3">
             <Card.Body>
               <MediaControls
-                playerState={session.playerState}
-                batchInfo={session.getBatchInfo()}
-                onPlayPause={session.handlePlayPause}
-                onSeek={session.handleSeek}
-                onSpeedChange={session.handleSpeedChange}
-                onBatchChange={session.handleBatchChange}
+                playerState={videoControls.playerState}
+                batchInfo={batchManagement.getBatchInfo()}
+                onPlayPause={videoControls.handlePlayPause}
+                onSeek={videoControls.handleSeek}
+                onSpeedChange={videoControls.handleSpeedChange}
+                onBatchChange={batchManagement.loadBatch}
               />
             </Card.Body>
           </Card>
@@ -125,37 +176,20 @@ const VideoLabelingInterface = () => {
               </Card.Title>
             </Card.Header>
             <Card.Body>
-              <div className="d-flex flex-wrap gap-1">
-                {session.labels.map((label) => {
-                  const labelState = session.labelingState[label.id] || { isActive: false };
-                  const buttonText = `${label.name} [${label.shortcut}]`;
-                  const tooltipText = `Shortcut: ${label.shortcut} | ${label.description}`;
-                  
-                  return (
-                    <button
-                      key={label.id}
-                      className={`btn btn-sm ${labelState.isActive ? 'btn-warning' : 'btn-outline-primary'}`}
-                      onClick={() => session.handleLabelAction(label.id)}
-                      title={tooltipText}
-                      style={{
-                        backgroundColor: labelState.isActive ? label.colorHex : 'transparent',
-                        borderColor: label.colorHex,
-                        color: labelState.isActive ? '#fff' : label.colorHex,
-                        fontSize: '0.75rem'
-                      }}
-                    >
-                      {buttonText}
-                    </button>
-                  );
-                })}
-              </div>
+              <LabelButtons
+                labels={labels}
+                onLabelAction={rangeLabels.handleLabelAction}
+                getLabelState={rangeLabels.getLabelState}
+              />
             </Card.Body>
           </Card>
 
           <LabelingPanel
-            labels={session.labels}
-            assignedLabels={session.assignedLabels}
-            onDeleteLabel={session.handleDeleteLabel}
+            labels={labels}
+            assignedLabels={assignedLabelsState.assignedLabels}
+            onDeleteLabel={assignedLabelsState.handleDeleteLabel}
+            loading={assignedLabelsState.assignedLabelsLoading}
+            operationLoading={assignedLabelsState.labelOperationLoading}
           />
         </div>
       </div>

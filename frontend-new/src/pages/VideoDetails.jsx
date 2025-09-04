@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Container, Card, Button, Table, Alert } from '../components/ui';
 import { LoadingSpinner, ErrorAlert } from '../components/common';
 import { useVideoDetails } from '../hooks/useVideoDetails.js';
+import VideoService from '../services/VideoService.js';
 
 const VideoDetails = () => {
   const { t } = useTranslation(['videos', 'common']);
@@ -13,6 +14,8 @@ const VideoDetails = () => {
     assignedLabels,
     labelsLoading,
     labelsError,
+    videoStreamUrl,
+    videoStreamLoading,
     handleBackToVideoGroup,
     formatDuration
   } = useVideoDetails();
@@ -81,21 +84,32 @@ const VideoDetails = () => {
               overflow: "hidden"
             }}
           >
-            <video
-              style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                width: "100%",
-                height: "100%",
-                objectFit: "contain",
-              }}
-              controls
-              src={`/api/Video/${video.id}/stream`}
-              type="video/mp4"
-            >
-              {t('videos:details.video_not_supported')}
-            </video>
+            {videoStreamLoading ? (
+              <div className="position-absolute top-50 start-50 translate-middle text-white">
+                <LoadingSpinner message="Loading video..." />
+              </div>
+            ) : videoStreamUrl ? (
+              <video
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "contain",
+                }}
+                controls
+                src={videoStreamUrl}
+                type="video/mp4"
+              >
+                {t('videos:details.video_not_supported')}
+              </video>
+            ) : (
+              <div className="position-absolute top-50 start-50 translate-middle text-white">
+                <i className="fas fa-exclamation-triangle me-2"></i>
+                Failed to load video
+              </div>
+            )}
           </div>
         </Card.Body>
       </Card>

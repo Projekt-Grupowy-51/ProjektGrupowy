@@ -1,7 +1,7 @@
 // Configuration for the application
 const config = {
   // Set to true to use mock services, false to use real API
-  useMockServices: true,
+  useMockServices: false,
   
   // API configuration
   api: {

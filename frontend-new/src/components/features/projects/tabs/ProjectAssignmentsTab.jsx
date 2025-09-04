@@ -3,11 +3,13 @@ import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Card, Button } from '../../../ui';
-import { EmptyState } from '../../../common';
+import { EmptyState, LoadingSpinner } from '../../../common';
+import { useProjectAssignments } from '../../../../hooks/useProjectAssignments';
 
-const ProjectAssignmentsTab = ({ projectId, assignments = [] }) => {
+const ProjectAssignmentsTab = ({ projectId }) => {
   const { t } = useTranslation(['common', 'projects']);
   const navigate = useNavigate();
+  const { assignments, loading, error } = useProjectAssignments(projectId);
 
   return (
     <Card>
@@ -28,7 +30,14 @@ const ProjectAssignmentsTab = ({ projectId, assignments = [] }) => {
         </div>
       </Card.Header>
       <Card.Body>
-        {assignments.length === 0 ? (
+        {loading ? (
+          <LoadingSpinner message="Loading assignments..." />
+        ) : error ? (
+          <div className="alert alert-danger">
+            <i className="fas fa-exclamation-triangle me-2"></i>
+            Error loading assignments: {error.message}
+          </div>
+        ) : assignments.length === 0 ? (
           <EmptyState
             icon="fas fa-tasks"
             message={t('projects:not_found.assignment')}
@@ -76,8 +85,7 @@ const ProjectAssignmentsTab = ({ projectId, assignments = [] }) => {
 };
 
 ProjectAssignmentsTab.propTypes = {
-  projectId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-  assignments: PropTypes.array
+  projectId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired
 };
 
 export default ProjectAssignmentsTab;

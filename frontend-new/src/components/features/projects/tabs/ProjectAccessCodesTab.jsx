@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Card, Button, Table } from '../../../ui';
-import { EmptyState } from '../../../common';
+import { EmptyState, LoadingSpinner } from '../../../common';
 import { useProjectAccessCodes } from '../../../../hooks/useProjectAccessCodes';
 
 const ProjectAccessCodesTab = ({ projectId }) => {
@@ -23,7 +23,7 @@ const ProjectAccessCodesTab = ({ projectId }) => {
     setShowCreateForm(false);
   };
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <LoadingSpinner message="Loading access codes..." />;
 
   return (
     <div>
@@ -139,7 +139,7 @@ const ProjectAccessCodesTab = ({ projectId }) => {
                             variant="outline-danger"
                             onClick={() => {
                               if (confirm('Retire this access code?')) {
-                                retireCode(code.id);
+                                retireCode(code.code);
                               }
                             }}
                           >

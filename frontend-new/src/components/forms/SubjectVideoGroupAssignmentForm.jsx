@@ -81,7 +81,7 @@ const SubjectVideoGroupAssignmentForm = ({
                     <Button 
                         type="button" 
                         variant="secondary" 
-                        onClick={onCancel} 
+                        onClick={() => onCancel()} 
                         disabled={loading || isSubmitting}
                     >
                         {cancelText || t('common:buttons.cancel')}

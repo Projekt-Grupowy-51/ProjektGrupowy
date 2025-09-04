@@ -72,7 +72,7 @@ const VideoForm = ({
           <Button
             type="button"
             variant="secondary"
-            onClick={handleButtonClick}
+            onClick={() => handleButtonClick()}
           >
             {t('buttons.select_files')}
           </Button>
@@ -175,7 +175,7 @@ const VideoForm = ({
               <Button
                 type="button"
                 variant="secondary"
-                onClick={onCancel}
+                onClick={() => onCancel()}
                 disabled={loading}
               >
                 {cancelText || t('common:buttons.cancel')}

@@ -5,12 +5,19 @@ import { useTranslation } from 'react-i18next';
 import { Button, Card } from '../../../ui';
 import { LoadingSpinner, ErrorAlert, EmptyState } from '../../../common';
 import { useProjectReports } from '../../../../hooks/useProjectReports.js';
+import { useProjectDetails } from '../../../../hooks/useProjectDetails.js';
 import { useConfirmDialog } from '../../../../hooks/common';
 
-const ProjectDetailsTab = ({ project, onDeleteProject }) => {
+const ProjectDetailsTab = ({ projectId, onDeleteProject }) => {
   const navigate = useNavigate();
   const { t } = useTranslation(['common', 'projects']);
   const { confirmWithPrompt } = useConfirmDialog();
+  
+  const {
+    project,
+    loading: projectLoading,
+    error: projectError
+  } = useProjectDetails(projectId);
   
   const {
     reports,
@@ -19,16 +26,20 @@ const ProjectDetailsTab = ({ project, onDeleteProject }) => {
     generateReport,
     deleteReport,
     downloadReport
-  } = useProjectReports(project.id);
+  } = useProjectReports(projectId);
 
   const handleDeleteProject = () => {
     confirmWithPrompt(t('projects:messages.confirm_delete'), () => {
       if (onDeleteProject) {
-        onDeleteProject(project.id);
+        onDeleteProject(projectId);
       }
       navigate('/projects');
     });
   };
+  
+  if (projectLoading) return <LoadingSpinner />;
+  if (projectError) return <ErrorAlert error={projectError} />;
+  if (!project) return <EmptyState icon="fas fa-folder" message="Project not found" />;
 
 
   const formatDate = (dateString) => {
@@ -116,7 +127,9 @@ const ProjectDetailsTab = ({ project, onDeleteProject }) => {
               <Button
                 variant="warning"
                 icon="fas fa-edit"
-                onClick={() => navigate(`/projects/${project.id}/edit`)}
+                onClick={() => navigate(`/projects/${projectId}/edit`, { 
+                  state: { from: `/projects/${projectId}` } 
+                })}
               >
                 {t('common:buttons.edit')}
               </Button>
@@ -187,7 +200,7 @@ const ProjectDetailsTab = ({ project, onDeleteProject }) => {
             <Button
               variant="primary"
               icon="fas fa-plus"
-              onClick={generateReport}
+              onClick={() => generateReport()}
               className="w-100"
               disabled={reportsLoading}
             >
@@ -201,14 +214,7 @@ const ProjectDetailsTab = ({ project, onDeleteProject }) => {
 };
 
 ProjectDetailsTab.propTypes = {
-  project: PropTypes.shape({
-    id: PropTypes.number.isRequired,
-    name: PropTypes.string.isRequired,
-    description: PropTypes.string.isRequired,
-    finished: PropTypes.bool,
-    createdAt: PropTypes.string,
-    updatedAt: PropTypes.string
-  }).isRequired,
+  projectId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
   onDeleteProject: PropTypes.func
 };
 

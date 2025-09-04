@@ -11,7 +11,6 @@ export const useKeycloak = () => {
 
   useEffect(() => {
     const initKeycloak = async () => {
-      // Zapobiega wielokrotnej inicjalizacji
       if (isInitialized) {
         setIsAuthenticated(keycloak.authenticated || false);
         setUser(keycloak.tokenParsed || null);
@@ -19,7 +18,6 @@ export const useKeycloak = () => {
         return;
       }
 
-      // Jeśli inicjalizacja już trwa, poczekaj na nią
       if (initPromise) {
         await initPromise;
         setIsAuthenticated(keycloak.authenticated || false);
@@ -40,7 +38,6 @@ export const useKeycloak = () => {
         setIsAuthenticated(authenticated);
         setUser(authenticated ? keycloak.tokenParsed : null);
 
-        // Auto refresh token
         if (authenticated) {
           setInterval(() => {
             keycloak.updateToken(70).catch(() => {

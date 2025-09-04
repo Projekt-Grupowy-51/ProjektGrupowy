@@ -94,14 +94,14 @@ class SubjectVideoGroupAssignmentService {
 
   /**
    * Add labeler to assignment
-   * POST /api/SubjectVideoGroupAssignment/{id}/labelers/{labelerId}
+   * POST /api/SubjectVideoGroupAssignment/{id}/assign-labeler/{labelerId}
    * @param {number} id - Assignment ID
    * @param {string} labelerId - Labeler ID
    * @returns {Promise<void>}
    */
   async addLabeler(id, labelerId) {
     try {
-      await apiClient.post(`/SubjectVideoGroupAssignment/${id}/labelers/${labelerId}`);
+      await apiClient.post(`/SubjectVideoGroupAssignment/${id}/assign-labeler/${labelerId}`);
     } catch (error) {
       throw new Error(`Failed to add labeler ${labelerId} to assignment ${id}: ${error.message}`);
     }
@@ -109,14 +109,14 @@ class SubjectVideoGroupAssignmentService {
 
   /**
    * Remove labeler from assignment
-   * DELETE /api/SubjectVideoGroupAssignment/{id}/labelers/{labelerId}
+   * DELETE /api/SubjectVideoGroupAssignment/{id}/unassign-labeler/{labelerId}
    * @param {number} id - Assignment ID
    * @param {string} labelerId - Labeler ID
    * @returns {Promise<void>}
    */
   async removeLabeler(id, labelerId) {
     try {
-      await apiClient.delete(`/SubjectVideoGroupAssignment/${id}/labelers/${labelerId}`);
+      await apiClient.delete(`/SubjectVideoGroupAssignment/${id}/unassign-labeler/${labelerId}`);
     } catch (error) {
       throw new Error(`Failed to remove labeler ${labelerId} from assignment ${id}: ${error.message}`);
     }

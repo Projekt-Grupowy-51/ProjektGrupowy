@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 export const useNavigation = () => {
   const navigate = useNavigate();
 
-  const goTo = (path, replace = false) => {
-    if (path) navigate(path, { replace });
+  const goTo = (path, options = {}) => {
+    if (path) navigate(path, options);
   };
 
   const goBack = () => navigate(-1);

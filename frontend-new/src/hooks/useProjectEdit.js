@@ -1,10 +1,11 @@
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import { useCallback } from 'react';
 import { useDataFetching, useFormSubmission } from './common';
 import ProjectService from '../services/ProjectService.js';
 
 export const useProjectEdit = () => {
   const { id } = useParams();
+  const location = useLocation();
   const projectId = parseInt(id, 10);
 
   const fetchProject = useCallback(
@@ -22,14 +23,20 @@ export const useProjectEdit = () => {
     [projectId]
   );
 
-  const redirectPath = `/projects`;
+  // Check if user came from project details page
+  const redirectPath = location.state?.from || (projectId ? `/projects/${projectId}` : `/projects`);
 
   const {
     handleSubmit,
-    handleCancel,
+    handleCancel: defaultHandleCancel,
     loading: submitLoading,
     error: submitError
   } = useFormSubmission(submitOperation, redirectPath, redirectPath);
+
+  // Override cancel to use browser back
+  const handleCancel = useCallback(() => {
+    window.history.back();
+  }, []);
 
   return {
     id: projectId,

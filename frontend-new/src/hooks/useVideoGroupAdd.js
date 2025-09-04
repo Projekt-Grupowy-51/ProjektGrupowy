@@ -20,11 +20,16 @@ export const useVideoGroupAdd = () => {
   const successPath = `/projects/${projectId}`;
   const cancelPath = `/projects/${projectId}`;
 
-  const { handleSubmit, handleCancel, loading, error } = useFormSubmission(
+  const { handleSubmit, handleCancel: defaultHandleCancel, loading, error } = useFormSubmission(
     submitOperation,
     successPath,
     cancelPath
   );
+
+  // Override cancel to use browser back
+  const handleCancel = useCallback(() => {
+    window.history.back();
+  }, []);
 
   return {
     projectId,

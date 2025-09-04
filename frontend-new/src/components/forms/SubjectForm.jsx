@@ -75,7 +75,7 @@ const SubjectForm = ({
           type="button"
           variant="outline-secondary"
           icon="fas fa-times"
-          onClick={onCancel}
+          onClick={() => onCancel()}
           disabled={loading || isSubmitting}
         >
           {t('common:buttons.cancel')}
