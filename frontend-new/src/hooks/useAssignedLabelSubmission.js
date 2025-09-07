@@ -1,22 +1,36 @@
-import { useCallback } from 'react';
-import { useAsyncOperation } from './common';
+import { useState } from 'react';
 import AssignedLabelService from '../services/AssignedLabelService.js';
 
 export const useAssignedLabelSubmission = () => {
-  const { execute, loading, error } = useAsyncOperation();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const saveLabel = useCallback(async (labelData) => {
-    return await execute(() => AssignedLabelService.create({
+  const saveLabel = (labelData) => {
+    setLoading(true);
+    setError(null);
+    return AssignedLabelService.create({
       LabelId: labelData.labelId,
       VideoId: labelData.videoId,
       Start: labelData.startTime.toString(),
       End: labelData.endTime.toString()
-    }));
-  }, [execute]);
+    })
+      .catch(err => {
+        setError(err.message);
+        throw err;
+      })
+      .finally(() => setLoading(false));
+  };
 
-  const deleteLabel = useCallback(async (assignedLabelId) => {
-    return await execute(() => AssignedLabelService.delete(assignedLabelId));
-  }, [execute]);
+  const deleteLabel = (assignedLabelId) => {
+    setLoading(true);
+    setError(null);
+    return AssignedLabelService.delete(assignedLabelId)
+      .catch(err => {
+        setError(err.message);
+        throw err;
+      })
+      .finally(() => setLoading(false));
+  };
 
   return {
     saveLabel,

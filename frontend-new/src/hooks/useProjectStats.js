@@ -1,27 +1,30 @@
-import { useCallback } from 'react';
-import { useDataFetching } from './common';
+import { useState, useEffect } from 'react';
 import ProjectService from '../services/ProjectService.js';
 
-/**
- * Hook for fetching and managing project statistics
- * @param {number} projectId - Project ID
- * @returns {Object} Object containing stats, loading state, error and refetch function
- */
 export const useProjectStats = (projectId) => {
-  const fetchStats = useCallback(() => {
-    if (!projectId) return null;
-    return ProjectService.getStats(projectId);
-  }, [projectId]);
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const { data: stats, loading, error, refetch } = useDataFetching(
-    projectId ? fetchStats : null,
-    [projectId]
-  );
+  const fetchStats = () => {
+    if (!projectId) return Promise.resolve();
+    
+    setLoading(true);
+    setError(null);
+    return ProjectService.getStats(projectId)
+      .then(setStats)
+      .catch(err => setError(err.message))
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchStats();
+  }, [projectId]);
 
   return {
     stats,
     loading,
     error,
-    refetchStats: refetch
+    refetchStats: fetchStats
   };
 };

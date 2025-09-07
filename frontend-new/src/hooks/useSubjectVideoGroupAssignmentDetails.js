@@ -1,67 +1,80 @@
-import { useParams } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useMultipleDataFetching, useNavigation, useConfirmDialog } from './common';
+import { useConfirmDialog } from './common/useConfirmDialog.js';
 import SubjectVideoGroupAssignmentService from '../services/SubjectVideoGroupAssignmentService.js';
 import SubjectService from '../services/SubjectService.js';
 import VideoGroupService from '../services/VideoGroupService.js';
-import { useCallback } from 'react';
 
 export const useSubjectVideoGroupAssignmentDetails = () => {
   const { t } = useTranslation(['assignments', 'common']);
   const { id } = useParams();
-  const { goTo } = useNavigation();
+  const navigate = useNavigate();
   const { confirmWithPrompt } = useConfirmDialog();
 
-  let cachedAssignment = null;
+  const [assignmentDetails, setAssignmentDetails] = useState(null);
+  const [subject, setSubject] = useState(null);
+  const [videoGroup, setVideoGroup] = useState(null);
+  const [labelers, setLabelers] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const operations = {
-    assignment: async () => {
-      cachedAssignment = await SubjectVideoGroupAssignmentService.getById(id);
-      return cachedAssignment;
-    },
-    subject: async () => {
-      if (!cachedAssignment) cachedAssignment = await SubjectVideoGroupAssignmentService.getById(id);
-      return await SubjectService.getById(cachedAssignment.subjectId);
-    },
-    videoGroup: async () => {
-      if (!cachedAssignment) cachedAssignment = await SubjectVideoGroupAssignmentService.getById(id);
-      return await VideoGroupService.getById(cachedAssignment.videoGroupId);
-    },
-    labelers: async () => {
-      return await SubjectVideoGroupAssignmentService.getLabelers(id);
+  const fetchAllData = async () => {
+    setLoading(true);
+    setError('');
+    
+    try {
+      const assignment = await SubjectVideoGroupAssignmentService.getById(id);
+      setAssignmentDetails(assignment);
+      
+      const [subjectData, videoGroupData, labelersData] = await Promise.all([
+        SubjectService.getById(assignment.subjectId),
+        VideoGroupService.getById(assignment.videoGroupId),
+        SubjectVideoGroupAssignmentService.getLabelers(id)
+      ]);
+      
+      setSubject(subjectData);
+      setVideoGroup(videoGroupData);
+      setLabelers(labelersData);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const { data, loading, error, refetchAll } = useMultipleDataFetching(operations);
+  useEffect(() => {
+    fetchAllData();
+  }, [id]);
 
-  const handleDelete = useCallback(async () => {
+  const handleDelete = async () => {
     await confirmWithPrompt(t('assignments:confirm.delete'), async () => {
       await SubjectVideoGroupAssignmentService.delete(id);
-      if (data.assignment?.projectId) {
-        goTo(`/projects/${data.assignment.projectId}`);
+      if (assignmentDetails?.projectId) {
+        navigate(`/projects/${assignmentDetails.projectId}`);
       }
     });
-  }, [confirmWithPrompt, data.assignment, goTo, id, t]);
+  };
 
-  const handleRefresh = useCallback(() => {
-    refetchAll();
-  }, [refetchAll]);
+  const handleRefresh = () => {
+    fetchAllData();
+  };
 
-  const handleBack = useCallback(() => {
-    if (data.assignment?.projectId) {
-      goTo(`/projects/${data.assignment.projectId}`);
+  const handleBack = () => {
+    if (assignmentDetails?.projectId) {
+      navigate(`/projects/${assignmentDetails.projectId}`);
     } else {
-      goTo(-1);
+      navigate(-1);
     }
-  }, [data.assignment, goTo]);
+  };
 
   return {
-    assignmentDetails: data.assignment || null,
-    subject: data.subject || null,
-    videoGroup: data.videoGroup || null,
-    labelers: data.labelers || [],
-    loading: loading.assignment || loading.subject || loading.videoGroup || loading.labelers,
-    error: error.assignment || error.subject || error.videoGroup || error.labelers || '',
+    assignmentDetails,
+    subject,
+    videoGroup,
+    labelers,
+    loading,
+    error,
     handleDelete,
     handleRefresh,
     handleBack

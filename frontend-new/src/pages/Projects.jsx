@@ -4,11 +4,11 @@ import { Container, Card, Button } from '../components/ui';
 import { LoadingSpinner, ErrorAlert } from '../components/common';
 import ProjectList from '../components/features/projects/ProjectList.jsx';
 import { useProjects } from '../hooks/useProjects.js';
-import { useNavigation } from '../hooks/common';
+import { useNavigate } from 'react-router-dom';
 
 const ProjectsPage = () => {
   const { t } = useTranslation(['projects', 'common']);
-  const { goTo } = useNavigation();
+  const navigate = useNavigate();
   
   const {
     projects,
@@ -40,7 +40,7 @@ const ProjectsPage = () => {
         <Button
           variant="primary"
           icon="fas fa-plus-circle"
-          onClick={() => goTo('/projects/add')}
+          onClick={() => navigate('/projects/add')}
         >
           {t('common:buttons.add')}
         </Button>

@@ -1,6 +1,5 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
-import { useDataFetching, useAsyncOperation } from './common';
 import ProjectService from '../services/ProjectService.js';
 import SubjectVideoGroupAssignmentService from '../services/SubjectVideoGroupAssignmentService.js';
 
@@ -11,63 +10,84 @@ export const useProjectLabelers = (passedProjectId) => {
   const [selectedLabeler, setSelectedLabeler] = useState('');
   const [selectedAssignment, setSelectedAssignment] = useState('');
   const [selectedCustomAssignments, setSelectedCustomAssignments] = useState({});
+  
+  const [data, setData] = useState({ labelers: [], allLabelers: [], unassignedLabelers: [], assignments: [] });
+  const [loading, setLoading] = useState(false);
+  const [assignLoading, setAssignLoading] = useState(false);
+  const [unassignLoading, setUnassignLoading] = useState(false);
+  const [distributeLoading, setDistributeLoading] = useState(false);
+  const [unassignAllLoading, setUnassignAllLoading] = useState(false);
+  const [assignAllSelectedLoading, setAssignAllSelectedLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const fetchLabelerData = useCallback(async () => {
-    if (!projectId) return { labelers: [], allLabelers: [], unassignedLabelers: [], assignments: [] };
-
-    const [allLabelers, unassignedLabelers, assignments] = await Promise.all([
+  const fetchLabelerData = () => {
+    if (!projectId) return Promise.resolve();
+    
+    setLoading(true);
+    setError(null);
+    
+    return Promise.all([
       ProjectService.getUsers(projectId),
       ProjectService.getUnassignedLabelers(projectId),
       ProjectService.getAssignments(projectId)
-    ]);
+    ])
+      .then(([allLabelers, unassignedLabelers, assignments]) => {
+        setData({
+          labelers: allLabelers,
+          allLabelers: allLabelers,
+          unassignedLabelers,
+          assignments
+        });
+      })
+      .catch(err => setError(err.message))
+      .finally(() => setLoading(false));
+  };
 
-    return {
-      labelers: allLabelers,
-      allLabelers: allLabelers,
-      unassignedLabelers,
-      assignments
-    };
-  }, [projectId]);
+  const assignLabeler = (labelerId, assignmentId) => {
+    if (!labelerId || !assignmentId) return Promise.resolve();
+    
+    setAssignLoading(true);
+    setError(null);
+    return SubjectVideoGroupAssignmentService.addLabeler(assignmentId, labelerId)
+      .then(() => {
+        setSelectedLabeler('');
+        setSelectedAssignment('');
+        return fetchLabelerData();
+      })
+      .catch(err => setError(err.message))
+      .finally(() => setAssignLoading(false));
+  };
 
-  const { data, loading, error, refetch } = useDataFetching(
-    projectId ? fetchLabelerData : null,
-    [projectId]
-  );
+  const unassignLabeler = (assignmentId, labelerId) => {
+    if (!assignmentId || !labelerId) return Promise.resolve();
+    
+    setUnassignLoading(true);
+    setError(null);
+    return SubjectVideoGroupAssignmentService.removeLabeler(assignmentId, labelerId)
+      .then(() => fetchLabelerData())
+      .catch(err => setError(err.message))
+      .finally(() => setUnassignLoading(false));
+  };
 
-  const { execute: assignLabelerOp, loading: assignLoading } = useAsyncOperation();
-  const { execute: unassignLabelerOp, loading: unassignLoading } = useAsyncOperation();
-  const { execute: distributeLabelerOp, loading: distributeLoading } = useAsyncOperation();
-  const { execute: unassignAllOp, loading: unassignAllLoading } = useAsyncOperation();
-  const { execute: assignAllSelectedOp, loading: assignAllSelectedLoading } = useAsyncOperation();
+  const distributeLabelers = () => {
+    setDistributeLoading(true);
+    setError(null);
+    return ProjectService.distributeLabelers(projectId)
+      .then(() => fetchLabelerData())
+      .catch(err => setError(err.message))
+      .finally(() => setDistributeLoading(false));
+  };
 
-  const assignLabeler = useCallback(async (labelerId, assignmentId) => {
-    if (!labelerId || !assignmentId) return;
-    try {
-      await assignLabelerOp(() => SubjectVideoGroupAssignmentService.addLabeler(assignmentId, labelerId));
-      setSelectedLabeler('');
-      setSelectedAssignment('');
-    } finally {
-      refetch();
-    }
-  }, [assignLabelerOp, refetch]);
+  const unassignAllLabelers = () => {
+    setUnassignAllLoading(true);
+    setError(null);
+    return ProjectService.unassignAllLabelers(projectId)
+      .then(() => fetchLabelerData())
+      .catch(err => setError(err.message))
+      .finally(() => setUnassignAllLoading(false));
+  };
 
-  const unassignLabeler = useCallback(async (assignmentId, labelerId) => {
-    if (!assignmentId || !labelerId) return;
-    await unassignLabelerOp(() => SubjectVideoGroupAssignmentService.removeLabeler(assignmentId, labelerId));
-    refetch();
-  }, [unassignLabelerOp, refetch]);
-
-  const distributeLabelers = useCallback(async () => {
-    await distributeLabelerOp(() => ProjectService.distributeLabelers(projectId));
-    refetch();
-  }, [distributeLabelerOp, projectId, refetch]);
-
-  const unassignAllLabelers = useCallback(async () => {
-    await unassignAllOp(() => ProjectService.unassignAllLabelers(projectId));
-    refetch();
-  }, [unassignAllOp, projectId, refetch]);
-
-  const handleCustomLabelerAssignmentChange = useCallback((labelerId, assignmentId) => {
+  const handleCustomLabelerAssignmentChange = (labelerId, assignmentId) => {
     setSelectedCustomAssignments(prev => {
       const updated = { ...prev };
       
@@ -79,26 +99,35 @@ export const useProjectLabelers = (passedProjectId) => {
       
       return updated;
     });
-  }, []);
+  };
 
-  const assignAllSelected = useCallback(async () => {
+  const assignAllSelected = () => {
     const entries = Object.entries(selectedCustomAssignments);
     
     if (entries.length === 0) {
-      throw new Error('No labelers have been assigned to any assignment.');
+      setError('No labelers have been assigned to any assignment.');
+      return Promise.reject(new Error('No labelers have been assigned to any assignment.'));
     }
 
-    await assignAllSelectedOp(async () => {
-      await Promise.all(
-        entries.map(([labelerId, assignmentId]) => 
-          SubjectVideoGroupAssignmentService.addLabeler(assignmentId, labelerId)
-        )
-      );
-    });
+    setAssignAllSelectedLoading(true);
+    setError(null);
     
-    setSelectedCustomAssignments({});
-    refetch();
-  }, [selectedCustomAssignments, assignAllSelectedOp, refetch]);
+    return Promise.all(
+      entries.map(([labelerId, assignmentId]) => 
+        SubjectVideoGroupAssignmentService.addLabeler(assignmentId, labelerId)
+      )
+    )
+      .then(() => {
+        setSelectedCustomAssignments({});
+        return fetchLabelerData();
+      })
+      .catch(err => setError(err.message))
+      .finally(() => setAssignAllSelectedLoading(false));
+  };
+
+  useEffect(() => {
+    fetchLabelerData();
+  }, [projectId]);
 
   const labelers = data?.labelers || [];
   const allLabelers = data?.allLabelers || [];
@@ -148,6 +177,6 @@ export const useProjectLabelers = (passedProjectId) => {
     unassignAllLoading,
     assignAllSelectedLoading,
     error,
-    refetch
+    refetch: fetchLabelerData
   };
 };

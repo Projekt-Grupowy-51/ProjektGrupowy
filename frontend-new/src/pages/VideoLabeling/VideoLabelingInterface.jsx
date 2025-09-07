@@ -1,9 +1,8 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Container, Card, Alert } from '../../components/ui';
 import { LoadingSpinner } from '../../components/common';
-import { useDataFetching } from '../../hooks/common';
 import { useVideoControls } from './hooks/useVideoControls.js';
 import { useAssignedLabelsState } from './hooks/useAssignedLabelsState.js';
 import { useBatchManagement } from './hooks/useBatchManagement.js';
@@ -20,24 +19,36 @@ const VideoLabelingInterface = () => {
   const { assignmentId } = useParams();
   const { t } = useTranslation(['videos', 'common']);
   
-  // Fetch assignment and labels directly
-  const fetchAssignment = useCallback(() => {
-    return assignmentId ? SubjectVideoGroupAssignmentService.getById(parseInt(assignmentId)) : Promise.resolve(null);
+  const [assignment, setAssignment] = useState(null);
+  const [labels, setLabels] = useState([]);
+  const [assignmentLoading, setAssignmentLoading] = useState(false);
+  const [labelsLoading, setLabelsLoading] = useState(false);
+  const [assignmentError, setAssignmentError] = useState(null);
+  const [labelsError, setLabelsError] = useState(null);
+
+  useEffect(() => {
+    if (!assignmentId) return;
+    
+    setAssignmentLoading(true);
+    setAssignmentError(null);
+    
+    SubjectVideoGroupAssignmentService.getById(parseInt(assignmentId))
+      .then(setAssignment)
+      .catch(err => setAssignmentError(err.message))
+      .finally(() => setAssignmentLoading(false));
   }, [assignmentId]);
 
-  const { data: assignment, loading: assignmentLoading, error: assignmentError } = useDataFetching(
-    fetchAssignment,
-    [assignmentId]
-  );
-
-  const fetchLabels = useCallback(() => {
-    return assignment?.subjectId ? SubjectService.getLabels(assignment.subjectId) : Promise.resolve([]);
+  useEffect(() => {
+    if (!assignment?.subjectId) return;
+    
+    setLabelsLoading(true);
+    setLabelsError(null);
+    
+    SubjectService.getLabels(assignment.subjectId)
+      .then(setLabels)
+      .catch(err => setLabelsError(err.message))
+      .finally(() => setLabelsLoading(false));
   }, [assignment?.subjectId]);
-
-  const { data: labels, loading: labelsLoading, error: labelsError } = useDataFetching(
-    fetchLabels,
-    [assignment?.subjectId]
-  );
 
   // Use all hooks independently
   const videoControls = useVideoControls();

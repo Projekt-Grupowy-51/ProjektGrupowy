@@ -1,26 +1,50 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useParams, useLocation } from 'react-router-dom';
-import { useDataFetching, useAsyncOperation, useNavigation } from './common';
+import { useState, useEffect, useMemo } from 'react';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import ProjectService from '../services/ProjectService.js';
 import { useProjectStats } from './useProjectStats.js';
 
 export const useProjectDetails = (passedProjectId) => {
   const { id } = useParams();
   const location = useLocation();
+  const navigate = useNavigate();
   const projectId = passedProjectId ? parseInt(passedProjectId, 10) : parseInt(id, 10);
-  const { goTo } = useNavigation();
+  
+  const [project, setProject] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('details');
-
-  const fetchProject = useCallback(
-    () => ProjectService.getById(projectId),
-    [projectId]
-  );
-  const { data: project, loading, error } = useDataFetching(fetchProject, [projectId]);
+  
   const { stats, refetchStats } = useProjectStats(projectId);
 
+  const fetchProject = () => {
+    setLoading(true);
+    setError(null);
+    return ProjectService.getById(projectId)
+      .then(setProject)
+      .catch(err => setError(err.message))
+      .finally(() => setLoading(false));
+  };
+
+  const handleDeleteProject = () => {
+    setDeleting(true);
+    setError(null);
+    return ProjectService.delete(projectId)
+      .then(() => navigate('/projects'))
+      .catch(err => setError(err.message))
+      .finally(() => setDeleting(false));
+  };
+
+  const handleTabChange = (tabId) => {
+    setActiveTab(tabId);
+    localStorage.setItem(`projectDetails_${projectId}_activeTab`, tabId);
+  };
+
   useEffect(() => {
-    // If user came from projects list, always start with 'details' tab
-    // Otherwise, restore the last active tab from localStorage
+    fetchProject();
+  }, [projectId]);
+
+  useEffect(() => {
     const cameFromProjectsList = location.state?.from === '/projects';
     
     if (cameFromProjectsList) {
@@ -30,27 +54,6 @@ export const useProjectDetails = (passedProjectId) => {
       if (savedTab) setActiveTab(savedTab);
     }
   }, [projectId, location.state]);
-
-  const handleTabChange = useCallback(
-    (tabId) => {
-      setActiveTab(tabId);
-      localStorage.setItem(`projectDetails_${projectId}_activeTab`, tabId);
-    },
-    [projectId]
-  );
-
-  const { execute: deleteProject, loading: deleting, error: deleteError } = useAsyncOperation();
-
-  const handleDeleteProject = useCallback(async () => {
-    try {
-      await deleteProject(() => ProjectService.delete(projectId));
-      goTo('/projects');
-    } catch (err) {
-      console.error('Failed to delete project:', err);
-    }
-  }, [deleteProject, goTo, projectId]);
-
-  const handleBackToList = useCallback(() => goTo('/projects'), [goTo]);
 
   const tabs = useMemo(() => project ? [
     { id: 'details', label: 'Details', icon: 'fas fa-info-circle', data: { projectId, onDeleteProject: handleDeleteProject } },
@@ -65,12 +68,12 @@ export const useProjectDetails = (passedProjectId) => {
     id: projectId,
     project,
     loading,
-    error: error || deleteError,
+    error,
     deleting,
     activeTab,
     tabs,
     handleTabChange,
-    handleBackToList,
+    handleBackToList: () => navigate('/projects'),
     handleDeleteProject,
     refetchStats
   };

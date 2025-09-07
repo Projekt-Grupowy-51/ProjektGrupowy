@@ -1,41 +1,69 @@
-import { useCallback } from 'react';
-import { useMultipleDataFetching, useNavigation } from './common';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import VideoGroupService from '../services/VideoGroupService.js';
 import VideoService from '../services/VideoService.js';
 
 export const useVideoGroupDetails = (videoGroupId) => {
-  const { goTo } = useNavigation();
+  const navigate = useNavigate();
 
-  const fetchOperations = {
-    videoGroup: useCallback(() => VideoGroupService.getById(parseInt(videoGroupId)), [videoGroupId]),
-    videos: useCallback(() => VideoGroupService.getVideos(parseInt(videoGroupId)), [videoGroupId])
+  const [videoGroup, setVideoGroup] = useState(null);
+  const [videos, setVideos] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const fetchData = () => {
+    if (!videoGroupId) return Promise.resolve();
+    
+    const id = parseInt(videoGroupId);
+    setLoading(true);
+    setError(null);
+    
+    return Promise.all([
+      VideoGroupService.getById(id),
+      VideoGroupService.getVideos(id)
+    ])
+      .then(([videoGroupData, videosData]) => {
+        setVideoGroup(videoGroupData);
+        setVideos(videosData || []);
+      })
+      .catch(err => setError(err.message))
+      .finally(() => setLoading(false));
   };
 
-  const { data, loading, error, fetchData } = useMultipleDataFetching(videoGroupId ? fetchOperations : {});
+  const fetchVideos = () => {
+    if (!videoGroupId) return Promise.resolve();
+    
+    return VideoGroupService.getVideos(parseInt(videoGroupId))
+      .then(setVideos)
+      .catch(err => setError(err.message));
+  };
 
-  const deleteVideo = useCallback(
-    async (videoId) => {
-      await VideoService.delete(videoId);
-      await fetchData('videos', fetchOperations.videos);
-    },
-    [fetchData, fetchOperations.videos]
-  );
+  useEffect(() => {
+    fetchData();
+  }, [videoGroupId]);
 
-  const handleBack = useCallback(() => {
-    const videoGroup = data.videoGroup;
-    if (videoGroup?.projectId) goTo(`/projects/${videoGroup.projectId}`);
-    else goTo('/videogroups');
-  }, [data.videoGroup, goTo]);
+  const deleteVideo = async (videoId) => {
+    await VideoService.delete(videoId);
+    await fetchVideos();
+  };
 
-  const handleAddVideo = useCallback(() => {
-    goTo(`/videos/add?videoGroupId=${videoGroupId}`);
-  }, [goTo, videoGroupId]);
+  const handleBack = () => {
+    if (videoGroup?.projectId) {
+      navigate(`/projects/${videoGroup.projectId}`);
+    } else {
+      navigate('/videogroups');
+    }
+  };
+
+  const handleAddVideo = () => {
+    navigate(`/videos/add?videoGroupId=${videoGroupId}`);
+  };
 
   return {
-    videoGroup: data.videoGroup,
-    videos: data.videos || [],
-    loading: loading.videoGroup || loading.videos,
-    error: error.videoGroup || error.videos,
+    videoGroup,
+    videos,
+    loading,
+    error,
     deleteVideo,
     handleBack,
     handleAddVideo

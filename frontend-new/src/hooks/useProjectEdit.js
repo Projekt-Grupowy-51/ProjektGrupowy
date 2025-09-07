@@ -1,49 +1,49 @@
-import { useParams, useLocation } from 'react-router-dom';
-import { useCallback } from 'react';
-import { useDataFetching, useFormSubmission } from './common';
+import { useState, useEffect } from 'react';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import ProjectService from '../services/ProjectService.js';
 
 export const useProjectEdit = () => {
   const { id } = useParams();
   const location = useLocation();
+  const navigate = useNavigate();
   const projectId = parseInt(id, 10);
 
-  const fetchProject = useCallback(
-    () => ProjectService.getById(projectId),
-    [projectId]
-  );
+  const [project, setProject] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [submitLoading, setSubmitLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const { data: project, loading: projectLoading, error: projectError } =
-    useDataFetching(fetchProject, [projectId]);
+  const fetchProject = () => {
+    setLoading(true);
+    setError(null);
+    return ProjectService.getById(projectId)
+      .then(setProject)
+      .catch(err => setError(err.message))
+      .finally(() => setLoading(false));
+  };
 
-  const submitOperation = useCallback(
-    async (formData) => {
-      return await ProjectService.update(projectId, formData);
-    },
-    [projectId]
-  );
+  const handleSubmit = (formData) => {
+    setSubmitLoading(true);
+    setError(null);
+    const redirectPath = location.state?.from || `/projects/${projectId}`;
+    return ProjectService.update(projectId, formData)
+      .then(() => navigate(redirectPath))
+      .catch(err => setError(err.message))
+      .finally(() => setSubmitLoading(false));
+  };
 
-  // Check if user came from project details page
-  const redirectPath = location.state?.from || (projectId ? `/projects/${projectId}` : `/projects`);
+  const handleCancel = () => window.history.back();
 
-  const {
-    handleSubmit,
-    handleCancel: defaultHandleCancel,
-    loading: submitLoading,
-    error: submitError
-  } = useFormSubmission(submitOperation, redirectPath, redirectPath);
-
-  // Override cancel to use browser back
-  const handleCancel = useCallback(() => {
-    window.history.back();
-  }, []);
+  useEffect(() => {
+    fetchProject();
+  }, [projectId]);
 
   return {
     id: projectId,
     project,
-    loading: projectLoading,
+    loading,
     submitLoading,
-    error: projectError || submitError,
+    error,
     handleSubmit,
     handleCancel
   };

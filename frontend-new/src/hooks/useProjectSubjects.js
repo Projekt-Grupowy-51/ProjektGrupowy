@@ -1,22 +1,30 @@
-import { useCallback } from 'react';
-import { useDataFetching } from './common';
+import { useState, useEffect } from 'react';
 import ProjectService from '../services/ProjectService.js';
 
 export const useProjectSubjects = (projectId) => {
-  const fetchSubjects = useCallback(async () => {
-    if (!projectId) return [];
-    return await ProjectService.getSubjects(projectId);
+  const [subjects, setSubjects] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const fetchSubjects = () => {
+    if (!projectId) return Promise.resolve();
+    
+    setLoading(true);
+    setError(null);
+    return ProjectService.getSubjects(projectId)
+      .then(setSubjects)
+      .catch(err => setError(err.message))
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchSubjects();
   }, [projectId]);
 
-  const { data: subjects, loading, error, refetch } = useDataFetching(
-    projectId ? fetchSubjects : null,
-    [projectId]
-  );
-
   return {
-    subjects: subjects || [],
+    subjects,
     loading,
     error,
-    refetch
+    refetch: fetchSubjects
   };
 };

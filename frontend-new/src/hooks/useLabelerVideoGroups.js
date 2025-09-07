@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useMultipleDataFetching, useNavigation, useAsyncOperation } from './common';
+import { useNavigate } from 'react-router-dom';
 import ProjectService from '../services/ProjectService.js';
 import AccessCodeService from '../services/AccessCodeService.js';
 import SubjectVideoGroupAssignmentService from '../services/SubjectVideoGroupAssignmentService.js';
@@ -9,67 +9,77 @@ export const useLabelerVideoGroups = () => {
   const [accessCode, setAccessCode] = useState('');
   const [expandedProjects, setExpandedProjects] = useState({});
   const [success, setSuccess] = useState('');
+  
+  const [projects, setProjects] = useState([]);
+  const [assignments, setAssignments] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [joiningProject, setJoiningProject] = useState(false);
+  const [error, setError] = useState(null);
 
-  const { goTo } = useNavigation();
+  const navigate = useNavigate();
   const { t } = useTranslation(['labeler', 'common']);
 
-  const operations = {
-    projects: useCallback(() => ProjectService.getAll(), []),
-    assignments: useCallback(() => SubjectVideoGroupAssignmentService.getAll(), [])
+  const fetchData = () => {
+    setLoading(true);
+    setError(null);
+    
+    return Promise.all([
+      ProjectService.getAll(),
+      SubjectVideoGroupAssignmentService.getAll()
+    ])
+      .then(([projectsData, assignmentsData]) => {
+        setProjects(projectsData || []);
+        setAssignments(assignmentsData || []);
+      })
+      .catch(err => setError(err.message))
+      .finally(() => setLoading(false));
   };
 
-  const { data, loading, error, refetchAll } = useMultipleDataFetching(operations);
-
-  const { execute: joinProject, loading: joiningProject, error: joinError } = useAsyncOperation();
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   useEffect(() => {
-    if (!data.projects) return;
-    setExpandedProjects(Object.fromEntries(data.projects.map(p => [p.id, false])));
-  }, [data.projects]);
+    if (!projects.length) return;
+    setExpandedProjects(Object.fromEntries(projects.map(p => [p.id, false])));
+  }, [projects]);
 
-  const handleJoinProject = useCallback(async () => {
+  const handleJoinProject = async () => {
     const code = accessCode.trim();
     if (!code) return;
 
+    setJoiningProject(true);
+    setError(null);
     try {
-      await joinProject(() => AccessCodeService.joinProject({ code }));
-      
+      await AccessCodeService.joinProject({ code });
       setSuccess(t('labeler:join_project.success'));
       setAccessCode('');
-      await refetchAll();
+      await fetchData();
     } catch (err) {
-      console.error('Failed to join project:', err);
+      setError(t('labeler:join_project.invalid_code'));
+    } finally {
+      setJoiningProject(false);
     }
-  }, [accessCode, joinProject, refetchAll, t]);
+  };
 
-  const toggleProjectExpand = useCallback((projectId) => {
+  const toggleProjectExpand = (projectId) => {
     setExpandedProjects(prev => ({ ...prev, [projectId]: !prev[projectId] }));
-  }, []);
+  };
 
-  const getProjectAssignments = useCallback(
-    (projectId) => (data.assignments || []).filter(a => a.projectId === projectId),
-    [data.assignments]
-  );
+  const getProjectAssignments = (projectId) => 
+    assignments.filter(a => a.projectId === projectId);
 
-  const handleAssignmentClick = useCallback(
-    (assignment) => goTo(`/video-labeling/${assignment.id}`),
-    [goTo]
-  );
-
-  const isLoading = loading.projects || loading.assignments || joiningProject;
-
-  const errorMessage = joinError
-    ? t('labeler:join_project.invalid_code')
-    : error.projects || error.assignments;
+  const handleAssignmentClick = (assignment) => 
+    navigate(`/video-labeling/${assignment.id}`);
 
   return {
-    projects: data.projects || [],
-    assignments: data.assignments || [],
-    loading: isLoading,
+    projects,
+    assignments,
+    loading: loading || joiningProject,
     accessCode,
     setAccessCode,
     expandedProjects,
-    error: errorMessage,
+    error,
     success,
     handleJoinProject,
     toggleProjectExpand,

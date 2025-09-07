@@ -1,56 +1,64 @@
-import { useParams } from 'react-router-dom';
-import { useMultipleDataFetching, useAsyncOperation, useFormSubmission } from './common';
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import SubjectVideoGroupAssignmentService from '../services/SubjectVideoGroupAssignmentService.js';
 import ProjectService from '../services/ProjectService.js';
-import { useCallback } from 'react';
 
 export const useSubjectVideoGroupAssignmentAdd = () => {
   const { projectId: projectIdParam } = useParams();
+  const navigate = useNavigate();
   const projectId = projectIdParam ? parseInt(projectIdParam, 10) : null;
 
-  const fetchSubjects = useCallback(
-    () => (projectId ? ProjectService.getSubjects(projectId) : Promise.resolve([])),
-    [projectId]
-  );
+  const [subjects, setSubjects] = useState([]);
+  const [videoGroups, setVideoGroups] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [submitLoading, setSubmitLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const fetchVideoGroups = useCallback(
-    () => (projectId ? ProjectService.getVideoGroups(projectId) : Promise.resolve([])),
-    [projectId]
-  );
-
-  const operations = {
-    subjects: fetchSubjects,
-    videoGroups: fetchVideoGroups
+  const fetchData = () => {
+    if (!projectId) return Promise.resolve();
+    
+    setLoading(true);
+    setError(null);
+    
+    return Promise.all([
+      ProjectService.getSubjects(projectId),
+      ProjectService.getVideoGroups(projectId)
+    ])
+      .then(([subjectsData, videoGroupsData]) => {
+        setSubjects(subjectsData || []);
+        setVideoGroups(videoGroupsData || []);
+      })
+      .catch(err => setError(err.message))
+      .finally(() => setLoading(false));
   };
 
-  const { data, loading, error } = useMultipleDataFetching(operations);
+  const handleSubmit = (assignmentData) => {
+    if (!projectId) {
+      setError('Project ID not found');
+      return Promise.reject(new Error('Project ID not found'));
+    }
 
-  const { execute: createAssignment, loading: submitLoading, error: submitError } = useAsyncOperation();
+    setSubmitLoading(true);
+    setError(null);
+    return SubjectVideoGroupAssignmentService.create(assignmentData)
+      .then(() => navigate(`/projects/${projectId}`))
+      .catch(err => setError(err.message))
+      .finally(() => setSubmitLoading(false));
+  };
 
-  const submitOperation = useCallback(
-    async (assignmentData) => {
-      if (!projectId) throw new Error('Project ID not found');
+  const handleCancel = () => navigate(`/projects/${projectId}`);
 
-      return await createAssignment(() =>
-        SubjectVideoGroupAssignmentService.create({ ...assignmentData })
-      );
-    },
-    [projectId, createAssignment]
-  );
-
-  const successPath = `/projects/${projectId}`;
-  const cancelPath = `/projects/${projectId}`;
-
-  const { handleSubmit, handleCancel } = useFormSubmission(submitOperation, successPath, cancelPath);
+  useEffect(() => {
+    fetchData();
+  }, [projectId]);
 
   return {
     projectId,
-    subjects: data.subjects || [],
-    videoGroups: data.videoGroups || [],
-    loading: loading.subjects || loading.videoGroups,
-    error: error.subjects || error.videoGroups,
+    subjects,
+    videoGroups,
+    loading,
+    error,
     submitLoading,
-    submitError,
     handleSubmit,
     handleCancel
   };

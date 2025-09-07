@@ -1,46 +1,55 @@
-import { useParams, useLocation } from 'react-router-dom';
-import { useCallback } from 'react';
-import { useDataFetching, useFormSubmission } from './common';
+import { useState, useEffect } from 'react';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import VideoGroupService from '../services/VideoGroupService.js';
 
 export const useVideoGroupEdit = () => {
   const { id } = useParams();
   const location = useLocation();
+  const navigate = useNavigate();
   const videoGroupId = parseInt(id, 10);
 
-  const fetchVideoGroup = useCallback(
-    () => VideoGroupService.getById(videoGroupId),
-    [videoGroupId]
-  );
+  const [videoGroup, setVideoGroup] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [submitLoading, setSubmitLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const { data: videoGroup, loading: videoGroupLoading, error: videoGroupError } =
-    useDataFetching(fetchVideoGroup, [videoGroupId]);
+  const fetchVideoGroup = () => {
+    setLoading(true);
+    setError(null);
+    return VideoGroupService.getById(videoGroupId)
+      .then(setVideoGroup)
+      .catch(err => setError(err.message))
+      .finally(() => setLoading(false));
+  };
 
-  const submitOperation = useCallback(async (formData) => {
-    if (!videoGroup) throw new Error('VideoGroup not loaded');
-    return await VideoGroupService.update(videoGroupId, formData);
-  }, [videoGroup, videoGroupId]);
+  const handleSubmit = (formData) => {
+    if (!videoGroup) {
+      setError('VideoGroup not loaded');
+      return Promise.reject(new Error('VideoGroup not loaded'));
+    }
+    
+    setSubmitLoading(true);
+    setError(null);
+    const redirectPath = location.state?.from || `/videogroups/${videoGroupId}`;
+    
+    return VideoGroupService.update(videoGroupId, formData)
+      .then(() => navigate(redirectPath))
+      .catch(err => setError(err.message))
+      .finally(() => setSubmitLoading(false));
+  };
 
-  const redirectPath = location.state?.from || `/videogroups/${videoGroupId}`;
+  const handleCancel = () => window.history.back();
 
-  const {
-    handleSubmit,
-    handleCancel: defaultHandleCancel,
-    loading: submitLoading,
-    error: submitError
-  } = useFormSubmission(submitOperation, redirectPath, redirectPath);
-
-  // Override cancel to use browser back
-  const handleCancel = useCallback(() => {
-    window.history.back();
-  }, []);
+  useEffect(() => {
+    fetchVideoGroup();
+  }, [videoGroupId]);
 
   return {
     id: videoGroupId,
     videoGroup,
-    loading: videoGroupLoading,
+    loading,
     submitLoading,
-    error: videoGroupError || submitError,
+    error,
     handleSubmit,
     handleCancel
   };

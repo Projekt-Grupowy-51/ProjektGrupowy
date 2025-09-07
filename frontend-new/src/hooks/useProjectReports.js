@@ -1,61 +1,68 @@
-import { useCallback } from 'react';
-import { useDataFetching, useAsyncOperation, useConfirmDialog } from './common';
+import { useState, useEffect } from 'react';
+import { useConfirmDialog } from './common/useConfirmDialog.js';
 import ProjectReportService from '../services/ProjectReportService.js';
 import ProjectService from '../services/ProjectService.js';
 
 export const useProjectReports = (projectId) => {
   const { confirmWithPrompt } = useConfirmDialog();
+  
+  const [reports, setReports] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState(null);
 
-  const fetchReports = useCallback(async () => {
-    if (!projectId) return [];
-    const reports = await ProjectService.getReports(projectId);
-    return reports || [];
+  const fetchReports = () => {
+    if (!projectId) return Promise.resolve();
+    
+    setLoading(true);
+    setError(null);
+    return ProjectService.getReports(projectId)
+      .then(data => setReports(data || []))
+      .catch(err => setError(err.message))
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchReports();
   }, [projectId]);
 
-  const { data: reports = [], loading, error, refetch } = useDataFetching(
-    fetchReports,
-    [projectId]
-  );
-
-  const { execute: createReportOp, loading: creating, error: createError } = useAsyncOperation();
-  const { execute: deleteReportOp, loading: deleting, error: deleteError } = useAsyncOperation();
-
-  const generateReport = useCallback(
-    async (title, description) => {
-      try {
-        const newReport = await createReportOp(() =>
-          ProjectReportService.create({
-            title: title || `Project Report ${new Date().toLocaleDateString()}`,
-            description: description || 'Generated project progress report',
-            projectId
-          })
-        );
-        await refetch();
-        return newReport;
-      } catch (err) {
-        console.error('Failed to generate report:', err);
-        throw err;
-      }
-    },
-    [projectId, createReportOp, refetch]
-  );
-
-  const deleteReport = useCallback(
-    async (reportId, confirmMessage = 'Are you sure you want to delete this report?') => {
-      await confirmWithPrompt(confirmMessage, async () => {
-        try {
-          await deleteReportOp(() => ProjectReportService.delete(reportId));
-          await refetch();
-        } catch (err) {
-          console.error('Failed to delete report:', err);
-          throw err;
-        }
+  const generateReport = async (title, description) => {
+    setCreating(true);
+    setError(null);
+    try {
+      const newReport = await ProjectReportService.create({
+        title: title || `Project Report ${new Date().toLocaleDateString()}`,
+        description: description || 'Generated project progress report',
+        projectId
       });
-    },
-    [deleteReportOp, confirmWithPrompt, refetch]
-  );
+      await fetchReports();
+      return newReport;
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setCreating(false);
+    }
+  };
 
-  const downloadReport = useCallback(async (reportId) => {
+  const deleteReport = async (reportId, confirmMessage = 'Are you sure you want to delete this report?') => {
+    await confirmWithPrompt(confirmMessage, async () => {
+      setDeleting(true);
+      setError(null);
+      try {
+        await ProjectReportService.delete(reportId);
+        await fetchReports();
+      } catch (err) {
+        setError(err.message);
+        throw err;
+      } finally {
+        setDeleting(false);
+      }
+    });
+  };
+
+  const downloadReport = async (reportId) => {
     try {
       const blob = await ProjectReportService.download(reportId);
       const url = window.URL.createObjectURL(blob);
@@ -67,18 +74,18 @@ export const useProjectReports = (projectId) => {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      console.error('Download failed:', error);
+      setError(error.message);
       throw error;
     }
-  }, []);
+  };
 
   return {
-    reports: reports || [],
+    reports,
     loading: loading || creating || deleting,
-    error: error || createError || deleteError,
+    error,
     generateReport,
     deleteReport,
     downloadReport,
-    refetch
+    refetch: fetchReports
   };
 };

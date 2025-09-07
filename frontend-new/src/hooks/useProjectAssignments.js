@@ -1,22 +1,30 @@
-import { useCallback } from 'react';
-import { useDataFetching } from './common';
+import { useState, useEffect } from 'react';
 import ProjectService from '../services/ProjectService.js';
 
 export const useProjectAssignments = (projectId) => {
-  const fetchAssignments = useCallback(async () => {
-    if (!projectId) return [];
-    return await ProjectService.getAssignments(projectId);
+  const [assignments, setAssignments] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const fetchAssignments = () => {
+    if (!projectId) return Promise.resolve();
+    
+    setLoading(true);
+    setError(null);
+    return ProjectService.getAssignments(projectId)
+      .then(setAssignments)
+      .catch(err => setError(err.message))
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchAssignments();
   }, [projectId]);
 
-  const { data: assignments, loading, error, refetch } = useDataFetching(
-    projectId ? fetchAssignments : null,
-    [projectId]
-  );
-
   return {
-    assignments: assignments || [],
+    assignments,
     loading,
     error,
-    refetch
+    refetch: fetchAssignments
   };
 };

@@ -1,14 +1,12 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { useAsyncOperation } from '../../../hooks/common/useAsyncOperation.js';
+import { useState, useEffect, useCallback } from 'react';
 import VideoService from '../../../services/VideoService.js';
 import AssignedLabelService from '../../../services/AssignedLabelService.js';
 
 export const useAssignedLabelsState = (videos, assignment) => {
   const [assignedLabels, setAssignedLabels] = useState([]);
   const [loading, setLoading] = useState(false);
-  
-  const { execute: executeSave, loading: saveLoading } = useAsyncOperation();
-  const { execute: executeDelete, loading: deleteLoading } = useAsyncOperation();
+  const [saveLoading, setSaveLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const loadAssignedLabels = useCallback(async () => {
     setLoading(true);
@@ -29,7 +27,8 @@ export const useAssignedLabelsState = (videos, assignment) => {
   }, [loadAssignedLabels]);
 
   const handleSaveLabel = useCallback(async (labelData) => {
-    return await executeSave(async () => {
+    setSaveLoading(true);
+    try {
       // Save label for ALL videos, not just first one
       const savePromises = videos.map(video => {
         const requestData = {
@@ -49,11 +48,14 @@ export const useAssignedLabelsState = (videos, assignment) => {
       const arrays = await Promise.all(promises);
       setAssignedLabels(arrays.flat());
       setLoading(false);
-    });
-  }, [executeSave, videos, assignment?.subjectId]);
+    } finally {
+      setSaveLoading(false);
+    }
+  }, [videos, assignment?.subjectId]);
 
   const handleDeleteLabel = useCallback(async (assignedLabelId) => {
-    return await executeDelete(async () => {
+    setDeleteLoading(true);
+    try {
       await AssignedLabelService.delete(assignedLabelId);
       
       // Reload assigned labels after deletion
@@ -64,8 +66,10 @@ export const useAssignedLabelsState = (videos, assignment) => {
       const arrays = await Promise.all(promises);
       setAssignedLabels(arrays.flat());
       setLoading(false);
-    });
-  }, [executeDelete, videos, assignment?.subjectId]);
+    } finally {
+      setDeleteLoading(false);
+    }
+  }, [videos, assignment?.subjectId]);
 
   return {
     assignedLabels,

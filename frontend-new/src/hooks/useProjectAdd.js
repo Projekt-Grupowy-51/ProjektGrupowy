@@ -1,18 +1,22 @@
-import { useCallback } from 'react';
-import { useFormSubmission } from './common';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import ProjectService from '../services/ProjectService.js';
 
 export const useProjectAdd = () => {
-  const submitOperation = useCallback(
-    (projectData) => ProjectService.create(projectData),
-    []
-  );
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const { handleSubmit, handleCancel, loading, error } = useFormSubmission(
-    submitOperation,
-    '/projects',
-    '/projects'
-  );
+  const handleSubmit = (projectData) => {
+    setLoading(true);
+    setError(null);
+    return ProjectService.create(projectData)
+      .then(() => navigate('/projects'))
+      .catch(err => setError(err.message))
+      .finally(() => setLoading(false));
+  };
+
+  const handleCancel = () => navigate('/projects');
 
   return {
     handleSubmit,
