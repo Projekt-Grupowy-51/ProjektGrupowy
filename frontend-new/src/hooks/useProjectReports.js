@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react';
-import { useConfirmDialog } from './common/useConfirmDialog.js';
 import ProjectReportService from '../services/ProjectReportService.js';
 import ProjectService from '../services/ProjectService.js';
 
 export const useProjectReports = (projectId) => {
-  const { confirmWithPrompt } = useConfirmDialog();
   
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -46,20 +44,13 @@ export const useProjectReports = (projectId) => {
     }
   };
 
-  const deleteReport = async (reportId, confirmMessage = 'Are you sure you want to delete this report?') => {
-    await confirmWithPrompt(confirmMessage, async () => {
-      setDeleting(true);
-      setError(null);
-      try {
-        await ProjectReportService.delete(reportId);
-        await fetchReports();
-      } catch (err) {
-        setError(err.message);
-        throw err;
-      } finally {
-        setDeleting(false);
-      }
-    });
+  const deleteReport = async (reportId) => {
+    setDeleting(true);
+    setError(null);
+    return ProjectReportService.delete(reportId)
+      .then(() => fetchReports())
+      .catch(err => setError(err.message))
+      .finally(() => setDeleting(false));
   };
 
   const downloadReport = async (reportId) => {

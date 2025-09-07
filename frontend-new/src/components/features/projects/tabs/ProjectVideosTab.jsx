@@ -13,7 +13,8 @@ const ProjectVideosTab = ({ projectId }) => {
   const {
     videoGroups,
     loading,
-    error
+    error,
+    deleteVideoGroup
   } = useProjectVideoGroups(projectId);
 
   if (loading) return <LoadingSpinner />;
@@ -33,6 +34,27 @@ const ProjectVideosTab = ({ projectId }) => {
           onClick={() => navigate(`/videogroups/${videoGroup.id}`)}
         >
           {t('common:buttons.details')}
+        </Button>
+        <Button
+          size="sm"
+          variant="outline-warning"
+          icon="fas fa-edit"
+          onClick={() => navigate(`/videogroups/${videoGroup.id}/edit`)}
+        >
+          {t('common:buttons.edit')}
+        </Button>
+        <Button
+          size="sm"
+          variant="outline-danger"
+          icon="fas fa-trash"
+          confirmAction={true}
+          confirmTitle="Potwierdź usunięcie"
+          confirmMessage={`Czy na pewno chcesz usunąć grupę wideo "${videoGroup.name}"? Ta operacja jest nieodwracalna.`}
+          confirmText="Usuń"
+          cancelText="Anuluj"
+          onConfirm={() => deleteVideoGroup(videoGroup.id)}
+        >
+          {t('common:buttons.delete')}
         </Button>
       </div>
     </>

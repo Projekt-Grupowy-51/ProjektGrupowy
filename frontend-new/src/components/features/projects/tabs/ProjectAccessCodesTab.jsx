@@ -137,11 +137,12 @@ const ProjectAccessCodesTab = ({ projectId }) => {
                           <Button
                             size="sm"
                             variant="outline-danger"
-                            onClick={() => {
-                              if (confirm('Retire this access code?')) {
-                                retireCode(code.code);
-                              }
-                            }}
+                            confirmAction={true}
+                            confirmTitle="Potwierdź wycofanie kodu"
+                            confirmMessage={`Czy na pewno chcesz wycofać kod dostępu "${code.code}"? Ta operacja jest nieodwracalna.`}
+                            confirmText="Wycofaj kod"
+                            cancelText="Anuluj"
+                            onConfirm={() => retireCode(code.code)}
                           >
                             Retire
                           </Button>

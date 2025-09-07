@@ -1,13 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useConfirmDialog } from './common/useConfirmDialog.js';
 import SubjectService from '../services/SubjectService.js';
 import LabelService from '../services/LabelService.js';
 
 export const useSubjectDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { confirmWithPrompt } = useConfirmDialog();
   
   const [subject, setSubject] = useState(null);
   const [labels, setLabels] = useState([]);
@@ -34,11 +32,20 @@ export const useSubjectDetails = () => {
       .finally(() => setLabelsLoading(false));
   };
 
-  const deleteLabel = async (labelId, confirmMessage) => {
-    await confirmWithPrompt(confirmMessage, async () => {
-      await LabelService.delete(labelId);
-      await fetchLabels();
-    });
+  const deleteLabel = async (labelId) => {
+    return LabelService.delete(labelId)
+      .then(() => fetchLabels());
+  };
+
+  const deleteSubject = async () => {
+    return SubjectService.delete(id)
+      .then(() => {
+        if (subject?.projectId) {
+          navigate(`/projects/${subject.projectId}`);
+        } else {
+          navigate('/projects');
+        }
+      });
   };
 
   useEffect(() => {
@@ -65,6 +72,7 @@ export const useSubjectDetails = () => {
     subjectError,
     labelsError,
     deleteLabel,
+    deleteSubject,
     handleBackToProject,
     handleAddLabel,
     handleEditSubject,

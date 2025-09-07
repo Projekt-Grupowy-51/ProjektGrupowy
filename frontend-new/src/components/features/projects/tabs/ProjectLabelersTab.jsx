@@ -46,21 +46,15 @@ const ProjectLabelersTab = ({ projectId }) => {
   };
 
   const handleUnassign = (assignmentId, labelerId) => {
-    if (confirm('Are you sure you want to unassign this labeler?')) {
-      unassignLabeler(assignmentId, labelerId);
-    }
+    unassignLabeler(assignmentId, labelerId);
   };
 
   const handleDistributeLabelers = async () => {
-    if (confirm('Are you sure you want to distribute labelers automatically?')) {
-      await distributeLabelers();
-    }
+    await distributeLabelers();
   };
 
   const handleUnassignAllLabelers = async () => {
-    if (confirm('Are you sure you want to unassign all labelers?')) {
-      await unassignAllLabelers();
-    }
+    await unassignAllLabelers();
   };
 
   const handleAssignAllSelected = async () => {
@@ -129,8 +123,14 @@ const ProjectLabelersTab = ({ projectId }) => {
           {unassignedLabelers?.length > 0 && (
             <Button
               variant="primary"
-              onClick={handleDistributeLabelers}
               disabled={distributeLoading}
+              loading={distributeLoading}
+              confirmAction={true}
+              confirmTitle="Potwierdź automatyczne przypisanie"
+              confirmMessage="Czy na pewno chcesz automatycznie przypisać etykietujących do zadań? Ta operacja może zmienić istniejące przypisania."
+              confirmText="Przypisz automatycznie"
+              cancelText="Anuluj"
+              onConfirm={handleDistributeLabelers}
             >
               <i className="fa-solid fa-wand-magic-sparkles me-2"></i>
               Distribute Labelers
@@ -209,8 +209,14 @@ const ProjectLabelersTab = ({ projectId }) => {
         {assignedLabelerRows?.length > 0 && (
           <Button
             variant="danger"
-            onClick={handleUnassignAllLabelers}
             disabled={unassignAllLoading}
+            loading={unassignAllLoading}
+            confirmAction={true}
+            confirmTitle="Potwierdź cofnięcie wszystkich przypisań"
+            confirmMessage="Czy na pewno chcesz cofnąć wszystkie przypisania etykietujących? Ta operacja jest nieodwracalna."
+            confirmText="Cofnij wszystkie"
+            cancelText="Anuluj"
+            onConfirm={handleUnassignAllLabelers}
           >
             <i className="fa-solid fa-user-xmark me-1"></i>
             Unassign All
@@ -258,7 +264,12 @@ const ProjectLabelersTab = ({ projectId }) => {
                         <Button
                           size="sm"
                           variant="outline-danger"
-                          onClick={() => handleUnassign(item.assignmentId, item.labelerId)}
+                          confirmAction={true}
+                          confirmTitle="Potwierdź cofnięcie przypisania"
+                          confirmMessage={`Czy na pewno chcesz cofnąć przypisanie etykietującego "${item.labelerName}" do zadania? Ta operacja jest nieodwracalna.`}
+                          confirmText="Cofnij przypisanie"
+                          cancelText="Anuluj"
+                          onConfirm={() => handleUnassign(item.assignmentId, item.labelerId)}
                         >
                           Unassign
                         </Button>

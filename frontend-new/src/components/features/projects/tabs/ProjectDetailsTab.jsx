@@ -6,12 +6,10 @@ import { Button, Card } from '../../../ui';
 import { LoadingSpinner, ErrorAlert, EmptyState } from '../../../common';
 import { useProjectReports } from '../../../../hooks/useProjectReports.js';
 import { useProjectDetails } from '../../../../hooks/useProjectDetails.js';
-import { useConfirmDialog } from '../../../../hooks/common';
 
 const ProjectDetailsTab = ({ projectId, onDeleteProject }) => {
   const navigate = useNavigate();
   const { t } = useTranslation(['common', 'projects']);
-  const { confirmWithPrompt } = useConfirmDialog();
   
   const {
     project,
@@ -29,12 +27,10 @@ const ProjectDetailsTab = ({ projectId, onDeleteProject }) => {
   } = useProjectReports(projectId);
 
   const handleDeleteProject = () => {
-    confirmWithPrompt(t('projects:messages.confirm_delete'), () => {
-      if (onDeleteProject) {
-        onDeleteProject(projectId);
-      }
-      navigate('/projects');
-    });
+    if (onDeleteProject) {
+      onDeleteProject(projectId);
+    }
+    navigate('/projects');
   };
   
   if (projectLoading) return <LoadingSpinner />;
@@ -134,9 +130,14 @@ const ProjectDetailsTab = ({ projectId, onDeleteProject }) => {
                 {t('common:buttons.edit')}
               </Button>
               <Button
-                variant="outline"
+                variant="outline-danger"
                 icon="fas fa-trash"
-                onClick={handleDeleteProject}
+                confirmAction={true}
+                confirmTitle="Potwierdź usunięcie"
+                confirmMessage={`Czy na pewno chcesz usunąć projekt "${project.name}"? Ta operacja jest nieodwracalna.`}
+                confirmText="Usuń"
+                cancelText="Anuluj"
+                onConfirm={handleDeleteProject}
               >
                 {t('common:buttons.delete')}
               </Button>
@@ -184,9 +185,14 @@ const ProjectDetailsTab = ({ projectId, onDeleteProject }) => {
                       </Button>
                       <Button
                         size="sm"
-                        variant="outline"
+                        variant="outline-danger"
                         icon="fas fa-trash"
-                        onClick={() => deleteReport(report.id, t('projects:reports.confirm_delete'))}
+                        confirmAction={true}
+                        confirmTitle="Potwierdź usunięcie"
+                        confirmMessage={`Czy na pewno chcesz usunąć raport "${report.name || `Report #${report.id}`}"? Ta operacja jest nieodwracalna.`}
+                        confirmText="Usuń"
+                        cancelText="Anuluj"
+                        onConfirm={() => deleteReport(report.id)}
                       >
                         {t('common:buttons.delete')}
                       </Button>

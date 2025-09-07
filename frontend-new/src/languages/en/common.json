@@ -21,7 +21,9 @@
     "add": "Add",
     "edit": "Edit",
     "copy": "Copy",
-    "retire": "Retire"
+    "retire": "Retire",
+    "logout": "Logout",
+    "save": "Save"
   },
   "deleteConfirmation": {
     "title": "Confirm Delete",

@@ -21,7 +21,9 @@
     "add": "Dodaj",
     "edit": "Edytuj",
     "copy": "Kopiuj",
-    "retire": "Wycofaj"
+    "retire": "Wycofaj",
+    "logout": "Wyloguj",
+    "save": "Zapisz"
   },
   "deleteConfirmation": {
     "title": "Potwierdź usunięcie",

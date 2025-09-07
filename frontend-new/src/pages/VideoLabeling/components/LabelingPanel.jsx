@@ -72,18 +72,19 @@ const LabelingPanel = ({
                         {label.end || label.endTime || 'N/A'}
                       </Table.Cell>
                       <Table.Cell>
-                        <button
-                          className="btn btn-outline-danger btn-sm"
-                          onClick={() => onDeleteLabel(label.id)}
-                          title="Delete label"
+                        <Button
+                          size="sm"
+                          variant="outline-danger"
+                          icon="fas fa-trash"
                           disabled={operationLoading}
-                        >
-                          {operationLoading ? (
-                            <LoadingSpinner size="small" />
-                          ) : (
-                            <i className="fas fa-trash"></i>
-                          )}
-                        </button>
+                          loading={operationLoading}
+                          confirmAction={true}
+                          confirmTitle="Potwierdź usunięcie"
+                          confirmMessage={`Czy na pewno chcesz usunąć etykietę "${label.labelName}"? Ta operacja jest nieodwracalna.`}
+                          confirmText="Usuń"
+                          cancelText="Anuluj"
+                          onConfirm={() => onDeleteLabel(label.id)}
+                        />
                       </Table.Cell>
                     </Table.Row>
                   );

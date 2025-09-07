@@ -43,8 +43,19 @@ export const useVideoGroupDetails = (videoGroupId) => {
   }, [videoGroupId]);
 
   const deleteVideo = async (videoId) => {
-    await VideoService.delete(videoId);
-    await fetchVideos();
+    return VideoService.delete(videoId)
+      .then(() => fetchVideos());
+  };
+
+  const deleteVideoGroup = async () => {
+    return VideoGroupService.delete(parseInt(videoGroupId))
+      .then(() => {
+        if (videoGroup?.projectId) {
+          navigate(`/projects/${videoGroup.projectId}`);
+        } else {
+          navigate('/videogroups');
+        }
+      });
   };
 
   const handleBack = () => {
@@ -59,13 +70,19 @@ export const useVideoGroupDetails = (videoGroupId) => {
     navigate(`/videos/add?videoGroupId=${videoGroupId}`);
   };
 
+  const handleEditVideoGroup = () => {
+    navigate(`/videogroups/${videoGroupId}/edit`);
+  };
+
   return {
     videoGroup,
     videos,
     loading,
     error,
     deleteVideo,
+    deleteVideoGroup,
     handleBack,
-    handleAddVideo
+    handleAddVideo,
+    handleEditVideoGroup
   };
 };

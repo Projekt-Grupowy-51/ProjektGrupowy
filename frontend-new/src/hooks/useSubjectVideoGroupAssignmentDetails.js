@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useConfirmDialog } from './common/useConfirmDialog.js';
 import SubjectVideoGroupAssignmentService from '../services/SubjectVideoGroupAssignmentService.js';
 import SubjectService from '../services/SubjectService.js';
 import VideoGroupService from '../services/VideoGroupService.js';
@@ -10,7 +9,6 @@ export const useSubjectVideoGroupAssignmentDetails = () => {
   const { t } = useTranslation(['assignments', 'common']);
   const { id } = useParams();
   const navigate = useNavigate();
-  const { confirmWithPrompt } = useConfirmDialog();
 
   const [assignmentDetails, setAssignmentDetails] = useState(null);
   const [subject, setSubject] = useState(null);
@@ -48,12 +46,12 @@ export const useSubjectVideoGroupAssignmentDetails = () => {
   }, [id]);
 
   const handleDelete = async () => {
-    await confirmWithPrompt(t('assignments:confirm.delete'), async () => {
-      await SubjectVideoGroupAssignmentService.delete(id);
-      if (assignmentDetails?.projectId) {
-        navigate(`/projects/${assignmentDetails.projectId}`);
-      }
-    });
+    return SubjectVideoGroupAssignmentService.delete(id)
+      .then(() => {
+        if (assignmentDetails?.projectId) {
+          navigate(`/projects/${assignmentDetails.projectId}`);
+        }
+      });
   };
 
   const handleRefresh = () => {

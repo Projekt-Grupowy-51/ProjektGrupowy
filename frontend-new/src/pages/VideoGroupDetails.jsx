@@ -1,7 +1,7 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Container, Card, Button } from '../components/ui';
+import { Container, Card, Button, Table } from '../components/ui';
 import { LoadingSpinner, ErrorAlert, EmptyState } from '../components/common';
 import { useVideoGroupDetails } from '../hooks/useVideoGroupDetails.js';
 
@@ -16,8 +16,10 @@ const VideoGroupDetails = () => {
     loading,
     error,
     deleteVideo,
+    deleteVideoGroup,
     handleBack,
-    handleAddVideo
+    handleAddVideo,
+    handleEditVideoGroup
   } = useVideoGroupDetails(id);
 
   if (loading) {
@@ -46,87 +48,138 @@ const VideoGroupDetails = () => {
 
   return (
     <Container className="py-4">
-      <Container.Row>
-        <Container.Col>
-          <Card>
-            <Card.Header>
-              <div className="d-flex justify-content-between align-items-center">
-                <div>
-                  <Card.Title level={3} className="mb-1">{videoGroup.name}</Card.Title>
-                  <p className="text-muted mb-0">{videoGroup.description}</p>
-                </div>
-                <div className="d-flex gap-2">
-                  <Button
-                    variant="primary"
-                    onClick={handleAddVideo}
-                  >
-                    <i className="fas fa-plus me-2"></i>
-                    {t('videos:add_video')}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={handleBack}
-                  >
-                    <i className="fas fa-arrow-left me-2"></i>
-                    {t('common:back')}
-                  </Button>
-                </div>
-              </div>
-            </Card.Header>
-            <Card.Body>
-              {videos.length > 0 ? (
-                <Container.Row>
-                  {videos.map((video) => (
-                    <Container.Col key={video.id} md={6} lg={4} className="mb-4">
-                      <Card className="h-100 video-card">
-                        <Card.Body>
-                          <Card.Title level={6} className="card-title">{video.title}</Card.Title>
-                          <p className="text-muted small">
-                            {t('videos:position')}: {video.positionInQueue}
-                          </p>
-                          <div className="d-flex gap-2 mt-auto">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => navigate(`/videos/${video.id}`)}
-                            >
-                              <i className="fas fa-eye me-1"></i>
-                              {t('common:details')}
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => deleteVideo(video.id, video.title)}
-                            >
-                              <i className="fas fa-trash me-1"></i>
-                              {t('common:delete')}
-                            </Button>
-                          </div>
-                        </Card.Body>
-                      </Card>
-                    </Container.Col>
-                  ))}
-                </Container.Row>
-              ) : (
-                <div className="text-center py-5">
-                  <i className="fas fa-film fs-1 text-muted opacity-50"></i>
-                  <p className="text-muted mt-3 mb-0">
-                    {t('videoGroups:no_videos')}
-                  </p>
-                  <Button
-                    variant="primary"
-                    className="mt-3"
-                    onClick={handleAddVideo}
-                  >
-                    <i className="fas fa-plus me-2"></i>
-                    {t('videos:add_first_video')}
-                  </Button>
-                </div>
-              )}
-            </Card.Body>
-          </Card>
-        </Container.Col>
-      </Container.Row>
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h1>
+            <i className="fas fa-film me-2"></i>
+            {videoGroup.name}
+          </h1>
+          <p className="text-muted mb-0">{videoGroup.description}</p>
+        </div>
+        <div className="d-flex gap-2">
+          <Button
+            variant="warning"
+            icon="fas fa-edit"
+            onClick={handleEditVideoGroup}
+          >
+            {t('common:buttons.edit')}
+          </Button>
+          <Button
+            variant="outline-danger"
+            icon="fas fa-trash"
+            confirmAction={true}
+            confirmTitle="Potwierdź usunięcie"
+            confirmMessage={`Czy na pewno chcesz usunąć grupę wideo "${videoGroup.name}"? Ta operacja jest nieodwracalna.`}
+            confirmText="Usuń"
+            cancelText="Anuluj"
+            onConfirm={deleteVideoGroup}
+          >
+            {t('common:buttons.delete')}
+          </Button>
+          <Button
+            variant="outline-secondary"
+            icon="fas fa-arrow-left"
+            onClick={handleBack}
+          >
+            {t('common:buttons.back')}
+          </Button>
+        </div>
+      </div>
+
+      <Card className="mb-4">
+        <Card.Header variant="info">
+          <Card.Title level={5} className="mb-0">
+            <i className="fas fa-info-circle me-2"></i>
+            {t('videoGroups:details.title')}
+          </Card.Title>
+        </Card.Header>
+        <Card.Body>
+          <Card.Text>
+            <strong>{t('videoGroups:details.description')}:</strong> {videoGroup.description}
+          </Card.Text>
+        </Card.Body>
+      </Card>
+
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h2 className="section-title mb-0">
+          <i className="fas fa-video me-2"></i>
+          {t('videoGroups:videos.title')}
+        </h2>
+        <Button
+          variant="primary"
+          icon="fas fa-plus"
+          onClick={handleAddVideo}
+        >
+          {t('videoGroups:videos.add')}
+        </Button>
+      </div>
+
+      {videos.length > 0 ? (
+        <Card>
+          <Table striped hover responsive>
+            <Table.Head>
+              <Table.Row>
+                <Table.Cell header={true}>#</Table.Cell>
+                <Table.Cell header={true}>{t('videos:columns.title')}</Table.Cell>
+                <Table.Cell header={true}>{t('videos:columns.position')}</Table.Cell>
+                <Table.Cell header={true}>{t('common:actions')}</Table.Cell>
+              </Table.Row>
+            </Table.Head>
+            <Table.Body>
+              {videos.map((video, index) => (
+                <Table.Row key={video.id}>
+                  <Table.Cell>{index + 1}</Table.Cell>
+                  <Table.Cell>{video.title}</Table.Cell>
+                  <Table.Cell>
+                    <span className="badge bg-secondary">{video.positionInQueue}</span>
+                  </Table.Cell>
+                  <Table.Cell>
+                    <div className="d-flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="info"
+                        icon="fas fa-eye"
+                        onClick={() => navigate(`/videos/${video.id}`)}
+                      >
+                        {t('common:buttons.details')}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline-warning"
+                        icon="fas fa-edit"
+                        onClick={() => navigate(`/videos/${video.id}/edit`)}
+                      >
+                        {t('common:buttons.edit')}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline-danger"
+                        icon="fas fa-trash"
+                        confirmAction={true}
+                        confirmTitle="Potwierdź usunięcie"
+                        confirmMessage={`Czy na pewno chcesz usunąć wideo "${video.title}"? Ta operacja jest nieodwracalna.`}
+                        confirmText="Usuń"
+                        cancelText="Anuluj"
+                        onConfirm={() => deleteVideo(video.id)}
+                      >
+                        {t('common:buttons.delete')}
+                      </Button>
+                    </div>
+                  </Table.Cell>
+                </Table.Row>
+              ))}
+            </Table.Body>
+          </Table>
+        </Card>
+      ) : (
+        <EmptyState
+          icon="fas fa-video"
+          title="No videos found"
+          message={t('videoGroups:videos.empty')}
+          actionText={t('videoGroups:videos.add')}
+          onAction={handleAddVideo}
+        />
+      )}
     </Container>
   );
 };

@@ -9,7 +9,7 @@ import { useProjectAssignments } from '../../../../hooks/useProjectAssignments';
 const ProjectAssignmentsTab = ({ projectId }) => {
   const { t } = useTranslation(['common', 'projects']);
   const navigate = useNavigate();
-  const { assignments, loading, error } = useProjectAssignments(projectId);
+  const { assignments, loading, error, deleteAssignment } = useProjectAssignments(projectId);
 
   return (
     <Card>
@@ -73,6 +73,19 @@ const ProjectAssignmentsTab = ({ projectId }) => {
                     onClick={() => navigate(`/assignments/${assignment.id}`)}
                   >
                     {t('common:buttons.details')}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline-danger"
+                    icon="fas fa-trash"
+                    confirmAction={true}
+                    confirmTitle="Potwierdź usunięcie"
+                    confirmMessage={`Czy na pewno chcesz usunąć przypisanie #${assignment.id}? Ta operacja jest nieodwracalna.`}
+                    confirmText="Usuń"
+                    cancelText="Anuluj"
+                    onConfirm={() => deleteAssignment(assignment.id)}
+                  >
+                    {t('common:buttons.delete')}
                   </Button>
                 </div>
               </div>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import ProjectService from '../services/ProjectService.js';
+import SubjectVideoGroupAssignmentService from '../services/SubjectVideoGroupAssignmentService.js';
 
 export const useProjectAssignments = (projectId) => {
   const [assignments, setAssignments] = useState([]);
@@ -17,6 +18,11 @@ export const useProjectAssignments = (projectId) => {
       .finally(() => setLoading(false));
   };
 
+  const deleteAssignment = async (assignmentId) => {
+    return SubjectVideoGroupAssignmentService.delete(assignmentId)
+      .then(() => fetchAssignments());
+  };
+
   useEffect(() => {
     fetchAssignments();
   }, [projectId]);
@@ -25,6 +31,7 @@ export const useProjectAssignments = (projectId) => {
     assignments,
     loading,
     error,
-    refetch: fetchAssignments
+    refetch: fetchAssignments,
+    deleteAssignment
   };
 };

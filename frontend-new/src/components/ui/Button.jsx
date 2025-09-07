@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { useConfirmation } from '../../hooks/useConfirmation.js';
 
 const Button = ({ 
   children, 
@@ -11,6 +12,14 @@ const Button = ({
   icon,
   onClick,
   className = '',
+  // Confirmation props
+  confirmAction = false,
+  confirmTitle,
+  confirmMessage,
+  confirmText,
+  cancelText,
+  confirmVariant,
+  onConfirm,
   ...props 
 }) => {
   const getVariantClass = () => {
@@ -45,6 +54,27 @@ const Button = ({
     return sizes[size] || '';
   };
 
+  const { showConfirmation } = useConfirmation();
+
+  const handleClick = (event) => {
+    if (confirmAction) {
+      event.preventDefault();
+      
+      const confirmationOptions = {
+        title: confirmTitle,
+        message: confirmMessage,
+        variant: confirmVariant || (variant === 'danger' ? 'danger' : 'warning'),
+        confirmText: confirmText,
+        cancelText: cancelText,
+        onConfirm: onConfirm || onClick
+      };
+
+      showConfirmation(confirmationOptions);
+    } else if (onClick) {
+      onClick(event);
+    }
+  };
+
   const classes = [
     'btn',
     getVariantClass(),
@@ -57,7 +87,7 @@ const Button = ({
       type={type}
       className={classes}
       disabled={disabled || loading}
-      onClick={onClick}
+      onClick={handleClick}
       {...props}
     >
       {loading && (
@@ -84,7 +114,15 @@ Button.propTypes = {
   loading: PropTypes.bool,
   icon: PropTypes.string,
   onClick: PropTypes.func,
-  className: PropTypes.string
+  className: PropTypes.string,
+  // Confirmation props
+  confirmAction: PropTypes.bool,
+  confirmTitle: PropTypes.string,
+  confirmMessage: PropTypes.string,
+  confirmText: PropTypes.string,
+  cancelText: PropTypes.string,
+  confirmVariant: PropTypes.oneOf(['danger', 'warning', 'info', 'success']),
+  onConfirm: PropTypes.func
 };
 
 export default Button;

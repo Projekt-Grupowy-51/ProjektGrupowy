@@ -4,6 +4,8 @@ import {
     Routes,
     Route,
 } from "react-router-dom";
+import { ConfirmationProvider } from "./contexts/ConfirmationContext.jsx";
+import ConfirmationModal from "./components/ui/ConfirmationModal.jsx";
 import AuthGuard from "./components/auth/AuthGuard.jsx";
 import TopNavbar from "./components/layout/TopNavbar.jsx";
 import ProjectAddPage from "./pages/ProjectAdd.jsx";
@@ -34,11 +36,12 @@ import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
 function App() {
     return (
-        <Router>
-            <AuthGuard>
-                <div className="App">
-                    <TopNavbar />
-                    <Routes>
+        <ConfirmationProvider>
+            <Router>
+                <AuthGuard>
+                    <div className="App">
+                        <TopNavbar />
+                        <Routes>
                         <Route path="/projects" element={<ProjectsPage />} />
                         <Route path="/projects/add" element={<ProjectAddPage />} />
                         <Route path="/projects/:id" element={<ProjectDetailsPage />} />
@@ -75,7 +78,9 @@ function App() {
                     </Routes>
                 </div>
             </AuthGuard>
+            <ConfirmationModal />
         </Router>
+        </ConfirmationProvider>
     );
 }
 

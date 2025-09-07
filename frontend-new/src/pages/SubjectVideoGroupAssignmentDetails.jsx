@@ -49,7 +49,16 @@ const SubjectVideoGroupAssignmentDetails = () => {
           {t('assignments:details.title', { id: assignmentDetails.id })}
         </h1>
         <div className="d-flex gap-2">
-          <Button variant="outline-danger" onClick={handleDelete} icon="fas fa-trash">
+          <Button 
+            variant="outline-danger" 
+            icon="fas fa-trash"
+            confirmAction={true}
+            confirmTitle="Potwierdź usunięcie"
+            confirmMessage={`Czy na pewno chcesz usunąć przypisanie #${assignmentDetails.id}? Ta operacja jest nieodwracalna.`}
+            confirmText="Usuń"
+            cancelText="Anuluj"
+            onConfirm={handleDelete}
+          >
             {t('common:buttons.delete')}
           </Button>
           <Button variant="outline-secondary" onClick={handleRefresh} icon="fas fa-sync-alt">

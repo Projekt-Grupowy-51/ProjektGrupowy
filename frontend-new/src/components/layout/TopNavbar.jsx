@@ -1,8 +1,26 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useKeycloak } from '../../hooks/useKeycloak.js';
 
 const TopNavbar = () => {
   const { isAuthenticated, user, logout } = useKeycloak();
+  const { t, i18n } = useTranslation('common');
+
+  const changeLanguage = (language) => {
+    i18n.changeLanguage(language);
+  };
+
+  const getCurrentLanguage = () => {
+    return i18n.language || 'en';
+  };
+
+  const getLanguageFlag = (lang) => {
+    const flags = {
+      en: '🇺🇸',
+      pl: '🇵🇱'
+    };
+    return flags[lang] || '🌐';
+  };
 
   if (!isAuthenticated) {
     return null;
@@ -17,6 +35,39 @@ const TopNavbar = () => {
         </a>
         
         <div className="navbar-nav ms-auto">
+          {/* Language Selector */}
+          <div className="nav-item dropdown me-3">
+            <button 
+              className="btn btn-link nav-link dropdown-toggle text-white text-decoration-none d-flex align-items-center"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
+              <span className="me-2">{getLanguageFlag(getCurrentLanguage())}</span>
+              {getCurrentLanguage().toUpperCase()}
+            </button>
+            <ul className="dropdown-menu dropdown-menu-end">
+              <li>
+                <button 
+                  className={`dropdown-item ${getCurrentLanguage() === 'en' ? 'active' : ''}`}
+                  onClick={() => changeLanguage('en')}
+                >
+                  <span className="me-2">🇺🇸</span>
+                  English
+                </button>
+              </li>
+              <li>
+                <button 
+                  className={`dropdown-item ${getCurrentLanguage() === 'pl' ? 'active' : ''}`}
+                  onClick={() => changeLanguage('pl')}
+                >
+                  <span className="me-2">🇵🇱</span>
+                  Polski
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          {/* User Dropdown */}
           <div className="nav-item dropdown">
             <button 
               className="btn btn-link nav-link dropdown-toggle text-white text-decoration-none"
@@ -41,7 +92,7 @@ const TopNavbar = () => {
                   onClick={logout}
                 >
                   <i className="fas fa-sign-out-alt me-2"></i>
-                  Logout
+                  {t('buttons.logout')}
                 </button>
               </li>
             </ul>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import ProjectService from '../services/ProjectService.js';
+import SubjectService from '../services/SubjectService.js';
 
 export const useProjectSubjects = (projectId) => {
   const [subjects, setSubjects] = useState([]);
@@ -17,6 +18,11 @@ export const useProjectSubjects = (projectId) => {
       .finally(() => setLoading(false));
   };
 
+  const deleteSubject = async (subjectId) => {
+    return SubjectService.delete(subjectId)
+      .then(() => fetchSubjects());
+  };
+
   useEffect(() => {
     fetchSubjects();
   }, [projectId]);
@@ -25,6 +31,7 @@ export const useProjectSubjects = (projectId) => {
     subjects,
     loading,
     error,
-    refetch: fetchSubjects
+    refetch: fetchSubjects,
+    deleteSubject
   };
 };

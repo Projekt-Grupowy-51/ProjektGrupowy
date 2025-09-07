@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import ProjectService from '../services/ProjectService.js';
+import VideoGroupService from '../services/VideoGroupService.js';
 
 export const useProjectVideoGroups = (projectId) => {
   const [videoGroups, setVideoGroups] = useState([]);
@@ -17,6 +18,11 @@ export const useProjectVideoGroups = (projectId) => {
       .finally(() => setLoading(false));
   };
 
+  const deleteVideoGroup = async (videoGroupId) => {
+    return VideoGroupService.delete(videoGroupId)
+      .then(() => fetchVideoGroups());
+  };
+
   useEffect(() => {
     fetchVideoGroups();
   }, [projectId]);
@@ -25,6 +31,7 @@ export const useProjectVideoGroups = (projectId) => {
     videoGroups,
     loading,
     error,
-    refetch: fetchVideoGroups
+    refetch: fetchVideoGroups,
+    deleteVideoGroup
   };
 };

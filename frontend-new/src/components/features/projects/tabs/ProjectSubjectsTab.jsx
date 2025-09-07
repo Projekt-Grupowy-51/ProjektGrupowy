@@ -13,7 +13,8 @@ const ProjectSubjectsTab = ({ projectId }) => {
   const {
     subjects,
     loading,
-    error
+    error,
+    deleteSubject
   } = useProjectSubjects(projectId);
 
   if (loading) return <LoadingSpinner />;
@@ -33,6 +34,27 @@ const ProjectSubjectsTab = ({ projectId }) => {
           onClick={() => navigate(`/subjects/${subject.id}`)}
         >
           {t('common:buttons.details')}
+        </Button>
+        <Button
+          size="sm"
+          variant="outline-warning"
+          icon="fas fa-edit"
+          onClick={() => navigate(`/subjects/${subject.id}/edit`)}
+        >
+          {t('common:buttons.edit')}
+        </Button>
+        <Button
+          size="sm"
+          variant="outline-danger"
+          icon="fas fa-trash"
+          confirmAction={true}
+          confirmTitle="Potwierdź usunięcie"
+          confirmMessage={`Czy na pewno chcesz usunąć przedmiot "${subject.name}"? Ta operacja jest nieodwracalna.`}
+          confirmText="Usuń"
+          cancelText="Anuluj"
+          onConfirm={() => deleteSubject(subject.id)}
+        >
+          {t('common:buttons.delete')}
         </Button>
       </div>
     </>

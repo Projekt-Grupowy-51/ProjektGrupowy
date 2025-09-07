@@ -15,6 +15,7 @@ const SubjectDetails = () => {
     subjectError,
     labelsError,
     deleteLabel,
+    deleteSubject,
     handleBackToProject,
     handleAddLabel,
     handleEditSubject,
@@ -62,6 +63,18 @@ const SubjectDetails = () => {
             onClick={handleEditSubject}
           >
             {t('common:buttons.edit')}
+          </Button>
+          <Button
+            variant="outline-danger"
+            icon="fas fa-trash"
+            confirmAction={true}
+            confirmTitle="Potwierdź usunięcie"
+            confirmMessage={`Czy na pewno chcesz usunąć przedmiot "${subject.name}"? Ta operacja jest nieodwracalna.`}
+            confirmText="Usuń"
+            cancelText="Anuluj"
+            onConfirm={deleteSubject}
+          >
+            {t('common:buttons.delete')}
           </Button>
           <Button
             variant="outline-secondary"
@@ -151,7 +164,12 @@ const SubjectDetails = () => {
                         size="sm"
                         variant="outline-danger"
                         icon="fas fa-trash"
-                        onClick={() => deleteLabel(label.id, t('subjects:labels.confirm_delete'))}
+                        confirmAction={true}
+                        confirmTitle="Potwierdź usunięcie"
+                        confirmMessage={`Czy na pewno chcesz usunąć etykietę "${label.name}"? Ta operacja jest nieodwracalna.`}
+                        confirmText="Usuń"
+                        cancelText="Anuluj"
+                        onConfirm={() => deleteLabel(label.id)}
                       >
                         {t('common:buttons.delete')}
                       </Button>

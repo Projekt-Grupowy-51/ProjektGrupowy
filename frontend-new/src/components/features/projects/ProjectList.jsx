@@ -84,11 +84,12 @@ const ProjectList = ({ projects, onDelete }) => {
                   size="sm"
                   variant="outline-danger"
                   icon="fas fa-trash"
-                  onClick={() => {
-                    if (window.confirm(t('projects:messages.confirm_delete'))) {
-                      onDelete(project.id);
-                    }
-                  }}
+                  confirmAction={true}
+                  confirmTitle="Potwierdź usunięcie"
+                  confirmMessage={`Czy na pewno chcesz usunąć projekt "${project.name}"? Ta operacja jest nieodwracalna.`}
+                  confirmText="Usuń"
+                  cancelText="Anuluj"
+                  onConfirm={() => onDelete(project.id)}
                 >
                   {t('common:buttons.delete')}
                 </Button>
