@@ -1,16 +1,34 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useKeycloak } from '../../hooks/useKeycloak.js';
 import { Container, Card, Button } from '../ui';
 import { LoadingSpinner } from '../common';
 
 const AuthGuard = ({ children, fallback = null }) => {
-  const { isAuthenticated, isLoading, login } = useKeycloak();
+  const { isAuthenticated, isLoading, login, user } = useKeycloak();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      
+      switch (user.userRole) {
+        case "Scientist":
+          navigate("/projects");
+          break;
+        case "Labeler":
+          navigate("/labeler-video-groups");
+          break;
+        default:
+          navigate("/forbidden");
+      }
+    }
+  }, [isAuthenticated, user, navigate]);
 
   if (isLoading) {
     return (
-      <Container className="d-flex justify-content-center align-items-center vh-100">
-        <LoadingSpinner message="Initializing authentication..." />
-      </Container>
+        <Container className="d-flex justify-content-center align-items-center vh-100">
+          <LoadingSpinner message="Initializing authentication..." />
+        </Container>
     );
   }
 
