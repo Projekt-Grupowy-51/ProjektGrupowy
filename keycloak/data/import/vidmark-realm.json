@@ -53,7 +53,7 @@
       "description" : "${role_default-roles}",
       "composite" : true,
       "composites" : {
-        "realm" : [ "Labeler", "offline_access", "uma_authorization" ],
+        "realm" : [ "offline_access", "uma_authorization" ],
         "client" : {
           "account" : [ "view-profile", "manage-account" ]
         }
@@ -73,22 +73,6 @@
       "id" : "b9ecc5ae-026b-480a-9680-1b44493f681a",
       "name" : "uma_authorization",
       "description" : "${role_uma_authorization}",
-      "composite" : false,
-      "clientRole" : false,
-      "containerId" : "9ff4d51f-fe11-4d25-8e28-6af031fe1d27",
-      "attributes" : { }
-    }, {
-      "id" : "a379751b-7577-4637-9f65-16873355d556",
-      "name" : "Labeler",
-      "description" : "${role_default-roles}",
-      "composite" : false,
-      "clientRole" : false,
-      "containerId" : "9ff4d51f-fe11-4d25-8e28-6af031fe1d27",
-      "attributes" : { }
-    }, {
-      "id" : "4767bbdb-58b3-49c6-83e4-1afde30b856f",
-      "name" : "Scientist",
-      "description" : "",
       "composite" : false,
       "clientRole" : false,
       "containerId" : "9ff4d51f-fe11-4d25-8e28-6af031fe1d27",
@@ -471,6 +455,98 @@
     "notBefore" : 0,
     "groups" : [ ]
   }, {
+    "id" : "73ea864e-ea0b-4565-b1b5-762a7bfeafaa",
+    "username" : "grandem",
+    "email" : "a@aa.com",
+    "emailVerified" : false,
+    "attributes" : {
+      "Role" : [ "Scientist" ]
+    },
+    "createdTimestamp" : 1753993477737,
+    "enabled" : true,
+    "totp" : false,
+    "credentials" : [ {
+      "id" : "5ea5a0e3-164b-450e-8421-b3c1ed9c5c8e",
+      "type" : "password",
+      "createdDate" : 1753993477957,
+      "secretData" : "{\"value\":\"qFzYKyZAGUnHHqj3CbAw2gdDJz7Q6p/JzvBvd8DlDOglRpn7r5l296+hsBRuEq2mZxsZsgp1UXLxTpJa4eefAg==\",\"salt\":\"Lxagw03nQWmbRhsXkldDrw==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":210000,\"algorithm\":\"pbkdf2-sha512\",\"additionalParameters\":{}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "default-roles-projektgrupowy" ],
+    "notBefore" : 0,
+    "groups" : [ ]
+  }, {
+    "id" : "9be73426-ac09-4d9d-b4fd-1abe3279728e",
+    "username" : "grandem2",
+    "email" : "email@mail",
+    "emailVerified" : false,
+    "attributes" : {
+      "Role" : [ "Scientist" ]
+    },
+    "createdTimestamp" : 1753995249624,
+    "enabled" : true,
+    "totp" : false,
+    "credentials" : [ {
+      "id" : "a4b6ceaf-0511-43a7-8a79-a2f71a18721b",
+      "type" : "password",
+      "createdDate" : 1753995249845,
+      "secretData" : "{\"value\":\"DrWtsh0XhPBHXBbWgKnV3DRa6Dk+wzaNNod+bhExStS55ux77pF6+pC+4GIcSwor1a2uL+yIML43sJ7QOJYTMg==\",\"salt\":\"wAoGHPNVXTypKatC9ghsLQ==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":210000,\"algorithm\":\"pbkdf2-sha512\",\"additionalParameters\":{}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "default-roles-projektgrupowy" ],
+    "notBefore" : 0,
+    "groups" : [ ]
+  }, {
+    "id" : "b2c47b39-1038-4f71-a225-60909452bc02",
+    "username" : "grandem3",
+    "email" : "grandem@m",
+    "emailVerified" : false,
+    "attributes" : {
+      "Role" : [ "Scientist" ]
+    },
+    "createdTimestamp" : 1753995667348,
+    "enabled" : true,
+    "totp" : false,
+    "credentials" : [ {
+      "id" : "53bd6b1f-5faf-4f87-93bf-b04b2d08f409",
+      "type" : "password",
+      "createdDate" : 1753995667566,
+      "secretData" : "{\"value\":\"eDRprzab8Zqk4QT5ubIRSohA5yxR+duMBGcfy6mGtaZO6T9Wx88QYAut3V2F7NP5FSkN1lXCe7VS8wN0+y23AA==\",\"salt\":\"V8GhSOLkRq1RNw4xTijM1g==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":210000,\"algorithm\":\"pbkdf2-sha512\",\"additionalParameters\":{}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "default-roles-projektgrupowy" ],
+    "notBefore" : 0,
+    "groups" : [ ]
+  }, {
+    "id" : "538066fa-7761-4c2d-95b1-09c762f704d7",
+    "username" : "matiks",
+    "email" : "drumam51@gmail.com",
+    "emailVerified" : false,
+    "attributes" : {
+      "Role" : [ "Labeler" ]
+    },
+    "createdTimestamp" : 1753993174519,
+    "enabled" : true,
+    "totp" : false,
+    "credentials" : [ {
+      "id" : "f7bdfc4d-6b79-4d13-9f44-3880e1e5c854",
+      "type" : "password",
+      "createdDate" : 1753993174808,
+      "secretData" : "{\"value\":\"bSro+60kba7Lt0VcppnXZFc6Qf/zLN5xUSBdLXmUwysCn0qWAZ7KSmiQry6AqOA5CQjiRaSZzcC1HFkqShRnJw==\",\"salt\":\"/4i5ssT4cgqrCOCqPGNNvA==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":210000,\"algorithm\":\"pbkdf2-sha512\",\"additionalParameters\":{}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "default-roles-projektgrupowy" ],
+    "notBefore" : 0,
+    "groups" : [ ]
+  }, {
     "id" : "2a756069-744d-4e7d-b9be-7a4f15b5b0c5",
     "username" : "test",
     "firstName" : "test",
@@ -530,6 +606,75 @@
       "createdDate" : 1752182156132,
       "secretData" : "{\"value\":\"K7C7IyDeqW6yA7pYub8QzxgroL8BdQtag0ohj4x1Qv8=\",\"salt\":\"HiRUd3wP+Hu84eVBhwyMzw==\",\"additionalParameters\":{}}",
       "credentialData" : "{\"hashIterations\":27500,\"algorithm\":\"pbkdf2-sha256\",\"additionalParameters\":{}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "default-roles-projektgrupowy" ],
+    "notBefore" : 0,
+    "groups" : [ ]
+  }, {
+    "id" : "35ed768e-ba26-4778-ba5d-0be0f2462a82",
+    "username" : "user1",
+    "email" : "mail@mail",
+    "emailVerified" : false,
+    "attributes" : {
+      "Role" : [ "Labeler" ]
+    },
+    "createdTimestamp" : 1757325193535,
+    "enabled" : true,
+    "totp" : false,
+    "credentials" : [ {
+      "id" : "aa88a2e3-2b39-46f4-abab-45b5aae03128",
+      "type" : "password",
+      "createdDate" : 1757325193827,
+      "secretData" : "{\"value\":\"qkE0cwxeHXui+1QVpUpfYhesrHim4cS7485t3JNLc8e8lZxMTMVEKaOaID0xfbsaTlr2bpgQkkSbMuy7yZm06g==\",\"salt\":\"hnwLWA5CkhvE2ed6qyiOvg==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":210000,\"algorithm\":\"pbkdf2-sha512\",\"additionalParameters\":{}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "default-roles-projektgrupowy" ],
+    "notBefore" : 0,
+    "groups" : [ ]
+  }, {
+    "id" : "01b7749f-6621-4e75-8afc-d88d1db2a532",
+    "username" : "user2",
+    "email" : "mail1@mail1",
+    "emailVerified" : false,
+    "attributes" : {
+      "Role" : [ "Scientist" ]
+    },
+    "createdTimestamp" : 1757325864389,
+    "enabled" : true,
+    "totp" : false,
+    "credentials" : [ {
+      "id" : "cee427e2-eba0-43ca-846d-ee4c29720ee6",
+      "type" : "password",
+      "createdDate" : 1757325864621,
+      "secretData" : "{\"value\":\"j52Wgb8d+I5gLRordqgEQDD3M/ltvbsRQgR0FvwSQna3RDOnh06VXKPEZAhAbTYJ6riTwUfWWAzLe6BHK4BCPg==\",\"salt\":\"DAbd+uic4eKQgYvgg0SF8A==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":210000,\"algorithm\":\"pbkdf2-sha512\",\"additionalParameters\":{}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "default-roles-projektgrupowy" ],
+    "notBefore" : 0,
+    "groups" : [ ]
+  }, {
+    "id" : "886be8ef-a3e7-4bd7-8322-5533795e643f",
+    "username" : "user3",
+    "email" : "mail3@mail3",
+    "emailVerified" : false,
+    "attributes" : {
+      "Role" : [ "Labeler" ]
+    },
+    "createdTimestamp" : 1757327628413,
+    "enabled" : true,
+    "totp" : false,
+    "credentials" : [ {
+      "id" : "ee4e7e5c-a969-48a1-8e5e-2c7a7cafedbb",
+      "type" : "password",
+      "createdDate" : 1757327628637,
+      "secretData" : "{\"value\":\"85VRFCbwAr5biFHoXVs38PIAokGVAXFe48O3/j2F5VAcy1Wwe0N51mYEXETsLxQZGqjQslycmzG3Az59mMJ6JQ==\",\"salt\":\"SnqUUXrNcF2qaXmJxMpcFQ==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":210000,\"algorithm\":\"pbkdf2-sha512\",\"additionalParameters\":{}}"
     } ],
     "disableableCredentialTypes" : [ ],
     "requiredActions" : [ ],
@@ -1502,7 +1647,7 @@
       "providerId" : "declarative-user-profile",
       "subComponents" : { },
       "config" : {
-        "kc.user.profile.config" : [ "{\"attributes\":[{\"name\":\"username\",\"displayName\":\"${username}\",\"validations\":{\"length\":{\"min\":3,\"max\":255},\"username-prohibited-characters\":{},\"up-username-not-idn-homograph\":{}},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]},\"multivalued\":false},{\"name\":\"email\",\"displayName\":\"${email}\",\"validations\":{\"email\":{},\"length\":{\"max\":255}},\"required\":{\"roles\":[\"user\"]},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]},\"multivalued\":false},{\"name\":\"Role\",\"displayName\":\"Role\",\"validations\":{\"options\":{\"options\":[\"Scientist\",\"Labeler\"]}},\"annotations\":{\"inputType\":\"select\"},\"required\":{\"roles\":[\"user\"]},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]},\"multivalued\":false}],\"groups\":[{\"name\":\"user-metadata\",\"displayHeader\":\"User metadata\",\"displayDescription\":\"Attributes, which refer to user metadata\"}],\"unmanagedAttributePolicy\":\"ENABLED\"}" ]
+        "kc.user.profile.config" : [ "{\"attributes\":[{\"name\":\"username\",\"displayName\":\"${username}\",\"validations\":{\"length\":{\"min\":3,\"max\":255},\"username-prohibited-characters\":{},\"up-username-not-idn-homograph\":{}},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]},\"multivalued\":false},{\"name\":\"email\",\"displayName\":\"${email}\",\"validations\":{\"email\":{},\"length\":{\"max\":255}},\"required\":{\"roles\":[\"user\"]},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]},\"multivalued\":false},{\"name\":\"Role\",\"displayName\":\"Role\",\"validations\":{\"options\":{\"options\":[\"Scientist\",\"Labeler\"]}},\"annotations\":{\"kc.profile.roles\":{\"realm\":{\"Scientist\":\"Scientist\",\"Labeler\":\"Labeler\"}},\"inputType\":\"select\"},\"required\":{\"roles\":[\"user\"]},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]},\"multivalued\":false}],\"groups\":[{\"name\":\"user-metadata\",\"displayHeader\":\"User metadata\",\"displayDescription\":\"Attributes, which refer to user metadata\"}],\"unmanagedAttributePolicy\":\"ENABLED\"}" ]
       }
     } ],
     "org.keycloak.keys.KeyProvider" : [ {
@@ -1609,7 +1754,7 @@
       "userSetupAllowed" : false
     } ]
   }, {
-    "id" : "8c76e077-8f99-44cc-bfd0-ce76af7feb5d",
+    "id" : "9e4d188e-c978-4f56-baf0-e46f66902d87",
     "alias" : "Copy of registration",
     "description" : "registration flow",
     "providerId" : "basic-flow",
@@ -1625,7 +1770,7 @@
       "userSetupAllowed" : false
     } ]
   }, {
-    "id" : "2360f40e-696a-436f-9cda-f74c8c1d44ac",
+    "id" : "24ba0a76-8778-4d83-bca3-28818d208265",
     "alias" : "Copy of registration registration form",
     "description" : "registration form",
     "providerId" : "form-flow",
@@ -1643,6 +1788,13 @@
       "authenticatorFlow" : false,
       "requirement" : "REQUIRED",
       "priority" : 50,
+      "autheticatorFlow" : false,
+      "userSetupAllowed" : false
+    }, {
+      "authenticator" : "registration-recaptcha-action",
+      "authenticatorFlow" : false,
+      "requirement" : "DISABLED",
+      "priority" : 60,
       "autheticatorFlow" : false,
       "userSetupAllowed" : false
     } ]
