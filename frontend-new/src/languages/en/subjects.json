@@ -27,7 +27,9 @@
     "empty": "No labels found for this subject",
     "label": "label",
     "add": "Add Label",
-    "confirm_delete": "Are you sure you want to delete this label?"
+    "confirm_delete": "Are you sure you want to delete this label?",
+    "loading": "Loading labels...",
+    "no_labels": "No labels found"
   },
   "messages": {
     "not_found": "Subject not found"
@@ -37,5 +39,7 @@
     "shortcut": "Shortcut",
     "color": "Color"
   },
-  "loading": "Loading subjects..."
+  "loading": "Loading subjects...",
+  "confirm_delete_subject": "Are you sure you want to delete subject \"{{name}}\"? This operation cannot be undone.",
+  "confirm_delete_label": "Are you sure you want to delete label \"{{name}}\"? This operation cannot be undone."
 }

@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { useTranslation } from 'react-i18next';
 
 const Modal = ({ 
   children, 
@@ -11,6 +12,7 @@ const Modal = ({
   className = '',
   ...props 
 }) => {
+  const { t } = useTranslation('common');
   if (!show) return null;
 
   const getSizeClass = () => {
@@ -51,7 +53,7 @@ const Modal = ({
                 type="button" 
                 className="btn-close" 
                 onClick={onHide}
-                aria-label="Close"
+                aria-label={t('buttons.close')}
               ></button>
             </div>
           )}

@@ -1,7 +1,10 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Container, Card } from '../../components/ui';
 
 const Forbidden = () => {
+  const { t } = useTranslation('errors');
+
   return (
     <Container className="d-flex align-items-center justify-content-center min-vh-100">
       <Card className="text-center max-width-400">
@@ -13,11 +16,10 @@ const Forbidden = () => {
             403
           </Card.Title>
           <Card.Title level={2} className="mb-3">
-            Forbidden
+            {t('forbidden.title')}
           </Card.Title>
           <p className="text-muted mb-0">
-            Looks like you don't have permission to access this page. Please
-            contact your administrator if you believe this is an error.
+            {t('forbidden.message')}
           </p>
         </Card.Body>
       </Card>

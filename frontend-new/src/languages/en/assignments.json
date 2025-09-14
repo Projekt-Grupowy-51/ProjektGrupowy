@@ -39,7 +39,10 @@
     "delete": "Are you sure you want to delete this assignment?"
   },
   "columns": {
-    "name": "Name"
+    "name": "Name",
+    "email": "Email",
+    "role": "Role"
   },
-  "loading": "Loading assignments..."
+  "loading": "Loading assignments...",
+  "confirm_delete_assignment": "Are you sure you want to delete assignment #{{id}}? This operation cannot be undone."
 }

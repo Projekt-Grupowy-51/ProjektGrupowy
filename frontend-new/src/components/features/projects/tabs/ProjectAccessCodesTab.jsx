@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import { useTranslation } from 'react-i18next';
 import { Card, Button, Table } from '../../../ui';
 import { EmptyState, LoadingSpinner } from '../../../common';
 import { useProjectAccessCodes } from '../../../../hooks/useProjectAccessCodes';
 
 const ProjectAccessCodesTab = ({ projectId }) => {
+  const { t } = useTranslation(['projects', 'common']);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [expirationDays, setExpirationDays] = useState(14);
 
@@ -23,7 +25,7 @@ const ProjectAccessCodesTab = ({ projectId }) => {
     setShowCreateForm(false);
   };
 
-  if (loading) return <LoadingSpinner message="Loading access codes..." />;
+  if (loading) return <LoadingSpinner message={t('projects:access_codes.loading')} />;
 
   return (
     <div>
@@ -31,14 +33,14 @@ const ProjectAccessCodesTab = ({ projectId }) => {
         <Card.Header>
           <div className="d-flex justify-content-between align-items-center">
             <Card.Title level={5}>
-              Access Codes ({accessCodes?.length || 0})
+              {t('projects:tabs.access_codes')} ({accessCodes?.length || 0})
             </Card.Title>
             <Button
               variant="primary"
               size="sm"
               onClick={() => setShowCreateForm(!showCreateForm)}
             >
-              {showCreateForm ? 'Cancel' : 'Generate Code'}
+              {showCreateForm ? t('common:buttons.cancel') : t('projects:access_codes.buttons.generate')}
             </Button>
           </div>
         </Card.Header>
@@ -47,15 +49,15 @@ const ProjectAccessCodesTab = ({ projectId }) => {
             <div className="mb-4 p-3 bg-light rounded">
               <div className="row g-3 align-items-end">
                 <div className="col-md-6">
-                  <label className="form-label">Expiration (days)</label>
+                  <label className="form-label">{t('projects:access_codes.durations.days')}</label>
                   <select 
                     className="form-select"
                     value={expirationDays}
                     onChange={(e) => setExpirationDays(parseInt(e.target.value))}
                   >
-                    <option value={14}>14 days</option>
-                    <option value={30}>30 days</option>
-                    <option value={-1}>Never expires</option>
+                    <option value={14}>{t('projects:access_codes.durations.14_days')}</option>
+                    <option value={30}>{t('projects:access_codes.durations.30_days')}</option>
+                    <option value={-1}>{t('projects:access_codes.durations.unlimited')}</option>
                   </select>
                 </div>
                 <div className="col-md-6">
@@ -64,7 +66,7 @@ const ProjectAccessCodesTab = ({ projectId }) => {
                     onClick={handleCreate}
                     className="w-100"
                   >
-                    Create Access Code
+                    {t('projects:access_codes.buttons.generate')}
                   </Button>
                 </div>
               </div>
@@ -74,17 +76,17 @@ const ProjectAccessCodesTab = ({ projectId }) => {
           {!accessCodes || accessCodes.length === 0 ? (
             <EmptyState
               icon="fas fa-key"
-              message="No access codes generated yet"
+              message={t('projects:access_codes.no_codes')}
             />
           ) : (
             <Table striped>
               <Table.Head>
                 <Table.Row>
-                  <Table.Cell header>Code</Table.Cell>
-                  <Table.Cell header>Created</Table.Cell>
-                  <Table.Cell header>Expires</Table.Cell>
-                  <Table.Cell header>Status</Table.Cell>
-                  <Table.Cell header>Actions</Table.Cell>
+                  <Table.Cell header>{t('projects:access_codes.columns.code')}</Table.Cell>
+                  <Table.Cell header>{t('projects:access_codes.columns.created_at')}</Table.Cell>
+                  <Table.Cell header>{t('projects:access_codes.columns.expires_at')}</Table.Cell>
+                  <Table.Cell header>{t('projects:access_codes.columns.status')}</Table.Cell>
+                  <Table.Cell header>{t('common:actions')}</Table.Cell>
                 </Table.Row>
               </Table.Head>
               <Table.Body>
@@ -116,12 +118,12 @@ const ProjectAccessCodesTab = ({ projectId }) => {
                     <Table.Cell>
                       {code.expiresAtUtc 
                         ? new Date(code.expiresAtUtc).toLocaleDateString()
-                        : 'Never'
+                        : t('projects:access_codes.expiration.never')
                       }
                     </Table.Cell>
                     <Table.Cell>
                       <span className={`badge ${code.isValid ? 'bg-success' : 'bg-danger'}`}>
-                        {code.isValid ? 'Valid' : 'Expired'}
+                        {code.isValid ? t('projects:access_codes.status.valid') : t('projects:access_codes.expiration.expired')}
                       </span>
                     </Table.Cell>
                     <Table.Cell>
@@ -131,20 +133,20 @@ const ProjectAccessCodesTab = ({ projectId }) => {
                           variant="primary"
                           onClick={() => copyCode(code.code)}
                         >
-                          Copy
+                          {t('common:buttons.copy')}
                         </Button>
                         {code.isValid && (
                           <Button
                             size="sm"
                             variant="outline-danger"
                             confirmAction={true}
-                            confirmTitle="Potwierdź wycofanie kodu"
-                            confirmMessage={`Czy na pewno chcesz wycofać kod dostępu "${code.code}"? Ta operacja jest nieodwracalna.`}
-                            confirmText="Wycofaj kod"
-                            cancelText="Anuluj"
+                            confirmTitle={t('common:deleteConfirmation.title')}
+                            confirmMessage={t('projects:access_codes.confirm_retire', { code: code.code })}
+                            confirmText={t('common:buttons.retire')}
+                            cancelText={t('common:deleteConfirmation.cancel')}
                             onConfirm={() => retireCode(code.code)}
                           >
-                            Retire
+                            {t('common:buttons.retire')}
                           </Button>
                         )}
                       </div>

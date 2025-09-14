@@ -23,7 +23,11 @@
     "copy": "Kopiuj",
     "retire": "Wycofaj",
     "logout": "Wyloguj",
-    "save": "Zapisz"
+    "save": "Zapisz",
+    "tryAgain": "Spróbuj ponownie",
+    "dismiss": "Odrzuć",
+    "close": "Zamknij",
+    "download": "Pobierz"
   },
   "deleteConfirmation": {
     "title": "Potwierdź usunięcie",
@@ -35,12 +39,45 @@
     "loading": "Ładowanie...",
     "error": "Błąd",
     "empty": "Brak danych",
-    "success": "Sukces"
+    "success": "Sukces",
+    "unknown": "Nieznany",
+    "not_available": "Brak danych"
+  },
+  "emptyState": {
+    "defaultTitle": "Nie znaleziono danych",
+    "defaultMessage": "Brak elementów do wyświetlenia"
+  },
+  "error": {
+    "defaultMessage": "Wystąpił błąd"
   },
   "created_at": "Utworzono",
   "updated_at": "Zaktualizowano",
   "status": {
     "active": "Aktywny",
     "inactive": "Nieaktywny"
+  },
+  "home": {
+    "welcome_title": "Witamy w VidMark",
+    "welcome_subtitle": "Platforma do analizy i oznaczania wideo",
+    "view_projects": "Zobacz Projekty"
+  },
+  "form": {
+    "username": "Nazwa użytkownika",
+    "please_select": "Wybierz..."
+  },
+  "table": {
+    "actions": "Akcje"
+  },
+  "auth": {
+    "initializing": "Inicjalizacja uwierzytelnienia...",
+    "required_title": "Wymagane uwierzytelnienie",
+    "required_message": "Zaloguj się, aby uzyskać dostęp do platformy VidMark.",
+    "login_button": "Zaloguj się przez Keycloak"
+  },
+  "confirmationContext": {
+    "default_message": "Czy na pewno chcesz kontynuować?"
+  },
+  "user": {
+    "fallback": "Użytkownik"
   }
 }

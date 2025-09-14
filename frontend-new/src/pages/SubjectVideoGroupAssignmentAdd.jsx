@@ -33,7 +33,7 @@ const SubjectVideoGroupAssignmentAddPage = () => {
     if (dataLoading) {
         return (
             <FormPageWrapper title={t('assignments:add_title')} maxWidth={700}>
-                <LoadingSpinner message="Loading subjects and video groups..." />
+                <LoadingSpinner message={t('assignments:loading')} />
             </FormPageWrapper>
         );
     }

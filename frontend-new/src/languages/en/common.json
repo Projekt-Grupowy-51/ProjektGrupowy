@@ -23,7 +23,11 @@
     "copy": "Copy",
     "retire": "Retire",
     "logout": "Logout",
-    "save": "Save"
+    "save": "Save",
+    "tryAgain": "Try Again",
+    "dismiss": "Dismiss",
+    "close": "Close",
+    "download": "Download"
   },
   "deleteConfirmation": {
     "title": "Confirm Delete",
@@ -35,8 +39,41 @@
     "loading": "Loading...",
     "error": "Error",
     "empty": "No data",
-    "success": "Success"
+    "success": "Success",
+    "unknown": "Unknown",
+    "not_available": "N/A"
+  },
+  "emptyState": {
+    "defaultTitle": "No data found",
+    "defaultMessage": "There are no items to display"
+  },
+  "error": {
+    "defaultMessage": "An error occurred"
   },
   "created_at": "Created",
-  "updated_at": "Updated"
+  "updated_at": "Updated",
+  "home": {
+    "welcome_title": "Welcome to VidMark",
+    "welcome_subtitle": "Video analysis and labeling platform",
+    "view_projects": "View Projects"
+  },
+  "form": {
+    "username": "Username",
+    "please_select": "Please select..."
+  },
+  "table": {
+    "actions": "Actions"
+  },
+  "auth": {
+    "initializing": "Initializing authentication...",
+    "required_title": "Authentication Required",
+    "required_message": "Please log in to access VidMark platform.",
+    "login_button": "Login with Keycloak"
+  },
+  "confirmationContext": {
+    "default_message": "Are you sure you want to continue?"
+  },
+  "user": {
+    "fallback": "User"
+  }
 }

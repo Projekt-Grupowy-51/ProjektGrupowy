@@ -20,6 +20,8 @@ import enVideos from './languages/en/videos.json';
 import plVideos from './languages/pl/videos.json';
 import enVideoGroups from './languages/en/videoGroups.json';
 import plVideoGroups from './languages/pl/videoGroups.json';
+import enErrors from './languages/en/errors.json';
+import plErrors from './languages/pl/errors.json';
 
 const resources = {
     en: {
@@ -32,6 +34,7 @@ const resources = {
         assignments: enAssignments,
         videos: enVideos,
         videoGroups: enVideoGroups,
+        errors: enErrors,
     },
     pl: {
         common: plCommon,
@@ -43,6 +46,7 @@ const resources = {
         assignments: plAssignments,
         videos: plVideos,
         videoGroups: plVideoGroups,
+        errors: plErrors,
     }
 };
 
@@ -53,7 +57,7 @@ i18n
     .init({
         resources,
         fallbackLng: 'en',
-        ns: ['common', 'auth', 'labels', 'labeler', 'projects', 'subjects', 'assignments', 'videoGroups', 'videos'],
+        ns: ['common', 'auth', 'labels', 'labeler', 'projects', 'subjects', 'assignments', 'videoGroups', 'videos', 'errors'],
         defaultNS: 'common',
         detection: {
             order: ['querystring', 'localStorage', 'navigator', 'htmlTag'],

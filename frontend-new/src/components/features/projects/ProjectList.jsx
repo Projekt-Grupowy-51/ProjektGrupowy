@@ -85,10 +85,10 @@ const ProjectList = ({ projects, onDelete }) => {
                   variant="outline-danger"
                   icon="fas fa-trash"
                   confirmAction={true}
-                  confirmTitle="Potwierdź usunięcie"
-                  confirmMessage={`Czy na pewno chcesz usunąć projekt "${project.name}"? Ta operacja jest nieodwracalna.`}
-                  confirmText="Usuń"
-                  cancelText="Anuluj"
+                  confirmTitle={t('common:deleteConfirmation.title')}
+                  confirmMessage={t('projects:messages.confirm_delete')}
+                  confirmText={t('common:deleteConfirmation.confirm')}
+                  cancelText={t('common:deleteConfirmation.cancel')}
                   onConfirm={() => onDelete(project.id)}
                 >
                   {t('common:buttons.delete')}

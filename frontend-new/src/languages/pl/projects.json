@@ -79,7 +79,12 @@
     "unassign_selected": "Usuń zaznaczone przypisania",
     "unassign_all": "Usuń wszystkie przypisania",
     "assign_all_selected": "Przypisz wszystkie zaznaczone",
-    "distribute_labelers": "Rozdziel etykietujących"
+    "distribute_labelers": "Rozdziel etykietujących",
+    "labeler": "Etykietujący",
+    "no_assignments_selected": "Żaden etykietujący nie został przypisany do żadnego zadania.",
+    "distribute_confirm_message": "Czy na pewno chcesz automatycznie przypisać etykietujących do zadań? Ta operacja może zmienić istniejące przypisania.",
+    "unassign_all_confirm_message": "Czy na pewno chcesz cofnąć wszystkie przypisania etykietujących? Ta operacja jest nieodwracalna.",
+    "unassign_confirm_message": "Czy na pewno chcesz cofnąć przypisanie etykietującego \"{{labelerName}}\" do zadania? Ta operacja jest nieodwracalna."
   },
   "access_codes": {
     "no_codes": "Nie znaleziono kodów dostępu",
@@ -122,7 +127,9 @@
       "load_failed": "Nie udało się załadować kodów dostępu",
       "create_failed": "Nie udało się utworzyć kodu",
       "copy_failed": "Nie udało się skopiować kodu. Spróbuj ponownie."
-    }
+    },
+    "confirm_retire": "Czy na pewno chcesz wycofać kod dostępu \"{{code}}\"? Ta operacja jest nieodwracalna.",
+    "confirm_delete_assignment": "Czy na pewno chcesz usunąć przypisanie #{{id}}? Ta operacja jest nieodwracalna."
   },
   "video_groups": {
     "loading": "Ładowanie grup wideo..."
@@ -131,8 +138,12 @@
     "title": "Raporty Projektu",
     "no_reports": "Nie wygenerowano jeszcze żadnych raportów",
     "generate": "Generuj Raport",
-    "confirm_delete": "Czy na pewno chcesz usunąć ten raport?",
+    "confirm_delete": "Czy na pewno chcesz usunąć raport \"{{name}}\"? Ta operacja jest nieodwracalna.",
     "quality": "Jakość Raportu",
-    "quality_description": "Wyższa jakość trwa dłużej, ale zapewnia bardziej szczegółową analizę."
+    "quality_description": "Wyższa jakość trwa dłużej, ale zapewnia bardziej szczegółową analizę.",
+    "fallback_name": "Raport #{{id}}"
+  },
+  "messages": {
+    "project_not_found": "Projekt nie znaleziony"
   }
 }

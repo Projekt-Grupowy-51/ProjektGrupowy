@@ -85,7 +85,7 @@ const VideoLabelingInterface = () => {
   if (loading) {
     return (
       <Container>
-        <LoadingSpinner message={t('videos:loading_session')} />
+        <LoadingSpinner message={t('videos:labeling.loading_session')} />
       </Container>
     );
   }
@@ -98,7 +98,7 @@ const VideoLabelingInterface = () => {
           <div className="d-flex align-items-center">
             <i className="fas fa-exclamation-triangle me-3"></i>
             <div>
-              <h5 className="alert-heading mb-1">Failed to Load Session</h5>
+              <h5 className="alert-heading mb-1">{t('videos:labeling.error.failed_to_load_session')}</h5>
               <p className="mb-0">{error}</p>
             </div>
           </div>
@@ -115,8 +115,8 @@ const VideoLabelingInterface = () => {
           <div className="d-flex align-items-center">
             <i className="fas fa-exclamation-triangle me-3"></i>
             <div>
-              <h5 className="alert-heading mb-1">Assignment Not Found</h5>
-              <p className="mb-0">The requested labeling assignment could not be found.</p>
+              <h5 className="alert-heading mb-1">{t('videos:labeling.error.assignment_not_found')}</h5>
+              <p className="mb-0">{t('videos:labeling.error.assignment_not_found_message')}</p>
             </div>
           </div>
         </Alert>
@@ -137,10 +137,10 @@ const VideoLabelingInterface = () => {
           </div>
           <div className="d-flex align-items-center gap-3">
             <span className="badge bg-secondary">
-              Assignment #{assignment.id}
+              {t('videos:labeling.assignment')} #{assignment.id}
             </span>
             <span className="badge bg-secondary">
-              Batch {batchManagement.currentBatch}/{batchManagement.totalBatches}
+              {t('videos:labeling.batch')} {batchManagement.currentBatch}/{batchManagement.totalBatches}
             </span>
           </div>
         </div>
@@ -183,7 +183,7 @@ const VideoLabelingInterface = () => {
             <Card.Header>
               <Card.Title level={6}>
                 <i className="fas fa-tags me-2"></i>
-                Available Labels
+                {t('videos:labeling.available_labels')}
               </Card.Title>
             </Card.Header>
             <Card.Body>

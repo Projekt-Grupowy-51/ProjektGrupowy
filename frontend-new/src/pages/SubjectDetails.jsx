@@ -68,10 +68,10 @@ const SubjectDetails = () => {
             variant="outline-danger"
             icon="fas fa-trash"
             confirmAction={true}
-            confirmTitle="Potwierdź usunięcie"
-            confirmMessage={`Czy na pewno chcesz usunąć przedmiot "${subject.name}"? Ta operacja jest nieodwracalna.`}
-            confirmText="Usuń"
-            cancelText="Anuluj"
+            confirmTitle={t('common:deleteConfirmation.title')}
+            confirmMessage={t('subjects:confirm_delete_subject', { name: subject.name })}
+            confirmText={t('common:deleteConfirmation.confirm')}
+            cancelText={t('common:deleteConfirmation.cancel')}
             onConfirm={deleteSubject}
           >
             {t('common:buttons.delete')}
@@ -115,7 +115,7 @@ const SubjectDetails = () => {
       </div>
 
       {labelsLoading ? (
-        <LoadingSpinner message="Loading labels..." size="small" />
+        <LoadingSpinner message={t('subjects:labels.loading')} size="small" />
       ) : labelsError ? (
         <ErrorAlert error={labelsError} />
       ) : labels.length > 0 ? (
@@ -165,10 +165,10 @@ const SubjectDetails = () => {
                         variant="outline-danger"
                         icon="fas fa-trash"
                         confirmAction={true}
-                        confirmTitle="Potwierdź usunięcie"
-                        confirmMessage={`Czy na pewno chcesz usunąć etykietę "${label.name}"? Ta operacja jest nieodwracalna.`}
-                        confirmText="Usuń"
-                        cancelText="Anuluj"
+                        confirmTitle={t('common:deleteConfirmation.title')}
+                        confirmMessage={t('subjects:confirm_delete_label', { name: label.name })}
+                        confirmText={t('common:deleteConfirmation.confirm')}
+                        cancelText={t('common:deleteConfirmation.cancel')}
                         onConfirm={() => deleteLabel(label.id)}
                       >
                         {t('common:buttons.delete')}
@@ -183,7 +183,7 @@ const SubjectDetails = () => {
       ) : (
         <EmptyState
           icon="fas fa-tags"
-          title="No labels found"
+          title={t('subjects:labels.no_labels')}
           message={t('subjects:labels.empty')}
           actionText={t('subjects:labels.add')}
           onAction={handleAddLabel}

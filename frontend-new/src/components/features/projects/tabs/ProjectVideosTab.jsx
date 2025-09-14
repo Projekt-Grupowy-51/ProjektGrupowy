@@ -7,7 +7,7 @@ import { EmptyState, TabHeader, TabListGroup, LoadingSpinner, ErrorAlert } from 
 import { useProjectVideoGroups } from '../../../../hooks/useProjectVideoGroups.js';
 
 const ProjectVideosTab = ({ projectId }) => {
-  const { t } = useTranslation(['common', 'projects']);
+  const { t } = useTranslation(['common', 'projects', 'videoGroups']);
   const navigate = useNavigate();
   
   const {
@@ -48,10 +48,10 @@ const ProjectVideosTab = ({ projectId }) => {
           variant="outline-danger"
           icon="fas fa-trash"
           confirmAction={true}
-          confirmTitle="Potwierdź usunięcie"
-          confirmMessage={`Czy na pewno chcesz usunąć grupę wideo "${videoGroup.name}"? Ta operacja jest nieodwracalna.`}
-          confirmText="Usuń"
-          cancelText="Anuluj"
+          confirmTitle={t('common:deleteConfirmation.title')}
+          confirmMessage={t('videoGroups:confirm_delete_video_group', { name: videoGroup.name })}
+          confirmText={t('common:deleteConfirmation.confirm')}
+          cancelText={t('common:deleteConfirmation.cancel')}
           onConfirm={() => deleteVideoGroup(videoGroup.id)}
         >
           {t('common:buttons.delete')}

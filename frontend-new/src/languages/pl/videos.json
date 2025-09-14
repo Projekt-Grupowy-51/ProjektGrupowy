@@ -8,7 +8,9 @@
     "duration": "Czas trwania",
     "filename": "Nazwa pliku",
     "video_not_supported": "Twoja przeglądarka nie obsługuje tagu video.",
-    "no_labels": "Brak etykiet przypisanych do tego wideo"
+    "no_labels": "Brak etykiet przypisanych do tego wideo",
+    "loading_video": "Ładowanie wideo...",
+    "failed_to_load": "Błąd ładowania wideo"
   },
   "messages": {
     "not_found": "Wideo nie zostało znalezione"
@@ -106,5 +108,28 @@
   "success": {
     "title_updated": "Tytuł został pomyślnie zaktualizowany",
     "video_group_added": "Grupa filmów została pomyślnie dodana!"
+  },
+  "labeling": {
+    "loading_session": "Ładowanie sesji oznaczania...",
+    "loading_labels": "Ładowanie etykiet...",
+    "assignment": "Przydział",
+    "batch": "Partia",
+    "available_labels": "Dostępne etykiety",
+    "assigned_labels": "Przypisane etykiety",
+    "confirm_delete_label": "Czy na pewno chcesz usunąć etykietę \"{{labelName}}\"? Ta operacja jest nieodwracalna.",
+    "no_labels_assigned": "Nie przypisano jeszcze etykiet",
+    "use_shortcuts_hint": "Użyj skrótów lub przycisków powyżej",
+    "shortcut": "Skrót",
+    "click_to_set_end_time": "Kliknij aby ustawić czas KOŃCA dla etykiety zakresu",
+    "click_to_set_start_time": "Kliknij aby ustawić czas POCZĄTKU dla etykiety zakresu",
+    "seek_backward_10s": "-10 sekund",
+    "seek_forward_10s": "+10 sekund",
+    "play_pause_shortcut": "Spacja = Odtwórz/Wstrzymaj",
+    "playback_speed": "Prędkość",
+    "error": {
+      "failed_to_load_session": "Nie udało się załadować sesji",
+      "assignment_not_found": "Przydział nie znaleziony",
+      "assignment_not_found_message": "Żądany przydział oznaczania nie został znaleziony."
+    }
   }
 }

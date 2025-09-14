@@ -79,7 +79,12 @@
     "unassign_selected": "Unassign Selected",
     "unassign_all": "Unassign All Labelers",
     "assign_all_selected": "Assign all selected",
-    "distribute_labelers": "Distribute labelers"
+    "distribute_labelers": "Distribute labelers",
+    "labeler": "Labeler",
+    "no_assignments_selected": "No labelers have been assigned to any assignment.",
+    "distribute_confirm_message": "Are you sure you want to automatically assign labelers to tasks? This operation may change existing assignments.",
+    "unassign_all_confirm_message": "Are you sure you want to unassign all labelers? This operation cannot be undone.",
+    "unassign_confirm_message": "Are you sure you want to unassign labeler \"{{labelerName}}\" from the assignment? This operation cannot be undone."
   },
   "access_codes": {
     "no_codes": "No access codes found",
@@ -122,7 +127,9 @@
       "load_failed": "Failed to load access codes",
       "create_failed": "Failed to create code",
       "copy_failed": "Failed to copy code. Please try again."
-    }
+    },
+    "confirm_retire": "Are you sure you want to retire access code \"{{code}}\"? This operation cannot be undone.",
+  "confirm_delete_assignment": "Are you sure you want to delete assignment #{{id}}? This operation cannot be undone."
   },
   "video_groups": {
     "loading": "Loading video groups..."
@@ -131,8 +138,12 @@
     "title": "Project Reports",
     "no_reports": "No reports generated yet",
     "generate": "Generate Report", 
-    "confirm_delete": "Are you sure you want to delete this report?",
+    "confirm_delete": "Are you sure you want to delete report \"{{name}}\"? This operation cannot be undone.",
     "quality": "Report Quality",
-    "quality_description": "Higher quality takes longer to generate but provides more detailed analysis."
+    "quality_description": "Higher quality takes longer to generate but provides more detailed analysis.",
+    "fallback_name": "Report #{{id}}"
+  },
+  "messages": {
+    "project_not_found": "Project not found"
   }
 }

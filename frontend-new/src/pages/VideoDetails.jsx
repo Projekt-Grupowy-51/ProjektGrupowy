@@ -86,7 +86,7 @@ const VideoDetails = () => {
           >
             {videoStreamLoading ? (
               <div className="position-absolute top-50 start-50 translate-middle text-white">
-                <LoadingSpinner message="Loading video..." />
+                <LoadingSpinner message={t('videos:details.loading_video')} />
               </div>
             ) : videoStreamUrl ? (
               <video
@@ -107,7 +107,7 @@ const VideoDetails = () => {
             ) : (
               <div className="position-absolute top-50 start-50 translate-middle text-white">
                 <i className="fas fa-exclamation-triangle me-2"></i>
-                Failed to load video
+                {t('videos:details.failed_to_load')}
               </div>
             )}
           </div>
@@ -123,7 +123,7 @@ const VideoDetails = () => {
         </Card.Header>
         <Card.Body>
           {labelsLoading ? (
-            <LoadingSpinner message="Loading labels..." size="small" />
+            <LoadingSpinner message={t('videos:details.loading')} size="small" />
           ) : labelsError ? (
             <ErrorAlert error={labelsError} />
           ) : assignedLabels.length > 0 ? (
@@ -143,15 +143,15 @@ const VideoDetails = () => {
                   <Table.Row key={label.id}>
                     <Table.Cell>{index + 1}</Table.Cell>
                     <Table.Cell>
-                      <span className="badge bg-primary">{label.labelName || 'Unknown'}</span>
+                      <span className="badge bg-primary">{label.labelName || t('common:states.unknown')}</span>
                     </Table.Cell>
-                    <Table.Cell>{label.labelerName || 'Unknown'}</Table.Cell>
-                    <Table.Cell>{label.subjectName || 'Unknown'}</Table.Cell>
+                    <Table.Cell>{label.labelerName || t('common:states.unknown')}</Table.Cell>
+                    <Table.Cell>{label.subjectName || t('common:states.unknown')}</Table.Cell>
                     <Table.Cell>
-                      {label.timestamp ? `${label.timestamp}s` : 'N/A'}
+                      {label.timestamp ? `${label.timestamp}s` : t('common:states.not_available')}
                     </Table.Cell>
                     <Table.Cell>
-                      {label.insDate ? new Date(label.insDate).toLocaleString() : 'N/A'}
+                      {label.insDate ? new Date(label.insDate).toLocaleString() : t('common:states.not_available')}
                     </Table.Cell>
                   </Table.Row>
                 ))}

@@ -1,19 +1,22 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { useTranslation } from 'react-i18next';
 import { Container } from '../ui';
 
 const LoadingSpinner = ({ 
-  message = "Loading...", 
+  message, 
   size = "default", 
   centered = true,
   className = "" 
 }) => {
+  const { t } = useTranslation('common');
+  const displayMessage = message || t('loading');
   const sizeClass = size === "small" ? "spinner-border-sm" : "";
   const containerClass = centered ? "text-center py-4" : "";
 
   const spinner = (
     <div className={`spinner-border text-primary ${sizeClass}`} role="status">
-      <span className="visually-hidden">{message}</span>
+      <span className="visually-hidden">{displayMessage}</span>
     </div>
   );
 
@@ -21,7 +24,7 @@ const LoadingSpinner = ({
     return (
       <div className={`${containerClass} ${className}`}>
         {spinner}
-        {message && <div className="mt-2 text-muted">{message}</div>}
+        <div className="mt-2 text-muted">{displayMessage}</div>
       </div>
     );
   }
@@ -29,7 +32,7 @@ const LoadingSpinner = ({
   return (
     <div className={className}>
       {spinner}
-      {message && <span className="ms-2 text-muted">{message}</span>}
+      <span className="ms-2 text-muted">{displayMessage}</span>
     </div>
   );
 };

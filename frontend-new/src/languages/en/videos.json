@@ -8,7 +8,9 @@
     "duration": "Duration",
     "filename": "Filename",
     "video_not_supported": "Your browser does not support the video tag.",
-    "no_labels": "No labels assigned to this video"
+    "no_labels": "No labels assigned to this video",
+    "loading_video": "Loading video...",
+    "failed_to_load": "Failed to load video"
   },
   "messages": {
     "not_found": "Video not found"
@@ -106,5 +108,28 @@
   "success": {
     "title_updated": "Title updated successfully",
     "video_group_added": "Video group added successfully!"
+  },
+  "labeling": {
+    "loading_session": "Loading labeling session...",
+    "loading_labels": "Loading labels...",
+    "assignment": "Assignment",
+    "batch": "Batch",
+    "available_labels": "Available Labels",
+    "assigned_labels": "Assigned Labels",
+    "confirm_delete_label": "Are you sure you want to delete label \"{{labelName}}\"? This operation cannot be undone.",
+    "no_labels_assigned": "No labels assigned yet",
+    "use_shortcuts_hint": "Use shortcuts or buttons above",
+    "shortcut": "Shortcut",
+    "click_to_set_end_time": "Click to set END time for range label",
+    "click_to_set_start_time": "Click to set START time for range label",
+    "seek_backward_10s": "-10 seconds",
+    "seek_forward_10s": "+10 seconds",
+    "play_pause_shortcut": "Space = Play/Pause",
+    "playback_speed": "Speed",
+    "error": {
+      "failed_to_load_session": "Failed to Load Session",
+      "assignment_not_found": "Assignment Not Found",
+      "assignment_not_found_message": "The requested labeling assignment could not be found."
+    }
   }
 }

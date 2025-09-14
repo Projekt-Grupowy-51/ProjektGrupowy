@@ -53,10 +53,10 @@ const SubjectVideoGroupAssignmentDetails = () => {
             variant="outline-danger" 
             icon="fas fa-trash"
             confirmAction={true}
-            confirmTitle="Potwierdź usunięcie"
-            confirmMessage={`Czy na pewno chcesz usunąć przypisanie #${assignmentDetails.id}? Ta operacja jest nieodwracalna.`}
-            confirmText="Usuń"
-            cancelText="Anuluj"
+            confirmTitle={t('common:deleteConfirmation.title')}
+            confirmMessage={t('assignments:confirm_delete_assignment', { id: assignmentDetails.id })}
+            confirmText={t('common:deleteConfirmation.confirm')}
+            cancelText={t('common:deleteConfirmation.cancel')}
             onConfirm={handleDelete}
           >
             {t('common:buttons.delete')}

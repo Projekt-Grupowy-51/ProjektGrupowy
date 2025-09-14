@@ -29,7 +29,7 @@ const Table = ({
     </table>
   );
 
-  // 🔹 Priorytet: jeśli maxHeight ustawiony -> wrap ze scrollowaniem
+  // Priority: if maxHeight is set -> wrap with scrolling
   if (maxHeight) {
     return (
       <div style={{ maxHeight, overflowY: 'auto' }}>

@@ -1,8 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { useTranslation } from 'react-i18next';
 import { LABEL_TYPES } from '../utils/labelUtils.js';
 
 const LabelButtons = ({ labels, onLabelAction, getLabelState }) => {
+  const { t } = useTranslation('videos');
   return (
     <div className="d-flex flex-wrap gap-1">
       {labels?.map((label) => {
@@ -10,11 +12,11 @@ const LabelButtons = ({ labels, onLabelAction, getLabelState }) => {
         
         const buttonText = `${label.name} [${label.shortcut}]`;
         
-        let tooltipText = `Shortcut: ${label.shortcut} | ${label.description}`;
+        let tooltipText = `${t('videos:labeling.shortcut')}: ${label.shortcut} | ${label.description}`;
         if (isPending) {
-          tooltipText = `Click to set END time for range label | Shortcut: ${label.shortcut}`;
+          tooltipText = `${t('videos:labeling.click_to_set_end_time')} | ${t('videos:labeling.shortcut')}: ${label.shortcut}`;
         } else if (isRange) {
-          tooltipText = `Click to set START time for range label | Shortcut: ${label.shortcut}`;
+          tooltipText = `${t('videos:labeling.click_to_set_start_time')} | ${t('videos:labeling.shortcut')}: ${label.shortcut}`;
         }
         
         return (

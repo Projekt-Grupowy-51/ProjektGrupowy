@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { useTranslation } from 'react-i18next';
 
 const Alert = ({ 
   children, 
@@ -9,6 +10,7 @@ const Alert = ({
   className = '',
   ...props 
 }) => {
+  const { t } = useTranslation('common');
   const getVariantClass = () => {
     const variants = {
       primary: 'alert-primary',
@@ -38,7 +40,7 @@ const Alert = ({
           type="button"
           className="btn-close"
           onClick={onClose}
-          aria-label="Close"
+          aria-label={t('buttons.close')}
         ></button>
       )}
     </div>

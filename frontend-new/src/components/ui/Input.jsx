@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { useTranslation } from 'react-i18next';
 
 const Input = ({
   label,
@@ -22,6 +23,7 @@ const Input = ({
   options = [],
   ...props
 }) => {
+  const { t } = useTranslation('common');
   const inputId = id || name;
   
   const getSizeClass = () => {
@@ -99,7 +101,7 @@ const Input = ({
           disabled={disabled}
           {...props}
         >
-          <option value="">Please select...</option>
+          <option value="">{t('form.please_select')}</option>
           {options.map((option) => (
             <option key={option.value} value={option.value}>
               {option.label}

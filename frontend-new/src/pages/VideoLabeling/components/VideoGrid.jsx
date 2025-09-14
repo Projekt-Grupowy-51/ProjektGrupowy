@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
+import { useTranslation } from 'react-i18next';
 import { getVideoGridLayout } from '../utils/videoUtils.js';
 
 const VideoGrid = ({ videos, videoStreamUrls = {}, videoRefs, onTimeUpdate, onLoadedMetadata = () => {}, videoHeight = 300, fillSpace = false, displayMode = 'auto' }) => {
+  const { t } = useTranslation(['videos']);
   const [endedVideos, setEndedVideos] = useState(new Set());
   
   const getGridConfig = (mode, videoCount) => {
@@ -79,7 +81,7 @@ const VideoGrid = ({ videos, videoStreamUrls = {}, videoRefs, onTimeUpdate, onLo
       <div className="d-flex justify-content-center align-items-center" style={{ height: '400px' }}>
         <div className="text-center">
           <i className="fas fa-film fs-1 text-muted opacity-50"></i>
-          <p className="text-muted mt-3">No videos available</p>
+          <p className="text-muted mt-3">{t('videos:video_group_details.no_videos')}</p>
         </div>
       </div>
     );

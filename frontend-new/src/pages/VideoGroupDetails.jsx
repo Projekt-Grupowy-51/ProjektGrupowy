@@ -6,7 +6,7 @@ import { LoadingSpinner, ErrorAlert, EmptyState } from '../components/common';
 import { useVideoGroupDetails } from '../hooks/useVideoGroupDetails.js';
 
 const VideoGroupDetails = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(['videoGroups', 'videos', 'common']);
   const { id } = useParams();
   const navigate = useNavigate();
   
@@ -68,10 +68,10 @@ const VideoGroupDetails = () => {
             variant="outline-danger"
             icon="fas fa-trash"
             confirmAction={true}
-            confirmTitle="Potwierdź usunięcie"
-            confirmMessage={`Czy na pewno chcesz usunąć grupę wideo "${videoGroup.name}"? Ta operacja jest nieodwracalna.`}
-            confirmText="Usuń"
-            cancelText="Anuluj"
+            confirmTitle={t('common:deleteConfirmation.title')}
+            confirmMessage={t('videoGroups:confirm_delete_group', { name: videoGroup.name })}
+            confirmText={t('common:deleteConfirmation.confirm')}
+            cancelText={t('common:deleteConfirmation.cancel')}
             onConfirm={deleteVideoGroup}
           >
             {t('common:buttons.delete')}
@@ -156,10 +156,10 @@ const VideoGroupDetails = () => {
                         variant="outline-danger"
                         icon="fas fa-trash"
                         confirmAction={true}
-                        confirmTitle="Potwierdź usunięcie"
-                        confirmMessage={`Czy na pewno chcesz usunąć wideo "${video.title}"? Ta operacja jest nieodwracalna.`}
-                        confirmText="Usuń"
-                        cancelText="Anuluj"
+                        confirmTitle={t('common:deleteConfirmation.title')}
+                        confirmMessage={t('videoGroups:confirm_delete_video', { title: video.title })}
+                        confirmText={t('common:deleteConfirmation.confirm')}
+                        cancelText={t('common:deleteConfirmation.cancel')}
                         onConfirm={() => deleteVideo(video.id)}
                       >
                         {t('common:buttons.delete')}
@@ -174,7 +174,7 @@ const VideoGroupDetails = () => {
       ) : (
         <EmptyState
           icon="fas fa-video"
-          title="No videos found"
+          title={t('videoGroups:videos.no_videos')}
           message={t('videoGroups:videos.empty')}
           actionText={t('videoGroups:videos.add')}
           onAction={handleAddVideo}

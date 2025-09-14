@@ -17,5 +17,18 @@
   "errors": {
     "loadFailed": "Failed to load video group data",
     "not_found": "Video group not found"
-  }
+  },
+  "details": {
+    "title": "Video Group Details",
+    "description": "Description"
+  },
+  "videos": {
+    "title": "Videos",
+    "add": "Add Video",
+    "empty": "No videos in this group yet",
+    "no_videos": "No videos found"
+  },
+  "confirm_delete_group": "Are you sure you want to delete video group \"{{name}}\"? This operation cannot be undone.",
+  "confirm_delete_video_group": "Are you sure you want to delete video group \"{{name}}\"? This operation cannot be undone.",
+  "confirm_delete_video": "Are you sure you want to delete video \"{{title}}\"? This operation cannot be undone."
 }

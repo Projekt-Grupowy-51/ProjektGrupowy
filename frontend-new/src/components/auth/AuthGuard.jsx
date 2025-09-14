@@ -1,15 +1,17 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useKeycloak } from '../../hooks/useKeycloak.js';
 import { Container, Card, Button } from '../ui';
 import { LoadingSpinner } from '../common';
 
 const AuthGuard = ({ children, fallback = null }) => {
+  const { t } = useTranslation('common');
   const { isAuthenticated, isLoading, login } = useKeycloak();
 
   if (isLoading) {
     return (
       <Container className="d-flex justify-content-center align-items-center vh-100">
-        <LoadingSpinner message="Initializing authentication..." />
+        <LoadingSpinner message={t('auth.initializing')} />
       </Container>
     );
   }
@@ -21,19 +23,19 @@ const AuthGuard = ({ children, fallback = null }) => {
           <Card.Header>
             <Card.Title level={3}>
               <i className="fas fa-lock me-2"></i>
-              Authentication Required
+              {t('auth.required_title')}
             </Card.Title>
           </Card.Header>
           <Card.Body>
             <p className="text-muted mb-4">
-              Please log in to access VidMark platform.
+              {t('auth.required_message')}
             </p>
             <Button 
               variant="primary" 
               onClick={login}
               icon="fas fa-sign-in-alt"
             >
-              Login with Keycloak
+              {t('auth.login_button')}
             </Button>
           </Card.Body>
         </Card>

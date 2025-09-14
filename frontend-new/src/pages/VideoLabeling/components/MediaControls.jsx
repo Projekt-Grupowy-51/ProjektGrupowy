@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { useTranslation } from 'react-i18next';
 import { Button } from '../../../components/ui';
 import { formatDuration, getProgressPercentage } from '../utils/timeUtils.js';
 
@@ -13,6 +14,7 @@ const MediaControls = ({
   onSpeedChange, 
   onBatchChange 
 }) => {
+  const { t } = useTranslation('videos');
   const { isPlaying, currentTime, duration, playbackSpeed } = playerState;
   const { current, total, canGoPrevious, canGoNext } = batchInfo;
 
@@ -90,7 +92,7 @@ const MediaControls = ({
             size="sm"
             onClick={() => handleQuickSeek(-10)}
             disabled={currentTime <= 0}
-            title="-10 seconds"
+            title={t('videos:labeling.seek_backward_10s')}
             style={{ fontSize: '0.7rem', padding: '4px 6px', minWidth: '28px' }}
           >
             ‹‹
@@ -100,7 +102,7 @@ const MediaControls = ({
             variant={isPlaying ? "warning" : "success"}
             size="sm"
             onClick={() => onPlayPause()}
-            title="Space = Play/Pause"
+            title={t('videos:labeling.play_pause_shortcut')}
             style={{ fontSize: '0.9rem', padding: '6px 8px', minWidth: '32px', fontWeight: 'bold' }}
           >
             {isPlaying ? '⏸' : '▶'}
@@ -111,7 +113,7 @@ const MediaControls = ({
             size="sm"
             onClick={() => handleQuickSeek(10)}
             disabled={currentTime >= (duration || 0)}
-            title="+10 seconds"
+            title={t('videos:labeling.seek_forward_10s')}
             style={{ fontSize: '0.7rem', padding: '4px 6px', minWidth: '28px' }}
           >
             ››
@@ -125,7 +127,7 @@ const MediaControls = ({
             style={{ width: '50px', fontSize: '0.7rem', padding: '4px' }}
             value={playbackSpeed}
             onChange={(e) => onSpeedChange(parseFloat(e.target.value))}
-            title="Speed"
+            title={t('videos:labeling.playback_speed')}
           >
             {PLAYBACK_SPEEDS.map((speed) => (
               <option key={speed} value={speed}>

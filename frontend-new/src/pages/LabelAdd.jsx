@@ -24,7 +24,7 @@ const LabelAdd = () => {
       maxWidth={700}
     >
       {subjectLoading ? (
-        <LoadingSpinner message="Loading subject..." />
+        <LoadingSpinner message={t('common:loading')} />
       ) : error ? (
         <ErrorAlert error={error} />
       ) : (

@@ -37,5 +37,11 @@
     "shortcut": "Skrót",
     "color": "Kolor"
   },
-  "loading": "Ładowanie tematów..."
+  "loading": "Ładowanie tematów...",
+  "labels": {
+    "loading": "Ładowanie etykiet...",
+    "no_labels": "Nie znaleziono etykiet"
+  },
+  "confirm_delete_subject": "Czy na pewno chcesz usunąć przedmiot \"{{name}}\"? Ta operacja jest nieodwracalna.",
+  "confirm_delete_label": "Czy na pewno chcesz usunąć etykietę \"{{name}}\"? Ta operacja jest nieodwracalna."
 }

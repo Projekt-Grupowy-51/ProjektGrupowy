@@ -52,7 +52,7 @@ const TopNavbar = () => {
                   onClick={() => changeLanguage('en')}
                 >
                   <span className="me-2">🇺🇸</span>
-                  English
+                  {t('language.en')}
                 </button>
               </li>
               <li>
@@ -61,7 +61,7 @@ const TopNavbar = () => {
                   onClick={() => changeLanguage('pl')}
                 >
                   <span className="me-2">🇵🇱</span>
-                  Polski
+                  {t('language.pl')}
                 </button>
               </li>
             </ul>
@@ -75,7 +75,7 @@ const TopNavbar = () => {
               aria-expanded="false"
             >
               <i className="fas fa-user-circle me-2"></i>
-              {user?.preferred_username || user?.name || 'User'}
+              {user?.preferred_username || user?.name || t('user.fallback')}
             </button>
             <ul className="dropdown-menu dropdown-menu-end">
               <li>

@@ -20,7 +20,7 @@ const VideoGroupEditPage = () => {
 
   if (error) return <ErrorAlert error={error} />;
 
-  if (!videoGroup) return <ErrorAlert error="VideoGroup not found" />;
+  if (!videoGroup) return <ErrorAlert error={t('videoGroups:errors.not_found')} />;
 
   return (
     <FormPageWrapper

@@ -4,6 +4,7 @@ import {
     Routes,
     Route,
 } from "react-router-dom";
+import { useTranslation } from 'react-i18next';
 import { ConfirmationProvider } from "./contexts/ConfirmationContext.jsx";
 import ConfirmationModal from "./components/ui/ConfirmationModal.jsx";
 import AuthGuard from "./components/auth/AuthGuard.jsx";
@@ -35,6 +36,8 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
 function App() {
+    const { t } = useTranslation('common');
+    
     return (
         <ConfirmationProvider>
             <Router>
@@ -65,12 +68,12 @@ function App() {
                         <Route path="/video-labeling/:assignmentId" element={<VideoLabelingInterfacePage />} />
                         <Route path="/" element={
                             <div className="container mt-5">
-                                <h1>Welcome to VidMark</h1>
-                                <p>Video analysis and labeling platform</p>
+                                <h1>{t('home.welcome_title')}</h1>
+                                <p>{t('home.welcome_subtitle')}</p>
                                 <div className="mt-4">
                                     <a href="/projects" className="btn btn-primary">
                                         <i className="fas fa-folder-open me-2"></i>
-                                        View Projects
+                                        {t('home.view_projects')}
                                     </a>
                                 </div>
                             </div>

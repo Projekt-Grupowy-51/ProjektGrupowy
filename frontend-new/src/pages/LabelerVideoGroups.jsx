@@ -108,8 +108,8 @@ const LabelerVideoGroups = () => {
                         {getProjectAssignments(project.id).map((assignment, index) => (
                           <TableRow key={assignment.id}>
                             <TableCell>{index + 1}</TableCell>
-                            <TableCell>{assignment.subjectName || 'Subject Name'}</TableCell>
-                            <TableCell>{assignment.videoGroupName || 'Video Group Name'}</TableCell>
+                            <TableCell>{assignment.subjectName || t('common:states.unknown')}</TableCell>
+                            <TableCell>{assignment.videoGroupName || t('common:states.unknown')}</TableCell>
                             <TableCell>
                               <Button
                                 size="sm"

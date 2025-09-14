@@ -1,7 +1,10 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Container, Card } from '../../components/ui';
 
 const NotFound = () => {
+  const { t } = useTranslation('errors');
+
   return (
     <Container className="d-flex align-items-center justify-content-center min-vh-100">
       <Card className="text-center max-width-400">
@@ -13,10 +16,10 @@ const NotFound = () => {
             404
           </Card.Title>
           <Card.Title level={2} className="mb-3">
-            Page Not Found
+            {t('notFound.title')}
           </Card.Title>
           <p className="text-muted mb-0">
-            The page you're looking for doesn't exist or has been moved.
+            {t('notFound.message')}
           </p>
         </Card.Body>
       </Card>

@@ -31,7 +31,7 @@ const ProjectAssignmentsTab = ({ projectId }) => {
       </Card.Header>
       <Card.Body>
         {loading ? (
-          <LoadingSpinner message="Loading assignments..." />
+          <LoadingSpinner message={t('projects:buttons.loading')} />
         ) : error ? (
           <div className="alert alert-danger">
             <i className="fas fa-exclamation-triangle me-2"></i>
@@ -79,10 +79,10 @@ const ProjectAssignmentsTab = ({ projectId }) => {
                     variant="outline-danger"
                     icon="fas fa-trash"
                     confirmAction={true}
-                    confirmTitle="Potwierdź usunięcie"
-                    confirmMessage={`Czy na pewno chcesz usunąć przypisanie #${assignment.id}? Ta operacja jest nieodwracalna.`}
-                    confirmText="Usuń"
-                    cancelText="Anuluj"
+                    confirmTitle={t('common:deleteConfirmation.title')}
+                    confirmMessage={t('projects:confirm_delete_assignment', { id: assignment.id })}
+                    confirmText={t('common:deleteConfirmation.confirm')}
+                    cancelText={t('common:deleteConfirmation.cancel')}
                     onConfirm={() => deleteAssignment(assignment.id)}
                   >
                     {t('common:buttons.delete')}

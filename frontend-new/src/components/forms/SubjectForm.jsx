@@ -10,7 +10,7 @@ const SubjectForm = ({
   onSubmit, 
   onCancel, 
   loading = false, 
-  submitText = 'Save',
+  submitText,
   projectId = null
 }) => {
   const { t } = useTranslation(['subjects', 'common']);
@@ -68,7 +68,7 @@ const SubjectForm = ({
           icon="fas fa-save"
           loading={loading || isSubmitting}
         >
-          {(loading || isSubmitting) ? t('subjects:buttons.adding') : submitText}
+          {(loading || isSubmitting) ? t('subjects:buttons.adding') : (submitText || t('common:buttons.save'))}
         </Button>
         
         <Button

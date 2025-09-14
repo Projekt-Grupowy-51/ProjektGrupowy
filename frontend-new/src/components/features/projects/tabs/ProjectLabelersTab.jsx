@@ -34,10 +34,10 @@ const ProjectLabelersTab = ({ projectId }) => {
   } = useProjectLabelers(projectId);
 
   const formatAssignmentOption = (assignment) => 
-    `Assignment #${assignment.id} - Subject: ${
-      assignment.subjectName || 'Unknown'
+    `Assignment #${assignment.id} - ${t('projects:assignment.subject')}: ${
+      assignment.subjectName || t('common:states.unknown')
     } (ID: ${assignment.subjectId}), ` +
-    `Video Group: ${assignment.videoGroupName || 'Unknown'} (ID: ${
+    `${t('projects:assignment.video_group')}: ${assignment.videoGroupName || t('common:states.unknown')} (ID: ${
       assignment.videoGroupId
     })`;
 
@@ -59,20 +59,20 @@ const ProjectLabelersTab = ({ projectId }) => {
 
   const handleAssignAllSelected = async () => {
     if (Object.keys(selectedCustomAssignments).length === 0) {
-      alert('No labelers have been assigned to any assignment.');
+      alert(t('projects:labeler_tab.no_assignments_selected'));
       return;
     }
     await assignAllSelected();
   };
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <div>{t('common:loading')}</div>;
 
   return (
     <div>
       {/* Simple Assignment Form */}
       <Card className="mb-4">
         <Card.Header>
-          <Card.Title level={5}>Assign Labeler</Card.Title>
+          <Card.Title level={5}>{t('projects:labeler_tab.assign_labeler_to_assignment')}</Card.Title>
         </Card.Header>
         <Card.Body>
           <div className="row g-3">
@@ -81,7 +81,7 @@ const ProjectLabelersTab = ({ projectId }) => {
                 value={selectedLabeler}
                 onChange={(e) => setSelectedLabeler(e.target.value)}
                 options={[
-                  { value: '', label: 'Select labeler...' },
+                  { value: '', label: t('projects:labeler_tab.select_labeler') },
                   ...(labelers || []).map(labeler => ({
                     value: labeler.id,
                     label: labeler.name
@@ -94,7 +94,7 @@ const ProjectLabelersTab = ({ projectId }) => {
                 value={selectedAssignment}
                 onChange={(e) => setSelectedAssignment(e.target.value)}
                 options={[
-                  { value: '', label: 'Select assignment...' },
+                  { value: '', label: t('projects:labeler_tab.select_assignment') },
                   ...(assignments || []).map(assignment => ({
                     value: assignment.id,
                     label: formatAssignmentOption(assignment)
@@ -109,7 +109,7 @@ const ProjectLabelersTab = ({ projectId }) => {
                 onClick={() => handleAssign()}
                 className="w-100"
               >
-                Assign
+                {t('projects:labeler_tab.assign_labeler')}
               </Button>
             </div>
           </div>
@@ -118,7 +118,7 @@ const ProjectLabelersTab = ({ projectId }) => {
 
       {/* Unassigned Labelers Section */}
       <div className="d-flex justify-content-between align-items-center mb-3">
-        <h4 className="mb-0">Unassigned Labelers</h4>
+        <h4 className="mb-0">{t('projects:labeler_tab.unassigned_labelers')}</h4>
         <div className="d-flex gap-2">
           {unassignedLabelers?.length > 0 && (
             <Button
@@ -126,14 +126,14 @@ const ProjectLabelersTab = ({ projectId }) => {
               disabled={distributeLoading}
               loading={distributeLoading}
               confirmAction={true}
-              confirmTitle="Potwierdź automatyczne przypisanie"
-              confirmMessage="Czy na pewno chcesz automatycznie przypisać etykietujących do zadań? Ta operacja może zmienić istniejące przypisania."
-              confirmText="Przypisz automatycznie"
-              cancelText="Anuluj"
+              confirmTitle={t('common:deleteConfirmation.title')}
+              confirmMessage={t('projects:labeler_tab.distribute_confirm_message')}
+              confirmText={t('common:deleteConfirmation.confirm')}
+              cancelText={t('common:deleteConfirmation.cancel')}
               onConfirm={handleDistributeLabelers}
             >
               <i className="fa-solid fa-wand-magic-sparkles me-2"></i>
-              Distribute Labelers
+              {t('projects:labeler_tab.distribute_labelers')}
             </Button>
           )}
           {Object.keys(selectedCustomAssignments).length > 0 && (
@@ -143,7 +143,7 @@ const ProjectLabelersTab = ({ projectId }) => {
               disabled={assignAllSelectedLoading}
             >
               <i className="fas fa-user-plus me-2"></i>
-              Assign All Selected
+              {t('projects:labeler_tab.assign_all_selected')}
             </Button>
           )}
         </div>
@@ -152,7 +152,7 @@ const ProjectLabelersTab = ({ projectId }) => {
       {!unassignedLabelers || unassignedLabelers.length === 0 ? (
         <EmptyState
           icon="fas fa-info-circle"
-          message="No unassigned labelers"
+          message={t('projects:not_found.unassigned_labelers')}
         />
       ) : (
         <Card className="mb-4">
@@ -160,8 +160,8 @@ const ProjectLabelersTab = ({ projectId }) => {
             <Table striped>
               <Table.Head>
                 <Table.Row>
-                  <Table.Cell header>Username</Table.Cell>
-                  <Table.Cell header>Assign labeler</Table.Cell>
+                  <Table.Cell header>{t('common:form.username')}</Table.Cell>
+                  <Table.Cell header>{t('projects:labeler_tab.assign_labeler')}</Table.Cell>
                 </Table.Row>
               </Table.Head>
               <Table.Body>
@@ -174,7 +174,7 @@ const ProjectLabelersTab = ({ projectId }) => {
                           value={selectedCustomAssignments[labeler.id] || ''}
                           onChange={(e) => handleCustomLabelerAssignmentChange(labeler.id, e.target.value)}
                           options={[
-                            { value: '', label: '-- Select Assignment --' },
+                            { value: '', label: t('projects:labeler_tab.select_assignment') },
                             ...(assignments || []).map(assignment => ({
                               value: assignment.id,
                               label: formatAssignmentOption(assignment)
@@ -190,7 +190,7 @@ const ProjectLabelersTab = ({ projectId }) => {
                           disabled={!selectedCustomAssignments[labeler.id]}
                         >
                           <i className="fas fa-user-plus me-2"></i>
-                          Assign
+                          {t('projects:labeler_tab.assign_labeler')}
                         </Button>
                       </div>
                     </Table.Cell>
@@ -205,21 +205,21 @@ const ProjectLabelersTab = ({ projectId }) => {
 
       {/* Assigned Labelers */}
       <div className="d-flex justify-content-between align-items-center mb-3">
-        <h4 className="mb-0">Assigned Labelers ({assignedLabelerRows?.length || 0})</h4>
+        <h4 className="mb-0">{t('projects:labeler_tab.assigned_labelers')} ({assignedLabelerRows?.length || 0})</h4>
         {assignedLabelerRows?.length > 0 && (
           <Button
             variant="danger"
             disabled={unassignAllLoading}
             loading={unassignAllLoading}
             confirmAction={true}
-            confirmTitle="Potwierdź cofnięcie wszystkich przypisań"
-            confirmMessage="Czy na pewno chcesz cofnąć wszystkie przypisania etykietujących? Ta operacja jest nieodwracalna."
-            confirmText="Cofnij wszystkie"
-            cancelText="Anuluj"
+            confirmTitle={t('common:deleteConfirmation.title')}
+            confirmMessage={t('projects:labeler_tab.unassign_all_confirm_message')}
+            confirmText={t('common:deleteConfirmation.confirm')}
+            cancelText={t('common:deleteConfirmation.cancel')}
             onConfirm={handleUnassignAllLabelers}
           >
             <i className="fa-solid fa-user-xmark me-1"></i>
-            Unassign All
+            {t('projects:labeler_tab.unassign_all')}
           </Button>
         )}
       </div>
@@ -227,23 +227,23 @@ const ProjectLabelersTab = ({ projectId }) => {
       <Card>
         <Card.Header>
           <Card.Title level={5}>
-            Assigned Labelers List
+            {t('projects:labeler_tab.assigned_labelers')}
           </Card.Title>
         </Card.Header>
         <Card.Body>
           {!assignedLabelerRows || assignedLabelerRows.length === 0 ? (
             <EmptyState
               icon="fas fa-user-check"
-              message="No assigned labelers"
+              message={t('projects:not_found.assigned_labelers')}
             />
           ) : (
             <Table striped>
               <Table.Head>
                 <Table.Row>
-                  <Table.Cell header>Labeler</Table.Cell>
-                  <Table.Cell header>Subject</Table.Cell>
-                  <Table.Cell header>Video Group</Table.Cell>
-                  <Table.Cell header>Actions</Table.Cell>
+                  <Table.Cell header>{t('projects:labeler_tab.labeler')}</Table.Cell>
+                  <Table.Cell header>{t('projects:assignment.subject')}</Table.Cell>
+                  <Table.Cell header>{t('projects:assignment.video_group')}</Table.Cell>
+                  <Table.Cell header>{t('common:table.actions')}</Table.Cell>
                 </Table.Row>
               </Table.Head>
               <Table.Body>
@@ -259,19 +259,19 @@ const ProjectLabelersTab = ({ projectId }) => {
                           variant="primary"
                           onClick={() => navigate(`/assignments/${item.assignmentId}`)}
                         >
-                          Details
+                          {t('common:buttons.details')}
                         </Button>
                         <Button
                           size="sm"
                           variant="outline-danger"
                           confirmAction={true}
-                          confirmTitle="Potwierdź cofnięcie przypisania"
-                          confirmMessage={`Czy na pewno chcesz cofnąć przypisanie etykietującego "${item.labelerName}" do zadania? Ta operacja jest nieodwracalna.`}
-                          confirmText="Cofnij przypisanie"
-                          cancelText="Anuluj"
+                          confirmTitle={t('common:deleteConfirmation.title')}
+                          confirmMessage={t('projects:labeler_tab.unassign_confirm_message', { labelerName: item.labelerName })}
+                          confirmText={t('common:deleteConfirmation.confirm')}
+                          cancelText={t('common:deleteConfirmation.cancel')}
                           onConfirm={() => handleUnassign(item.assignmentId, item.labelerId)}
                         >
-                          Unassign
+                          {t('projects:labeler_tab.unassign_selected')}
                         </Button>
                       </div>
                     </Table.Cell>
@@ -285,7 +285,7 @@ const ProjectLabelersTab = ({ projectId }) => {
 
       {/* All Labelers Section */}
       <div className="d-flex justify-content-between align-items-center mb-3 mt-5">
-        <h4 className="mb-0">All Labelers</h4>
+        <h4 className="mb-0">{t('projects:labeler_tab.all_labelers')}</h4>
         <div className="d-flex gap-2">
           {allLabelers?.length > 0 && Object.keys(selectedCustomAssignments).length > 0 && (
             <Button
@@ -294,7 +294,7 @@ const ProjectLabelersTab = ({ projectId }) => {
               disabled={assignAllSelectedLoading}
             >
               <i className="fas fa-user-plus me-2"></i>
-              Assign All Selected
+              {t('projects:labeler_tab.assign_all_selected')}
             </Button>
           )}
         </div>
@@ -303,7 +303,7 @@ const ProjectLabelersTab = ({ projectId }) => {
       {!allLabelers || allLabelers.length === 0 ? (
         <EmptyState
           icon="fas fa-info-circle"
-          message="No labelers found"
+          message={t('projects:not_found.all_labelers')}
         />
       ) : (
         <Card>
@@ -311,8 +311,8 @@ const ProjectLabelersTab = ({ projectId }) => {
             <Table striped>
               <Table.Head>
                 <Table.Row>
-                  <Table.Cell header>Username</Table.Cell>
-                  <Table.Cell header>Assign labeler</Table.Cell>
+                  <Table.Cell header>{t('common:form.username')}</Table.Cell>
+                  <Table.Cell header>{t('projects:labeler_tab.assign_labeler')}</Table.Cell>
                 </Table.Row>
               </Table.Head>
               <Table.Body>
@@ -325,7 +325,7 @@ const ProjectLabelersTab = ({ projectId }) => {
                           value={selectedCustomAssignments[labeler.id] || ''}
                           onChange={(e) => handleCustomLabelerAssignmentChange(labeler.id, e.target.value)}
                           options={[
-                            { value: '', label: '-- Select Assignment --' },
+                            { value: '', label: t('projects:labeler_tab.select_assignment') },
                             ...(assignments || []).map(assignment => ({
                               value: assignment.id,
                               label: formatAssignmentOption(assignment)
@@ -341,7 +341,7 @@ const ProjectLabelersTab = ({ projectId }) => {
                           disabled={!selectedCustomAssignments[labeler.id]}
                         >
                           <i className="fas fa-user-plus me-2"></i>
-                          Assign
+                          {t('projects:labeler_tab.assign_labeler')}
                         </Button>
                       </div>
                     </Table.Cell>

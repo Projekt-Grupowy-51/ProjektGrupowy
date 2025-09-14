@@ -1,7 +1,8 @@
 import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
+import { useTranslation } from 'react-i18next';
 import { Card, Button, Table, Alert } from '../../../components/ui';
-import { LoadingSpinner } from '../../../components/common';
+import { LoadingSpinner } from '../../../common';
 import { sortAssignedLabels } from '../utils/labelUtils.js';
 import { formatTime } from '../utils/timeUtils.js';
 
@@ -12,6 +13,7 @@ const LabelingPanel = ({
   loading = false,
   operationLoading = false
 }) => {
+  const { t } = useTranslation(['videos', 'common']);
   const sortedAssignedLabels = useMemo(() => 
     sortAssignedLabels(assignedLabels), 
     [assignedLabels]
@@ -24,7 +26,7 @@ const LabelingPanel = ({
         <Card.Header>
           <Card.Title level={6}>
             <i className="fas fa-list me-2"></i>
-            Assigned Labels ({sortedAssignedLabels.length})
+            {t('videos:labeling.assigned_labels')} ({sortedAssignedLabels.length})
           </Card.Title>
         </Card.Header>
         <Card.Body className="p-0" style={{ maxHeight: '400px', overflowY: 'auto' }}>
@@ -32,17 +34,17 @@ const LabelingPanel = ({
             <Table size="sm" hover responsive maxHeight="250px">
               <Table.Head variant="light">
                 <Table.Row>
-                  <Table.Cell header>Label</Table.Cell>
-                  <Table.Cell header>Start</Table.Cell>
-                  <Table.Cell header>End</Table.Cell>
-                  <Table.Cell header>Action</Table.Cell>
+                  <Table.Cell header>{t('videos:table.label')}</Table.Cell>
+                  <Table.Cell header>{t('videos:table.start')}</Table.Cell>
+                  <Table.Cell header>{t('videos:table.end')}</Table.Cell>
+                  <Table.Cell header>{t('common:actions')}</Table.Cell>
                 </Table.Row>
               </Table.Head>
               <Table.Body>
                 {loading ? (
                   <Table.Row>
                     <Table.Cell colSpan={4} className="text-center py-4">
-                      <LoadingSpinner size="small" message="Loading labels..." />
+                      <LoadingSpinner size="small" message={t('videos:labeling.loading_labels')} />
                     </Table.Cell>
                   </Table.Row>
                 ) : (
@@ -66,10 +68,10 @@ const LabelingPanel = ({
                         </div>
                       </Table.Cell>
                       <Table.Cell className="font-monospace">
-                        {label.start || label.startTime || 'N/A'}
+                        {label.start || label.startTime || t('common:states.empty')}
                       </Table.Cell>
                       <Table.Cell className="font-monospace">
-                        {label.end || label.endTime || 'N/A'}
+                        {label.end || label.endTime || t('common:states.empty')}
                       </Table.Cell>
                       <Table.Cell>
                         <Button
@@ -79,10 +81,10 @@ const LabelingPanel = ({
                           disabled={operationLoading}
                           loading={operationLoading}
                           confirmAction={true}
-                          confirmTitle="Potwierdź usunięcie"
-                          confirmMessage={`Czy na pewno chcesz usunąć etykietę "${label.labelName}"? Ta operacja jest nieodwracalna.`}
-                          confirmText="Usuń"
-                          cancelText="Anuluj"
+                          confirmTitle={t('common:deleteConfirmation.title')}
+                          confirmMessage={t('videos:labeling.confirm_delete_label', { labelName: label.labelName })}
+                          confirmText={t('common:deleteConfirmation.confirm')}
+                          cancelText={t('common:deleteConfirmation.cancel')}
                           onConfirm={() => onDeleteLabel(label.id)}
                         />
                       </Table.Cell>
@@ -96,10 +98,10 @@ const LabelingPanel = ({
             <div className="text-center py-4">
               <i className="fas fa-tags fs-4 text-muted opacity-50"></i>
               <p className="small text-muted mt-2 mb-0">
-                No labels assigned yet
+                {t('videos:labeling.no_labels_assigned')}
               </p>
               <small className="text-muted">
-                Use shortcuts or buttons above
+                {t('videos:labeling.use_shortcuts_hint')}
               </small>
             </div>
           )}

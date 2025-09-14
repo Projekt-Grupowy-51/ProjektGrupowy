@@ -48,10 +48,10 @@ const ProjectSubjectsTab = ({ projectId }) => {
           variant="outline-danger"
           icon="fas fa-trash"
           confirmAction={true}
-          confirmTitle="Potwierdź usunięcie"
-          confirmMessage={`Czy na pewno chcesz usunąć przedmiot "${subject.name}"? Ta operacja jest nieodwracalna.`}
-          confirmText="Usuń"
-          cancelText="Anuluj"
+          confirmTitle={t('common:deleteConfirmation.title')}
+          confirmMessage={t('subjects:confirm_delete_subject', { name: subject.name })}
+          confirmText={t('common:deleteConfirmation.confirm')}
+          cancelText={t('common:deleteConfirmation.cancel')}
           onConfirm={() => deleteSubject(subject.id)}
         >
           {t('common:buttons.delete')}

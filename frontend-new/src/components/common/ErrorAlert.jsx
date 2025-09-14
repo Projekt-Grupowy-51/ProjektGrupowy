@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { useTranslation } from 'react-i18next';
 import { Alert, Button } from '../ui';
 
 const ErrorAlert = ({ 
@@ -9,9 +10,11 @@ const ErrorAlert = ({
   onDismiss = null,
   className = "" 
 }) => {
+  const { t } = useTranslation('common');
+  
   if (!error) return null;
 
-  const errorMessage = typeof error === 'string' ? error : error.message || 'An error occurred';
+  const errorMessage = typeof error === 'string' ? error : error.message || t('error.defaultMessage');
 
   return (
     <Alert variant="danger" className={className}>
@@ -29,7 +32,7 @@ const ErrorAlert = ({
                   onClick={onRetry}
                 >
                   <i className="fas fa-redo me-1"></i>
-                  Try Again
+                  {t('buttons.tryAgain')}
                 </Button>
               )}
               {onDismiss && (
@@ -38,7 +41,7 @@ const ErrorAlert = ({
                   variant="outline-secondary" 
                   onClick={onDismiss}
                 >
-                  Dismiss
+                  {t('buttons.dismiss')}
                 </Button>
               )}
             </div>
