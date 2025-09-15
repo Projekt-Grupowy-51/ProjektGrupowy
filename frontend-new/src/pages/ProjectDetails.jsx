@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Container, Card, Button, Tabs } from '../components/ui';
-import { LoadingSpinner, ErrorAlert } from '../components/common';
+import { LoadingSpinner, ErrorAlert, PageHeader } from '../components/common';
 import ProjectDetailsTab from '../components/features/projects/tabs/ProjectDetailsTab.jsx';
 import ProjectSubjectsTab from '../components/features/projects/tabs/ProjectSubjectsTab.jsx';
 import ProjectVideosTab from '../components/features/projects/tabs/ProjectVideosTab.jsx';
@@ -67,22 +67,20 @@ const ProjectDetails = () => {
 
   return (
     <Container>
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <h2>
-            <i className="fas fa-project-diagram me-2"></i>
-            {project.name}
-          </h2>
-          <p className="text-muted mb-0">{project.description}</p>
-        </div>
-        <Button
-          variant="outline-secondary"
-          icon="fas fa-arrow-left"
-          onClick={() => handleBackToList()}
-        >
-          {t('common:buttons.back')}
-        </Button>
-      </div>
+      <PageHeader
+        title={project.name}
+        subtitle={project.description}
+        icon="fas fa-project-diagram"
+        actions={
+          <Button
+            variant="outline-secondary"
+            icon="fas fa-arrow-left"
+            onClick={() => handleBackToList()}
+          >
+            {t('common:buttons.back')}
+          </Button>
+        }
+      />
 
       <Card>
         <Card.Body className="p-0">
@@ -90,6 +88,7 @@ const ProjectDetails = () => {
             tabs={tabsWithContent}
             activeTab={activeTab}
             onTabChange={handleTabChange}
+            className="px-3"
           />
         </Card.Body>
       </Card>

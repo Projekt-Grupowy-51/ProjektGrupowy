@@ -2,6 +2,7 @@ import React, { useRef } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { Button, Input, Alert, Table, TableHead, TableBody, TableRow, TableCell } from '../ui';
+import { ActionButtons } from '../common';
 import { useVideoUpload } from '../../hooks/forms/useVideoUpload.js';
 
 const VideoForm = ({
@@ -162,7 +163,7 @@ const VideoForm = ({
             </div>
           )}
 
-          <div className="d-flex justify-content-end gap-2">
+          <ActionButtons align="end">
             <Button
               type="submit"
               variant="primary"
@@ -181,7 +182,7 @@ const VideoForm = ({
                 {cancelText || t('common:buttons.cancel')}
               </Button>
             )}
-          </div>
+          </ActionButtons>
         </>
       )}
 

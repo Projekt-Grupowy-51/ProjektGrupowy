@@ -3,3 +3,7 @@ export { default as ErrorAlert } from './ErrorAlert.jsx';
 export { default as EmptyState } from './EmptyState.jsx';
 export { default as TabListGroup } from './TabListGroup.jsx';
 export { default as TabHeader } from './TabHeader.jsx';
+export { default as PageHeader } from './PageHeader.jsx';
+export { default as DetailPageActions } from './DetailPageActions.jsx';
+export { default as DetailSection } from './DetailSection.jsx';
+export { default as ActionButtons } from './ActionButtons.jsx';

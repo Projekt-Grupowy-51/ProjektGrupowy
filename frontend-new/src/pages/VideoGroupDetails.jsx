@@ -2,7 +2,7 @@ import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Container, Card, Button, Table } from '../components/ui';
-import { LoadingSpinner, ErrorAlert, EmptyState } from '../components/common';
+import { LoadingSpinner, ErrorAlert, EmptyState, PageHeader, DetailPageActions, DetailSection } from '../components/common';
 import { useVideoGroupDetails } from '../hooks/useVideoGroupDetails.js';
 
 const VideoGroupDetails = () => {
@@ -48,43 +48,23 @@ const VideoGroupDetails = () => {
 
   return (
     <Container className="py-4">
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <h1>
-            <i className="fas fa-film me-2"></i>
-            {videoGroup.name}
-          </h1>
-          <p className="text-muted mb-0">{videoGroup.description}</p>
-        </div>
-        <div className="d-flex gap-2">
-          <Button
-            variant="warning"
-            icon="fas fa-edit"
-            onClick={handleEditVideoGroup}
-          >
-            {t('common:buttons.edit')}
-          </Button>
-          <Button
-            variant="outline-danger"
-            icon="fas fa-trash"
-            confirmAction={true}
-            confirmTitle={t('common:deleteConfirmation.title')}
-            confirmMessage={t('videoGroups:confirm_delete_group', { name: videoGroup.name })}
-            confirmText={t('common:deleteConfirmation.confirm')}
-            cancelText={t('common:deleteConfirmation.cancel')}
-            onConfirm={deleteVideoGroup}
-          >
-            {t('common:buttons.delete')}
-          </Button>
-          <Button
-            variant="outline-secondary"
-            icon="fas fa-arrow-left"
-            onClick={handleBack}
-          >
-            {t('common:buttons.back')}
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        title={videoGroup.name}
+        subtitle={videoGroup.description}
+        icon="fas fa-film"
+        actions={
+          <DetailPageActions
+            onEdit={handleEditVideoGroup}
+            onDelete={deleteVideoGroup}
+            onBack={handleBack}
+            editText={t('common:buttons.edit')}
+            deleteText={t('common:buttons.delete')}
+            backText={t('common:buttons.back')}
+            deleteConfirmTitle={t('common:deleteConfirmation.title')}
+            deleteConfirmMessage={t('videoGroups:confirm_delete_group', { name: videoGroup.name })}
+          />
+        }
+      />
 
       <Card className="mb-4">
         <Card.Header variant="info">
@@ -100,19 +80,19 @@ const VideoGroupDetails = () => {
         </Card.Body>
       </Card>
 
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 className="section-title mb-0">
-          <i className="fas fa-video me-2"></i>
-          {t('videoGroups:videos.title')}
-        </h2>
-        <Button
-          variant="primary"
-          icon="fas fa-plus"
-          onClick={handleAddVideo}
-        >
-          {t('videoGroups:videos.add')}
-        </Button>
-      </div>
+      <DetailSection
+        title={t('videoGroups:videos.title')}
+        icon="fas fa-video"
+        actions={
+          <Button
+            variant="primary"
+            icon="fas fa-plus"
+            onClick={handleAddVideo}
+          >
+            {t('videoGroups:videos.add')}
+          </Button>
+        }
+      />
 
       {videos.length > 0 ? (
         <Card>

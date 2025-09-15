@@ -27,7 +27,7 @@ const TopNavbar = () => {
   }
 
   return (
-    <nav className="navbar navbar-expand-lg navbar-dark bg-primary">
+    <nav className="navbar navbar-expand-lg">
       <div className="container-fluid">
         <a className="navbar-brand" href="/">
           <i className="fas fa-video me-2"></i>
@@ -37,9 +37,10 @@ const TopNavbar = () => {
         <div className="navbar-nav ms-auto">
           {/* Language Selector */}
           <div className="nav-item dropdown me-3">
-            <button 
-              className="btn btn-link nav-link dropdown-toggle text-white text-decoration-none d-flex align-items-center"
+            <button
+              className="btn btn-link dropdown-toggle d-flex align-items-center"
               data-bs-toggle="dropdown"
+              data-bs-boundary="viewport"
               aria-expanded="false"
             >
               <span className="me-2">{getLanguageFlag(getCurrentLanguage())}</span>
@@ -47,7 +48,7 @@ const TopNavbar = () => {
             </button>
             <ul className="dropdown-menu dropdown-menu-end">
               <li>
-                <button 
+                <button
                   className={`dropdown-item ${getCurrentLanguage() === 'en' ? 'active' : ''}`}
                   onClick={() => changeLanguage('en')}
                 >
@@ -56,7 +57,7 @@ const TopNavbar = () => {
                 </button>
               </li>
               <li>
-                <button 
+                <button
                   className={`dropdown-item ${getCurrentLanguage() === 'pl' ? 'active' : ''}`}
                   onClick={() => changeLanguage('pl')}
                 >
@@ -69,9 +70,10 @@ const TopNavbar = () => {
 
           {/* User Dropdown */}
           <div className="nav-item dropdown">
-            <button 
-              className="btn btn-link nav-link dropdown-toggle text-white text-decoration-none"
+            <button
+              className="btn btn-link dropdown-toggle"
               data-bs-toggle="dropdown"
+              data-bs-boundary="viewport"
               aria-expanded="false"
             >
               <i className="fas fa-user-circle me-2"></i>
@@ -87,8 +89,8 @@ const TopNavbar = () => {
               </li>
               <li><hr className="dropdown-divider" /></li>
               <li>
-                <button 
-                  className="dropdown-item" 
+                <button
+                  className="dropdown-item"
                   onClick={logout}
                 >
                   <i className="fas fa-sign-out-alt me-2"></i>

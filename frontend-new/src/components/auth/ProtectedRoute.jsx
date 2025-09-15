@@ -1,31 +1,39 @@
 import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import PropTypes from 'prop-types';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useKeycloak } from '../../hooks/useKeycloak.js';
 import { Container, Card, Button } from '../ui';
 import { LoadingSpinner } from '../common';
 
-const AuthGuard = ({ children, fallback = null }) => {
+const ProtectedRoute = ({
+    children,
+    allowedRoles = null, // null = wszystkie zalogowane role
+    redirectTo = '/forbidden',
+    autoRedirectFromRoot = true
+}) => {
     const { isAuthenticated, isLoading, login, user } = useKeycloak();
-    const navigate = useNavigate();
     const { t } = useTranslation('common');
+    const location = useLocation();
+    const navigate = useNavigate();
 
-
+    // Auto-redirect from root based on user role
     useEffect(() => {
-        if (isAuthenticated && user) {
-
+        if (autoRedirectFromRoot && isAuthenticated && user && location.pathname === '/') {
             switch (user.userRole) {
                 case "Scientist":
-                    navigate("/projects");
+                    navigate("/projects", { replace: true });
                     break;
                 case "Labeler":
-                    navigate("/labeler-video-groups");
+                    navigate("/labeler-video-groups", { replace: true });
                     break;
                 default:
-                    navigate("/forbidden");
+                    navigate("/forbidden", { replace: true });
             }
         }
-    }, [isAuthenticated, user, navigate]);
+    }, [isAuthenticated, user, navigate, location.pathname, autoRedirectFromRoot]);
 
+    // Loading state
     if (isLoading) {
         return (
             <Container className="d-flex justify-content-center align-items-center vh-100">
@@ -34,8 +42,9 @@ const AuthGuard = ({ children, fallback = null }) => {
         );
     }
 
+    // Not authenticated
     if (!isAuthenticated) {
-        return fallback || (
+        return (
             <Container className="d-flex justify-content-center align-items-center vh-100">
                 <Card className="text-center" style={{ maxWidth: '400px', width: '100%' }}>
                     <Card.Header>
@@ -61,7 +70,19 @@ const AuthGuard = ({ children, fallback = null }) => {
         );
     }
 
+    // Role-based access control
+    if (allowedRoles && (!user || !allowedRoles.includes(user.userRole))) {
+        return <Navigate to={redirectTo} replace />;
+    }
+
     return children;
 };
 
-export default AuthGuard;
+ProtectedRoute.propTypes = {
+    children: PropTypes.node.isRequired,
+    allowedRoles: PropTypes.arrayOf(PropTypes.string),
+    redirectTo: PropTypes.string,
+    autoRedirectFromRoot: PropTypes.bool
+};
+
+export default ProtectedRoute;

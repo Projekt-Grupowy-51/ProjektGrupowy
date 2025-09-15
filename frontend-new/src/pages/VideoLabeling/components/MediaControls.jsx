@@ -48,7 +48,7 @@ const MediaControls = ({
               style={{ 
                 height: '8px', 
                 cursor: 'pointer',
-                background: 'linear-gradient(to right, #0d6efd 0%, #0d6efd ' + progressPercentage + '%, #e9ecef ' + progressPercentage + '%, #e9ecef 100%)'
+                background: 'linear-gradient(to right, var(--color-primary-900) 0%, var(--color-primary-900) ' + progressPercentage + '%, #e9ecef ' + progressPercentage + '%, #e9ecef 100%)'
               }}
             />
           </div>

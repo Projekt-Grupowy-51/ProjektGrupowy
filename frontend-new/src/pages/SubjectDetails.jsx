@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Container, Card, Button, Table } from '../components/ui';
-import { LoadingSpinner, ErrorAlert, EmptyState } from '../components/common';
+import { LoadingSpinner, ErrorAlert, EmptyState, PageHeader, DetailPageActions, DetailSection } from '../components/common';
 import { useSubjectDetails } from '../hooks/useSubjectDetails.js';
 
 const SubjectDetails = () => {
@@ -48,43 +48,23 @@ const SubjectDetails = () => {
 
   return (
     <Container className="py-4">
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <h1>
-            <i className="fas fa-book me-2"></i>
-            {subject.name}
-          </h1>
-          <p className="text-muted mb-0">{subject.description}</p>
-        </div>
-        <div className="d-flex gap-2">
-          <Button
-            variant="warning"
-            icon="fas fa-edit"
-            onClick={handleEditSubject}
-          >
-            {t('common:buttons.edit')}
-          </Button>
-          <Button
-            variant="outline-danger"
-            icon="fas fa-trash"
-            confirmAction={true}
-            confirmTitle={t('common:deleteConfirmation.title')}
-            confirmMessage={t('subjects:confirm_delete_subject', { name: subject.name })}
-            confirmText={t('common:deleteConfirmation.confirm')}
-            cancelText={t('common:deleteConfirmation.cancel')}
-            onConfirm={deleteSubject}
-          >
-            {t('common:buttons.delete')}
-          </Button>
-          <Button
-            variant="outline-secondary"
-            icon="fas fa-arrow-left"
-            onClick={handleBackToProject}
-          >
-            {t('common:buttons.back')}
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        title={subject.name}
+        subtitle={subject.description}
+        icon="fas fa-book"
+        actions={
+          <DetailPageActions
+            onEdit={handleEditSubject}
+            onDelete={deleteSubject}
+            onBack={handleBackToProject}
+            editText={t('common:buttons.edit')}
+            deleteText={t('common:buttons.delete')}
+            backText={t('common:buttons.back')}
+            deleteConfirmTitle={t('common:deleteConfirmation.title')}
+            deleteConfirmMessage={t('subjects:confirm_delete_subject', { name: subject.name })}
+          />
+        }
+      />
 
       <Card className="mb-4">
         <Card.Header variant="info">
@@ -100,19 +80,19 @@ const SubjectDetails = () => {
         </Card.Body>
       </Card>
 
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 className="section-title mb-0">
-          <i className="fas fa-tags me-2"></i>
-          {t('subjects:labels.title')}
-        </h2>
-        <Button
-          variant="primary"
-          icon="fas fa-plus"
-          onClick={handleAddLabel}
-        >
-          {t('subjects:labels.add')}
-        </Button>
-      </div>
+      <DetailSection
+        title={t('subjects:labels.title')}
+        icon="fas fa-tags"
+        actions={
+          <Button
+            variant="primary"
+            icon="fas fa-plus"
+            onClick={handleAddLabel}
+          >
+            {t('subjects:labels.add')}
+          </Button>
+        }
+      />
 
       {labelsLoading ? (
         <LoadingSpinner message={t('subjects:labels.loading')} size="small" />

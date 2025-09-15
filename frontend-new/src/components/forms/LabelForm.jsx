@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { Input, Button } from '../ui';
+import { ActionButtons } from '../common';
 import { useBaseForm } from '../../hooks/forms/useBaseForm.js';
 import { ValidationRules, required, hexColor, singleCharacter } from '../../utils/formValidation.js';
 
@@ -104,7 +105,7 @@ const LabelForm = ({
         error={errors.subjectId}
       />
 
-      <div className="d-flex gap-2">
+      <ActionButtons>
         <Button
           type="submit"
           variant="primary"
@@ -124,7 +125,7 @@ const LabelForm = ({
             {t('common:buttons.cancel')}
           </Button>
         )}
-      </div>
+      </ActionButtons>
     </form>
   );
 };

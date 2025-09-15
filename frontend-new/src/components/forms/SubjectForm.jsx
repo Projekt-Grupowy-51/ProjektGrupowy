@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { Input, Button } from '../ui';
+import { ActionButtons } from '../common';
 import { useBaseForm } from '../../hooks/forms/useBaseForm.js';
 import { ValidationRules } from '../../utils/formValidation.js';
 
@@ -61,7 +62,7 @@ const SubjectForm = ({
         rows={4}
       />
 
-      <div className="d-flex gap-2">
+      <ActionButtons>
         <Button
           type="submit"
           variant="primary"
@@ -73,14 +74,14 @@ const SubjectForm = ({
         
         <Button
           type="button"
-          variant="outline-secondary"
+          variant="secondary"
           icon="fas fa-times"
           onClick={() => onCancel()}
           disabled={loading || isSubmitting}
         >
           {t('common:buttons.cancel')}
         </Button>
-      </div>
+      </ActionButtons>
     </form>
   );
 };

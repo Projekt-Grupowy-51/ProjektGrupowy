@@ -1,16 +1,12 @@
-/* Global Styles */
+/* Base Styles - will be overridden by water-tiles.css */
 * {
   box-sizing: border-box;
 }
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #f8f9fa;
 }
 
 code {
@@ -18,61 +14,16 @@ code {
     monospace;
 }
 
-/* Bootstrap utilities additions */
-.shadow-sm {
-  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
-}
-
-/* Custom utility classes */
+/* Utility classes */
 .text-truncate {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* Loading states */
 .loading {
   opacity: 0.6;
   pointer-events: none;
-}
-
-/* Form enhancements */
-.form-control:focus {
-  border-color: #86b7fe;
-  outline: 0;
-  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
-}
-
-.is-invalid {
-  border-color: #dc3545;
-}
-
-.is-invalid:focus {
-  border-color: #dc3545;
-  box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
-}
-
-/* Button enhancements */
-.btn {
-  border-radius: 0.375rem;
-  font-weight: 400;
-  transition: all 0.15s ease-in-out;
-}
-
-.btn:focus {
-  outline: 0;
-  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
-}
-
-/* Card enhancements */
-.card {
-  border-radius: 0.5rem;
-  border: 1px solid rgba(0, 0, 0, 0.125);
-}
-
-.card-header {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.125);
-  border-radius: 0.5rem 0.5rem 0 0 !important;
 }
 
 /* Responsive improvements */
@@ -80,10 +31,6 @@ code {
   .container {
     padding-left: 1rem;
     padding-right: 1rem;
-  }
-  
-  .btn {
-    font-size: 0.875rem;
   }
 }
 
@@ -111,72 +58,12 @@ code {
   color: var(--bs-body-color);
 }
 
-.table {
-  width: 100%;
-  margin-bottom: 1rem;
-  color: #212529;
-  background-color: #fff;
-  border-collapse: separate; /* żeby działały zaokrąglenia */
-  border-spacing: 0;
-  border-radius: 0.5rem;
-  overflow: hidden; /* zaokrąglenia przy hover */
-}
-
-/* Headery */
-.table thead th {
-  background-color: #f1f3f5;
-  color: #495057;
-  font-weight: 600;
-  vertical-align: middle;
-  padding: 0.75rem;
-  border-bottom: 2px solid #dee2e6;
-}
-
-/* Komórki */
-.table td {
-  padding: 0.75rem;
-  vertical-align: middle;
-  border-top: 1px solid #dee2e6;
-}
-
-/* Hover wiersza */
-.table-hover tbody tr:hover {
-  background-color: rgba(13, 110, 253, 0.075); /* lekki niebieski */
-  transition: background-color 0.15s ease-in-out;
-}
-
-/* Tabela z obramowaniem */
-.table-bordered {
-  border: 1px solid #dee2e6;
-}
-.table-bordered td,
-.table-bordered th {
-  border: 1px solid #dee2e6;
-}
-
-/* Striped rows */
-.table-striped tbody tr:nth-of-type(odd) {
-  background-color: rgba(0, 0, 0, 0.02);
-}
-
-/* Rozmiary */
-.table-sm td, .table-sm th {
-  padding: 0.3rem 0.5rem;
-}
-.table-lg td, .table-lg th {
-  padding: 1rem 1.25rem;
-}
-
-/* Responsywność (gdy w wrapperze .table-responsive) */
+/* Table responsive wrapper */
 .table-responsive {
-  border-radius: 0.5rem;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
 
-/* Scroll z maxHeight */
 .table-scroll-wrapper {
-  border-radius: 0.5rem;
   overflow-y: auto;
-  border: 1px solid #dee2e6;
 }

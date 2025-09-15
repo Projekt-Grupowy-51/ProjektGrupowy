@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Container, Card, Button, Table, Alert } from '../components/ui';
-import { LoadingSpinner, ErrorAlert } from '../components/common';
+import { LoadingSpinner, ErrorAlert, PageHeader, DetailSection } from '../components/common';
 import { useVideoDetails } from '../hooks/useVideoDetails.js';
 import VideoService from '../services/VideoService.js';
 
@@ -46,25 +46,20 @@ const VideoDetails = () => {
 
   return (
     <Container className="py-4">
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <h1>
-            <i className="fas fa-video me-2"></i>
-            {video.title}
-          </h1>
-          <p className="text-muted mb-0">
-            {t('videos:details.duration')}: {formatDuration(video.duration || 0)} • 
-            {t('videos:details.filename')}: {video.filename}
-          </p>
-        </div>
-        <Button
-          variant="outline-secondary"
-          icon="fas fa-arrow-left"
-          onClick={handleBackToVideoGroup}
-        >
-          {t('common:buttons.back')}
-        </Button>
-      </div>
+      <PageHeader
+        title={video.title}
+        subtitle={`${t('videos:details.duration')}: ${formatDuration(video.duration || 0)} • ${t('videos:details.filename')}: ${video.filename}`}
+        icon="fas fa-video"
+        actions={
+          <Button
+            variant="outline-secondary"
+            icon="fas fa-arrow-left"
+            onClick={handleBackToVideoGroup}
+          >
+            {t('common:buttons.back')}
+          </Button>
+        }
+      />
 
       <Card className="mb-4">
         <Card.Header>
@@ -114,14 +109,13 @@ const VideoDetails = () => {
         </Card.Body>
       </Card>
 
-      <Card>
-        <Card.Header>
-          <Card.Title level={5}>
-            <i className="fas fa-tags me-2"></i>
-            {t('videos:details.assigned_labels')}
-          </Card.Title>
-        </Card.Header>
-        <Card.Body>
+      <DetailSection
+        title={t('videos:details.assigned_labels')}
+        icon="fas fa-tags"
+        showHeader={false}
+      >
+        <Card>
+          <Card.Body>
           {labelsLoading ? (
             <LoadingSpinner message={t('videos:details.loading')} size="small" />
           ) : labelsError ? (
@@ -163,8 +157,9 @@ const VideoDetails = () => {
               {t('videos:details.no_labels')}
             </Alert>
           )}
-        </Card.Body>
-      </Card>
+          </Card.Body>
+        </Card>
+      </DetailSection>
     </Container>
   );
 };

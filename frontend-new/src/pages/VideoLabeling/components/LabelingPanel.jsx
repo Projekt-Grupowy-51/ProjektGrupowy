@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { Card, Button, Table, Alert } from '../../../components/ui';
-import { LoadingSpinner } from '../../../common';
+import { LoadingSpinner } from '../../../components/common';
 import { sortAssignedLabels } from '../utils/labelUtils.js';
 import { formatTime } from '../utils/timeUtils.js';
 
@@ -29,7 +29,7 @@ const LabelingPanel = ({
             {t('videos:labeling.assigned_labels')} ({sortedAssignedLabels.length})
           </Card.Title>
         </Card.Header>
-        <Card.Body className="p-0" style={{ maxHeight: '400px', overflowY: 'auto' }}>
+        <Card.Body className="p-3" style={{ maxHeight: '400px', overflowY: 'auto' }}>
           {sortedAssignedLabels.length > 0 ? (
             <Table size="sm" hover responsive maxHeight="250px">
               <Table.Head variant="light">

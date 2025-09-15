@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Container, Card, Button, Alert, Table, TableHead, TableBody, TableRow, TableCell } from '../components/ui';
-import { LoadingSpinner, ErrorAlert } from '../components/common';
+import { LoadingSpinner, ErrorAlert, PageHeader, DetailPageActions } from '../components/common';
 import { useSubjectVideoGroupAssignmentDetails } from '../hooks/useSubjectVideoGroupAssignmentDetails.js';
 
 const SubjectVideoGroupAssignmentDetails = () => {
@@ -44,31 +44,31 @@ const SubjectVideoGroupAssignmentDetails = () => {
 
   return (
     <Container className="py-4">
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h1 className="h2 mb-0">
-          {t('assignments:details.title', { id: assignmentDetails.id })}
-        </h1>
-        <div className="d-flex gap-2">
-          <Button 
-            variant="outline-danger" 
-            icon="fas fa-trash"
-            confirmAction={true}
-            confirmTitle={t('common:deleteConfirmation.title')}
-            confirmMessage={t('assignments:confirm_delete_assignment', { id: assignmentDetails.id })}
-            confirmText={t('common:deleteConfirmation.confirm')}
-            cancelText={t('common:deleteConfirmation.cancel')}
-            onConfirm={handleDelete}
-          >
-            {t('common:buttons.delete')}
-          </Button>
-          <Button variant="outline-secondary" onClick={handleRefresh} icon="fas fa-sync-alt">
-            {t('common:buttons.refresh')}
-          </Button>
-          <Button variant="secondary" onClick={handleBack} icon="fas fa-arrow-left">
-            {t('common:buttons.back')}
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        title={t('assignments:details.title', { id: assignmentDetails.id })}
+        actions={
+          <>
+            <Button
+              variant="outline-danger"
+              icon="fas fa-trash"
+              confirmAction={true}
+              confirmTitle={t('common:deleteConfirmation.title')}
+              confirmMessage={t('assignments:confirm_delete_assignment', { id: assignmentDetails.id })}
+              confirmText={t('common:deleteConfirmation.confirm')}
+              cancelText={t('common:deleteConfirmation.cancel')}
+              onConfirm={handleDelete}
+            >
+              {t('common:buttons.delete')}
+            </Button>
+            <Button variant="outline-secondary" onClick={handleRefresh} icon="fas fa-sync-alt">
+              {t('common:buttons.refresh')}
+            </Button>
+            <Button variant="secondary" onClick={handleBack} icon="fas fa-arrow-left">
+              {t('common:buttons.back')}
+            </Button>
+          </>
+        }
+      />
 
       <Card className="mb-4">
         <Card.Header>
