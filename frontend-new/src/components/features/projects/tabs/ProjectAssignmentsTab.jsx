@@ -7,7 +7,7 @@ import { EmptyState, LoadingSpinner } from '../../../common';
 import { useProjectAssignments } from '../../../../hooks/useProjectAssignments';
 
 const ProjectAssignmentsTab = ({ projectId }) => {
-  const { t } = useTranslation(['common', 'projects']);
+  const { t } = useTranslation(['common', 'projects', 'assignments']);
   const navigate = useNavigate();
   const { assignments, loading, error, deleteAssignment } = useProjectAssignments(projectId);
 
@@ -35,7 +35,7 @@ const ProjectAssignmentsTab = ({ projectId }) => {
         ) : error ? (
           <div className="alert alert-danger">
             <i className="fas fa-exclamation-triangle me-2"></i>
-            Error loading assignments: {error.message}
+            {t('projects:notifications.load_error')}: {error.message}
           </div>
         ) : assignments.length === 0 ? (
           <EmptyState
@@ -49,21 +49,21 @@ const ProjectAssignmentsTab = ({ projectId }) => {
             {assignments.map((assignment) => (
               <div key={assignment.id} className="list-group-item d-flex justify-content-between align-items-center">
                 <div>
-                  <div className="fw-bold">Assignment #{assignment.id}</div>
+                  <div className="fw-bold">{t('assignments:details.title', { id: assignment.id })}</div>
                   <small className="text-muted">
-                    Subject: {assignment.subjectId} | Video: {assignment.videoId}
+                    {t('assignments:details.subject')}: {assignment.subjectId} | {t('assignments:details.video_group')}: {assignment.videoId}
                   </small>
                 </div>
                 <div className="d-flex gap-1">
                   {assignment.completed ? (
                     <span className="badge bg-success">
                       <i className="fas fa-check me-1"></i>
-                      Completed
+                      {t('assignments:status.completed')}
                     </span>
                   ) : (
                     <span className="badge bg-warning">
                       <i className="fas fa-clock me-1"></i>
-                      Pending
+                      {t('assignments:status.pending')}
                     </span>
                   )}
                   <Button

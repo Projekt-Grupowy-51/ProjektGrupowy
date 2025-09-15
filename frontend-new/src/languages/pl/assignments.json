@@ -44,5 +44,9 @@
     "role": "Rola"
   },
   "loading": "Ładowanie przypisań...",
-  "confirm_delete_assignment": "Czy na pewno chcesz usunąć przypisanie #{{id}}? Ta operacja jest nieodwracalna."
+  "confirm_delete_assignment": "Czy na pewno chcesz usunąć przypisanie #{{id}}? Ta operacja jest nieodwracalna.",
+  "status": {
+    "completed": "Zakończone",
+    "pending": "Oczekujące"
+  }
 }

@@ -44,5 +44,9 @@
     "role": "Role"
   },
   "loading": "Loading assignments...",
-  "confirm_delete_assignment": "Are you sure you want to delete assignment #{{id}}? This operation cannot be undone."
+  "confirm_delete_assignment": "Are you sure you want to delete assignment #{{id}}? This operation cannot be undone.",
+  "status": {
+    "completed": "Completed",
+    "pending": "Pending"
+  }
 }
