@@ -8,7 +8,7 @@ using ProjektGrupowy.Domain.Utils.Constants;
 
 namespace ProjektGrupowy.API.Controllers;
 
-[Route("api/[controller]")]
+[Route("api/access-codes")]
 [ApiController]
 [ServiceFilter(typeof(ValidateModelStateFilter))]
 [ServiceFilter(typeof(NonSuccessGetFilter))]
@@ -18,7 +18,7 @@ public class AccessCodeController(
     IProjectService projectService,
     IMapper mapper) : ControllerBase
 {
-    [HttpGet("project/{projectId:int}")]
+    [HttpGet("projects/{projectId:int}")]
     [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
     public async Task<ActionResult<IEnumerable<AccessCodeResponse>>> GetAccessCodesByProjectAsync(int projectId)
     {

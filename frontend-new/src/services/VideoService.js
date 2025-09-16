@@ -14,7 +14,7 @@ class VideoService {
    */
   async getAll() {
     try {
-      return await apiClient.get('/Video');
+      return await apiClient.get('/videos');
     } catch (error) {
       throw new Error(`Failed to get videos: ${error.message}`);
     }
@@ -29,7 +29,7 @@ class VideoService {
    */
   async getBatch(videoGroupId, positionInQueue) {
     try {
-      return await apiClient.get(`/Video/batch/${videoGroupId}/${positionInQueue}`);
+      return await apiClient.get(`/videos/batch/${videoGroupId}/${positionInQueue}`);
     } catch (error) {
       throw new Error(`Failed to get video batch: ${error.message}`);
     }
@@ -43,7 +43,7 @@ class VideoService {
    */
   async getById(id) {
     try {
-      return await apiClient.get(`/Video/${id}`);
+      return await apiClient.get(`/videos/${id}`);
     } catch (error) {
       throw new Error(`Failed to get video ${id}: ${error.message}`);
     }
@@ -67,7 +67,7 @@ class VideoService {
       formData.append('VideoGroupId', videoRequest.videoGroupId.toString());
       formData.append('PositionInQueue', videoRequest.positionInQueue.toString());
 
-      return await apiClient.client.post('/Video', formData, {
+      return await apiClient.client.post('/videos', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -86,7 +86,7 @@ class VideoService {
    */
   async update(id, videoRequest) {
     try {
-      await apiClient.put(`/Video/${id}`, videoRequest);
+      await apiClient.put(`/videos/${id}`, videoRequest);
     } catch (error) {
       throw new Error(`Failed to update video ${id}: ${error.message}`);
     }
@@ -99,7 +99,7 @@ class VideoService {
    * @returns {string} Video stream URL
    */
   getStreamUrl(id) {
-    return `${apiClient.client.defaults.baseURL}/Video/${id}/stream`;
+    return `${apiClient.client.defaults.baseURL}/videos/${id}/stream`;
   }
 
   /**
@@ -109,7 +109,7 @@ class VideoService {
    */
   async getStreamBlob(id) {
     try {
-      const response = await apiClient.client.get(`/Video/${id}/stream`, {
+      const response = await apiClient.client.get(`/videos/${id}/stream`, {
         responseType: 'blob'
       });
       return URL.createObjectURL(response.data);
@@ -126,7 +126,7 @@ class VideoService {
    */
   async delete(id) {
     try {
-      await apiClient.delete(`/Video/${id}`);
+      await apiClient.delete(`/videos/${id}`);
     } catch (error) {
       throw new Error(`Failed to delete video ${id}: ${error.message}`);
     }
@@ -140,7 +140,7 @@ class VideoService {
    */
   async getAssignedLabels(id) {
     try {
-      return await apiClient.get(`/Video/${id}/assignedlabels`);
+      return await apiClient.get(`/videos/${id}/assigned-labels`);
     } catch (error) {
       throw new Error(`Failed to get assigned labels for video ${id}: ${error.message}`);
     }
@@ -155,7 +155,7 @@ class VideoService {
    */
   async getAssignedLabelsBySubject(videoId, subjectId) {
     try {
-      return await apiClient.get(`/Video/${videoId}/${subjectId}/assignedlabels`);
+      return await apiClient.get(`/videos/${videoId}/${subjectId}/assigned-labels`);
     } catch (error) {
       throw new Error(`Failed to get assigned labels for video ${videoId} and subject ${subjectId}: ${error.message}`);
     }

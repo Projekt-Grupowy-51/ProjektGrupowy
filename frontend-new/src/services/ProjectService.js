@@ -14,7 +14,7 @@ class ProjectService {
   async getAll() {
     try {
       console.log('ProjectService.getAll - making API call to:', apiClient.client.defaults.baseURL + '/Project');
-      return await apiClient.get('/Project');
+      return await apiClient.get('/projects');
     } catch (error) {
       console.error('ProjectService.getAll error:', error);
       throw new Error(`Failed to get projects: ${error.message}`);
@@ -29,7 +29,7 @@ class ProjectService {
    */
   async getById(id) {
     try {
-      return await apiClient.get(`/Project/${id}`);
+      return await apiClient.get(`/projects/${id}`);
     } catch (error) {
       throw new Error(`Failed to get project ${id}: ${error.message}`);
     }
@@ -45,7 +45,7 @@ class ProjectService {
    */
   async create(projectRequest) {
     try {
-      return await apiClient.post('/Project', projectRequest);
+      return await apiClient.post('/projects', projectRequest);
     } catch (error) {
       throw new Error(`Failed to create project: ${error.message}`);
     }
@@ -60,7 +60,7 @@ class ProjectService {
    */
   async update(id, projectRequest) {
     try {
-      await apiClient.put(`/Project/${id}`, projectRequest);
+      await apiClient.put(`/projects/${id}`, projectRequest);
     } catch (error) {
       throw new Error(`Failed to update project ${id}: ${error.message}`);
     }
@@ -74,7 +74,7 @@ class ProjectService {
    */
   async delete(id) {
     try {
-      await apiClient.delete(`/Project/${id}`);
+      await apiClient.delete(`/projects/${id}`);
     } catch (error) {
       throw new Error(`Failed to delete project ${id}: ${error.message}`);
     }
@@ -88,7 +88,7 @@ class ProjectService {
    */
   async getUsers(id) {
     try {
-      return await apiClient.get(`/Project/${id}/Labelers`);
+      return await apiClient.get(`/projects/${id}/labelers`);
     } catch (error) {
       throw new Error(`Failed to get labelers for project ${id}: ${error.message}`);
     }
@@ -102,7 +102,7 @@ class ProjectService {
    */
   async getSubjects(id) {
     try {
-      return await apiClient.get(`/Project/${id}/subjects`);
+      return await apiClient.get(`/projects/${id}/subjects`);
     } catch (error) {
       throw new Error(`Failed to get subjects for project ${id}: ${error.message}`);
     }
@@ -116,7 +116,7 @@ class ProjectService {
    */
   async getVideoGroups(id) {
     try {
-      return await apiClient.get(`/Project/${id}/VideoGroups`);
+      return await apiClient.get(`/projects/${id}/video-groups`);
     } catch (error) {
       throw new Error(`Failed to get video groups for project ${id}: ${error.message}`);
     }
@@ -130,7 +130,7 @@ class ProjectService {
    */
   async getReports(id) {
     try {
-      return await apiClient.get(`/Project/${id}/reports`);
+      return await apiClient.get(`/projects/${id}/reports`);
     } catch (error) {
       throw new Error(`Failed to get reports for project ${id}: ${error.message}`);
     }
@@ -174,7 +174,7 @@ class ProjectService {
    */
   async getAssignments(id) {
     try {
-      return await apiClient.get(`/Project/${id}/SubjectVideoGroupAssignments`);
+      return await apiClient.get(`/projects/${id}/subject-video-group-assignments`);
     } catch (error) {
       throw new Error(`Failed to get assignments for project ${id}: ${error.message}`);
     }
@@ -188,7 +188,7 @@ class ProjectService {
    */
   async getStats(id) {
     try {
-      return await apiClient.get(`/Project/${id}/stats`);
+      return await apiClient.get(`/projects/${id}/stats`);
     } catch (error) {
       throw new Error(`Failed to get statistics for project ${id}: ${error.message}`);
     }
@@ -202,7 +202,7 @@ class ProjectService {
    */
   async getUnassignedLabelers(id) {
     try {
-      return await apiClient.get(`/Project/${id}/unassigned-labelers`);
+      return await apiClient.get(`/projects/${id}/unassigned-labelers`);
     } catch (error) {
       throw new Error(`Failed to get unassigned labelers for project ${id}: ${error.message}`);
     }
@@ -216,7 +216,7 @@ class ProjectService {
    */
   async distributeLabelers(id) {
     try {
-      await apiClient.post(`/Project/${id}/distribute`);
+      await apiClient.post(`/projects/${id}/distribute`);
     } catch (error) {
       throw new Error(`Failed to distribute labelers for project ${id}: ${error.message}`);
     }
@@ -230,7 +230,7 @@ class ProjectService {
    */
   async unassignAllLabelers(id) {
     try {
-      await apiClient.post(`/Project/${id}/unassign-all`);
+      await apiClient.post(`/projects/${id}/unassign-all`);
     } catch (error) {
       throw new Error(`Failed to unassign all labelers for project ${id}: ${error.message}`);
     }

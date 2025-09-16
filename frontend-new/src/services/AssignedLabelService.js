@@ -13,7 +13,7 @@ class AssignedLabelService {
    */
   async getAll() {
     try {
-      return await apiClient.get('/AssignedLabel');
+      return await apiClient.get('/assigned-labels');
     } catch (error) {
       throw new Error(`Failed to get assigned labels: ${error.message}`);
     }
@@ -27,7 +27,7 @@ class AssignedLabelService {
    */
   async getById(id) {
     try {
-      return await apiClient.get(`/AssignedLabel/${id}`);
+      return await apiClient.get(`/assigned-labels/${id}`);
     } catch (error) {
       throw new Error(`Failed to get assigned label ${id}: ${error.message}`);
     }
@@ -45,7 +45,7 @@ class AssignedLabelService {
    */
   async create(assignedLabelRequest) {
     try {
-      return await apiClient.post('/AssignedLabel', assignedLabelRequest);
+      return await apiClient.post('/assigned-labels', assignedLabelRequest);
     } catch (error) {
       throw new Error(`Failed to create assigned label: ${error.message}`);
     }
@@ -59,7 +59,7 @@ class AssignedLabelService {
    */
   async delete(id) {
     try {
-      await apiClient.delete(`/AssignedLabel/${id}`);
+      await apiClient.delete(`/assigned-labels/${id}`);
     } catch (error) {
       throw new Error(`Failed to delete assigned label ${id}: ${error.message}`);
     }

@@ -7,7 +7,7 @@ using ProjektGrupowy.Application.Services;
 
 namespace ProjektGrupowy.API.Controllers;
 
-[Route("api/[controller]")]
+[Route("api/assigned-labels")]
 [ApiController]
 [ServiceFilter(typeof(ValidateModelStateFilter))]
 [ServiceFilter(typeof(NonSuccessGetFilter))]

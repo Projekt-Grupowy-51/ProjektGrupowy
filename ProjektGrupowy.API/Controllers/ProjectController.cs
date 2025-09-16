@@ -16,7 +16,7 @@ using ProjektGrupowy.Domain.Utils.Constants;
 
 namespace ProjektGrupowy.API.Controllers;
 
-[Route("api/[controller]")]
+[Route("api/projects")]
 [ApiController]
 [ServiceFilter(typeof(ValidateModelStateFilter))]
 [ServiceFilter(typeof(NonSuccessGetFilter))]
@@ -158,7 +158,7 @@ public class ProjectController(
     }
 
     [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
-    [HttpGet("{projectId:int}/Subjects")]
+    [HttpGet("{projectId:int}/subjects")]
     public async Task<ActionResult<IEnumerable<SubjectResponse>>> GetSubjectsByProjectAsync(int projectId)
     {
         var subjectsResult = await subjectService.GetSubjectsByProjectAsync(projectId);
@@ -168,7 +168,7 @@ public class ProjectController(
     }
 
     [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
-    [HttpGet("{projectId:int}/VideoGroups")]
+    [HttpGet("{projectId:int}/video-groups")]
     public async Task<ActionResult<IEnumerable<VideoGroupResponse>>> GetVideoGroupsByProjectAsync(int projectId)
     {
         var videoGroupsResult = await videoGroupService.GetVideoGroupsByProjectAsync(projectId);
@@ -178,7 +178,7 @@ public class ProjectController(
     }
 
     [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
-    [HttpGet("{projectId:int}/SubjectVideoGroupAssignments")]
+    [HttpGet("{projectId:int}/subject-video-group-assignments")]
     public async Task<ActionResult<IEnumerable<SubjectVideoGroupAssignmentResponse>>> GetSubjectVideoGroupAssignmentsByProjectAsync(int projectId)
     {
         var assignmentsResult = await subjectVideoGroupAssignmentService.GetSubjectVideoGroupAssignmentsByProjectAsync(projectId);
@@ -188,7 +188,7 @@ public class ProjectController(
     }
 
     [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
-    [HttpGet("{projectId:int}/Labelers")]
+    [HttpGet("{projectId:int}/labelers")]
     public async Task<ActionResult<IEnumerable<LabelerResponse>>> GetLabelersByProjectAsync(int projectId)
     {
         var labelersResult = await projectService.GetLabelersByProjectAsync(projectId);

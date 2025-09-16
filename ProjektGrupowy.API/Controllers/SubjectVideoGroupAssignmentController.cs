@@ -10,7 +10,7 @@ using ProjektGrupowy.Domain.Utils.Constants;
 
 namespace ProjektGrupowy.API.Controllers;
 
-[Route("api/[controller]")]
+[Route("api/subject-video-group-assignments")]
 [ApiController]
 [ServiceFilter(typeof(ValidateModelStateFilter))]
 [ServiceFilter(typeof(NonSuccessGetFilter))]
@@ -39,7 +39,7 @@ public class SubjectVideoGroupAssignmentController(
     }
 
     [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
-    [HttpGet("{id:int}/Labelers")]
+    [HttpGet("{id:int}/labelers")]
     public async Task<ActionResult<IEnumerable<LabelerResponse>>> GetSubjectVideoGroupAssignmentLabelersAsync(int id)
     {
         var labelers = await subjectVideoGroupAssignmentService.GetSubjectVideoGroupAssignmentsLabelersAsync(id);

@@ -13,7 +13,7 @@ class ProjectReportService {
    */
   async getAll() {
     try {
-      return await apiClient.get('/ProjectReport');
+      return await apiClient.get('/project-reports');
     } catch (error) {
       throw new Error(`Failed to get project reports: ${error.message}`);
     }
@@ -27,7 +27,7 @@ class ProjectReportService {
    */
   async getById(id) {
     try {
-      return await apiClient.get(`/ProjectReport/${id}`);
+      return await apiClient.get(`/project-reports/${id}`);
     } catch (error) {
       throw new Error(`Failed to get project report ${id}: ${error.message}`);
     }
@@ -44,7 +44,7 @@ class ProjectReportService {
    */
   async create(reportRequest) {
     try {
-      return await apiClient.post(`/ProjectReport/${reportRequest.projectId}/generate-report`);
+      return await apiClient.post(`/project-reports/${reportRequest.projectId}/generate-report`);
     } catch (error) {
       throw new Error(`Failed to create project report: ${error.message}`);
     }
@@ -59,7 +59,7 @@ class ProjectReportService {
    */
   async update(id, reportRequest) {
     try {
-      await apiClient.put(`/ProjectReport/${id}`, reportRequest);
+      await apiClient.put(`/project-reports/${id}`, reportRequest);
     } catch (error) {
       throw new Error(`Failed to update project report ${id}: ${error.message}`);
     }
@@ -73,7 +73,7 @@ class ProjectReportService {
    */
   async delete(id) {
     try {
-      await apiClient.delete(`/ProjectReport/${id}`);
+      await apiClient.delete(`/project-reports/${id}`);
     } catch (error) {
       throw new Error(`Failed to delete project report ${id}: ${error.message}`);
     }
@@ -87,7 +87,7 @@ class ProjectReportService {
    */
   async download(id) {
     try {
-      return await apiClient.get(`/ProjectReport/download/${id}`, {
+      return await apiClient.get(`/project-reports/download/${id}`, {
         responseType: 'blob'
       });
     } catch (error) {
@@ -101,7 +101,7 @@ class ProjectReportService {
    * @returns {string} Download URL
    */
   getDownloadUrl(id) {
-    return `${apiClient.client.defaults.baseURL}/ProjectReport/download/${id}`;
+    return `${apiClient.client.defaults.baseURL}/project-reports/download/${id}`;
   }
 }
 

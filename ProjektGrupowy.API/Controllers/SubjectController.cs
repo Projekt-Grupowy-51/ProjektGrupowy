@@ -9,7 +9,7 @@ using ProjektGrupowy.Domain.Utils.Constants;
 
 namespace ProjektGrupowy.API.Controllers;
 
-[Route("api/[controller]")]
+[Route("api/subjects")]
 [ApiController]
 [ServiceFilter(typeof(ValidateModelStateFilter))]
 [ServiceFilter(typeof(NonSuccessGetFilter))]
@@ -76,7 +76,7 @@ public class SubjectController(
         return NoContent();
     }
 
-    [HttpGet("{id:int}/label")]
+    [HttpGet("{id:int}/labels")]
     public async Task<ActionResult<IEnumerable<LabelResponse>>> GetSubjectLabelsAsync(int id)
     {
         var labels = await subjectService.GetSubjectLabelsAsync(id);

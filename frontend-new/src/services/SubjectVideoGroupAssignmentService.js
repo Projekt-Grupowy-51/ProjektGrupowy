@@ -13,7 +13,7 @@ class SubjectVideoGroupAssignmentService {
    */
   async getAll() {
     try {
-      return await apiClient.get('/SubjectVideoGroupAssignment');
+      return await apiClient.get('/subject-video-group-assignments');
     } catch (error) {
       throw new Error(`Failed to get subject video group assignments: ${error.message}`);
     }
@@ -27,7 +27,7 @@ class SubjectVideoGroupAssignmentService {
    */
   async getById(id) {
     try {
-      return await apiClient.get(`/SubjectVideoGroupAssignment/${id}`);
+      return await apiClient.get(`/subject-video-group-assignments/${id}`);
     } catch (error) {
       throw new Error(`Failed to get assignment ${id}: ${error.message}`);
     }
@@ -43,7 +43,7 @@ class SubjectVideoGroupAssignmentService {
    */
   async create(assignmentRequest) {
     try {
-      return await apiClient.post('/SubjectVideoGroupAssignment', assignmentRequest);
+      return await apiClient.post('/subject-video-group-assignments', assignmentRequest);
     } catch (error) {
       throw new Error(`Failed to create assignment: ${error.message}`);
     }
@@ -58,7 +58,7 @@ class SubjectVideoGroupAssignmentService {
    */
   async update(id, assignmentRequest) {
     try {
-      await apiClient.put(`/SubjectVideoGroupAssignment/${id}`, assignmentRequest);
+      await apiClient.put(`/subject-video-group-assignments/${id}`, assignmentRequest);
     } catch (error) {
       throw new Error(`Failed to update assignment ${id}: ${error.message}`);
     }
@@ -72,7 +72,7 @@ class SubjectVideoGroupAssignmentService {
    */
   async delete(id) {
     try {
-      await apiClient.delete(`/SubjectVideoGroupAssignment/${id}`);
+      await apiClient.delete(`/subject-video-group-assignments/${id}`);
     } catch (error) {
       throw new Error(`Failed to delete assignment ${id}: ${error.message}`);
     }
@@ -86,7 +86,7 @@ class SubjectVideoGroupAssignmentService {
    */
   async getLabelers(id) {
     try {
-      return await apiClient.get(`/SubjectVideoGroupAssignment/${id}/labelers`);
+      return await apiClient.get(`/subject-video-group-assignments/${id}/labelers`);
     } catch (error) {
       throw new Error(`Failed to get labelers for assignment ${id}: ${error.message}`);
     }
@@ -101,7 +101,7 @@ class SubjectVideoGroupAssignmentService {
    */
   async addLabeler(id, labelerId) {
     try {
-      await apiClient.post(`/SubjectVideoGroupAssignment/${id}/assign-labeler/${labelerId}`);
+      await apiClient.post(`/subject-video-group-assignments/${id}/assign-labeler/${labelerId}`);
     } catch (error) {
       throw new Error(`Failed to add labeler ${labelerId} to assignment ${id}: ${error.message}`);
     }
@@ -116,7 +116,7 @@ class SubjectVideoGroupAssignmentService {
    */
   async removeLabeler(id, labelerId) {
     try {
-      await apiClient.delete(`/SubjectVideoGroupAssignment/${id}/unassign-labeler/${labelerId}`);
+      await apiClient.delete(`/subject-video-group-assignments/${id}/unassign-labeler/${labelerId}`);
     } catch (error) {
       throw new Error(`Failed to remove labeler ${labelerId} from assignment ${id}: ${error.message}`);
     }

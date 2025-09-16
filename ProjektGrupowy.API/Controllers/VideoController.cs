@@ -10,7 +10,7 @@ using ProjektGrupowy.Domain.Utils.Constants;
 
 namespace ProjektGrupowy.API.Controllers;
 
-[Route("api/[controller]")]
+[Route("api/videos")]
 [ApiController]
 [ServiceFilter(typeof(ValidateModelStateFilter))]
 [ServiceFilter(typeof(NonSuccessGetFilter))]
@@ -116,7 +116,7 @@ public class VideoController(
         return NoContent();
     }
 
-    [HttpGet("{id:int}/assignedlabels")]
+    [HttpGet("{id:int}/assigned-labels")]
     public async Task<ActionResult<IEnumerable<AssignedLabelResponse>>> GetAssignedLabelsByVideoIdAsync(int id)
     {
         var assignedLabels = await assignedLabelService.GetAssignedLabelsByVideoIdAsync(id);
@@ -125,7 +125,7 @@ public class VideoController(
             : NotFound(assignedLabels.GetErrorOrThrow());
     }
 
-    [HttpGet("{videoId:int}/{subjectId:int}/assignedlabels")]
+    [HttpGet("{videoId:int}/{subjectId:int}/assigned-labels")]
     public async Task<ActionResult<IEnumerable<AssignedLabelResponse>>> GetAssignedLabelsByVideoIdAndSubjectIdAsync(int videoId, int subjectId)
     {
         var assignedLabels = await assignedLabelService.GetAssignedLabelsByVideoIdAndSubjectIdAsync(videoId, subjectId);

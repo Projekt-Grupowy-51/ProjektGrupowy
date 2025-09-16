@@ -14,7 +14,7 @@ class VideoGroupService {
    */
   async getAll() {
     try {
-      return await apiClient.get('/VideoGroup');
+      return await apiClient.get('/video-groups');
     } catch (error) {
       throw new Error(`Failed to get video groups: ${error.message}`);
     }
@@ -28,7 +28,7 @@ class VideoGroupService {
    */
   async getById(id) {
     try {
-      return await apiClient.get(`/VideoGroup/${id}`);
+      return await apiClient.get(`/video-groups/${id}`);
     } catch (error) {
       throw new Error(`Failed to get video group ${id}: ${error.message}`);
     }
@@ -45,7 +45,7 @@ class VideoGroupService {
    */
   async create(videoGroupRequest) {
     try {
-      return await apiClient.post('/VideoGroup', videoGroupRequest);
+      return await apiClient.post('/video-groups', videoGroupRequest);
     } catch (error) {
       throw new Error(`Failed to create video group: ${error.message}`);
     }
@@ -60,7 +60,7 @@ class VideoGroupService {
    */
   async update(id, videoGroupRequest) {
     try {
-      await apiClient.put(`/VideoGroup/${id}`, videoGroupRequest);
+      await apiClient.put(`/video-groups/${id}`, videoGroupRequest);
     } catch (error) {
       throw new Error(`Failed to update video group ${id}: ${error.message}`);
     }
@@ -74,7 +74,7 @@ class VideoGroupService {
    */
   async delete(id) {
     try {
-      await apiClient.delete(`/VideoGroup/${id}`);
+      await apiClient.delete(`/video-groups/${id}`);
     } catch (error) {
       throw new Error(`Failed to delete video group ${id}: ${error.message}`);
     }
@@ -88,7 +88,7 @@ class VideoGroupService {
    */
   async getVideos(id) {
     try {
-      return await apiClient.get(`/VideoGroup/${id}/videos`);
+      return await apiClient.get(`/video-groups/${id}/videos`);
     } catch (error) {
       throw new Error(`Failed to get videos for video group ${id}: ${error.message}`);
     }

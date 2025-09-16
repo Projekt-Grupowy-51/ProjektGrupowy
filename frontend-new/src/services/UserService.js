@@ -13,7 +13,7 @@ class UserService {
    */
   async getProfile() {
     try {
-      return await apiClient.get('/User/profile');
+      return await apiClient.get('/users/profile');
     } catch (error) {
       throw new Error(`Failed to get user profile: ${error.message}`);
     }
@@ -26,7 +26,7 @@ class UserService {
    */
   async checkAuth() {
     try {
-      return await apiClient.get('/User/check-auth');
+      return await apiClient.get('/users/check-auth');
     } catch (error) {
       throw new Error(`Failed to check authentication: ${error.message}`);
     }

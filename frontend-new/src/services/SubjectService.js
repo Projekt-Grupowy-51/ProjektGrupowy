@@ -14,7 +14,7 @@ class SubjectService {
    */
   async getAll() {
     try {
-      return await apiClient.get('/Subject');
+      return await apiClient.get('/subjects');
     } catch (error) {
       throw new Error(`Failed to get subjects: ${error.message}`);
     }
@@ -28,7 +28,7 @@ class SubjectService {
    */
   async getById(id) {
     try {
-      return await apiClient.get(`/Subject/${id}`);
+      return await apiClient.get(`/subjects/${id}`);
     } catch (error) {
       throw new Error(`Failed to get subject ${id}: ${error.message}`);
     }
@@ -45,7 +45,7 @@ class SubjectService {
    */
   async create(subjectRequest) {
     try {
-      return await apiClient.post('/Subject', subjectRequest);
+      return await apiClient.post('/subjects', subjectRequest);
     } catch (error) {
       throw new Error(`Failed to create subject: ${error.message}`);
     }
@@ -60,7 +60,7 @@ class SubjectService {
    */
   async update(id, subjectRequest) {
     try {
-      await apiClient.put(`/Subject/${id}`, subjectRequest);
+      await apiClient.put(`/subjects/${id}`, subjectRequest);
     } catch (error) {
       throw new Error(`Failed to update subject ${id}: ${error.message}`);
     }
@@ -74,7 +74,7 @@ class SubjectService {
    */
   async delete(id) {
     try {
-      await apiClient.delete(`/Subject/${id}`);
+      await apiClient.delete(`/subjects/${id}`);
     } catch (error) {
       throw new Error(`Failed to delete subject ${id}: ${error.message}`);
     }
@@ -88,7 +88,7 @@ class SubjectService {
    */
   async getLabels(id) {
     try {
-      return await apiClient.get(`/Subject/${id}/label`);
+      return await apiClient.get(`/subjects/${id}/labels`);
     } catch (error) {
       throw new Error(`Failed to get labels for subject ${id}: ${error.message}`);
     }

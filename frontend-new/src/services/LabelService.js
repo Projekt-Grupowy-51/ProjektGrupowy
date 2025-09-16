@@ -14,7 +14,7 @@ class LabelService {
    */
   async getAll() {
     try {
-      return await apiClient.get('/Label');
+      return await apiClient.get('/labels');
     } catch (error) {
       throw new Error(`Failed to get labels: ${error.message}`);
     }
@@ -28,7 +28,7 @@ class LabelService {
    */
   async getById(id) {
     try {
-      return await apiClient.get(`/Label/${id}`);
+      return await apiClient.get(`/labels/${id}`);
     } catch (error) {
       throw new Error(`Failed to get label ${id}: ${error.message}`);
     }
@@ -48,7 +48,7 @@ class LabelService {
    */
   async create(labelRequest) {
     try {
-      return await apiClient.post('/Label', labelRequest);
+      return await apiClient.post('/labels', labelRequest);
     } catch (error) {
       throw new Error(`Failed to create label: ${error.message}`);
     }
@@ -63,7 +63,7 @@ class LabelService {
    */
   async update(id, labelRequest) {
     try {
-      await apiClient.put(`/Label/${id}`, labelRequest);
+      await apiClient.put(`/labels/${id}`, labelRequest);
     } catch (error) {
       throw new Error(`Failed to update label ${id}: ${error.message}`);
     }
@@ -77,7 +77,7 @@ class LabelService {
    */
   async delete(id) {
     try {
-      await apiClient.delete(`/Label/${id}`);
+      await apiClient.delete(`/labels/${id}`);
     } catch (error) {
       throw new Error(`Failed to delete label ${id}: ${error.message}`);
     }

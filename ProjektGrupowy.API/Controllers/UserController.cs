@@ -5,7 +5,7 @@ using ProjektGrupowy.Application.Services;
 
 namespace ProjektGrupowy.API.Controllers;
 
-[Route("api/[controller]")]
+[Route("api/users")]
 [ApiController]
 [ServiceFilter(typeof(ValidateModelStateFilter))]
 [Authorize]

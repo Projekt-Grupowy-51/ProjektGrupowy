@@ -13,7 +13,7 @@ using ProjektGrupowy.Domain.Utils.Constants;
 
 namespace ProjektGrupowy.API.Controllers;
 
-[Route("api/[controller]")]
+[Route("api/project-reports")]
 [ApiController]
 [ServiceFilter(typeof(ValidateModelStateFilter))]
 [ServiceFilter(typeof(NonSuccessGetFilter))]
@@ -26,7 +26,7 @@ public class ProjectReportController(
     ICurrentUserService currentUserService,
     IConfiguration configuration) : ControllerBase
 {
-    [HttpGet("project/{projectId:int}")]
+    [HttpGet("projects/{projectId:int}")]
     public async Task<IActionResult> GetProjectReports(int projectId)
     {
         var result = await projectReportService.GetReportsAsync(projectId);

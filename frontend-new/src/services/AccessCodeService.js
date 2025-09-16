@@ -15,7 +15,7 @@ class AccessCodeService {
    */
   async getByProjectId(projectId) {
     try {
-      return await apiClient.get(`/AccessCode/project/${projectId}`);
+      return await apiClient.get(`/access-codes/projects/${projectId}`);
     } catch (error) {
       throw new Error(`Failed to get access codes for project ${projectId}: ${error.message}`);
     }
@@ -29,7 +29,7 @@ class AccessCodeService {
    */
   async retireCode(code) {
     try {
-      await apiClient.put(`/AccessCode/${encodeURIComponent(code)}/retire`);
+      await apiClient.put(`/access-codes/${encodeURIComponent(code)}/retire`);
     } catch (error) {
       throw new Error(`Failed to retire access code: ${error.message}`);
     }
@@ -44,7 +44,7 @@ class AccessCodeService {
    */
   async validateCode(accessCodeRequest) {
     try {
-      return await apiClient.post('/AccessCode/validate', accessCodeRequest);
+      return await apiClient.post('/access-codes/validate', accessCodeRequest);
     } catch (error) {
       throw new Error(`Failed to validate access code: ${error.message}`);
     }
@@ -60,7 +60,7 @@ class AccessCodeService {
    */
   async createForProject(createAccessCodeRequest) {
     try {
-      return await apiClient.post('/AccessCode/project', createAccessCodeRequest);
+      return await apiClient.post('/access-codes/project', createAccessCodeRequest);
     } catch (error) {
       throw new Error(`Failed to create access code: ${error.message}`);
     }
@@ -75,7 +75,7 @@ class AccessCodeService {
    */
   async joinProject(accessCodeRequest) {
     try {
-      await apiClient.post('/Project/join', { AccessCode: accessCodeRequest.code });
+      await apiClient.post('/projects/join', { AccessCode: accessCodeRequest.code });
     } catch (error) {
       throw new Error(`Failed to join project: ${error.message}`);
     }
