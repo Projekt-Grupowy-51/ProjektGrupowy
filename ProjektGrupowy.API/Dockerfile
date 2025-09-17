@@ -8,11 +8,15 @@ EXPOSE 443
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["ProjektGrupowy.API.csproj", "ProjektGrupowy.API/"]
+COPY ["ProjektGrupowy.API/ProjektGrupowy.API.csproj", "ProjektGrupowy.API/"]
+COPY ["ProjektGrupowy.Application/ProjektGrupowy.Application.csproj", "ProjektGrupowy.Application/"]
+COPY ["ProjektGrupowy.Domain/ProjektGrupowy.Domain.csproj", "ProjektGrupowy.Domain/"]
+COPY ["ProjektGrupowy.Infrastructure/ProjektGrupowy.Infrastructure.csproj", "ProjektGrupowy.Infrastructure/"]
 RUN dotnet restore "ProjektGrupowy.API/ProjektGrupowy.API.csproj"
 
-WORKDIR "/src/ProjektGrupowy.API"
+WORKDIR "/src"
 COPY . .
+WORKDIR "/src/ProjektGrupowy.API"
 
 # Build the application
 RUN dotnet build "ProjektGrupowy.API.csproj" -c $BUILD_CONFIGURATION -o /app/build
