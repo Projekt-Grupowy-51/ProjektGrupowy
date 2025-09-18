@@ -315,7 +315,7 @@ static void AddServices(WebApplicationBuilder builder)
             {
                 options.Authority = keycloakAuthority;
                 options.Audience = keycloakAudience;
-                options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
+                options.RequireHttpsMetadata = builder.Configuration.GetValue("Keycloak:RequireHttpsMetadata", true);
 
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
