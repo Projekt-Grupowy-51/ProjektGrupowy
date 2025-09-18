@@ -55,7 +55,7 @@ services:
       - Logging__LogLevel__Default=Information
       - Logging__LogLevel__Microsoft.AspNetCore=Warning
 
-      - JWT__ValidIssuer=http://localhost:5000
+      - JWT__ValidIssuer=http://keycloak:8080/realms/vidmark
       - JWT__ValidAudience=http://localhost:3000
       - JWT__Secret=YourSuperSecretKeyThatIsAtLeast16CharactersLong
       - JWT__JwtCookieName=AuthToken
@@ -108,7 +108,7 @@ services:
       - Logging__LogLevel__Default=Information
       - Logging__LogLevel__Microsoft.AspNetCore=Warning
 
-      - JWT__ValidIssuer=http://localhost:5000
+      - JWT__ValidIssuer=http://keycloak:8080/realms/vidmark
       - JWT__ValidAudience=http://localhost:3000
       - JWT__Secret=YourSuperSecretKeyThatIsAtLeast16CharactersLong
       - JWT__JwtCookieName=AuthToken
@@ -177,7 +177,7 @@ services:
       - Logging__LogLevel__Default=Information
       - Logging__LogLevel__Microsoft.AspNetCore=Warning
 
-      - JWT__ValidIssuer=http://localhost:5000
+      - JWT__ValidIssuer=http://keycloak:8080/realms/vidmark
       - JWT__ValidAudience=http://localhost:3000
       - JWT__Secret=YourSuperSecretKeyThatIsAtLeast16CharactersLong
       - JWT__JwtCookieName=AuthToken
@@ -191,10 +191,10 @@ services:
       - Keycloak__Audience=projektgrupowy-client
 
       - Videos__RootDirectory=videos
-      - Videos__NginxUrl=http://localhost:8080/videos
+      - Videos__NginxUrl=http://localhost:8081/videos
 
       - Reports__RootDirectory=reports
-      - Reports__NginxUrl=http://localhost:8080/reports
+      - Reports__NginxUrl=http://localhost:8081/reports
 
       - Cors__AllowedDevOrigin=http://localhost:3000
       - Cors__AllowedProductionOrigin=https://some-production-url.com
