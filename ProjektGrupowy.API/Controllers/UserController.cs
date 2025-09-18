@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ProjektGrupowy.API.Filters;
 using ProjektGrupowy.Application.Services;
+using ProjektGrupowy.Infrastructure.Services;
 
 namespace ProjektGrupowy.API.Controllers;
 

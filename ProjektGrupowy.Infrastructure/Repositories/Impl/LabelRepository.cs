@@ -12,7 +12,7 @@ public class LabelRepository(AppDbContext context, ILogger<LabelRepository> logg
     {
         try
         {
-            var labels = await context.Labels.FilteredLabels(userId, isAdmin).ToListAsync();
+            var labels = await context.Labels.ToListAsync();
             return Optional<IEnumerable<Label>>.Success(labels);
         }
         catch (Exception e)
@@ -26,7 +26,7 @@ public class LabelRepository(AppDbContext context, ILogger<LabelRepository> logg
     {
         try
         {
-            var label = await context.Labels.FilteredLabels(userId, isAdmin).FirstOrDefaultAsync(l => l.Id == id);
+            var label = await context.Labels.FirstOrDefaultAsync(l => l.Id == id);
             return label is null
                 ? Optional<Label>.Failure("Label not found")
                 : Optional<Label>.Success(label);

@@ -27,6 +27,7 @@ using ProjektGrupowy.Infrastructure.Repositories.Impl;
 using Serilog;
 using System.Text.Json.Serialization;
 using ProjektGrupowy.Application.Http;
+using ProjektGrupowy.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -294,6 +295,9 @@ static void AddServices(WebApplicationBuilder builder)
         options
             .UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
             .UseLazyLoadingProxies()
+            .EnableDetailedErrors()
+            .EnableSensitiveDataLogging()
+            .LogTo(Console.WriteLine, [DbLoggerCategory.Database.Command.Name], LogLevel.Information)
     );
 
     // Keycloak JWT Authentication

@@ -15,7 +15,7 @@ public class SubjectVideoGroupAssignmentRepository(
     {
         try
         {
-            var subjectVideoGroupAssignments = await context.SubjectVideoGroupAssignments.FilteredSubjectVideoGroupAssignments(userId, isAdmin)
+            var subjectVideoGroupAssignments = await context.SubjectVideoGroupAssignments
                 .ToListAsync();
             return Optional<IEnumerable<SubjectVideoGroupAssignment>>.Success(subjectVideoGroupAssignments);
         }
@@ -30,8 +30,7 @@ public class SubjectVideoGroupAssignmentRepository(
     {
         try
         {
-            var subjectVideoGroupAssignment =
-                await context.SubjectVideoGroupAssignments.FilteredSubjectVideoGroupAssignments(userId, isAdmin)
+            var subjectVideoGroupAssignment = await context.SubjectVideoGroupAssignments
                 .FirstOrDefaultAsync(x => x.Id == id);
             return subjectVideoGroupAssignment is null
                 ? Optional<SubjectVideoGroupAssignment>.Failure("Subject video group assignment not found")
@@ -95,7 +94,7 @@ public class SubjectVideoGroupAssignmentRepository(
     {
         try
         {
-            var assignments = await context.SubjectVideoGroupAssignments.FilteredSubjectVideoGroupAssignments(userId, isAdmin)
+            var assignments = await context.SubjectVideoGroupAssignments
                 .Where(x => x.Subject.Project.Id == projectId)
                 .ToListAsync();
 
@@ -111,7 +110,7 @@ public class SubjectVideoGroupAssignmentRepository(
     {
         try
         {
-            var labelers = await context.SubjectVideoGroupAssignments.FilteredSubjectVideoGroupAssignments(userId, isAdmin)
+            var labelers = await context.SubjectVideoGroupAssignments
                 .Where(x => x.Id == id)
                 .SelectMany(x => x.Labelers)
                 .ToListAsync();
@@ -127,7 +126,8 @@ public class SubjectVideoGroupAssignmentRepository(
 
     public async Task<Optional<SubjectVideoGroupAssignment>> AssignLabelerToAssignmentAsync(int assignmentId, string labelerId, string userId, bool isAdmin)
     {
-        var assignment = await context.SubjectVideoGroupAssignments.FilteredSubjectVideoGroupAssignments(userId, isAdmin)
+        var assignment = await context.SubjectVideoGroupAssignments
+            .Include(subjectVideoGroupAssignment => subjectVideoGroupAssignment.Labelers)
             .FirstOrDefaultAsync(a => a.Id == assignmentId);
 
         if (assignment == null)
@@ -157,7 +157,8 @@ public class SubjectVideoGroupAssignmentRepository(
     {
         try
         {
-            var assignment = await context.SubjectVideoGroupAssignments.FilteredSubjectVideoGroupAssignments(userId, isAdmin)
+            var assignment = await context.SubjectVideoGroupAssignments
+                .Include(subjectVideoGroupAssignment => subjectVideoGroupAssignment.Labelers)
                 .FirstOrDefaultAsync(a => a.Id == assignmentId);
 
             if (assignment == null)

@@ -21,8 +21,7 @@ public class VideoRepository : IVideoRepository
     {
         try
         {
-            var videos = await _context.Videos.FilteredVideos(userId, isAdmin)
-                .ToListAsync();
+            var videos = await _context.Videos.ToListAsync();
             return Optional<IEnumerable<Video>>.Success(videos);
         }
         catch (Exception e)
@@ -37,7 +36,7 @@ public class VideoRepository : IVideoRepository
         try
         {
             // Index lookup
-            var videos = await _context.Videos.FilteredVideos(userId, isAdmin)
+            var videos = await _context.Videos
                 .Where(v => v.VideoGroupId == videoGroupId)
                 .Where(v => v.PositionInQueue == positionInQueue)
                 .ToListAsync();
@@ -55,7 +54,7 @@ public class VideoRepository : IVideoRepository
     {
         try
         {
-            var video = await _context.Videos.FilteredVideos(userId, isAdmin).FirstOrDefaultAsync(x => x.Id == id);
+            var video = await _context.Videos.FirstOrDefaultAsync(x => x.Id == id);
             return video is null
                 ? Optional<Video>.Failure("Video not found")
                 : Optional<Video>.Success(video);

@@ -51,7 +51,6 @@ public class ProjectRepository(AppDbContext context, ILogger<ProjectRepository> 
         try
         {
             var result = await context.SubjectVideoGroupAssignments
-                .FilteredSubjectVideoGroupAssignments(userId, isAdmin)
                 .Where(svga => svga.VideoGroup.Project.Id == projectId)
                 .GroupBy(svga => svga.Id)
                 .Select(g => new
@@ -91,8 +90,7 @@ public class ProjectRepository(AppDbContext context, ILogger<ProjectRepository> 
     {
         try
         {
-            var project = await context.Projects.FilteredProjects(userId, isAdmin)
-                .FirstOrDefaultAsync(p => p.Id == id);
+            var project = await context.Projects.FirstOrDefaultAsync(p => p.Id == id);
             return project is null
                 ? Optional<Project>.Failure("Project not found")
                 : Optional<Project>.Success(project);
@@ -108,8 +106,7 @@ public class ProjectRepository(AppDbContext context, ILogger<ProjectRepository> 
     {
         try
         {
-            var projects = await context.Projects.FilteredProjects(userId, isAdmin)
-                .ToListAsync();
+            var projects = await context.Projects.ToListAsync();
             return Optional<IEnumerable<Project>>.Success(projects);
         }
         catch (Exception e)

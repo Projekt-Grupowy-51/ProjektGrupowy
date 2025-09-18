@@ -13,6 +13,7 @@ using ProjektGrupowy.Application.SignalR;
 using ProjektGrupowy.Domain.Utils.Constants;
 using Serilog;
 using System.Text.Json.Serialization;
+using ProjektGrupowy.Infrastructure.Services;
 using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);

@@ -10,6 +10,7 @@ using ProjektGrupowy.Application.SignalR;
 using ProjektGrupowy.Application.Utils;
 using ProjektGrupowy.Application.Utils.Extensions;
 using ProjektGrupowy.Domain.Utils.Constants;
+using ProjektGrupowy.Infrastructure.Services;
 
 namespace ProjektGrupowy.API.Controllers;
 

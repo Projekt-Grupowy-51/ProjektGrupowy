@@ -13,8 +13,7 @@ public class VideoGroupRepository(AppDbContext context, ILogger<VideoGroupReposi
     {
         try
         {
-            var videoGroups = await context.VideoGroups.FilteredVideoGroups(userId, isAdmin)
-                .ToListAsync();
+            var videoGroups = await context.VideoGroups.ToListAsync();
             return Optional<IEnumerable<VideoGroup>>.Success(videoGroups);
         }
         catch (Exception ex)
@@ -28,8 +27,7 @@ public class VideoGroupRepository(AppDbContext context, ILogger<VideoGroupReposi
     {
         try
         {
-            var videoGroup = await context.VideoGroups.FilteredVideoGroups(userId, isAdmin)
-                .FirstOrDefaultAsync(v => v.Id == id);
+            var videoGroup = await context.VideoGroups.FirstOrDefaultAsync(v => v.Id == id);
             return videoGroup is null
                 ? Optional<VideoGroup>.Failure("Video group not found")
                 : Optional<VideoGroup>.Success(videoGroup);
@@ -79,7 +77,7 @@ public class VideoGroupRepository(AppDbContext context, ILogger<VideoGroupReposi
         {
             // This is efficient because it uses an indexed column ("IX_VideoGroups_ProjectId" btree ("ProjectId"))
             // Check with psql: mydatabase=# EXPLAIN SELECT * FROM "VideoGroups" WHERE "ProjectId" = ...;
-            var videoGroups = await context.VideoGroups.FilteredVideoGroups(userId, isAdmin)
+            var videoGroups = await context.VideoGroups
                 .Where(v => v.Project.Id == projectId)
                 .ToArrayAsync();
 
@@ -109,16 +107,15 @@ public class VideoGroupRepository(AppDbContext context, ILogger<VideoGroupReposi
     {
         try
         {
-            var videoGroup = await context.VideoGroups.FilteredVideoGroups(userId, isAdmin)
+            var videoGroup = await context.VideoGroups
+                .Include(videoGroup => videoGroup.Videos)
                 .FirstOrDefaultAsync(vg => vg.Id == id);
 
-            if (videoGroup is null)
-            {
-                logger.LogWarning("Video group with ID {VideoGroupId} not found", id);
-                return Optional<IEnumerable<Video>>.Failure("Video group not found");
-            }
-
-            return Optional<IEnumerable<Video>>.Success(videoGroup.Videos.OrderByDescending(v => v.Id));
+            if (videoGroup is not null)
+                return Optional<IEnumerable<Video>>.Success(videoGroup.Videos.OrderByDescending(v => v.Id));
+            
+            logger.LogWarning("Video group with ID {VideoGroupId} not found", id);
+            return Optional<IEnumerable<Video>>.Failure("Video group not found");
         }
         catch (Exception e)
         {

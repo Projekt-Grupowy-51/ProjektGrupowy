@@ -12,8 +12,7 @@ public class SubjectRepository(AppDbContext context, ILogger<SubjectRepository> 
     {
         try
         {
-            var subjects = await context.Subjects.FilteredSubjects(userId, isAdmin)
-                .ToListAsync();
+            var subjects = await context.Subjects.ToListAsync();
             return Optional<IEnumerable<Subject>>.Success(subjects);
         }
         catch (Exception ex)
@@ -27,8 +26,7 @@ public class SubjectRepository(AppDbContext context, ILogger<SubjectRepository> 
     {
         try
         {
-            var subject = await context.Subjects.FilteredSubjects(userId, isAdmin)
-                .FirstOrDefaultAsync(s => s.Id == id);
+            var subject = await context.Subjects.FirstOrDefaultAsync(s => s.Id == id);
             return subject is null
                 ? Optional<Subject>.Failure("Subject not found")
                 : Optional<Subject>.Success(subject);
@@ -76,7 +74,7 @@ public class SubjectRepository(AppDbContext context, ILogger<SubjectRepository> 
         try
         {
             // Index lookup using "IX_Projects_ScientistId" btree ("ScientistId")
-            var subjects = await context.Subjects.FilteredSubjects(userId, isAdmin)
+            var subjects = await context.Subjects
                 .Where(s => s.Project.Id == projectId)
                 .ToArrayAsync();
 
@@ -106,7 +104,7 @@ public class SubjectRepository(AppDbContext context, ILogger<SubjectRepository> 
     {
         try
         {
-            var labels = await context.Labels.FilteredLabels(userId, isAdmin)
+            var labels = await context.Labels
                 .Where(l => l.Subject.Id == subjectId)
                 .ToListAsync();
 

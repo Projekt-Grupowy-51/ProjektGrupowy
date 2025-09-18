@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc.Filters;
 using ProjektGrupowy.Application.Services;
 using ProjektGrupowy.Application.SignalR;
+using ProjektGrupowy.Infrastructure.Services;
 using Serilog;
 
 namespace ProjektGrupowy.API.Filters;

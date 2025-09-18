@@ -11,7 +11,8 @@ public class ProjectReportRepository(AppDbContext dbContext) : IProjectReportRep
     {
         try
         {
-            var project = await dbContext.Projects.FilteredProjects(userId, isAdmin)
+            var project = await dbContext.Projects
+                .Include(project => project.GeneratedReports)
                 .SingleOrDefaultAsync(p => p.Id == projectId);
 
             return project is null
@@ -28,7 +29,7 @@ public class ProjectReportRepository(AppDbContext dbContext) : IProjectReportRep
     {
         try
         {
-            var report = await dbContext.GeneratedReports.FilteredGeneratedReports(userId, isAdmin).SingleOrDefaultAsync(r => r.Id == reportId);
+            var report = await dbContext.GeneratedReports.SingleOrDefaultAsync(r => r.Id == reportId);
             return report is null
                 ? Optional<GeneratedReport>.Failure($"Report with id {reportId} was not found")
                 : Optional<GeneratedReport>.Success(report);

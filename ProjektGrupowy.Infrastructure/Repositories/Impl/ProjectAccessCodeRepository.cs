@@ -16,7 +16,7 @@ public class ProjectAccessCodeRepository(
         try
         {
             var accessCode = await dbContext
-                .ProjectAccessCodes.FilteredProjectAccessCodes(userId, isAdmin)
+                .ProjectAccessCodes
                 .FirstOrDefaultAsync(p => p.Code == code);
 
             return accessCode is null
@@ -35,7 +35,7 @@ public class ProjectAccessCodeRepository(
         try
         {
             var accessCodes = await dbContext
-                .ProjectAccessCodes.FilteredProjectAccessCodes(userId, isAdmin)
+                .ProjectAccessCodes
                 .Where(p => p.Project.Id == projectId)
                 .ToArrayAsync();
 
@@ -53,7 +53,7 @@ public class ProjectAccessCodeRepository(
         try
         {
             var validAccessCode = await dbContext
-                .ProjectAccessCodes.FilteredProjectAccessCodes(userId, isAdmin)
+                .ProjectAccessCodes
                 .Where(p => p.Project.Id == projectId)
                 .Where(p => (p.ExpiresAtUtc == null || p.ExpiresAtUtc > DateTime.UtcNow))
                 .SingleOrDefaultAsync();

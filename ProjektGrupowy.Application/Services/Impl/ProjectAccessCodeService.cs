@@ -9,6 +9,7 @@ using ProjektGrupowy.Application.Utils;
 using ProjektGrupowy.Domain.Models;
 using ProjektGrupowy.Domain.Utils;
 using ProjektGrupowy.Infrastructure.Repositories;
+using ProjektGrupowy.Infrastructure.Services;
 
 namespace ProjektGrupowy.Application.Services.Impl;
 

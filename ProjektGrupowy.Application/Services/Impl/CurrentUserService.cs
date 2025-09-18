@@ -1,21 +1,15 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using ProjektGrupowy.Domain.Utils.Constants;
-using System.Security.Claims;
+using ProjektGrupowy.Infrastructure.Services;
 
 namespace ProjektGrupowy.Application.Services.Impl;
 
-public class CurrentUserService : ICurrentUserService
+public class CurrentUserService(IHttpContextAccessor httpContextAccessor) : ICurrentUserService
 {
-    private readonly IHttpContextAccessor _httpContextAccessor;
-
-    public CurrentUserService(IHttpContextAccessor httpContextAccessor)
-    {
-        _httpContextAccessor = httpContextAccessor;
-    }
-
     public string UserId => User?.FindFirst("sub")?.Value ?? 
-                           User?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? 
-                           string.Empty;
+                            User?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? 
+                            string.Empty;
 
     public string? UserName => User?.FindFirst("preferred_username")?.Value ?? 
                               User?.FindFirst(ClaimTypes.Name)?.Value ??
@@ -75,7 +69,7 @@ public class CurrentUserService : ICurrentUserService
 
     public bool IsAdmin => Roles.Contains(RoleConstants.Admin);
 
-    public ClaimsPrincipal User => _httpContextAccessor.HttpContext?.User ?? new ClaimsPrincipal();
+    public ClaimsPrincipal User => httpContextAccessor.HttpContext?.User ?? new ClaimsPrincipal();
 
     public bool IsAuthenticated => User?.Identity?.IsAuthenticated ?? false;
 }

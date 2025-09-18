@@ -7,6 +7,7 @@ using ProjektGrupowy.Application.SignalR;
 using ProjektGrupowy.Domain.Utils;
 using ProjektGrupowy.Domain.Utils;
 using ProjektGrupowy.Application.Services;
+using ProjektGrupowy.Infrastructure.Services;
 
 namespace ProjektGrupowy.Application.Services.Impl;
 

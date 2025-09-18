@@ -12,7 +12,7 @@ public class AssignedLabelRepository(AppDbContext context, ILogger<AssignedLabel
     {
         try
         {
-            var assignedLabels = await context.AssignedLabels.FilteredAssignedLabels(userId, isAdmin)
+            var assignedLabels = await context.AssignedLabels
                 .OrderByDescending(a => a.InsDate)
                 .ToListAsync();
             return Optional<IEnumerable<AssignedLabel>>.Success(assignedLabels);
@@ -28,7 +28,7 @@ public class AssignedLabelRepository(AppDbContext context, ILogger<AssignedLabel
     {
         try
         {
-            var assignedLabel = await context.AssignedLabels.FilteredAssignedLabels(userId, isAdmin).FirstOrDefaultAsync(a => a.Id == id);
+            var assignedLabel = await context.AssignedLabels.FirstOrDefaultAsync(a => a.Id == id);
             return assignedLabel is null
                 ? Optional<AssignedLabel>.Failure("Assigned label not found")
                 : Optional<AssignedLabel>.Success(assignedLabel);
@@ -89,7 +89,7 @@ public class AssignedLabelRepository(AppDbContext context, ILogger<AssignedLabel
     {
         try
         {
-            var assignedLabels = await context.AssignedLabels.FilteredAssignedLabels(userId, isAdmin)
+            var assignedLabels = await context.AssignedLabels
                 .Where(a => a.Video.Id == videoId)
                 .OrderByDescending(a => a.InsDate)
                 .ToListAsync();
@@ -106,7 +106,7 @@ public class AssignedLabelRepository(AppDbContext context, ILogger<AssignedLabel
     {
         try
         {
-            var assignedLabels = await context.AssignedLabels.FilteredAssignedLabels(userId, isAdmin)
+            var assignedLabels = await context.AssignedLabels
                 .Where(a => a.Video.Id == videoId && a.Label.Subject.Id == subjectId)
                 .OrderByDescending(a => a.InsDate)
                 .ToListAsync();
