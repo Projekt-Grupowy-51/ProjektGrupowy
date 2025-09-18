@@ -1,285 +1,493 @@
-/* VideoMark – "Tiles on Water" Login/Register Theme for Keycloak
-   Fresh, artistic layout: floating glass tiles over a soft water background.
-   Keeps existing Keycloak classes; no HTML changes required.
-   -------------------------------------------------------------- */
+/* Clean White & Blue Keycloak Login Theme - Single Card Layout */
 
-/* =====================
-   CSS Variables (theme)
-   ===================== */
-:root {
-  --water-1: #e6f6ff;   /* very light aqua */
-  --water-2: #eaf3ff;   /* very light blue */
-  --water-3: #dff7f8;   /* minty tint */
-
-  --tile-bg: rgba(255, 255, 255, 0.86);
-  --tile-border: rgba(255, 255, 255, 0.55);
-  --tile-shadow: 0 10px 30px rgba(13, 60, 97, 0.15);
-  --tile-radius: 16px;
-
-  --text-strong: #0f1b2a;
-  --text-muted: #48607a;
-
-  --stroke: #cfe3ef;      /* subtle lines */
-  --input-bg: rgba(255,255,255,0.9);
-  --input-stroke: #d7e6ef;
-  --input-stroke-hover: #b9d2df;
-  --focus: #22b8cf;       /* turquoise focus */
-
-  --btn-bg: #128ca2;      /* primary */
-  --btn-bg-hover: #0e7284;
-  --btn-shadow: 0 8px 18px rgba(18, 140, 162, 0.35);
+/* Reset everything first */
+* {
+  box-sizing: border-box !important;
 }
 
-/* =====================
-   Base & "Water" Backdrop
-   ===================== */
-* { box-sizing: border-box; }
-
-html, body { height: 100%; }
-
+html,
 body {
-  margin: 0;
-  padding: 0;
-  min-height: 100vh;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
-  color: var(--text-strong);
-  display: grid;
-  place-items: center;
-  line-height: 1.6;
-  background: radial-gradient(1200px 800px at 20% 10%, var(--water-1), transparent 60%),
-              radial-gradient(900px 900px at 80% 0%, var(--water-2), transparent 55%),
-              radial-gradient(1200px 900px at 50% 100%, var(--water-3), transparent 60%),
-              #f6fbff !important;
-  position: relative;
-  overflow: hidden;
+  margin: 0 !important;
+  padding: 0 !important;
+  height: 100% !important;
 }
 
-/* soft animated ripples */
+/* Main background - subtle gradient */
+body {
+  background: linear-gradient(135deg, #ffffff 0%, #f5f5f5 100%) !important;
+  color: #22292f !important;
+  font-family: 'Inter', 'Segoe UI', Arial, sans-serif !important;
+  min-height: 100vh !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  position: relative !important;
+}
+
+/* Remove any background animations or pseudo-elements */
 body::before,
 body::after {
-  content: "";
-  position: absolute;
-  inset: -40%;
-  background: repeating-radial-gradient(
-    circle at 30% 40%,
-    rgba(255,255,255,0.35) 0 2px,
-    rgba(255,255,255,0.0) 2px 12px
-  );
-  opacity: 0.35;
-  filter: blur(12px);
-  animation: drift 28s linear infinite;
-  pointer-events: none;
-}
-body::after {
-  background: repeating-radial-gradient(
-    circle at 70% 60%,
-    rgba(255,255,255,0.28) 0 2px,
-    rgba(255,255,255,0.0) 2px 16px
-  );
-  animation-duration: 36s;
-  mix-blend-mode: soft-light;
+  display: none !important;
 }
 
-@keyframes drift {
-  0% { transform: translate3d(-2%, -1%, 0) rotate(0.001deg); }
-  50% { transform: translate3d(2%, 1%, 0) rotate(0.001deg); }
-  100% { transform: translate3d(-2%, -1%, 0) rotate(0.001deg); }
-}
-
-/* ===============
-   Layout container
-   =============== */
+/* Container styling */
 #kc-container-wrapper {
-  background: none;
-  min-height: 100vh;
-  width: 100%;
-  display: grid;
-  place-items: center;
-  padding: 24px;
+  background: transparent !important;
+  width: 100% !important;
+  max-width: 420px !important;
+  padding: 20px !important;
+  margin: 0 auto !important;
 }
 
-.login-pf .container { max-width: 520px; width: 100%; padding: 0; background: none; }
+.login-pf .container {
+  background: transparent !important;
+  max-width: 100% !important;
+  width: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
 
-/* ======================
-   Floating Tile Treatment
-   ====================== */
+.login-pf-signup {
+  margin: 0px 16px !important;
+}
+
+/* MAIN CARD - glassmorphism, iOS 26 */
 .card-pf {
-  background: transparent;  /* tiles will be individual sections */
-  border: none;
-  box-shadow: none;
-  padding: 0;
-  margin: 0;
+  background: rgba(255, 255, 255, 0.55) !important;
+  border-radius: 28px !important;
+  box-shadow: 0 8px 32px rgba(60, 60, 60, 0.13) !important;
+  backdrop-filter: blur(24px) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  border-radius: 1rem;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  transition: all 250ms ease;
+  border: 1px solid rgba(0, 0, 0, 0.175);
 }
 
-/* Each section becomes its own tile */
-#kc-header,
-#kc-content,
-#kc-registration,
-#kc-social-providers {
-  background: var(--tile-bg);
-  -webkit-backdrop-filter: saturate(120%) blur(10px);
-  backdrop-filter: saturate(120%) blur(10px);
-  border: 1px solid var(--tile-border);
-  border-radius: var(--tile-radius);
-  box-shadow: var(--tile-shadow);
+/* Hover effect only on main card */
+.card-pf:hover {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  transform: translateY(-2px);
+
 }
 
-/* Spacing between tiles to emphasize "floating" look */
-#kc-header { padding: 28px 28px 16px 28px; margin: 0 0 14px 0; text-align: center; }
-#kc-content { padding: 28px; margin: 0 0 14px 0; }
-#kc-registration, #kc-social-providers { padding: 16px 20px; margin: 0 0 12px 0; text-align: center; }
+/* Header section - NO separate background or effects */
+#kc-header-wrapper {
+  display: none !important;
+}
 
-/* Subtle hover lift effect to mimic tiles moving on water */
+.videomark-header {
+  background: transparent !important;
+  padding: 16px 16px 0px 16px !important;
+  text-align: center !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border-radius: 0 !important;
+  margin: 0 !important;
+}
+
+/* Remove any hover effects from header */
 #kc-header:hover,
-#kc-content:hover,
-#kc-registration:hover,
-#kc-social-providers:hover {
-  transform: translateY(-4px);
-  transition: transform 220ms ease, box-shadow 220ms ease;
-  box-shadow: 0 14px 34px rgba(13, 60, 97, 0.18);
+.videomark-header:hover {
+  transform: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
 }
-
-/* ========
-   Typography
-   ======== */
-#kc-header-wrapper { padding: 0; }
 
 .kc-logo-text {
-  font-size: 26px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  color: var(--text-strong);
-  margin: 0 0 6px 0;
-}
-.kc-logo-text:before { content: "🎬"; margin-right: 10px; font-size: 22px; }
-
-#kc-header p { color: var(--text-muted); font-size: 14px; margin: 0; font-weight: 500; }
-
-#kc-content h1 {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--text-strong);
-  margin: 0 0 18px 0;
-  text-align: center;
+  font-size: 2.1rem !important;
+  font-weight: 700 !important;
+  color: #22292f !important;
+  margin-bottom: 0.5rem !important;
+  letter-spacing: -0.02em !important;
+  text-shadow: 0 2px 8px rgba(180, 180, 180, 0.10) !important;
+  border-radius: 12px !important;
+  padding: 0.25em 0.75em !important;
+  display: inline-block !important;
 }
 
-/* ======
-   Forms
-   ====== */
-.form-group { margin-bottom: 16px; }
+/* Remove the key emoji */
+.kc-logo-text:before {
+  content: "" !important;
+  margin: 0 !important;
+}
+
+#kc-header p {
+  color: #6c757d !important;
+  font-size: 1rem !important;
+  margin: 0 !important;
+  font-weight: 400 !important;
+  border-radius: 8px !important;
+  padding: 0.2em 0.6em !important;
+  display: inline-block !important;
+}
+
+/* Content section - NO separate background or effects */
+#kc-content,
+.videomark-content {
+  background: transparent !important;
+  padding: 0 16px 16px 16px !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border-radius: 0 !important;
+  margin: 0 !important;
+}
+
+/* Remove any hover effects from content */
+#kc-content:hover,
+.videomark-content:hover {
+  transform: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+#kc-info-wrapper {
+  padding: 0px !important;
+  margin: 0px !important;
+}
+
+/* Form styling */
+.videomark-form {
+  width: 100% !important;
+  margin: 0 !important;
+}
+
+.form-group {
+  margin-bottom: 1.5rem !important;
+}
 
 .control-label {
-  display: block;
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.01em;
-  color: #1c3245;
-  margin-bottom: 6px;
+  display: block !important;
+  font-size: 1rem !important;
+  font-weight: 500 !important;
+  color: #22292f !important;
+  margin-bottom: 0.5rem !important;
 }
 
 .form-control {
-  width: 100%;
-  padding: 12px 14px;
-  font-size: 15px;
-  color: var(--text-strong);
-  background: var(--input-bg);
-  border: 1px solid var(--input-stroke);
-  border-radius: 12px;
-  transition: border-color .18s ease, box-shadow .18s ease, background-color .18s ease;
-  outline: none;
+  background: rgba(255, 255, 255, 0.45) !important;
+  border: 1.5px solid rgba(200, 200, 200, 0.22) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 2px 8px rgba(180, 180, 180, 0.07) !important;
+  padding: 0.75rem 1rem !important;
+  font-size: 1rem !important;
+  color: #22292f !important;
+  transition: border-color 0.2s, box-shadow 0.2s !important;
+  outline: none !important;
 }
-.form-control:hover { border-color: var(--input-stroke-hover); }
+
+.form-control:hover {
+  border-color: #aaa !important;
+}
+
 .form-control:focus {
-  border-color: var(--focus);
-  box-shadow: 0 0 0 4px rgba(34, 184, 207, 0.18);
-  background: #fff;
+  border-color: #aaa !important;
+  box-shadow: 0 0 0 3px rgba(180, 180, 180, 0.13) !important;
 }
-.form-control::placeholder { color: #7c96ac; }
 
-/* Checkboxes */
-.checkbox { margin: 14px 0; }
-.checkbox label { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #214058; font-weight: 500; cursor: pointer; }
-.checkbox input[type="checkbox"] { width: 16px; height: 16px; border-radius: 4px; accent-color: var(--focus); }
+.form-control::placeholder {
+  color: #9ca3af !important;
+}
 
-/* Links */
-#kc-content a { color: #0b7691; text-decoration: none; font-weight: 600; }
-#kc-content a:hover { text-decoration: underline; }
-
-/* Buttons */
+/* Button styling - glass, neutral */
 .btn-primary {
-  width: 100%;
-  background: var(--btn-bg);
-  color: #fff;
-  border: 1px solid transparent;
-  padding: 12px 20px;
-  font-size: 15px;
-  font-weight: 700;
-  letter-spacing: 0.01em;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
-  box-shadow: var(--btn-shadow);
-}
-.btn-primary:hover { background: var(--btn-bg-hover); transform: translateY(-2px); }
-.btn-primary:active { transform: translateY(0); box-shadow: 0 3px 10px rgba(18,140,162,0.28); }
-.btn-primary:focus { box-shadow: 0 0 0 4px rgba(34,184,207,0.25); }
-.btn-primary[disabled] { background: #95cfd9; cursor: not-allowed; transform: none; box-shadow: none; }
-
-/* Form options area */
-#kc-form-options { margin-bottom: 12px; }
-.kc-form-options-wrapper { text-align: right; }
-#kc-form-buttons { margin-top: 16px; }
-
-/* Alerts */
-.alert { padding: 12px 14px; border-radius: 12px; margin-bottom: 16px; font-size: 14px; border: 1px solid var(--stroke); background: rgba(255,255,255,0.9); }
-.alert-error { background: #fff5f5; color: #b42318; border-left: 4px solid #ef4444; }
-.alert-success { background: #f0fdf4; color: #117a37; border-left: 4px solid #22c55e; }
-.alert-warning { background: #fffbeb; color: #a16207; border-left: 4px solid #f59e0b; }
-.alert-info { background: #eef7ff; color: #1e4b7a; border-left: 4px solid #38bdf8; }
-
-/* Registration & Social */
-#kc-registration { font-size: 14px; color: var(--text-muted); }
-#kc-registration a { color: #0b7691; font-weight: 700; }
-
-#kc-social-providers h4 { font-size: 13px; color: var(--text-muted); margin-bottom: 12px; font-weight: 700; }
-
-/* ===============
-   Subtle micro-anim
-   =============== */
-#kc-header, #kc-content, #kc-registration, #kc-social-providers { will-change: transform; }
-
-/* =============
-   Accessibility
-   ============= */
-input:focus, button:focus, a:focus { outline: 2px solid transparent; outline-offset: 2px; }
-
-/* ============
-   Responsiveness
-   ============ */
-@media (max-width: 520px) {
-  #kc-content { padding: 22px; }
-  #kc-header { padding: 22px 22px 12px; }
-  .kc-logo-text { font-size: 22px; }
+  background: rgba(255, 255, 255, 0.38) !important;
+  color: #22292f !important;
+  border: 1.5px solid rgba(200, 200, 200, 0.22) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 2px 8px rgba(60, 60, 60, 0.09) !important;
+  font-weight: 600 !important;
+  transition: background 0.2s, color 0.2s !important;
+  margin-top: 5px !important;
 }
 
-/* ========
-   Dark Mode
-   ======== */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --tile-bg: rgba(20, 31, 44, 0.75);
-    --tile-border: rgba(255, 255, 255, 0.08);
-    --text-strong: #e6f0f7;
-    --text-muted: #a1bed4;
-    --input-bg: rgba(255,255,255,0.06);
-    --input-stroke: rgba(255,255,255,0.1);
-    --input-stroke-hover: rgba(255,255,255,0.18);
-    --btn-shadow: 0 8px 18px rgba(34, 184, 207, 0.24);
+.btn-primary:hover {
+  background: rgba(240, 240, 240, 0.55) !important;
+  color: #111 !important;
+}
+
+.btn-primary:active {
+  transform: translateY(0) !important;
+}
+
+.btn-primary:focus {
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(180, 180, 180, 0.15) !important;
+}
+
+/* Checkbox styling - glass accent */
+.checkbox {
+  margin: 16px 0 !important;
+}
+
+.checkbox label {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  font-size: 0.95rem !important;
+  color: #6c757d !important;
+  cursor: pointer !important;
+}
+
+.checkbox input[type="checkbox"] {
+  width: 16px !important;
+  height: 16px !important;
+  accent-color: #aaa !important;
+}
+
+/* Links - neutral, glassy */
+a {
+  color: #22292f !important;
+  text-decoration: none !important;
+  font-weight: 500 !important;
+  background: rgba(255, 255, 255, 0.18) !important;
+  border-radius: 6px !important;
+  padding: 0.1em 0.4em !important;
+  transition: color 0.2s, background 0.2s !important;
+}
+
+a:hover {
+  color: #6c757d !important;
+  text-decoration: underline !important;
+  background: rgba(240, 240, 240, 0.32) !important;
+}
+
+/* Form options */
+#kc-form-options {
+  margin-bottom: 16px !important;
+}
+
+.kc-form-options-wrapper {
+  text-align: right !important;
+}
+
+#kc-form-buttons {
+  margin-top: 10px !important;
+}
+
+/* Registration section - styled but NO separate card effect */
+#kc-registration,
+#kc-registration-container {
+  text-align: center !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Remove hover effects from registration */
+#kc-registration:hover,
+#kc-registration-container:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+#kc-registration {
+  font-size: 1rem !important;
+  color: #6c757d !important;
+}
+
+#kc-registration a {
+  color: #2563eb !important;
+  font-weight: 600 !important;
+}
+
+#kc-registration a:hover {
+  color: #1d4ed8 !important;
+}
+
+/* Error messages - glassy background */
+#input-error,
+.kc-feedback-text {
+  background: rgba(255, 230, 230, 0.38) !important;
+  color: #d32f2f !important;
+  border-radius: 8px !important;
+  padding: 0.2em 0.6em !important;
+  margin-top: 0.25rem !important;
+  font-size: 0.9rem !important;
+}
+
+/* Alert messages - glassy, soft */
+.alert {
+  background: rgba(255, 255, 255, 0.45) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 2px 8px rgba(180, 180, 180, 0.08) !important;
+  border: 1.5px solid rgba(200, 200, 200, 0.15) !important;
+}
+
+.alert-error {
+  background: rgba(255, 230, 230, 0.45) !important;
+  color: #b71c1c !important;
+  border-color: rgba(248, 187, 188, 0.38) !important;
+}
+
+.alert-success {
+  background: rgba(230, 255, 230, 0.45) !important;
+  color: #388e3c !important;
+  border-color: rgba(183, 247, 187, 0.38) !important;
+}
+
+/* Social providers - styled but NO separate card effect */
+#kc-social-providers {
+  background: rgba(255, 255, 255, 0.38) !important;
+  padding: 20px 32px !important;
+  text-align: center !important;
+  border-top: 1px solid rgba(226, 232, 240, 0.8) !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Remove hover effects from social providers */
+#kc-social-providers:hover {
+  transform: none !important;
+  box-shadow: none !important;
+  background: rgba(248, 250, 252, 0.8) !important;
+}
+
+#kc-social-providers h4 {
+  font-size: 1rem !important;
+  color: #6c757d !important;
+  margin-bottom: 1rem !important;
+  font-weight: 500 !important;
+}
+
+.login-pf-header {
+  background-color: rgba(33, 37, 41, 0.03);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.175);
+}
+
+/* Spójny glassmorphism dla .login-pf-signup i dzieci */
+.login-pf-signup {
+  background: rgba(255, 255, 255, 0.38) !important;
+  border-radius: 18px !important;
+  box-shadow: 0 2px 8px rgba(60, 60, 60, 0.07) !important;
+  border-top: 1.5px solid rgba(200, 200, 200, 0.15) !important;
+  padding: 16px 24px !important;
+  text-align: center !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.login-pf-signup>* {
+  margin: 0 !important;
+  padding: 0 !important;
+  font-size: 1rem !important;
+  color: #6c757d !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.login-pf-signup a {
+  color: #22292f !important;
+  font-weight: 600 !important;
+  background: rgba(255, 255, 255, 0.18) !important;
+  border-radius: 8px !important;
+  padding: 0.15em 0.6em !important;
+  text-decoration: none !important;
+  transition: color 0.2s, background 0.2s !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+.login-pf-signup a:hover {
+  color: #6c757d !important;
+  background: rgba(240, 240, 240, 0.32) !important;
+  text-decoration: underline !important;
+}
+
+.login-pf-signup span,
+.login-pf-signup label {
+  color: #6c757d !important;
+  font-size: 1rem !important;
+  background: transparent !important;
+  border: none !important;
+  font-weight: 400 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.login-pf-signup input,
+.login-pf-signup button {
+  background: rgba(255, 255, 255, 0.45) !important;
+  border: 1.5px solid rgba(200, 200, 200, 0.22) !important;
+  border-radius: 12px !important;
+  color: #22292f !important;
+  font-size: 1rem !important;
+  padding: 0.5em 1em !important;
+  margin: 0 !important;
+  box-shadow: 0 1px 3px rgba(180, 180, 180, 0.07) !important;
+  transition: background 0.2s, color 0.2s !important;
+}
+
+.login-pf-signup input:focus,
+.login-pf-signup button:focus {
+  border-color: #aaa !important;
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(180, 180, 180, 0.13) !important;
+}
+
+.login-pf-signup button:hover {
+  background: rgba(240, 240, 240, 0.55) !important;
+  color: #111 !important;
+}
+
+#kc-login {
+  width: 100% !important;
+  background: linear-gradient(135deg, #171717 0%, #262626 100%) !important;
+    border-color: #171717 !important;
+    color: white !important;
+    font-weight: 600 !important;
+}
+
+/* Responsive design - glassy, rounded */
+@media (max-width: 480px) {
+  .card-pf {
+    border-radius: 18px !important;
+    padding: 0 !important;
   }
 
-  body { background: radial-gradient(1200px 800px at 20% 10%, #0c3850, transparent 60%), radial-gradient(900px 900px at 80% 0%, #0b2e5a, transparent 55%), radial-gradient(1200px 900px at 50% 100%, #0a3c3f, transparent 60%), #06141f !important; }
+  .kc-logo-text {
+    font-size: 1.3rem !important;
+    border-radius: 8px !important;
+    padding: 0.15em 0.5em !important;
+  }
 
-  #kc-content h1, .kc-logo-text { color: var(--text-strong); }
-  .control-label { color: #cfe3ef; }
-  .form-control { color: var(--text-strong); }
+  #kc-header,
+  .videomark-header {
+    padding: 18px 12px 10px !important;
+  }
+
+  #kc-content,
+  .videomark-content {
+    padding: 0 12px 12px !important;
+  }
+
+  #kc-registration,
+  #kc-registration-container,
+  #kc-social-providers {
+    padding: 10px 12px !important;
+    border-radius: 12px !important;
+  }
+}
+
+/* Force override any dark theme */
+@media (prefers-color-scheme: dark) {
+  body {
+    background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%) !important;
+    color: #22292f !important;
+  }
 }
