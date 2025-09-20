@@ -15,7 +15,7 @@
                       <div class="${properties.kcFormGroupClass!} form-group">
                           <label for="username" class="${properties.kcLabelClass!} control-label"><#if !realm.loginWithEmailAllowed>${msg("username")}<#elseif !realm.registrationEmailAsUsername>${msg("usernameOrEmail")}<#else>${msg("email")}</#if></label>
                           <input tabindex="1" id="username" class="${properties.kcInputClass!} form-control" name="username"
-                                 value="${(login.username!'')}"  type="text" autofocus autocomplete="off"
+                                 value="${(login.username!'')}"  type="text" autofocus autocomplete="username"
                                  aria-invalid="<#if messagesPerField.existsError('username','password')>true</#if>"
                           />
                           <#if messagesPerField.existsError('username','password')>
@@ -28,7 +28,7 @@
                   <div class="${properties.kcFormGroupClass!} form-group">
                       <label for="password" class="${properties.kcLabelClass!} control-label">${msg("password")}</label>
                       <input tabindex="2" id="password" class="${properties.kcInputClass!} form-control" name="password"
-                             type="password" autocomplete="off"
+                             type="password" autocomplete="current-password"
                              aria-invalid="<#if messagesPerField.existsError('username','password')>true</#if>"
                       />
                       <#if usernameHidden?? && messagesPerField.existsError('username','password')>

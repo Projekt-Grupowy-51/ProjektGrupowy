@@ -49,6 +49,11 @@ body::after {
 
 .login-pf-signup {
   margin: 0px 16px !important;
+  position: relative !important;
+  margin-top: 20px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
 }
 
 /* MAIN CARD - glassmorphism, iOS 26 */
@@ -65,6 +70,8 @@ body::after {
   box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
   transition: all 250ms ease;
   border: 1px solid rgba(0, 0, 0, 0.175);
+  max-height: 90vh;
+  width: 100% !important; /* Zmienione z max-width: 50vw */
 }
 
 /* Hover effect only on main card */
@@ -72,6 +79,10 @@ body::after {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.05);
   transform: translateY(-2px);
 
+}
+
+.login-pf-page-header {
+  display: none !important;
 }
 
 /* Header section - NO separate background or effects */
@@ -137,7 +148,6 @@ body::after {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   border-radius: 0 !important;
-  margin: 0 !important;
 }
 
 /* Remove any hover effects from content */
@@ -153,6 +163,16 @@ body::after {
   margin: 0px !important;
 }
 
+#kc-info {
+    margin-top: 1rem !important;
+    text-align: center !important;
+}
+
+#kc-info span {
+    color: #6c757d !important;
+    font-size: 1rem !important;
+}
+
 /* Form styling */
 .videomark-form {
   width: 100% !important;
@@ -160,7 +180,15 @@ body::after {
 }
 
 .form-group {
-  margin-bottom: 1.5rem !important;
+  margin-bottom: 1rem !important;
+}
+
+.form-group label {
+  display: block !important;
+  font-size: 1rem !important;
+  font-weight: 500 !important;
+  color: #22292f !important;
+  margin-bottom: 0.5rem !important;
 }
 
 .control-label {
@@ -171,7 +199,11 @@ body::after {
   margin-bottom: 0.5rem !important;
 }
 
-.form-control {
+.form-control, 
+.pf-c-form-control,
+input[class*="kcInputClass"] {
+  width: 100% !important;
+  max-width: none !important;
   background: rgba(255, 255, 255, 0.45) !important;
   border: 1.5px solid rgba(200, 200, 200, 0.22) !important;
   border-radius: 16px !important;
@@ -183,43 +215,38 @@ body::after {
   outline: none !important;
 }
 
-.form-control:hover {
+/* Keep dropdown arrow only for Role selector */
+/* select[id="Role"] {
+  appearance: none !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 1rem center !important;
+  padding-right: 2.5rem !important;
+} */
+
+.pf-c-form-control:not(textarea) {
+  height: 44px !important;
+}
+
+.kcFormPasswordVisibilityButtonClass {
+  position: absolute !important;
+  right: 10px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  cursor: pointer !important;
+  color: #6c757d !important;
+}
+
+/* Focus state for all inputs */
+.form-control:focus,
+.pf-c-form-control:focus,
+input[class*="kcInputClass"]:focus {
   border-color: #aaa !important;
-}
-
-.form-control:focus {
-  border-color: #aaa !important;
-  box-shadow: 0 0 0 3px rgba(180, 180, 180, 0.13) !important;
-}
-
-.form-control::placeholder {
-  color: #9ca3af !important;
-}
-
-/* Button styling - glass, neutral */
-.btn-primary {
-  background: rgba(255, 255, 255, 0.38) !important;
-  color: #22292f !important;
-  border: 1.5px solid rgba(200, 200, 200, 0.22) !important;
-  border-radius: 16px !important;
-  box-shadow: 0 2px 8px rgba(60, 60, 60, 0.09) !important;
-  font-weight: 600 !important;
-  transition: background 0.2s, color 0.2s !important;
-  margin-top: 5px !important;
-}
-
-.btn-primary:hover {
-  background: rgba(240, 240, 240, 0.55) !important;
-  color: #111 !important;
-}
-
-.btn-primary:active {
-  transform: translateY(0) !important;
-}
-
-.btn-primary:focus {
   outline: none !important;
-  box-shadow: 0 0 0 3px rgba(180, 180, 180, 0.15) !important;
+  box-shadow: 0 0 0 3px rgba(180, 180, 180, 0.13) !important;
 }
 
 /* Checkbox styling - glass accent */
@@ -269,7 +296,35 @@ a:hover {
 }
 
 #kc-form-buttons {
-  margin-top: 10px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+  margin-top: 20px !important;
+}
+
+#kc-form-buttons input[type="submit"],
+#kc-form-buttons a {
+  width: 100% !important;
+  padding: 12px 20px !important;
+  font-size: 1rem !important;
+  text-align: center !important;
+  display: inline-block !important;
+  background: linear-gradient(135deg, #171717 0%, #262626 100%) !important;
+  border-color: #171717 !important;
+  color: white !important;
+  font-weight: 600 !important;
+  text-decoration: none !important;
+}
+
+#kc-form-buttons a {
+  background: rgba(255, 255, 255, 0.38) !important;
+  color: #22292f !important;
+  border: 1.5px solid rgba(200, 200, 200, 0.22) !important;
+}
+
+#kc-form-buttons a:hover {
+  background: rgba(240, 240, 240, 0.55) !important;
+  text-decoration: none !important;
 }
 
 /* Registration section - styled but NO separate card effect */
@@ -295,12 +350,12 @@ a:hover {
   color: #6c757d !important;
 }
 
-#kc-registration a {
+#kc-registration a, #kc-info a {
   color: #2563eb !important;
   font-weight: 600 !important;
 }
 
-#kc-registration a:hover {
+#kc-registration a:hover, #kc-info a:hover {
   color: #1d4ed8 !important;
 }
 
@@ -365,6 +420,7 @@ a:hover {
 .login-pf-header {
   background-color: rgba(33, 37, 41, 0.03);
   border-bottom: 1px solid rgba(0, 0, 0, 0.175);
+  margin-bottom: 0 !important;
 }
 
 /* Spójny glassmorphism dla .login-pf-signup i dzieci */
@@ -490,4 +546,82 @@ a:hover {
     background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%) !important;
     color: #22292f !important;
   }
+}
+
+.required-fields-info {
+    text-align: center !important;
+    margin-bottom: 1rem !important;
+}
+
+.required-field-text {
+    color: #6c757d !important;
+    font-size: 0.9rem !important;
+}
+
+.required {
+    color: #6c757d !important;
+    margin-left: 4px !important;
+}
+
+/* Styling for input groups */
+.form-group {
+    margin-bottom: 1.5rem !important;
+}
+
+.form-group label {
+    display: block !important;
+    font-size: 1rem !important;
+    font-weight: 500 !important;
+    color: #22292f !important;
+    margin-bottom: 0.5rem !important;
+}
+
+.form-control {
+    width: 100% !important;
+    max-width: 320px !important;
+    background: rgba(255, 255, 255, 0.45) !important;
+    border: 1.5px solid rgba(200, 200, 200, 0.22) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 2px 8px rgba(180, 180, 180, 0.07) !important;
+    padding: 0.75rem 1rem !important;
+    font-size: 1rem !important;
+    color: #22292f !important;
+    transition: border-color 0.2s, box-shadow 0.2s !important;
+}
+
+.form-control:focus {
+    border-color: #aaa !important;
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(180, 180, 180, 0.13) !important;
+}
+
+/* Additional styling for input groups */
+.kcInputGroup {
+    position: relative !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+.kcInputGroup input {
+    flex: 1 1 auto !important;
+    width: 1% !important;
+    min-width: 0 !important;
+}
+
+/* Reset password specific styles */
+#kc-reset-password-form .alert {
+    margin-bottom: 1.5rem !important;
+    padding: 1rem !important;
+    text-align: center !important;
+}
+
+#kc-reset-password-form .form-group {
+    margin-bottom: 1.5rem !important;
+}
+
+.alert-info {
+    background: rgba(230, 246, 255, 0.45) !important;
+    color: #0288d1 !important;
+    border-color: rgba(187, 222, 251, 0.38) !important;
+    max-width: 30vw !important;
 }
