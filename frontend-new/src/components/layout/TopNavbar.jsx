@@ -22,6 +22,8 @@ const TopNavbar = () => {
     return flags[lang] || '🌐';
   };
 
+  const accountUrl = `${import.meta.env.VITE_KEYCLOAK_URL}realms/${import.meta.env.VITE_KEYCLOAK_REALM}/account`;
+
   if (!isAuthenticated) {
     return null;
   }
@@ -71,27 +73,38 @@ const TopNavbar = () => {
           {/* User Dropdown */}
           <div className="nav-item dropdown">
             <button
-              className="btn btn-link dropdown-toggle"
-              data-bs-toggle="dropdown"
-              data-bs-boundary="viewport"
-              aria-expanded="false"
+                className="btn btn-link dropdown-toggle"
+                data-bs-toggle="dropdown"
+                data-bs-boundary="viewport"
+                aria-expanded="false"
             >
               <i className="fas fa-user-circle me-2"></i>
               {user?.preferred_username || user?.name || t('user.fallback')}
             </button>
             <ul className="dropdown-menu dropdown-menu-end">
               <li>
-                <span className="dropdown-item-text">
-                  <small className="text-muted">
-                    {user?.email}
-                  </small>
-                </span>
+      <span className="dropdown-item-text">
+        <small className="text-muted">
+          {user?.email}
+        </small>
+      </span>
               </li>
               <li><hr className="dropdown-divider" /></li>
               <li>
+                <a
+                    className="dropdown-item"
+                    href={accountUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                  <i className="fas fa-user-edit me-2"></i>
+                  {t('buttons.editProfile')}
+                </a>
+              </li>
+              <li>
                 <button
-                  className="dropdown-item"
-                  onClick={logout}
+                    className="dropdown-item"
+                    onClick={logout}
                 >
                   <i className="fas fa-sign-out-alt me-2"></i>
                   {t('buttons.logout')}

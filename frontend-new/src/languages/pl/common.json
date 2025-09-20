@@ -27,7 +27,8 @@
     "tryAgain": "Spróbuj ponownie",
     "dismiss": "Odrzuć",
     "close": "Zamknij",
-    "download": "Pobierz"
+    "download": "Pobierz",
+    "editProfile": "Edytuj Profil"
   },
   "deleteConfirmation": {
     "title": "Potwierdź usunięcie",
