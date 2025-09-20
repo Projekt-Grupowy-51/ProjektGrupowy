@@ -13,7 +13,6 @@ using ProjektGrupowy.Application.SignalR;
 using ProjektGrupowy.Domain.Utils.Constants;
 using Serilog;
 using System.Text.Json.Serialization;
-using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -139,8 +138,6 @@ static void AddServices(WebApplicationBuilder builder)
     builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
     builder.Services.AddScoped<IAuthorizationHandler, CustomAuthorizationHandler>();
 
-    builder.Services.AddSingleton<IConnectionMultiplexer>(
-        ConnectionMultiplexer.Connect(builder.Configuration["Redis:ConnectionString"]!));
     builder.Services.AddSingleton<IConnectedClientManager, ConnectedClientManager>();
     
     

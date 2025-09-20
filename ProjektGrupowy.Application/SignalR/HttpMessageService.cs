@@ -1,9 +1,13 @@
 using ProjektGrupowy.Application.DTOs.Messages;
 using ProjektGrupowy.Application.Http;
+using ProjektGrupowy.Domain.Models;
+using ProjektGrupowy.Infrastructure.Repositories;
 
 namespace ProjektGrupowy.Application.SignalR;
 
-public class HttpMessageService(IHttpMessageClient messageClient) : IMessageService
+public class HttpMessageService(
+    IHttpMessageClient messageClient,
+    INotificationRepository notificationRepository) : IMessageService
 {
     public async Task SendErrorAsync(string userId, string message, CancellationToken cancellationToken = default) => 
         await SendMessageAsync(userId, MessageTypes.Error, message, cancellationToken);
@@ -23,7 +27,16 @@ public class HttpMessageService(IHttpMessageClient messageClient) : IMessageServ
     public async Task SendMessageAsync(string userId, string method, string message,
         CancellationToken cancellationToken = default)
     {
-        var messageObject = new HttpMessage(userId, method, message);
-        await messageClient.SendMessageAsync(messageObject, cancellationToken);
+        var messageObject = new HttpNotification(userId, method, message);
+        var messageEntity = new Notification
+        {
+            RecipientId = userId,
+            Type = method,
+            Message = message
+        };
+        
+        await Task.WhenAll(
+            messageClient.SendMessageAsync(messageObject, cancellationToken), 
+            notificationRepository.AddNotificationAsync(messageEntity));
     }
 }

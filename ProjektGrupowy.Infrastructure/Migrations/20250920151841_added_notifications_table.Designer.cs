@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using ProjektGrupowy.Infrastructure.Data;
@@ -11,9 +12,11 @@ using ProjektGrupowy.Infrastructure.Data;
 namespace ProjektGrupowy.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250920151841_added_notifications_table")]
+    partial class added_notifications_table
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -182,11 +185,11 @@ namespace ProjektGrupowy.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("RecipientId")
+                    b.Property<string>("Type")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Type")
+                    b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -194,7 +197,7 @@ namespace ProjektGrupowy.Infrastructure.Migrations
 
                     b.HasIndex("CreatedAtUtc");
 
-                    b.HasIndex("RecipientId");
+                    b.HasIndex("UserId");
 
                     b.ToTable("Notifications");
                 });
@@ -572,7 +575,7 @@ namespace ProjektGrupowy.Infrastructure.Migrations
                 {
                     b.HasOne("ProjektGrupowy.Domain.Models.User", "User")
                         .WithMany()
-                        .HasForeignKey("RecipientId")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

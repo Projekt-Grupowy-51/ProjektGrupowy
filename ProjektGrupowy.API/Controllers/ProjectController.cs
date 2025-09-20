@@ -103,9 +103,6 @@ public class ProjectController(
         }
 
         var createdProject = projectResult.GetValueOrThrow();
-        await messageService.SendSuccessAsync(
-            User.GetUserId(),
-            $"Project '{createdProject.Name}' created successfully");
 
         return CreatedAtAction("GetProject", new { id = createdProject.Id },
             mapper.Map<ProjectResponse>(createdProject));

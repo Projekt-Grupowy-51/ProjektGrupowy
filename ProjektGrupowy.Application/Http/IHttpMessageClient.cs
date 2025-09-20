@@ -4,5 +4,5 @@ namespace ProjektGrupowy.Application.Http;
 
 public interface IHttpMessageClient
 {
-    Task SendMessageAsync(HttpMessage message, CancellationToken cancellationToken = default);
+    Task SendMessageAsync(HttpNotification notification, CancellationToken cancellationToken = default);
 }

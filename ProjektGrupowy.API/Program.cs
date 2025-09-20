@@ -240,6 +240,7 @@ static void AddServices(WebApplicationBuilder builder)
     builder.Services.AddScoped<IVideoRepository, VideoRepository>();
     builder.Services.AddScoped<IProjectAccessCodeRepository, ProjectAccessCodeRepository>();
     builder.Services.AddScoped<IProjectReportRepository, ProjectReportRepository>();
+    builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 
     // Services
     builder.Services.AddScoped<IKeycloakUserService, KeycloakUserService>();
