@@ -8,6 +8,8 @@ public class AppHub(IConnectedClientManager clientManager) : Hub
 {
     public override async Task OnConnectedAsync()
     {
+        // Console.WriteLine($"\n\nNew connection: {Context.ConnectionId}, User: {Context.UserIdentifier}\n\n");
+        
         var userId = Context.UserIdentifier ?? string.Empty;
         var connectionId = Context.ConnectionId; 
         clientManager.AddClient(userId, connectionId);

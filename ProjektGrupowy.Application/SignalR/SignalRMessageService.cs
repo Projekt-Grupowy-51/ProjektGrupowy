@@ -23,6 +23,9 @@ public class SignalRMessageService(IHubContext<AppHub> hubContext, IConnectedCli
     public async Task SendMessageAsync(string userId, string method, string message, CancellationToken cancellationToken = default)
     {
         var connections = clientManager.GetConnectionIds(userId);
+        
+        Console.WriteLine($"\n\nSending message \"{message}\" to user {userId} on connections: {string.Join(", ", connections)}\n\n");
+        
         var tasks = connections.Select(connectionId =>
             hubContext.Clients.Client(connectionId).SendAsync(method, message, cancellationToken)); // Use SendAsync
         await Task.WhenAll(tasks);

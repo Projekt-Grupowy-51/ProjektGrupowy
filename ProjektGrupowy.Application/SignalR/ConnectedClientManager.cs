@@ -1,9 +1,10 @@
 using System.Collections.Concurrent;
+using Microsoft.Extensions.Logging;
 using StackExchange.Redis;
 
 namespace ProjektGrupowy.Application.SignalR;
 
-public class ConnectedClientManager : IConnectedClientManager
+public class ConnectedClientManager(ILogger<ConnectedClientManager> logger) : IConnectedClientManager
 {
     private readonly ConcurrentDictionary<string, HashSet<string>> _clients = [];
     public void AddClient(string userId, string connectionId)
@@ -15,6 +16,8 @@ public class ConnectedClientManager : IConnectedClientManager
                 lock (set) set.Add(connectionId);
                 return set;
             });
+
+        // Console.WriteLine($"\n\nUser {userId} connected with connection ID {connectionId}. Total connections for user: {_clients[userId].Count}\n\n");
     }
 
     public void RemoveClient(string connectionId)

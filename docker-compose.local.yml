@@ -186,6 +186,8 @@ services:
       - Cors__AllowedProductionOrigin=https://some-production-url.com
 
       - SignalR__HubUrl=/hub/app
+
+      - MessageService__URL=http://notifications:80/api/message
     ports:
       - "5001:80"
     networks:
@@ -240,6 +242,8 @@ services:
       - Cors__AllowedProductionOrigin=https://some-production-url.com
 
       - SignalR__HubUrl=/hub/app
+
+      - MessageService__URL=http://notifications:80/api/message
     ports:
       - "5003:80"
     networks:

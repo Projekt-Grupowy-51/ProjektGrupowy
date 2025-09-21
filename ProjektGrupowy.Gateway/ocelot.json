@@ -10,34 +10,17 @@
         }
       ],
       "UpstreamPathTemplate": "/api/general-backend/{controller}/{everything}",
-      "UpstreamHttpMethod": [
-        "Get",
-        "Post",
-        "Put",
-        "Delete",
-        "Options"
-      ],
+      "UpstreamHttpMethod": ["Get", "Post", "Put", "Delete", "Options"],
       "SwaggerKey": "app"
     },
     {
-      "DownstreamPathTemplate": "/api/{controller}/{everything}",
+      "DownstreamPathTemplate": "/hub/{everything}",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "notifications",
-          "Port": 80
-        }
-      ],
-      "UpstreamPathTemplate": "/api/notifications/{controller}/{everything}",
-      "UpstreamHttpMethod": [
-        "Get", 
-        "Post", 
-        "Put",
-        "Delete",
-        "Options"
-      ],
-      "SwaggerKey": "notifications",
-      "UseWebSockets": true
+      "DownstreamHostAndPorts": [{ "Host": "notifications", "Port": 80 }],
+      "UpstreamPathTemplate": "/api/notifications/hub/{everything}",
+      "UpstreamHttpMethod": ["Get", "Post", "Options"],
+      "UseWebSockets": true,
+      "SwaggerKey": "notifications"
     }
   ]
 }

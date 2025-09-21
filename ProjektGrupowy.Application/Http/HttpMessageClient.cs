@@ -8,8 +8,8 @@ public class HttpMessageClient(HttpClient httpClient, IConfiguration configurati
 {
     public async Task SendMessageAsync(HttpNotification notification, CancellationToken cancellationToken = default)
     {
-        //var url = configuration["MessageService:Url"]!;
-        //var response = await httpClient.PostAsJsonAsync(url, message, cancellationToken: cancellationToken);
-        //response.EnsureSuccessStatusCode();
+        var url = configuration["MessageService:Url"]!;
+        var response = await httpClient.PostAsJsonAsync(url, notification, cancellationToken: cancellationToken);
+        response.EnsureSuccessStatusCode();
     }
 }
