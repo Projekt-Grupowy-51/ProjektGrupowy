@@ -1,0 +1,6 @@
+@ProjektGrupowy.Background_HostAddress = http://localhost:5253
+
+GET {{ProjektGrupowy.Background_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

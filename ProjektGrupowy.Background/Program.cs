@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Hangfire;
 using Hangfire.MemoryStorage;
 using Hangfire.PostgreSql;
@@ -26,6 +26,7 @@ using ProjektGrupowy.Infrastructure.Repositories;
 using ProjektGrupowy.Infrastructure.Repositories.Impl;
 using Serilog;
 using System.Text.Json.Serialization;
+using Microsoft.Extensions.Logging.Abstractions;
 using ProjektGrupowy.Application.Filters;
 using ProjektGrupowy.Application.Http;
 using Serilog.Extensions.Logging;
@@ -149,6 +150,11 @@ static void AddServices(WebApplicationBuilder builder)
             config.UsePostgreSqlStorage(c => c.UseNpgsqlConnection(hangfireConnectionString));
         });
     }
+
+    builder.Services.AddHangfireServer(options =>
+    {
+        options.WorkerCount = 4;
+    });
 
     // ========== Done with hangfire ========== //
 

@@ -21,6 +21,7 @@ namespace ProjektGrupowy.API.Controllers;
 [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
 public class ProjectReportController(
     IProjectReportService projectReportService,
+    IBackgroundJobClient backgroundJobClient,
     IMessageService messageService,
     IMapper mapper,
     ICurrentUserService currentUserService,
@@ -69,7 +70,8 @@ public class ProjectReportController(
     [HttpPost("{projectId:int}/generate-report")]
     public async Task<IActionResult> GenerateReport(int projectId)
     {
-        var result = BackgroundJob.Enqueue<IReportGenerator>(g => g.GenerateAsync(projectId, currentUserService.UserId, currentUserService.IsAdmin));
+        var result = backgroundJobClient
+            .Enqueue<IReportGenerator>(g => g.GenerateAsync(projectId, currentUserService.UserId, currentUserService.IsAdmin));
 
         if (result is null)
         {
