@@ -338,12 +338,32 @@ body {
 
 /* === NAVBAR === */
 .navbar {
+  background-color: var(--color-surface-secondary);
   backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-sm);
 }
 
 .navbar .dropdown-menu {
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-md);
+}
+
+.navbar .btn {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  transition: all var(--transition-base);
+}
+
+.navbar .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sharp);
+}
+
+.navbar .btn-link {
+  text-decoration: none;
+}
+
+.navbar .btn-link:hover {
+  text-decoration: none;
 }
 
 /* === UTILITIES === */

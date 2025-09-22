@@ -142,8 +142,5 @@
     "quality": "Jakość Raportu",
     "quality_description": "Wyższa jakość trwa dłużej, ale zapewnia bardziej szczegółową analizę.",
     "fallback_name": "Raport #{{id}}"
-  },
-  "messages": {
-    "project_not_found": "Projekt nie znaleziony"
   }
 }

@@ -121,7 +121,6 @@ export const useBaseForm = (initialData = {}, validationRules = {}) => {
       try {
         await onSubmit(formData);
       } catch (error) {
-        console.error('Form submission error:', error);
         throw error;
       } finally {
         setIsSubmitting(false);

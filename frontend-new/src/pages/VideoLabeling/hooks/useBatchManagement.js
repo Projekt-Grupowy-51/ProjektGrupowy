@@ -40,7 +40,7 @@ export const useBatchManagement = (assignment) => {
             newVideoStreamUrls[video.id] = streamUrl;
           }
         } catch (streamError) {
-          console.error(`Error loading stream for video ${video.id}:`, streamError);
+
         }
       }
       

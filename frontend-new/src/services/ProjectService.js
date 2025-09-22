@@ -13,10 +13,8 @@ class ProjectService {
    */
   async getAll() {
     try {
-      console.log('ProjectService.getAll - making API call to:', apiClient.client.defaults.baseURL + '/Project');
       return await apiClient.get('/projects');
     } catch (error) {
-      console.error('ProjectService.getAll error:', error);
       throw new Error(`Failed to get projects: ${error.message}`);
     }
   }
