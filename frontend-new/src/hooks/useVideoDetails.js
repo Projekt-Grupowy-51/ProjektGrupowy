@@ -54,7 +54,6 @@ export const useVideoDetails = () => {
           const streamUrl = await VideoService.getStreamBlob(video.id);
           setVideoStreamUrl(streamUrl);
         } catch (error) {
-          console.error('Failed to load video stream:', error);
         } finally {
           setVideoStreamLoading(false);
         }

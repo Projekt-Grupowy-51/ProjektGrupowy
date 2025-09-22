@@ -27,7 +27,8 @@
     "tryAgain": "Try Again",
     "dismiss": "Dismiss",
     "close": "Close",
-    "download": "Download"
+    "download": "Download",
+    "editProfile": "Edit Profile"
   },
   "deleteConfirmation": {
     "title": "Confirm Delete",

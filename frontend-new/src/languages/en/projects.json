@@ -142,8 +142,5 @@
     "quality": "Report Quality",
     "quality_description": "Higher quality takes longer to generate but provides more detailed analysis.",
     "fallback_name": "Report #{{id}}"
-  },
-  "messages": {
-    "project_not_found": "Project not found"
   }
 }

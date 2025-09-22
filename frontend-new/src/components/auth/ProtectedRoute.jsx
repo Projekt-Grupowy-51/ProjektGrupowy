@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useKeycloak } from '../../hooks/useKeycloak.js';
 import { Container, Card, Button } from '../ui';
 import { LoadingSpinner } from '../common';
+import TopNavbar from '../layout/TopNavbar';
 
 const ProtectedRoute = ({
     children,
@@ -45,7 +46,10 @@ const ProtectedRoute = ({
     // Not authenticated
     if (!isAuthenticated) {
         return (
+            <>
+            <TopNavbar />
             <Container className="d-flex justify-content-center align-items-center vh-100">
+
                 <Card className="text-center" style={{ maxWidth: '400px', width: '100%' }}>
                     <Card.Header>
                         <Card.Title level={3}>
@@ -67,6 +71,7 @@ const ProtectedRoute = ({
                     </Card.Body>
                 </Card>
             </Container>
+            </>
         );
     }
 

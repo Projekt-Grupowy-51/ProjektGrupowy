@@ -41,13 +41,11 @@ export const useKeycloak = () => {
         if (authenticated) {
           setInterval(() => {
             keycloak.updateToken(70).catch(() => {
-              console.log('Token refresh failed');
               login();
             });
           }, 60000);
         }
       } catch (error) {
-        console.error('Keycloak init failed:', error);
         isInitialized = true;
       } finally {
         setIsLoading(false);

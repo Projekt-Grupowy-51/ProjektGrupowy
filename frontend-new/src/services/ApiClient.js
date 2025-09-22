@@ -53,7 +53,6 @@ class ApiClient {
               return this.client(originalRequest);
             }
           } catch (refreshError) {
-            console.error("Token refresh failed:", refreshError);
             return Promise.reject(refreshError);
           }
         } else if (error.response?.status === 403) {
