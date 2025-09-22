@@ -1,6 +1,5 @@
 /* Clean White & Blue Keycloak Login Theme - Single Card Layout */
 
-/* Reset everything first */
 * {
   box-sizing: border-box !important;
 }
@@ -12,7 +11,6 @@ body {
   height: 100% !important;
 }
 
-/* Main background - subtle gradient */
 body {
   background: linear-gradient(135deg, #ffffff 0%, #f5f5f5 100%) !important;
   color: #22292f !important;
@@ -24,13 +22,11 @@ body {
   position: relative !important;
 }
 
-/* Remove any background animations or pseudo-elements */
 body::before,
 body::after {
   display: none !important;
 }
 
-/* Container styling */
 #kc-container-wrapper {
   background: transparent !important;
   width: 100% !important;
@@ -56,7 +52,6 @@ body::after {
   border: none !important;
 }
 
-/* MAIN CARD - glassmorphism, iOS 26 */
 .card-pf {
   background: rgba(255, 255, 255, 0.55) !important;
   border-radius: 28px !important;
@@ -71,10 +66,9 @@ body::after {
   transition: all 250ms ease;
   border: 1px solid rgba(0, 0, 0, 0.175);
   max-height: 90vh;
-  width: 100% !important; /* Zmienione z max-width: 50vw */
+  width: 100% !important; 
 }
 
-/* Hover effect only on main card */
 .card-pf:hover {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.05);
   transform: translateY(-2px);
@@ -85,7 +79,10 @@ body::after {
   display: none !important;
 }
 
-/* Header section - NO separate background or effects */
+.login-pf-page .btn-primary{
+  margin:0 auto !important;
+}
+
 #kc-header-wrapper {
   display: none !important;
 }
@@ -102,7 +99,6 @@ body::after {
   margin: 0 !important;
 }
 
-/* Remove any hover effects from header */
 #kc-header:hover,
 .videomark-header:hover {
   transform: none !important;
@@ -122,7 +118,6 @@ body::after {
   display: inline-block !important;
 }
 
-/* Remove the key emoji */
 .kc-logo-text:before {
   content: "" !important;
   margin: 0 !important;
@@ -138,7 +133,6 @@ body::after {
   display: inline-block !important;
 }
 
-/* Content section - NO separate background or effects */
 #kc-content,
 .videomark-content {
   background: transparent !important;
@@ -150,7 +144,6 @@ body::after {
   border-radius: 0 !important;
 }
 
-/* Remove any hover effects from content */
 #kc-content:hover,
 .videomark-content:hover {
   transform: none !important;
@@ -164,7 +157,7 @@ body::after {
 }
 
 #kc-info {
-    margin-top: 1rem !important;
+    margin-top: 0rem !important;
     text-align: center !important;
 }
 
@@ -173,10 +166,10 @@ body::after {
     font-size: 1rem !important;
 }
 
-/* Form styling */
 .videomark-form {
   width: 100% !important;
   margin: 0 !important;
+  padding-top: 20px;
 }
 
 .form-group {
@@ -215,15 +208,6 @@ input[class*="kcInputClass"] {
   outline: none !important;
 }
 
-/* Keep dropdown arrow only for Role selector */
-/* select[id="Role"] {
-  appearance: none !important;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") !important;
-  background-repeat: no-repeat !important;
-  background-position: right 1rem center !important;
-  padding-right: 2.5rem !important;
-} */
-
 .pf-c-form-control:not(textarea) {
   height: 44px !important;
 }
@@ -240,7 +224,6 @@ input[class*="kcInputClass"] {
   color: #6c757d !important;
 }
 
-/* Focus state for all inputs */
 .form-control:focus,
 .pf-c-form-control:focus,
 input[class*="kcInputClass"]:focus {
@@ -249,7 +232,6 @@ input[class*="kcInputClass"]:focus {
   box-shadow: 0 0 0 3px rgba(180, 180, 180, 0.13) !important;
 }
 
-/* Checkbox styling - glass accent */
 .checkbox {
   margin: 16px 0 !important;
 }
@@ -269,7 +251,6 @@ input[class*="kcInputClass"]:focus {
   accent-color: #aaa !important;
 }
 
-/* Links - neutral, glassy */
 a {
   color: #22292f !important;
   text-decoration: none !important;
@@ -286,7 +267,6 @@ a:hover {
   background: rgba(240, 240, 240, 0.32) !important;
 }
 
-/* Form options */
 #kc-form-options {
   margin-bottom: 16px !important;
 }
@@ -327,7 +307,6 @@ a:hover {
   text-decoration: none !important;
 }
 
-/* Registration section - styled but NO separate card effect */
 #kc-registration,
 #kc-registration-container {
   text-align: center !important;
@@ -338,7 +317,6 @@ a:hover {
   -webkit-backdrop-filter: none !important;
 }
 
-/* Remove hover effects from registration */
 #kc-registration:hover,
 #kc-registration-container:hover {
   transform: none !important;
@@ -359,7 +337,6 @@ a:hover {
   color: #1d4ed8 !important;
 }
 
-/* Error messages - glassy background */
 #input-error,
 .kc-feedback-text {
   background: rgba(255, 230, 230, 0.38) !important;
@@ -370,7 +347,6 @@ a:hover {
   font-size: 0.9rem !important;
 }
 
-/* Alert messages - glassy, soft */
 .alert {
   background: rgba(255, 255, 255, 0.45) !important;
   border-radius: 14px !important;
@@ -390,7 +366,6 @@ a:hover {
   border-color: rgba(183, 247, 187, 0.38) !important;
 }
 
-/* Social providers - styled but NO separate card effect */
 #kc-social-providers {
   background: rgba(255, 255, 255, 0.38) !important;
   padding: 20px 32px !important;
@@ -403,7 +378,6 @@ a:hover {
   -webkit-backdrop-filter: none !important;
 }
 
-/* Remove hover effects from social providers */
 #kc-social-providers:hover {
   transform: none !important;
   box-shadow: none !important;
@@ -423,7 +397,6 @@ a:hover {
   margin-bottom: 0 !important;
 }
 
-/* Spójny glassmorphism dla .login-pf-signup i dzieci */
 .login-pf-signup {
   background: rgba(255, 255, 255, 0.38) !important;
   border-radius: 18px !important;
@@ -509,7 +482,6 @@ a:hover {
     font-weight: 600 !important;
 }
 
-/* Responsive design - glassy, rounded */
 @media (max-width: 480px) {
   .card-pf {
     border-radius: 18px !important;
@@ -540,7 +512,6 @@ a:hover {
   }
 }
 
-/* Force override any dark theme */
 @media (prefers-color-scheme: dark) {
   body {
     background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%) !important;
@@ -563,7 +534,6 @@ a:hover {
     margin-left: 4px !important;
 }
 
-/* Styling for input groups */
 .form-group {
     margin-bottom: 1.5rem !important;
 }
@@ -595,7 +565,6 @@ a:hover {
     box-shadow: 0 0 0 3px rgba(180, 180, 180, 0.13) !important;
 }
 
-/* Additional styling for input groups */
 .kcInputGroup {
     position: relative !important;
     display: flex !important;
@@ -608,7 +577,6 @@ a:hover {
     min-width: 0 !important;
 }
 
-/* Reset password specific styles */
 #kc-reset-password-form .alert {
     margin-bottom: 1.5rem !important;
     padding: 1rem !important;
@@ -624,4 +592,5 @@ a:hover {
     color: #0288d1 !important;
     border-color: rgba(187, 222, 251, 0.38) !important;
     max-width: 30vw !important;
+    margin: 0 auto !important;
 }
