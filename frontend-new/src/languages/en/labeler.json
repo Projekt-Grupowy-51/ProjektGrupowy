@@ -17,6 +17,7 @@
     }
   },
   "loading": "Loading data...",
+  "start_labeling": "Start labeling",
   "errors": {
     "load_projects": "Failed to load projects",
     "load_assignments": "Failed to load assignments"

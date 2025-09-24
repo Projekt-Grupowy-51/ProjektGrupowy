@@ -69,7 +69,8 @@
     "initializing": "Initializing authentication...",
     "required_title": "Authentication Required",
     "required_message": "Please log in to access VidMark platform.",
-    "login_button": "Login with Keycloak"
+    "login_button": "Login with Keycloak",
+    "signed_in_as": "Signed in as"
   },
   "confirmationContext": {
     "default_message": "Are you sure you want to continue?"

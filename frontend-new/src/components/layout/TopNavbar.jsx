@@ -27,16 +27,16 @@ const TopNavbar = () => {
             VidMark
           </a>
 
-          <div className="navbar-nav ms-auto">
+          <div className="navbar-nav ms-auto align-items-center">
+            {/* Language Dropdown */}
             <div className="nav-item dropdown me-3">
               <button
                   className="btn btn-link dropdown-toggle d-flex align-items-center"
                   data-bs-toggle="dropdown"
-                  data-bs-boundary="viewport"
                   aria-expanded="false"
               >
                 <span className="me-2">{getLanguageFlag(getCurrentLanguage())}</span>
-                {getCurrentLanguage().toUpperCase()}
+                <span className="text-dark">{getCurrentLanguage().toUpperCase()}</span>
               </button>
               <ul className="dropdown-menu dropdown-menu-end">
                 <li>
@@ -60,22 +60,25 @@ const TopNavbar = () => {
               </ul>
             </div>
 
+            {/* User Dropdown */}
             {isAuthenticated && (
                 <div className="nav-item dropdown">
                   <button
-                      className="btn btn-link dropdown-toggle"
+                      className="btn btn-link dropdown-toggle d-flex align-items-center"
                       data-bs-toggle="dropdown"
-                      data-bs-boundary="viewport"
                       aria-expanded="false"
                   >
                     <i className="fas fa-user-circle me-2"></i>
-                    {user?.preferred_username || user?.name || t('user.fallback')}
+                    <span className="text-dark">
+                      {user?.preferred_username || user?.name || t('user.fallback')}
+                    </span>
                   </button>
                   <ul className="dropdown-menu dropdown-menu-end">
                     <li>
-                  <span className="dropdown-item-text">
-                    <small className="text-muted">{user?.email}</small>
-                  </span>
+                      <div className="dropdown-item-text small">
+                        <div className="text-muted">{t('auth.signed_in_as')}</div>
+                        <div className="text-dark fw-medium">{user?.email}</div>
+                      </div>
                     </li>
                     <li><hr className="dropdown-divider" /></li>
                     <li>

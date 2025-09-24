@@ -17,6 +17,7 @@
     }
   },
   "loading": "Ładowanie danych...",
+  "start_labeling": "Rozpocznij oznaczanie",
   "errors": {
     "load_projects": "Błąd ładowania projektów",
     "load_assignments": "Błąd ładowania zadań"

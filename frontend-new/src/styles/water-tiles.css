@@ -338,34 +338,228 @@ body {
 
 /* === NAVBAR === */
 .navbar {
-  background-color: var(--color-surface-secondary);
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-base);
+  margin: 1rem auto;
+  padding: 0.75rem 1rem;
+  max-width: calc(100% - 2rem);
+  border: 1px solid var(--color-neutral-200);
+  position: relative;
+  z-index: 1030;
   backdrop-filter: blur(10px);
-  box-shadow: var(--shadow-sm);
-}
-
-.navbar .dropdown-menu {
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-md);
-}
-
-.navbar .btn {
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  background: rgba(255, 255, 255, 0.95);
   transition: all var(--transition-base);
 }
 
-.navbar .btn:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-sharp);
+.navbar:hover {
+  box-shadow: var(--shadow-md);
 }
 
+/* Navbar Brand */
+.navbar-brand {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary-900) !important;
+  text-decoration: none !important;
+}
+
+.navbar-brand i {
+  color: var(--color-primary-700);
+}
+
+/* Container Layout */
+.navbar .container-fluid {
+  padding: 0;
+}
+
+/* Navbar Buttons - Enhanced Shadows */
+.navbar .btn {
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--color-neutral-200);
+  transition: all var(--transition-base);
+  text-decoration: none !important;
+}
+
+.navbar .btn:hover {
+  box-shadow: var(--shadow-xl);
+  transform: translateY(-2px);
+  text-decoration: none !important;
+}
+
+.navbar .btn:active {
+  box-shadow: var(--shadow-md);
+  transform: translateY(0);
+}
+
+/* Remove underline and blue colors from all button states */
+.navbar .btn,
+.navbar .btn:focus,
+.navbar .btn:active,
+.navbar .btn:hover {
+  text-decoration: none !important;
+  color: var(--color-text-primary) !important;
+}
+
+/* Primary buttons in navbar */
+.navbar .btn-primary {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15), 0 4px 12px rgba(0, 0, 0, 0.1);
+  color: white !important;
+}
+
+.navbar .btn-primary:hover {
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.2), 0 6px 20px rgba(0, 0, 0, 0.15);
+  color: white !important;
+}
+
+/* Secondary buttons in navbar */
+.navbar .btn-secondary {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1), 0 3px 10px rgba(0, 0, 0, 0.08);
+}
+
+.navbar .btn-secondary:hover {
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15), 0 5px 15px rgba(0, 0, 0, 0.12);
+}
+
+/* Fix for link buttons - remove underline and blue color */
 .navbar .btn-link {
-  text-decoration: none;
+  text-decoration: none !important;
+  color: var(--color-text-primary) !important;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
 }
 
 .navbar .btn-link:hover {
-  text-decoration: none;
+  text-decoration: none !important;
+  color: var(--color-primary-900) !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
 }
 
+/* Dropdown toggle buttons */
+.navbar .dropdown-toggle {
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  text-decoration: none !important;
+}
+
+.navbar .dropdown-toggle:hover {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  text-decoration: none !important;
+}
+
+/* User dropdown specific */
+.navbar .btn-link.dropdown-toggle {
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+  text-decoration: none !important;
+}
+
+.navbar .btn-link.dropdown-toggle:hover {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  text-decoration: none !important;
+}
+
+/* Dropdown Menus */
+.navbar .dropdown-menu {
+  margin-top: 0.5rem;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-xl);
+  border: 1px solid var(--color-neutral-200);
+}
+
+/* Dropdown Items - remove underlines */
+.navbar .dropdown-item {
+  position: relative;
+  transition: all var(--transition-base);
+  padding: 0.5rem 1rem;
+  text-decoration: none !important;
+}
+
+.navbar .dropdown-item:hover:not(.active) {
+  background-color: var(--color-neutral-100);
+  color: var(--color-primary-900);
+  text-decoration: none !important;
+}
+
+.navbar .dropdown-item.active {
+  background-color: var(--color-neutral-200);
+  color: var(--color-primary-900);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none !important;
+}
+
+/* Language Dropdown Specific Styles */
+.navbar .dropdown-menu li button.dropdown-item {
+  position: relative;
+  transition: all var(--transition-base);
+  text-decoration: none !important;
+}
+
+/* User Dropdown Text Styles */
+.navbar .btn-link.dropdown-toggle .text-dark {
+  color: var(--color-text-primary) !important;
+  text-decoration: none !important;
+}
+
+.navbar .btn-link.dropdown-toggle:hover .text-dark {
+  color: var(--color-primary-900) !important;
+  text-decoration: none !important;
+}
+
+/* Navbar Toggle Button */
+.navbar-toggler {
+  border: 1px solid var(--color-neutral-300);
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+  text-decoration: none !important;
+}
+
+.navbar-toggler:hover {
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+  text-decoration: none !important;
+}
+
+.navbar-toggler:focus {
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+  outline: none;
+  text-decoration: none !important;
+}
+
+/* Remove any anchor tag styles within navbar */
+.navbar a,
+.navbar a:hover,
+.navbar a:focus {
+  text-decoration: none !important;
+}
+
+/* Responsive Design */
+@media (max-width: 991.98px) {
+  .navbar {
+    margin: 0.5rem;
+    max-width: calc(100% - 1rem);
+    padding: 0.5rem;
+  }
+
+  .navbar-collapse {
+    margin-top: 1rem;
+    padding: 1rem 0;
+  }
+
+  .navbar .btn {
+    margin: 0.25rem 0;
+    width: 100%;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    text-decoration: none !important;
+  }
+
+  .navbar .btn:hover {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    text-decoration: none !important;
+  }
+
+  .dropdown-menu {
+    border: none;
+    box-shadow: var(--shadow-lg);
+    margin-top: 0;
+  }
+}
 /* === UTILITIES === */
 .text-primary { color: var(--color-primary-900) !important; }
 .text-danger { color: var(--color-danger-600) !important; }

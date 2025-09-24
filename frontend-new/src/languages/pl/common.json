@@ -73,7 +73,8 @@
     "initializing": "Inicjalizacja uwierzytelnienia...",
     "required_title": "Wymagane uwierzytelnienie",
     "required_message": "Zaloguj się, aby uzyskać dostęp do platformy VidMark.",
-    "login_button": "Zaloguj się przez Keycloak"
+    "login_button": "Zaloguj się przez Keycloak",
+    "signed_in_as": "Zalogowany jako"
   },
   "confirmationContext": {
     "default_message": "Czy na pewno chcesz kontynuować?"
