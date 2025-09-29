@@ -34,7 +34,7 @@ const LabelAdd = () => {
           onSubmit={handleSubmit}
           onCancel={handleCancel}
           loading={submitLoading}
-          submitText={t('labels:buttons.create')}
+          submitText={t('labels:buttons.add')}
         />
       )}
     </FormPageWrapper>

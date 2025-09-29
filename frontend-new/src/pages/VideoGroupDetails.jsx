@@ -100,8 +100,8 @@ const VideoGroupDetails = () => {
             <Table.Head>
               <Table.Row>
                 <Table.Cell header={true}>#</Table.Cell>
-                <Table.Cell header={true}>{t('videos:columns.title')}</Table.Cell>
-                <Table.Cell header={true}>{t('videos:columns.position')}</Table.Cell>
+                <Table.Cell header={true}>{t('videos:table.title')}</Table.Cell>
+                <Table.Cell header={true}>{t('videos:table.position')}</Table.Cell>
                 <Table.Cell header={true}>{t('common:actions')}</Table.Cell>
               </Table.Row>
             </Table.Head>
@@ -122,14 +122,6 @@ const VideoGroupDetails = () => {
                         onClick={() => navigate(`/videos/${video.id}`)}
                       >
                         {t('common:buttons.details')}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline-warning"
-                        icon="fas fa-edit"
-                        onClick={() => navigate(`/videos/${video.id}/edit`)}
-                      >
-                        {t('common:buttons.edit')}
                       </Button>
                       <Button
                         size="sm"
