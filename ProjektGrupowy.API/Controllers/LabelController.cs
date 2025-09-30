@@ -25,7 +25,7 @@ public class LabelController(
     /// <summary>
     /// Get all labels.
     /// </summary>
-    /// <returns></returns>
+    /// <returns>A collection of labels.</returns>
     [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<LabelResponse>>> GetLabelsAsync()
