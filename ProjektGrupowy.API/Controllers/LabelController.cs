@@ -8,6 +8,11 @@ using ProjektGrupowy.Domain.Utils.Constants;
 
 namespace ProjektGrupowy.API.Controllers;
 
+/// <summary>
+/// Controller for managing labels. Handles operations such as retrieving, adding, updating, and deleting labels.
+/// </summary>
+/// <param name="labelService"></param>
+/// <param name="mapper"></param>
 [Route("api/labels")]
 [ApiController]
 [ServiceFilter(typeof(ValidateModelStateFilter))]
@@ -17,6 +22,10 @@ public class LabelController(
     ILabelService labelService,
     IMapper mapper) : ControllerBase
 {
+    /// <summary>
+    /// Get all labels.
+    /// </summary>
+    /// <returns></returns>
     [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<LabelResponse>>> GetLabelsAsync()
@@ -27,7 +36,12 @@ public class LabelController(
             ? Ok(mapper.Map<IEnumerable<LabelResponse>>(labels.GetValueOrThrow()))
             : NotFound(labels.GetErrorOrThrow());
     }
-
+    
+    /// <summary>
+    /// Get a specific label by its ID.
+    /// </summary>
+    /// <param name="id">The ID of the label.</param>
+    /// <returns>The label with the specified ID.</returns>
     [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
     [HttpGet("{id:int}")]
     public async Task<ActionResult<LabelResponse>> GetLabelAsync(int id)
@@ -37,7 +51,12 @@ public class LabelController(
             ? Ok(mapper.Map<LabelResponse>(label.GetValueOrThrow()))
             : NotFound(label.GetErrorOrThrow());
     }
-
+    
+    /// <summary>
+    /// Create a new label.
+    /// </summary>
+    /// <param name="labelRequest">The request containing the details of the label to be created.</param>
+    /// <returns>The created label.</returns>
     [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
     [HttpPost]
     public async Task<ActionResult<LabelResponse>> AddLabelAsync(LabelRequest labelRequest)
@@ -53,6 +72,12 @@ public class LabelController(
         return CreatedAtAction("GetLabel", new { id = createdLabel.Id }, labelResponse);
     }
 
+    /// <summary>
+    /// Update an existing label.
+    /// </summary>
+    /// <param name="id">The ID of the label to be updated.</param>
+    /// <param name="labelRequest">The request containing the updated details of the label.</param>
+    /// <returns>No content if successful, or BadRequest if the update fails.</returns>
     [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
     [HttpPut("{id:int}")]
     public async Task<IActionResult> PutLabelAsync(int id, LabelRequest labelRequest)
@@ -70,6 +95,11 @@ public class LabelController(
             : BadRequest(result.GetErrorOrThrow());
     }
 
+    /// <summary>
+    /// Delete a label by its ID.
+    /// </summary>
+    /// <param name="id">The ID of the label to be deleted.</param>
+    /// <returns>No content if successful, or NotFound if the label does not exist.</returns>
     [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteLabelAsync(int id)

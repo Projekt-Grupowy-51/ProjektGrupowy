@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Text.Json.Serialization;
 using AutoMapper;
 using Hangfire;
@@ -13,6 +14,7 @@ using Microsoft.OpenApi.Models;
 using ProjektGrupowy.API.Authentication;
 using ProjektGrupowy.API.Filters;
 using ProjektGrupowy.Application.Authorization;
+using ProjektGrupowy.Application.Filters;
 using ProjektGrupowy.Application.Http;
 using ProjektGrupowy.Application.Mapper;
 using ProjektGrupowy.Application.Services;
@@ -129,6 +131,16 @@ public static class WebApplicationBuilderExtensions
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(c =>
         {
+            
+            var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+            var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+            c.IncludeXmlComments(xmlPath, includeControllerXmlComments: true);
+            
+            foreach (var xml in Directory.EnumerateFiles(AppContext.BaseDirectory, "*.xml"))
+                c.IncludeXmlComments(xml, includeControllerXmlComments: true);
+            
+            c.SchemaFilter<EnumDescriptionsSchemaFilter>();
+            
             c.SwaggerDoc("v1", new OpenApiInfo
             {
                 Title = "ProjektGrupowy API",

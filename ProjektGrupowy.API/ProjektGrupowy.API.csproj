@@ -6,7 +6,17 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>72eeb71a-0d96-49ec-af57-9922cb6d9e00</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
   </PropertyGroup>
+
+  <Target Name="CopyXmlDocsToPublish" AfterTargets="Publish">
+    <ItemGroup>
+      <!-- Copy all xml files from the build output (OutDir) to the publish folder -->
+      <_XmlDocs Include="$(OutDir)/*.xml" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_XmlDocs)" DestinationFolder="$(PublishDir)" SkipUnchangedFiles="true" />
+  </Target>
 
   <ItemGroup>
     <PackageReference Include="EFCore.BulkExtensions" Version="9.0.1" />

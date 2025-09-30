@@ -2,17 +2,32 @@
 
 namespace ProjektGrupowy.Application.DTOs.AssignedLabel;
 
+/// <summary>
+/// DTO for assigned label request
+/// </summary>
 public class AssignedLabelRequest
 {
+    /// <summary>
+    /// The unique identifier of the label to be assigned.
+    /// </summary>
     [Required]
-    public int LabelId { get; set; } // ID of the label to be assigned
+    public int LabelId { get; set; }
 
+    /// <summary>
+    /// The unique identifier of the video to which the label is assigned.
+    /// </summary>
     [Required]
-    public int VideoId { get; set; } // ID of the video
+    public int VideoId { get; set; }
 
+    /// <summary>
+    /// The start time of the label in the video.
+    /// </summary>
     [Required]
-    public string Start { get; set; } // Start time for the assigned label
+    public string Start { get; set; }
 
+    /// <summary>
+    /// The end time of the label in the video.
+    /// </summary>
     [Required]
-    public string End { get; set; } // End time for the assigned label
+    public string End { get; set; }
 }
