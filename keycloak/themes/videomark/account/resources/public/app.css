@@ -16284,7 +16284,7 @@ label.pf-c-radio, .pf-c-radio__label,
 .pf-c-skip-to-content:focus {
   left: var(--pf-c-skip-to-content--focus--Left);
 }
-@charset "UTF-8";
+
 .pf-c-skeleton {
   --pf-c-skeleton--BackgroundColor: var(--pf-global--palette--black-150);
   --pf-c-skeleton--Width: auto;

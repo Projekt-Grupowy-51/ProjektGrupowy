@@ -4,6 +4,32 @@
   box-sizing: border-box !important;
 }
 
+/* Override PatternFly button variables to remove blue colors */
+:root {
+  --pf-v5-global--primary-color--100: #aaa !important;
+  --pf-v5-global--primary-color--200: #999 !important;
+  --pf-v5-global--active-color--100: #aaa !important;
+  --pf-v5-global--link--Color: #22292f !important;
+  --pf-v5-global--link--Color--hover: #6c757d !important;
+  --pf-v5-global--link--TextDecoration--hover: underline !important;
+  --pf-v5-c-button--m-control--hover--after--BorderBottomColor: transparent !important;
+  --pf-v5-c-button--m-control--active--after--BorderBottomColor: transparent !important;
+  --pf-v5-c-button--m-control--focus--after--BorderBottomColor: transparent !important;
+  --pf-v5-c-button--m-control--m-expanded--after--BorderBottomColor: transparent !important;
+  --pf-v5-c-button--m-control--after--BorderBottomColor: transparent !important;
+  --pf-v5-c-button--m-control--after--BorderWidth: 0 !important;
+}
+
+/* Additional specific overrides for password toggle buttons */
+.pf-v5-c-button.pf-m-control,
+.pf-c-button.pf-m-control {
+  --pf-v5-c-button--m-control--hover--after--BorderBottomColor: transparent !important;
+  --pf-v5-c-button--m-control--active--after--BorderBottomColor: transparent !important;
+  --pf-v5-c-button--m-control--focus--after--BorderBottomColor: transparent !important;
+  --pf-v5-c-button--m-control--after--BorderBottomColor: transparent !important;
+  --pf-v5-c-button--m-control--after--BorderWidth: 0 !important;
+}
+
 html,
 body {
   margin: 0 !important;
@@ -33,6 +59,15 @@ body::after {
   max-width: 420px !important;
   padding: 20px !important;
   margin: 0 auto !important;
+}
+
+/* Card: constrain width, add internal padding and center */
+.card-pf {
+	padding: 20px !important;          /* added internal spacing for a neat card */
+	margin: 12px auto !important;      /* center card horizontally with gap */
+	max-width: 420px !important;       /* keep card narrow and tidy on large screens */
+	box-sizing: border-box !important;
+	width: 100% !important;
 }
 
 .login-pf .container {
@@ -224,6 +259,24 @@ input[class*="kcInputClass"] {
   color: #6c757d !important;
 }
 
+/* Reserve space on the right for visibility button/icon */
+.kcInputGroup input,
+.form-control {
+	padding-right: 44px !important;
+}
+
+/* Position visibility button neatly inside the input area */
+.kcFormPasswordVisibilityButtonClass {
+	right: 12px !important;
+	top: 50% !important;
+	transform: translateY(-50%) !important;
+	width: 32px !important;
+	height: 32px !important;
+	display: inline-flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+}
+
 .form-control:focus,
 .pf-c-form-control:focus,
 input[class*="kcInputClass"]:focus {
@@ -352,6 +405,16 @@ a:hover {
   border-radius: 14px !important;
   box-shadow: 0 2px 8px rgba(180, 180, 180, 0.08) !important;
   border: 1.5px solid rgba(200, 200, 200, 0.15) !important;
+}
+
+/* Tidy alerts so they don't blow out the layout */
+.alert-info,
+.alert,
+#input-error,
+.kc-feedback-text {
+	max-width: 100% !important;
+	margin: 0.5rem 0 !important;
+	box-sizing: border-box !important;
 }
 
 .alert-error {
@@ -510,14 +573,26 @@ a:hover {
     padding: 10px 12px !important;
     border-radius: 12px !important;
   }
+
+  #kc-container-wrapper {
+		padding: 12px !important;
+		max-width: 92vw !important;
+	}
+	.card-pf {
+		padding: 14px !important;
+	}
+	.kc-logo-text {
+		font-size: 1.4rem !important;
+	}
 }
 
-@media (prefers-color-scheme: dark) {
-  body {
-    background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%) !important;
-    color: #22292f !important;
-  }
+/* remove any grid overrides that caused strange layout stretching */
+.pf-v5-c-login__container{
+  grid-column-gap: 0px !important;
+  grid-template-columns: none !important;
 }
+
+/* ...existing code... */
 
 .required-fields-info {
     text-align: center !important;
@@ -594,3 +669,284 @@ a:hover {
     max-width: 30vw !important;
     margin: 0 auto !important;
 }
+
+/* Make inputs (username and others) fill card width */
+.videomark-form .form-control,
+#kc-form .form-control,
+#kc-container-wrapper .form-control,
+#kc-register-form .form-control,
+#kc-reset-password-form .form-control {
+  max-width: 100% !important;
+}
+
+/* Ensure username specifically is full width (login, register, reset) */
+input#username.form-control,
+.pf-v5-c-form-control input[id="username"].form-control,
+.pf-v5-c-form-control input[id="username"].form-control {
+  max-width: 100% !important;
+}
+
+/* Reserve extra right padding for any input inside kcInputGroup */
+.kcInputGroup input,
+.kcInputGroup .form-control {
+  padding-right: 56px !important; /* space for rounded show-password button */
+}
+
+/* Rounded, glassy show-password button matching input corners */
+.kcFormPasswordVisibilityButtonClass {
+  position: absolute !important;
+  right: 12px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  width: 40px !important;
+  height: 36px !important;
+  padding: 0 !important;
+  border-radius: 12px !important; /* match input border-radius */
+  background: rgba(255,255,255,0.92) !important;
+  border: 1px solid rgba(200,200,200,0.18) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06) !important;
+  cursor: pointer !important;
+}
+
+/* Smaller icon, centered */
+.kcFormPasswordVisibilityButtonClass i {
+  font-size: 16px !important;
+  color: #6c757d !important;
+  line-height: 1 !important;
+}
+
+/* Hover/active states for button */
+.kcFormPasswordVisibilityButtonClass:hover {
+  background: rgba(245,245,245,0.98) !important;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08) !important;
+}
+
+/* Apply same right offset for visibility button inside register & login forms (use real class name, not Freemarker variable) */
+#kc-register-form .kcFormPasswordVisibilityButtonClass,
+#kc-form-login .kcFormPasswordVisibilityButtonClass {
+  right: 12px !important;
+}
+
+/* Prevent alerts from forcing horizontal scroll */
+.alert, .alert-info, #input-error, .kc-feedback-text {
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Mobile tweaks */
+@media (max-width: 480px) {
+  .kcInputGroup input,
+  .kcInputGroup .form-control {
+    padding-right: 48px !important;
+  }
+  .kcFormPasswordVisibilityButtonClass {
+    width: 36px !important;
+    height: 34px !important;
+    border-radius: 10px !important;
+  }
+}
+
+/* Connected input and button styling - password field gets left radius only */
+.kcInputGroup input[type="password"].form-control {
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+  border-right: none !important;
+  padding-right: 12px !important; /* reset padding since button is attached */
+}
+
+/* Password visibility button gets right radius only and positioned flush */
+.kcInputGroup .kcFormPasswordVisibilityButtonClass {
+  position: absolute !important;
+  right: 0 !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  transform: none !important;
+  width: 40px !important;
+  height: 100% !important;
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+  border-top-right-radius: 16px !important;
+  border-bottom-right-radius: 16px !important;
+  border-left: none !important;
+  border: 1px solid rgba(200,200,200,0.22) !important;
+  border-left: none !important;
+}
+
+/* Ensure input group container is positioned relative */
+.kcInputGroup {
+  position: relative !important;
+  display: flex !important;
+  align-items: stretch !important;
+}
+
+/* Reset general form-control padding for non-password inputs */
+.form-control:not([type="password"]) {
+  padding-right: 12px !important;
+}
+
+/* Mobile adjustments */
+@media (max-width: 480px) {
+  .kcInputGroup .kcFormPasswordVisibilityButtonClass {
+    width: 36px !important;
+    border-top-right-radius: 12px !important;
+    border-bottom-right-radius: 12px !important;
+  }
+  
+  .kcInputGroup input[type="password"].form-control {
+    border-top-right-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+  }
+}
+
+/* More specific selectors for connected password input and button */
+div[class*="kcInputGroup"] input[type="password"],
+.pf-c-input-group input[type="password"],
+[data-password-toggle] ~ input[type="password"],
+input[id="password"],
+input[id="password-confirm"] {
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+  border-right: none !important;
+  padding-right: 12px !important;
+  width: 100% !important;
+}
+
+/* Target password visibility buttons with multiple possible selectors */
+button[data-password-toggle],
+button[aria-controls="password"],
+button[aria-controls="password-confirm"],
+.pf-c-button[data-password-toggle],
+div[class*="kcInputGroup"] button {
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+  border-top-right-radius: 16px !important;
+  border-bottom-right-radius: 16px !important;
+  border-left: none !important;
+  border: 1px solid rgba(200,200,200,0.22) !important;
+  border-left: none !important;
+  background: rgba(255,255,255,0.92) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: 2px 2px 3px rgba(255, 255, 255, 0.06), 0 -2px 3px rgba(255, 255, 255, 0.06), 2px 0 3px rgba(255, 255, 255, 0.06) !important;
+  cursor: pointer !important;
+  overflow: hidden;
+  outline: none !important;
+  text-decoration: none !important;
+}
+
+/* Hover state for password visibility button */
+button[data-password-toggle]:hover,
+button[aria-controls="password"]:hover,
+button[aria-controls="password-confirm"]:hover,
+div[class*="kcInputGroup"] button:hover {
+  background: rgba(245,245,245,0.98) !important;
+  box-shadow: 2px 2px 6px rgba(0,0,0,0.08), 0 -2px 6px rgba(0,0,0,0.08), 2px 0 6px rgba(0,0,0,0.08) !important;
+  border: 1px solid rgba(200,200,200,0.22) !important;
+  border-left: none !important;
+}
+
+/* Default state - no special focus styling */
+.kcInputGroup input:focus,
+.kcInputGroup button:focus {
+  outline: none !important;
+  border-color: rgba(200, 200, 200, 0.22) !important;
+  box-shadow: 0 2px 8px rgba(180, 180, 180, 0.07) !important;
+}
+
+/* Simple focus states controlled by JavaScript */
+.input-focused input,
+.input-focused .form-control {
+  border-color: #aaa !important;
+  box-shadow: -3px 0 0 rgba(180, 180, 180, 0.13), 0 -3px 0 rgba(180, 180, 180, 0.13), 0 3px 0 rgba(180, 180, 180, 0.13) !important;
+  border-right: none !important;
+}
+
+.input-focused button {
+  border-color: #aaa !important;
+  box-shadow: 3px 0 0 rgba(180, 180, 180, 0.13), 0 -3px 0 rgba(180, 180, 180, 0.13), 0 3px 0 rgba(180, 180, 180, 0.13) !important;
+  border-left: none !important;
+}
+
+.button-focused input,
+.button-focused .form-control {
+  border-color: #aaa !important;
+  box-shadow: -3px 0 0 rgba(180, 180, 180, 0.13), 0 -3px 0 rgba(180, 180, 180, 0.13), 0 3px 0 rgba(180, 180, 180, 0.13) !important;
+  border-right: none !important;
+}
+
+.button-focused button {
+  border-color: #aaa !important;
+  box-shadow: 3px 0 0 rgba(180, 180, 180, 0.13), 0 -3px 0 rgba(180, 180, 180, 0.13), 0 3px 0 rgba(180, 180, 180, 0.13) !important;
+  border-left: none !important;
+  outline: none !important;
+}
+.kcInputGroup button:active + input {
+  border-color: #aaa !important;
+  box-shadow: -3px 0 0 rgba(180, 180, 180, 0.13), 0 -3px 0 rgba(180, 180, 180, 0.13), 0 3px 0 rgba(180, 180, 180, 0.13) !important;
+  border-right: none !important;
+}
+
+/* Focus state triggered by JavaScript after button click */
+.password-toggle-focus input[type="password"],
+.password-toggle-focus input[type="text"],
+.password-toggle-focus .form-control {
+  border-color: #aaa !important;
+  box-shadow: -3px 0 0 rgba(180, 180, 180, 0.13), 0 -3px 0 rgba(180, 180, 180, 0.13), 0 3px 0 rgba(180, 180, 180, 0.13) !important;
+  border-right: none !important;
+}
+
+.password-toggle-focus button {
+  border-color: #aaa !important;
+  box-shadow: 3px 0 0 rgba(180, 180, 180, 0.13), 0 -3px 0 rgba(180, 180, 180, 0.13), 0 3px 0 rgba(180, 180, 180, 0.13) !important;
+  border-left: none !important;
+}
+
+/* Remove all previous focus states and replace with simple ones */
+
+/* Default state - no special border for connected inputs */
+.kcInputGroup input[type="password"].form-control,
+.kcInputGroup input[type="text"].form-control {
+  border-color: rgba(200, 200, 200, 0.22) !important;
+  box-shadow: 0 2px 8px rgba(180, 180, 180, 0.07) !important;
+}
+
+.kcInputGroup button {
+  border-color: rgba(200, 200, 200, 0.22) !important;
+  box-shadow: 2px 2px 3px rgba(255, 255, 255, 0.06), 0 -2px 3px rgba(255, 255, 255, 0.06), 2px 0 3px rgba(255, 255, 255, 0.06) !important;
+}
+
+/* When input is focused - style both input and button */
+.input-focused input[type="password"],
+.input-focused input[type="text"],
+.input-focused .form-control {
+  border-color: #aaa !important;
+  box-shadow: -3px 0 0 rgba(180, 180, 180, 0.13), 0 -3px 0 rgba(180, 180, 180, 0.13), 0 3px 0 rgba(180, 180, 180, 0.13) !important;
+  border-right: none !important;
+}
+
+.input-focused button {
+  border-color: #aaa !important;
+  box-shadow: 3px 0 0 rgba(180, 180, 180, 0.13), 0 -3px 0 rgba(180, 180, 180, 0.13), 0 3px 0 rgba(180, 180, 180, 0.13) !important;
+  border-left: none !important;
+}
+
+/* When button is focused - style both input and button */
+.button-focused input[type="password"],
+.button-focused input[type="text"],
+.button-focused .form-control {
+  border-color: #aaa !important;
+  box-shadow: -3px 0 0 rgba(180, 180, 180, 0.13), 0 -3px 0 rgba(180, 180, 180, 0.13), 0 3px 0 rgba(180, 180, 180, 0.13) !important;
+  border-right: none !important;
+}
+
+.button-focused button {
+  border-color: #aaa !important;
+  box-shadow: 3px 0 0 rgba(180, 180, 180, 0.13), 0 -3px 0 rgba(180, 180, 180, 0.13), 0 3px 0 rgba(180, 180, 180, 0.13) !important;
+  border-left: none !important;
+  outline: none !important;
+}
+
