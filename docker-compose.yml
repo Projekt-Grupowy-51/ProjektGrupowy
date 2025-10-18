@@ -39,7 +39,7 @@
     command: start-dev --import-realm
     volumes:
       - ./keycloak/data:/opt/keycloak/data
-      - ./keycloak/themes:/opt/keycloak/themes
+      - ./keycloak/themes/videomark:/opt/keycloak/themes/videomark
 
   redis:
     image: redis:latest
