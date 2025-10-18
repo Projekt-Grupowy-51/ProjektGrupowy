@@ -3,7 +3,11 @@
     "allow": [
       "Bash(mkdir:*)",
       "Bash(xcopy:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(dotnet restore)",
+      "Bash(dotnet build ProjektGrupowy.API/ProjektGrupowy.API.csproj)",
+      "Bash(dotnet build ProjektGrupowy.API/ProjektGrupowy.API.csproj --no-restore)",
+      "Bash(find ProjektGrupowy.Application -name \"*.cs\" -exec grep -l \"IsInAnyRole\" {} ;)"
     ],
     "deny": [],
     "ask": []
