@@ -20,6 +20,9 @@ public class AppDbContext : DbContext
     public DbSet<ProjectAccessCode> ProjectAccessCodes { get; set; }
     public DbSet<GeneratedReport> GeneratedReports { get; set; }
     public DbSet<User> Users { get; set; }
+    
+    // Notifications
+    public DbSet<Notification> Notifications { get; set; }
 
     public override int SaveChanges()
     {
@@ -118,5 +121,8 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<GeneratedReport>()
             .HasIndex(r => r.Path)
             .IsUnique();
+
+        modelBuilder.Entity<Notification>()
+            .HasIndex(n => n.CreatedAtUtc);
     }
 }

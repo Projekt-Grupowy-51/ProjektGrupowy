@@ -8,6 +8,12 @@ using ProjektGrupowy.Domain.Utils.Constants;
 
 namespace ProjektGrupowy.API.Controllers;
 
+/// <summary>
+/// Controller for managing access codes. Handles operations such as retrieving, validating, retiring, and creating access codes.
+/// </summary>
+/// <param name="service"></param>
+/// <param name="projectService"></param>
+/// <param name="mapper"></param>
 [Route("api/access-codes")]
 [ApiController]
 [ServiceFilter(typeof(ValidateModelStateFilter))]
@@ -18,6 +24,11 @@ public class AccessCodeController(
     IProjectService projectService,
     IMapper mapper) : ControllerBase
 {
+    /// <summary>
+    /// Get all access codes associated with a specific project.
+    /// </summary>
+    /// <param name="projectId">The ID of the project.</param>
+    /// <returns>A collection of access codes for the specified project.</returns>
     [HttpGet("projects/{projectId:int}")]
     [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
     public async Task<ActionResult<IEnumerable<AccessCodeResponse>>> GetAccessCodesByProjectAsync(int projectId)
@@ -28,6 +39,11 @@ public class AccessCodeController(
             : NotFound(accessCodes.GetErrorOrThrow());
     }
 
+    /// <summary>
+    /// Retire (deactivate) an access code by its code string.
+    /// </summary>
+    /// <param name="code">The access code to be retired.</param>
+    /// <returns>Empty result if successful, or NotFound if the code does not exist.</returns>
     [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
     [HttpPut("{code:required}/retire")]
     public async Task<IActionResult> RetireCodeAsync(string code)
@@ -38,6 +54,11 @@ public class AccessCodeController(
             : NotFound(result.GetErrorOrThrow());
     }
 
+    /// <summary>
+    /// Check if a given access code is valid.
+    /// </summary>
+    /// <param name="accessCodeRequest">The access code request containing the code to be validated.</param>
+    /// <returns>A boolean indicating whether the access code is valid.</returns>
     [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
     [HttpPost("validate")]
     public async Task<ActionResult<bool>> ValidateAccessCodeAsync(AccessCodeRequest accessCodeRequest)
@@ -46,6 +67,11 @@ public class AccessCodeController(
         return Ok(result);
     }
 
+    /// <summary>
+    /// Add a new valid access code to a specific project. Invalidates any existing codes for that project.
+    /// </summary>
+    /// <param name="createCodeRequest">The request containing details for the new access code.</param>
+    /// <returns>The created access code response.</returns>
     [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
     [HttpPost("project")]
     public async Task<ActionResult<AccessCodeResponse>> AddValidCodeToProjectAsync(

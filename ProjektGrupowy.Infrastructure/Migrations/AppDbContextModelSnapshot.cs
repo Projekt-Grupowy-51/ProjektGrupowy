@@ -167,6 +167,38 @@ namespace ProjektGrupowy.Infrastructure.Migrations
                     b.ToTable("Labels");
                 });
 
+            modelBuilder.Entity("ProjektGrupowy.Domain.Models.Notification", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("RecipientId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAtUtc");
+
+                    b.HasIndex("RecipientId");
+
+                    b.ToTable("Notifications");
+                });
+
             modelBuilder.Entity("ProjektGrupowy.Domain.Models.Project", b =>
                 {
                     b.Property<int>("Id")
@@ -534,6 +566,17 @@ namespace ProjektGrupowy.Infrastructure.Migrations
                     b.Navigation("CreatedBy");
 
                     b.Navigation("Subject");
+                });
+
+            modelBuilder.Entity("ProjektGrupowy.Domain.Models.Notification", b =>
+                {
+                    b.HasOne("ProjektGrupowy.Domain.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("RecipientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("ProjektGrupowy.Domain.Models.Project", b =>

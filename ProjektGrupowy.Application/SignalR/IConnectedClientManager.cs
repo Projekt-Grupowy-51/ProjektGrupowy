@@ -2,9 +2,8 @@ namespace ProjektGrupowy.Application.SignalR;
 
 public interface IConnectedClientManager
 {
-    Task AddClientAsync(string userId, string connectionId);
-    Task RemoveClientAsync(string connectionId);
-    Task<IReadOnlyList<string>> GetConnectionIdsAsync(string userId);
-    Task<IEnumerable<string>> GetOnlineUsersAsync();
-    Task RefreshTtlAsync(string userId, string connectionId);
+    void AddClient(string userId, string connectionId);
+    void RemoveClient(string connectionId);
+    IReadOnlyList<string> GetConnectionIds(string userId);
+    IEnumerable<string> GetOnlineUsers();
 }

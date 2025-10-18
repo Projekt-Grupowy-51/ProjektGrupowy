@@ -11,16 +11,16 @@ public class MessageController(
     ILogger<MessageController> logger) : ControllerBase
 {
     [HttpPost]
-    public async Task<IActionResult> SubmitAsync(HttpMessage message)
+    public async Task<IActionResult> SubmitAsync(HttpNotification notification)
     {
         try
         {
-            await messageService.SendMessageAsync(message.UserId, message.Type, message.Message);
+            await messageService.SendMessageAsync(notification.UserId, notification.Type, notification.Message);
             return Accepted();
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error processing message: {Message}", message);
+            logger.LogError(ex, "Error processing message: {Message}", notification);
             return StatusCode(StatusCodes.Status500InternalServerError,
                 $"An error occurred while processing your request: {ex.Message}");
         }

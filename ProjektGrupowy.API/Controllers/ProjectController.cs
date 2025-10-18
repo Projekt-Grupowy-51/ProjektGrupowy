@@ -16,6 +16,16 @@ using ProjektGrupowy.Domain.Utils.Constants;
 
 namespace ProjektGrupowy.API.Controllers;
 
+/// <summary>
+/// Controller for managing projects. Handles operations such as retrieving, creating, updating, deleting projects, and managing related entities like subjects, video groups, and labelers.
+/// </summary>
+/// <param name="projectService"></param>
+/// <param name="subjectService"></param>
+/// <param name="videoGroupService"></param>
+/// <param name="projectReportService"></param>
+/// <param name="messageService"></param>
+/// <param name="subjectVideoGroupAssignmentService"></param>
+/// <param name="mapper"></param>
 [Route("api/projects")]
 [ApiController]
 [ServiceFilter(typeof(ValidateModelStateFilter))]
@@ -30,6 +40,10 @@ public class ProjectController(
     ISubjectVideoGroupAssignmentService subjectVideoGroupAssignmentService,
     IMapper mapper) : ControllerBase
 {
+    /// <summary>
+    /// Get all projects.
+    /// </summary>
+    /// <returns>>A collection of projects.</returns>
     [HttpGet]
     public async Task<ActionResult<IEnumerable<ProjectResponse>>> GetProjectsAsync()
     {
@@ -44,11 +58,15 @@ public class ProjectController(
         }
         catch (Exception ex)
         {
-            // Tutaj możesz zalogować błąd lub zwrócić szczegóły w dev mode
             return StatusCode(500, $"Internal error: {ex.Message}");
         }
     }
 
+    /// <summary>
+    /// Get a specific project by its ID.
+    /// </summary>
+    /// <param name="id">The ID of the project.</param>
+    /// <returns>The project with the specified ID, or NotFound if it does not exist.</returns>
     [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
     [HttpGet("{id:int}")]
     public async Task<ActionResult<ProjectResponse>> GetProjectAsync(int id)
@@ -59,6 +77,11 @@ public class ProjectController(
             : NotFound(project.GetErrorOrThrow());
     }
 
+    /// <summary>
+    /// Get all reports associated with a specific project.
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns>A collection of project reports, or NotFound if the project does not exist.</returns>
     [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
     [HttpGet("{id:int}/reports")]
     public async Task<ActionResult<IEnumerable<GeneratedReportResponse>>> GetProjectReports(int id)
@@ -69,6 +92,11 @@ public class ProjectController(
             : NotFound(result.GetErrorOrThrow());
     }
 
+    /// <summary>
+    /// Get all labelers not assigned to a specific project.
+    /// </summary>
+    /// <param name="id">The ID of the project.</param>
+    /// <returns>A collection of unassigned labelers, or NotFound if the project does not exist.</returns>
     [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
     [HttpGet("{id:int}/unassigned-labelers")]
     public async Task<ActionResult<ProjectResponse>> GetUnassignedLabelers(int id)
@@ -79,6 +107,12 @@ public class ProjectController(
             : NotFound(result.GetErrorOrThrow());
     }
 
+    /// <summary>
+    /// Update an existing project.
+    /// </summary>
+    /// <param name="id">The ID of the project to be updated.</param>
+    /// <param name="projectRequest">The request containing the updated details of the project.</param>
+    /// <returns>NoContent if successful, or BadRequest if the update fails.</returns>
     [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
     [HttpPut("{id:int}")]
     public async Task<IActionResult> PutProjectAsync(int id, ProjectRequest projectRequest)
@@ -89,6 +123,11 @@ public class ProjectController(
             : BadRequest(updateResult.GetErrorOrThrow());
     }
 
+    /// <summary>
+    /// Create a new project.
+    /// </summary>
+    /// <param name="projectRequest">The request containing the details of the project to be created.</param>
+    /// <returns>The created project, or BadRequest if the creation fails.</returns>
     [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
     [HttpPost]
     public async Task<ActionResult<ProjectResponse>> PostProject(ProjectRequest projectRequest)
@@ -103,14 +142,16 @@ public class ProjectController(
         }
 
         var createdProject = projectResult.GetValueOrThrow();
-        await messageService.SendSuccessAsync(
-            User.GetUserId(),
-            $"Project '{createdProject.Name}' created successfully");
 
         return CreatedAtAction("GetProject", new { id = createdProject.Id },
             mapper.Map<ProjectResponse>(createdProject));
     }
 
+    /// <summary>
+    /// Assign a labeler to a group assignment within a project.
+    /// </summary>
+    /// <param name="laveAssignmentDto">The DTO containing the labeler assignment details.</param>
+    /// <returns>Ok if successful, or BadRequest if the assignment fails.</returns>
     [HttpPost("join")]
     public async Task<IActionResult> AssignLabelerToGroupAssignment(LabelerAssignmentDto laveAssignmentDto)
     {
@@ -121,6 +162,11 @@ public class ProjectController(
             : BadRequest(result.GetErrorOrThrow());
     }
 
+    /// <summary>
+    /// Unassign all labelers as a single operation from a specific project.
+    /// </summary>
+    /// <param name="projectId">The ID of the project from which to unassign all labelers.</param>
+    /// <returns>Ok if successful, or BadRequest if the operation fails.</returns>
     [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
     [HttpPost("{projectId:int}/unassign-all")]
     public async Task<IActionResult> UnassignAllLabelers(int projectId)
@@ -132,6 +178,11 @@ public class ProjectController(
     }
 
 
+    /// <summary>
+    /// Distribute labelers equally (round-robin) among all subjects in a specific project.
+    /// </summary>
+    /// <param name="projectId">The ID of the project for which to distribute labelers.</param>
+    /// <returns>Ok if successful, or NotFound if the project does not exist.</returns>
     [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
     [HttpPost("{projectId:int}/distribute")]
     public async Task<IActionResult> DistributeLabelersEqually(int projectId)
@@ -142,6 +193,11 @@ public class ProjectController(
             : NotFound(result.GetErrorOrThrow());
     }
 
+    /// <summary>
+    /// Delete a project by its ID.
+    /// </summary>
+    /// <param name="id">The ID of the project to be deleted.</param>
+    /// <returns>NoContent if successful, or NotFound if the project does not exist.</returns>
     [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteProject(int id)
@@ -157,6 +213,11 @@ public class ProjectController(
         return NoContent();
     }
 
+    /// <summary>
+    /// Get all subjects associated with a specific project.
+    /// </summary>
+    /// <param name="projectId">The ID of the project.</param>
+    /// <returns>A collection of subjects for the specified project, or NotFound if the project does not exist.</returns>
     [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
     [HttpGet("{projectId:int}/subjects")]
     public async Task<ActionResult<IEnumerable<SubjectResponse>>> GetSubjectsByProjectAsync(int projectId)
@@ -167,6 +228,11 @@ public class ProjectController(
             : NotFound(subjectsResult.GetErrorOrThrow());
     }
 
+    /// <summary>
+    /// Get all video groups associated with a specific project.
+    /// </summary>
+    /// <param name="projectId">The ID of the project.</param>
+    /// <returns>A collection of video groups for the specified project, or NotFound if the project does not exist.</returns>
     [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
     [HttpGet("{projectId:int}/video-groups")]
     public async Task<ActionResult<IEnumerable<VideoGroupResponse>>> GetVideoGroupsByProjectAsync(int projectId)
@@ -177,6 +243,11 @@ public class ProjectController(
             : NotFound(videoGroupsResult.GetErrorOrThrow());
     }
 
+    /// <summary>
+    /// Get all subject-video group assignments associated with a specific project.
+    /// </summary>
+    /// <param name="projectId">The ID of the project.</param>
+    /// <returns>A collection of subject-video group assignments for the specified project, or NotFound if the project does not exist.</returns>
     [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
     [HttpGet("{projectId:int}/subject-video-group-assignments")]
     public async Task<ActionResult<IEnumerable<SubjectVideoGroupAssignmentResponse>>> GetSubjectVideoGroupAssignmentsByProjectAsync(int projectId)
@@ -187,6 +258,11 @@ public class ProjectController(
             : NotFound(assignmentsResult.GetErrorOrThrow());
     }
 
+    /// <summary>
+    /// Get all labelers associated with a specific project.
+    /// </summary>
+    /// <param name="projectId">The ID of the project.</param>
+    /// <returns>A collection of labelers for the specified project, or NotFound if the project does not exist.</returns>
     [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
     [HttpGet("{projectId:int}/labelers")]
     public async Task<ActionResult<IEnumerable<LabelerResponse>>> GetLabelersByProjectAsync(int projectId)
@@ -197,6 +273,11 @@ public class ProjectController(
             : NotFound(labelersResult.GetErrorOrThrow());
     }
 
+    /// <summary>
+    /// Get useful statistics for a specific project.
+    /// </summary>
+    /// <param name="projectId">The ID of the project.</param>
+    /// <returns></returns>
     [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
     [HttpGet("{projectId:int}/stats")]
     public async Task<ActionResult<ProjectStatsResponse>> GetProjectStatsAsync(int projectId)

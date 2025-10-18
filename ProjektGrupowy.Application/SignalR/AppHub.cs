@@ -8,23 +8,17 @@ public class AppHub(IConnectedClientManager clientManager) : Hub
 {
     public override async Task OnConnectedAsync()
     {
+        // Console.WriteLine($"\n\nNew connection: {Context.ConnectionId}, User: {Context.UserIdentifier}\n\n");
+        
         var userId = Context.UserIdentifier ?? string.Empty;
-        var connectionId = Context.ConnectionId;
-        await clientManager.AddClientAsync(userId, connectionId);
+        var connectionId = Context.ConnectionId; 
+        clientManager.AddClient(userId, connectionId);
         await base.OnConnectedAsync();
     }
 
     public override async Task OnDisconnectedAsync(Exception? exception)
-    {
-        await clientManager.RemoveClientAsync(Context.ConnectionId);
+    { 
+        clientManager.RemoveClient(Context.ConnectionId);
         await base.OnDisconnectedAsync(exception);
-    }
-
-    public async Task Ping()
-    {
-        var userId = Context.UserIdentifier ?? string.Empty;
-        var connectionId = Context.ConnectionId;
-        
-        await clientManager.RefreshTtlAsync(userId, connectionId);
     }
 }
