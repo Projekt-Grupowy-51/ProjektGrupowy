@@ -18,7 +18,7 @@ public class AccessCodeResponse
     /// <summary>
     /// The actual access code string.
     /// </summary>
-    public string Code { get; set; }
+    public string Code { get; set; } = string.Empty;
     
     /// <summary>
     /// The UTC timestamp when the access code was created.

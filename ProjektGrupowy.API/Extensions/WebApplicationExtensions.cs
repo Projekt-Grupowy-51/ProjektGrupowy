@@ -1,57 +1,55 @@
 using Hangfire;
 using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.EntityFrameworkCore;
+using ProjektGrupowy.API.Filters;
 using ProjektGrupowy.Application.Exceptions;
-using ProjektGrupowy.Application.Filters;
+using ProjektGrupowy.Application.Interfaces.SignalR;
 using ProjektGrupowy.Application.Services;
-using ProjektGrupowy.Application.SignalR;
-using ProjektGrupowy.Infrastructure.Data;
+using ProjektGrupowy.Infrastructure.SignalR;
 using Serilog;
 
 namespace ProjektGrupowy.API.Extensions;
 
 public static class WebApplicationExtensions
 {
-    public static WebApplication RegisterHangfireDashboard(this WebApplication app)
+    public static WebApplication UseHangfireDashboardConfiguration(this WebApplication app)
     {
-        app.UseHangfireDashboard("/hangfire", new DashboardOptions { Authorization = [new HangfireDashboardFilter()] });
+        _ = app.UseHangfireDashboard("/hangfire", new DashboardOptions { Authorization = [new HangfireDashboardFilter()] });
+
+        // Register Hangfire jobs after the application has started and JobStorage is configured
+        Application.IoC.ServiceCollectionExtensions.RegisterHangfireJobs();
+
         return app;
     }
 
-    public static WebApplication RegisterHealth(this WebApplication app)
+    public static WebApplication UseHealthChecksConfiguration(this WebApplication app)
     {
-        app.MapHealthChecks("/health");
-        return app;
-    }
-    
-    public static WebApplication ConfigureSwagger(this WebApplication app)
-    {
-        // if (!app.Environment.IsDevelopment()) 
-        //     return app;
-        
-        app.UseSwagger();
-        app.UseSwaggerUI();
-        
+        _ = app.MapHealthChecks("/health");
         return app;
     }
 
-    public static WebApplication ConfigureBasicSettings(this WebApplication app)
+    public static WebApplication UseSwaggerConfiguration(this WebApplication app)
     {
-        app.UseHttpsRedirection();
+        _ = app.UseSwagger();
+        _ = app.UseSwaggerUI();
 
-        app.UseCors("FrontendPolicy");
-
-        app.UseAuthentication();
-        app.UseAuthorization();
-
-        app.MapControllers();
-        
         return app;
     }
 
-    public static WebApplication ConfigureExceptionHandling(this WebApplication app)
+    public static WebApplication UseBasicConfiguration(this WebApplication app)
     {
-        app.UseExceptionHandler(errorApp =>
+        _ = app.UseHttpsRedirection();
+        _ = app.UseCors("FrontendPolicy");
+        _ = app.UseAuthentication();
+        _ = app.UseAuthorization();
+        _ = app.MapControllers();
+        _ = app.MapHub<AppHub>("/signalr");
+
+        return app;
+    }
+
+    public static WebApplication UseExceptionHandlingConfiguration(this WebApplication app)
+    {
+        _ = app.UseExceptionHandler(errorApp =>
         {
             errorApp.Run(async context =>
             {
@@ -76,8 +74,8 @@ public static class WebApplicationExtensions
 
                         await context.Response.WriteAsJsonAsync(new
                         {
-                            StatusCode = context.Response.StatusCode,
-                            Message = exception.Message
+                            context.Response.StatusCode,
+                            exception.Message
                         });
                     }
                     else
@@ -88,21 +86,14 @@ public static class WebApplicationExtensions
 
                         await context.Response.WriteAsJsonAsync(new
                         {
-                            StatusCode = context.Response.StatusCode,
+                            context.Response.StatusCode,
                             Message = "An internal server error occurred."
                         });
                     }
                 }
             });
         });
-        
+
         return app;
-    }
-    
-    public static async Task ApplyMigrationsAsync(this WebApplication app)
-    {
-        using var scope = app.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        await context.Database.MigrateAsync();
     }
 }

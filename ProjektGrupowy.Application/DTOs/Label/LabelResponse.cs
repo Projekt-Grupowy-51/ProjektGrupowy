@@ -13,17 +13,17 @@ public class LabelResponse
     /// <summary>
     /// The name of the label.
     /// </summary>
-    public string Name { get; set; }
-    
+    public string Name { get; set; } = string.Empty;
+
     /// <summary>
     /// The hexadecimal color code representing the label's color.
     /// </summary>
-    public string ColorHex { get; set; }
-    
+    public string ColorHex { get; set; } = string.Empty;
+
     /// <summary>
     /// The type of the label (e.g., "point" or "interval").
     /// </summary>
-    public string Type { get; set; }
+    public string Type { get; set; } = string.Empty;
     
     /// <summary>
     /// A single character used as a shortcut for the label.

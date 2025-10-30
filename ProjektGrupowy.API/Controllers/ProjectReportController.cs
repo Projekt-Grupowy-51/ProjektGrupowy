@@ -1,14 +1,16 @@
 using AutoMapper;
 using Hangfire;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ProjektGrupowy.API.Filters;
+using ProjektGrupowy.API.Utils;
 using ProjektGrupowy.Application.DTOs.ProjectReport;
+using ProjektGrupowy.Application.Features.ProjectReport.Commands.DeleteReport;
+using ProjektGrupowy.Application.Features.ProjectReport.Commands.GenerateReport;
+using ProjektGrupowy.Application.Features.ProjectReport.Queries.GetReport;
+using ProjektGrupowy.Application.Features.ProjectReport.Queries.GetReports;
 using ProjektGrupowy.Application.Services;
-using ProjektGrupowy.Application.Services.Background;
-using ProjektGrupowy.Application.SignalR;
-using ProjektGrupowy.Application.Utils;
-using ProjektGrupowy.Application.Utils.Extensions;
 using ProjektGrupowy.Domain.Utils.Constants;
 
 namespace ProjektGrupowy.API.Controllers;
@@ -16,12 +18,6 @@ namespace ProjektGrupowy.API.Controllers;
 /// <summary>
 /// Controller for managing project reports. Handles operations such as retrieving, generating, downloading, and deleting project reports.
 /// </summary>
-/// <param name="projectReportService"></param>
-/// <param name="backgroundJobClient"></param>
-/// <param name="messageService"></param>
-/// <param name="mapper"></param>
-/// <param name="currentUserService"></param>
-/// <param name="configuration"></param>
 [Route("api/project-reports")]
 [ApiController]
 [ServiceFilter(typeof(ValidateModelStateFilter))]
@@ -29,12 +25,11 @@ namespace ProjektGrupowy.API.Controllers;
 [Authorize]
 [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
 public class ProjectReportController(
-    IProjectReportService projectReportService,
-    IBackgroundJobClient backgroundJobClient,
-    IMessageService messageService,
-    IMapper mapper,
+    IMediator mediator,
     ICurrentUserService currentUserService,
-    IConfiguration configuration) : ControllerBase
+    IMapper mapper,
+    IConfiguration configuration,
+    IBackgroundJobClient backgroundJobClient) : ControllerBase
 {
     /// <summary>
     /// Get all reports for a specific project.
@@ -44,10 +39,16 @@ public class ProjectReportController(
     [HttpGet("projects/{projectId:int}")]
     public async Task<IActionResult> GetProjectReports(int projectId)
     {
-        var result = await projectReportService.GetReportsAsync(projectId);
-        return result.IsSuccess
-            ? Ok(mapper.Map<IEnumerable<GeneratedReportResponse>>(result.GetValueOrThrow()))
-            : NotFound(result.GetValueOrThrow());
+        var query = new GetReportsQuery(projectId, currentUserService.UserId, currentUserService.IsAdmin);
+        var result = await mediator.Send(query);
+
+        if (!result.IsSuccess)
+        {
+            return NotFound(result.Errors);
+        }
+
+        var response = mapper.Map<IEnumerable<GeneratedReportResponse>>(result.Value);
+        return Ok(response);
     }
 
     /// <summary>
@@ -58,10 +59,16 @@ public class ProjectReportController(
     [HttpGet("{reportId:int}")]
     public async Task<IActionResult> GetReport(int reportId)
     {
-        var result = await projectReportService.GetReportAsync(reportId);
-        return result.IsSuccess
-            ? Ok(mapper.Map<GeneratedReportResponse>(result.GetValueOrThrow()))
-            : NotFound(result.GetValueOrThrow());
+        var query = new GetReportQuery(reportId, currentUserService.UserId, currentUserService.IsAdmin);
+        var result = await mediator.Send(query);
+
+        if (!result.IsSuccess)
+        {
+            return NotFound(result.Errors);
+        }
+
+        var response = mapper.Map<GeneratedReportResponse>(result.Value);
+        return Ok(response);
     }
 
     /// <summary>
@@ -72,11 +79,15 @@ public class ProjectReportController(
     [HttpGet("download/{reportId:int}")]
     public async Task<IActionResult> DownloadReport(int reportId)
     {
-        var result = await projectReportService.GetReportAsync(reportId);
-        if (result.IsFailure)
-            return NotFound(result.GetErrorOrThrow());
+        var query = new GetReportQuery(reportId, currentUserService.UserId, currentUserService.IsAdmin);
+        var result = await mediator.Send(query);
 
-        var report = result.GetValueOrThrow();
+        if (!result.IsSuccess)
+        {
+            return NotFound(result.Errors);
+        }
+
+        var report = result.Value;
 
         if (DockerDetector.IsRunningInDocker())
         {
@@ -97,18 +108,15 @@ public class ProjectReportController(
     [HttpPost("{projectId:int}/generate-report")]
     public async Task<IActionResult> GenerateReport(int projectId)
     {
-        var result = backgroundJobClient
-            .Enqueue<IReportGenerator>(g => g.GenerateAsync(projectId, currentUserService.UserId, currentUserService.IsAdmin));
+        var jobId = backgroundJobClient.Enqueue<IMediator>(m =>
+            m.Send(new GenerateReportCommand(projectId, currentUserService.UserId, currentUserService.IsAdmin), CancellationToken.None));
 
-        if (result is null)
+        if (jobId is null)
         {
             return BadRequest("Failed to enqueue report generation job.");
         }
 
-        await messageService.SendInfoAsync(
-            User.GetUserId(),
-            "Report generation job has been enqueued.");
-        return Accepted("Report generation job has been enqueued.");
+        return Accepted(new { message = "Report generation job has been enqueued.", jobId });
     }
 
     /// <summary>
@@ -119,11 +127,11 @@ public class ProjectReportController(
     [HttpDelete("{reportId:int}")]
     public async Task<IActionResult> DeleteReport(int reportId)
     {
-        var searchResult = await projectReportService.GetReportAsync(reportId);
-        if (searchResult.IsFailure)
-            return NotFound();
+        var command = new DeleteReportCommand(reportId, currentUserService.UserId, currentUserService.IsAdmin);
+        var result = await mediator.Send(command);
 
-        await projectReportService.DeleteReportAsync(reportId);
-        return NoContent();
+        return result.IsSuccess
+            ? NoContent()
+            : NotFound(result.Errors);
     }
 }

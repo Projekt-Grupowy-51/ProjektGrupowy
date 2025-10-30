@@ -13,22 +13,22 @@ public class VideoResponse
     /// <summary>
     /// The title of the video.
     /// </summary>
-    public string Title { get; set; }
-    
+    public string Title { get; set; } = string.Empty;
+
     /// <summary>
     /// The path where the video is stored.
     /// </summary>
-    public string Path { get; set; }
-    
+    public string Path { get; set; } = string.Empty;
+
     /// <summary>
     /// The unique identifier of the video group associated with the video.
     /// </summary>
     public int VideoGroupId { get; set; }
-    
+
     /// <summary>
     /// The content type of the video (e.g., "video/mp4").
     /// </summary>
-    public string ContentType { get; set; }
+    public string ContentType { get; set; } = string.Empty;
     
     /// <summary>
     /// The position of the video in the display queue.

@@ -30,22 +30,22 @@ public class SubjectVideoGroupAssignmentResponse
     /// <summary>
     /// The name of the project associated with the assignment.
     /// </summary>
-    public string ProjectName { get; set; }
-    
+    public string ProjectName { get; set; } = string.Empty;
+
     /// <summary>
     /// The name of the subject associated with the assignment.
     /// </summary>
-    public string SubjectName { get; set; }
-    
+    public string SubjectName { get; set; } = string.Empty;
+
     /// <summary>
     /// The name of the video group associated with the assignment.
     /// </summary>
-    public string VideoGroupName { get; set; }
-    
+    public string VideoGroupName { get; set; } = string.Empty;
+
     /// <summary>
     /// A collection of labelers associated with the assignment.
     /// </summary>
-    public IEnumerable<LabelerResponse> Labelers { get; set; }
+    public IEnumerable<LabelerResponse> Labelers { get; set; } = new List<LabelerResponse>();
     
     /// <summary>
     /// The date when the assignment was created.

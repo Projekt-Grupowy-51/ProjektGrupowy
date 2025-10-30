@@ -1,11 +1,19 @@
-﻿using AutoMapper;
+using AutoMapper;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ProjektGrupowy.API.Filters;
 using ProjektGrupowy.Application.DTOs.Labeler;
 using ProjektGrupowy.Application.DTOs.SubjectVideoGroupAssignment;
+using ProjektGrupowy.Application.Features.SubjectVideoGroupAssignments.Commands.AddSubjectVideoGroupAssignment;
+using ProjektGrupowy.Application.Features.SubjectVideoGroupAssignments.Commands.AssignLabelerToAssignment;
+using ProjektGrupowy.Application.Features.SubjectVideoGroupAssignments.Commands.DeleteSubjectVideoGroupAssignment;
+using ProjektGrupowy.Application.Features.SubjectVideoGroupAssignments.Commands.UnassignLabelerFromAssignment;
+using ProjektGrupowy.Application.Features.SubjectVideoGroupAssignments.Commands.UpdateSubjectVideoGroupAssignment;
+using ProjektGrupowy.Application.Features.SubjectVideoGroupAssignments.Queries.GetSubjectVideoGroupAssignment;
+using ProjektGrupowy.Application.Features.SubjectVideoGroupAssignments.Queries.GetSubjectVideoGroupAssignmentLabelers;
+using ProjektGrupowy.Application.Features.SubjectVideoGroupAssignments.Queries.GetSubjectVideoGroupAssignments;
 using ProjektGrupowy.Application.Services;
-using ProjektGrupowy.Domain.Models;
 using ProjektGrupowy.Domain.Utils.Constants;
 
 namespace ProjektGrupowy.API.Controllers;
@@ -13,15 +21,14 @@ namespace ProjektGrupowy.API.Controllers;
 /// <summary>
 /// Controller for managing subject video group assignments. Handles operations such as retrieving, adding, updating, and deleting subject video group assignments.
 /// </summary>
-/// <param name="subjectVideoGroupAssignmentService"></param>
-/// <param name="mapper"></param>
 [Route("api/subject-video-group-assignments")]
 [ApiController]
 [ServiceFilter(typeof(ValidateModelStateFilter))]
 [ServiceFilter(typeof(NonSuccessGetFilter))]
 [Authorize]
 public class SubjectVideoGroupAssignmentController(
-    ISubjectVideoGroupAssignmentService subjectVideoGroupAssignmentService,
+    IMediator mediator,
+    ICurrentUserService currentUserService,
     IMapper mapper) : ControllerBase
 {
     /// <summary>
@@ -31,11 +38,16 @@ public class SubjectVideoGroupAssignmentController(
     [HttpGet]
     public async Task<ActionResult<IEnumerable<SubjectVideoGroupAssignmentResponse>>> GetSubjectVideoGroupAssignmentsAsync()
     {
-        var subjectVideoGroupAssignments = await subjectVideoGroupAssignmentService.GetSubjectVideoGroupAssignmentsAsync();
+        var query = new GetSubjectVideoGroupAssignmentsQuery(currentUserService.UserId, currentUserService.IsAdmin);
+        var result = await mediator.Send(query);
 
-        return subjectVideoGroupAssignments.IsSuccess
-            ? Ok(mapper.Map<IEnumerable<SubjectVideoGroupAssignmentResponse>>(subjectVideoGroupAssignments.GetValueOrThrow()))
-            : NotFound(subjectVideoGroupAssignments.GetErrorOrThrow());
+        if (!result.IsSuccess)
+        {
+            return NotFound(result.Errors);
+        }
+
+        var response = mapper.Map<IEnumerable<SubjectVideoGroupAssignmentResponse>>(result.Value);
+        return Ok(response);
     }
 
     /// <summary>
@@ -46,10 +58,16 @@ public class SubjectVideoGroupAssignmentController(
     [HttpGet("{id:int}")]
     public async Task<ActionResult<SubjectVideoGroupAssignmentResponse>> GetSubjectVideoGroupAssignmentAsync(int id)
     {
-        var subjectVideoGroupAssignment = await subjectVideoGroupAssignmentService.GetSubjectVideoGroupAssignmentAsync(id);
-        return subjectVideoGroupAssignment.IsSuccess
-            ? Ok(mapper.Map<SubjectVideoGroupAssignmentResponse>(subjectVideoGroupAssignment.GetValueOrThrow()))
-            : NotFound(subjectVideoGroupAssignment.GetErrorOrThrow());
+        var query = new GetSubjectVideoGroupAssignmentQuery(id, currentUserService.UserId, currentUserService.IsAdmin);
+        var result = await mediator.Send(query);
+
+        if (!result.IsSuccess)
+        {
+            return NotFound(result.Errors);
+        }
+
+        var response = mapper.Map<SubjectVideoGroupAssignmentResponse>(result.Value);
+        return Ok(response);
     }
 
     /// <summary>
@@ -61,10 +79,16 @@ public class SubjectVideoGroupAssignmentController(
     [HttpGet("{id:int}/labelers")]
     public async Task<ActionResult<IEnumerable<LabelerResponse>>> GetSubjectVideoGroupAssignmentLabelersAsync(int id)
     {
-        var labelers = await subjectVideoGroupAssignmentService.GetSubjectVideoGroupAssignmentsLabelersAsync(id);
-        return labelers.IsSuccess
-            ? Ok(mapper.Map<IEnumerable<LabelerResponse>>(labelers.GetValueOrThrow()))
-            : NotFound(labelers.GetErrorOrThrow());
+        var query = new GetSubjectVideoGroupAssignmentLabelersQuery(id, currentUserService.UserId, currentUserService.IsAdmin);
+        var result = await mediator.Send(query);
+
+        if (!result.IsSuccess)
+        {
+            return NotFound(result.Errors);
+        }
+
+        var response = mapper.Map<IEnumerable<LabelerResponse>>(result.Value);
+        return Ok(response);
     }
 
     /// <summary>
@@ -76,15 +100,20 @@ public class SubjectVideoGroupAssignmentController(
     [HttpPost]
     public async Task<ActionResult<SubjectVideoGroupAssignmentResponse>> AddSubjectVideoGroupAssignmentAsync(SubjectVideoGroupAssignmentRequest subjectVideoGroupAssignmentRequest)
     {
-        var result = await subjectVideoGroupAssignmentService.AddSubjectVideoGroupAssignmentAsync(subjectVideoGroupAssignmentRequest);
+        var command = new AddSubjectVideoGroupAssignmentCommand(
+            subjectVideoGroupAssignmentRequest.SubjectId,
+            subjectVideoGroupAssignmentRequest.VideoGroupId,
+            currentUserService.UserId,
+            currentUserService.IsAdmin);
+        var result = await mediator.Send(command);
 
-        if (result.IsFailure)
-            return BadRequest(result.GetErrorOrThrow());
+        if (!result.IsSuccess)
+        {
+            return BadRequest(result.Errors);
+        }
 
-        var createdAssignment = result.GetValueOrThrow();
-        var response = mapper.Map<SubjectVideoGroupAssignmentResponse>(createdAssignment);
-
-        return CreatedAtAction("GetSubjectVideoGroupAssignment", new { id = createdAssignment.Id }, response);
+        var response = mapper.Map<SubjectVideoGroupAssignmentResponse>(result.Value);
+        return CreatedAtAction("GetSubjectVideoGroupAssignment", new { id = result.Value.Id }, response);
     }
 
     /// <summary>
@@ -97,15 +126,17 @@ public class SubjectVideoGroupAssignmentController(
     [HttpPut("{id:int}")]
     public async Task<IActionResult> PutSubjectVideoGroupAssignmentAsync(int id, SubjectVideoGroupAssignmentRequest subjectVideoGroupAssignmentRequest)
     {
-        var subjectVideoGroupAssignment = await subjectVideoGroupAssignmentService.GetSubjectVideoGroupAssignmentAsync(id);
-        if (subjectVideoGroupAssignment.IsFailure)
-            return NotFound(subjectVideoGroupAssignment.GetErrorOrThrow());
-
-        var result = await subjectVideoGroupAssignmentService.UpdateSubjectVideoGroupAssignmentAsync(id, subjectVideoGroupAssignmentRequest);
+        var command = new UpdateSubjectVideoGroupAssignmentCommand(
+            id,
+            subjectVideoGroupAssignmentRequest.SubjectId,
+            subjectVideoGroupAssignmentRequest.VideoGroupId,
+            currentUserService.UserId,
+            currentUserService.IsAdmin);
+        var result = await mediator.Send(command);
 
         return result.IsSuccess
             ? NoContent()
-            : BadRequest(result.GetErrorOrThrow());
+            : BadRequest(result.Errors);
     }
 
     /// <summary>
@@ -117,13 +148,12 @@ public class SubjectVideoGroupAssignmentController(
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteSubjectVideoGroupAssignmentAsync(int id)
     {
-        var subjectVideoGroupAssignment = await subjectVideoGroupAssignmentService.GetSubjectVideoGroupAssignmentAsync(id);
-        if (subjectVideoGroupAssignment.IsFailure)
-            return NotFound(subjectVideoGroupAssignment.GetErrorOrThrow());
+        var command = new DeleteSubjectVideoGroupAssignmentCommand(id, currentUserService.UserId, currentUserService.IsAdmin);
+        var result = await mediator.Send(command);
 
-        await subjectVideoGroupAssignmentService.DeleteSubjectVideoGroupAssignmentAsync(id);
-
-        return NoContent();
+        return result.IsSuccess
+            ? NoContent()
+            : NotFound(result.Errors);
     }
 
     /// <summary>
@@ -136,8 +166,12 @@ public class SubjectVideoGroupAssignmentController(
     [HttpPost("{assignmentId:int}/assign-labeler/{labelerId}")]
     public async Task<IActionResult> AssignLabelerToSubjectVideoGroup(int assignmentId, string labelerId)
     {
-        var result = await subjectVideoGroupAssignmentService.AssignLabelerToAssignmentAsync(assignmentId, labelerId);
-        return result.IsSuccess ? Ok("Labeler assigned successfully") : NotFound(result.GetErrorOrThrow());
+        var command = new AssignLabelerToAssignmentCommand(assignmentId, labelerId, currentUserService.UserId, currentUserService.IsAdmin);
+        var result = await mediator.Send(command);
+
+        return result.IsSuccess
+            ? Ok("Labeler assigned successfully")
+            : NotFound(result.Errors);
     }
 
     /// <summary>
@@ -150,7 +184,11 @@ public class SubjectVideoGroupAssignmentController(
     [HttpDelete("{assignmentId:int}/unassign-labeler/{labelerId}")]
     public async Task<IActionResult> UnassignLabelerFromSubjectVideoGroup(int assignmentId, string labelerId)
     {
-        var result = await subjectVideoGroupAssignmentService.UnassignLabelerFromAssignmentAsync(assignmentId, labelerId);
-        return result.IsSuccess ? Ok("Labeler unassigned successfully") : NotFound(result.GetErrorOrThrow());
+        var command = new UnassignLabelerFromAssignmentCommand(assignmentId, labelerId, currentUserService.UserId, currentUserService.IsAdmin);
+        var result = await mediator.Send(command);
+
+        return result.IsSuccess
+            ? Ok("Labeler unassigned successfully")
+            : NotFound(result.Errors);
     }
 }

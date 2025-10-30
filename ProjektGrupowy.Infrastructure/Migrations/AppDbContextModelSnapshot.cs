@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using ProjektGrupowy.Infrastructure.Data;
+using ProjektGrupowy.Infrastructure.Persistance;
 
 #nullable disable
 
@@ -17,7 +17,7 @@ namespace ProjektGrupowy.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.10")
+                .HasAnnotation("ProductVersion", "9.0.9")
                 .HasAnnotation("Proxies:ChangeTracking", false)
                 .HasAnnotation("Proxies:CheckEquality", false)
                 .HasAnnotation("Proxies:LazyLoading", true)
@@ -38,6 +38,47 @@ namespace ProjektGrupowy.Infrastructure.Migrations
                     b.HasIndex("ProjectLabelersId");
 
                     b.ToTable("ProjectLabelers", (string)null);
+                });
+
+            modelBuilder.Entity("ProjektGrupowy.Domain.Events.DomainEvent", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("EventData")
+                        .HasColumnType("text");
+
+                    b.Property<string>("EventType")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<bool>("IsPublished")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTime>("OccurredAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("PublishedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IsPublished");
+
+                    b.ToTable("DomainEvents");
                 });
 
             modelBuilder.Entity("ProjektGrupowy.Domain.Models.AssignedLabel", b =>
@@ -165,38 +206,6 @@ namespace ProjektGrupowy.Infrastructure.Migrations
                     b.HasIndex("SubjectId");
 
                     b.ToTable("Labels");
-                });
-
-            modelBuilder.Entity("ProjektGrupowy.Domain.Models.Notification", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Message")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("RecipientId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CreatedAtUtc");
-
-                    b.HasIndex("RecipientId");
-
-                    b.ToTable("Notifications");
                 });
 
             modelBuilder.Entity("ProjektGrupowy.Domain.Models.Project", b =>
@@ -389,9 +398,10 @@ namespace ProjektGrupowy.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("user_entity");
-
-                    b.ToView("user_entity", (string)null);
+                    b.ToTable("user_entity", null, t =>
+                        {
+                            t.ExcludeFromMigrations();
+                        });
                 });
 
             modelBuilder.Entity("ProjektGrupowy.Domain.Models.Video", b =>
@@ -566,17 +576,6 @@ namespace ProjektGrupowy.Infrastructure.Migrations
                     b.Navigation("CreatedBy");
 
                     b.Navigation("Subject");
-                });
-
-            modelBuilder.Entity("ProjektGrupowy.Domain.Models.Notification", b =>
-                {
-                    b.HasOne("ProjektGrupowy.Domain.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("RecipientId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("ProjektGrupowy.Domain.Models.Project", b =>

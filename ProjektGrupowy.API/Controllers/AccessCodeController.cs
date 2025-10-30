@@ -1,8 +1,13 @@
-﻿using AutoMapper;
+using AutoMapper;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ProjektGrupowy.API.Filters;
 using ProjektGrupowy.Application.DTOs.AccessCode;
+using ProjektGrupowy.Application.Features.ProjectAccessCodes.Commands.AddValidCodeToProject;
+using ProjektGrupowy.Application.Features.ProjectAccessCodes.Commands.RetireAccessCode;
+using ProjektGrupowy.Application.Features.ProjectAccessCodes.Queries.GetAccessCodesByProject;
+using ProjektGrupowy.Application.Features.ProjectAccessCodes.Queries.ValidateAccessCode;
 using ProjektGrupowy.Application.Services;
 using ProjektGrupowy.Domain.Utils.Constants;
 
@@ -11,17 +16,14 @@ namespace ProjektGrupowy.API.Controllers;
 /// <summary>
 /// Controller for managing access codes. Handles operations such as retrieving, validating, retiring, and creating access codes.
 /// </summary>
-/// <param name="service"></param>
-/// <param name="projectService"></param>
-/// <param name="mapper"></param>
 [Route("api/access-codes")]
 [ApiController]
 [ServiceFilter(typeof(ValidateModelStateFilter))]
 [ServiceFilter(typeof(NonSuccessGetFilter))]
 [Authorize]
 public class AccessCodeController(
-    IProjectAccessCodeService service,
-    IProjectService projectService,
+    IMediator mediator,
+    ICurrentUserService currentUserService,
     IMapper mapper) : ControllerBase
 {
     /// <summary>
@@ -33,10 +35,16 @@ public class AccessCodeController(
     [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
     public async Task<ActionResult<IEnumerable<AccessCodeResponse>>> GetAccessCodesByProjectAsync(int projectId)
     {
-        var accessCodes = await service.GetAccessCodesByProjectAsync(projectId);
-        return accessCodes.IsSuccess
-            ? Ok(mapper.Map<IEnumerable<AccessCodeResponse>>(accessCodes.GetValueOrThrow()))
-            : NotFound(accessCodes.GetErrorOrThrow());
+        var query = new GetAccessCodesByProjectQuery(projectId, currentUserService.UserId, currentUserService.IsAdmin);
+        var result = await mediator.Send(query);
+
+        if (!result.IsSuccess)
+        {
+            return NotFound(result.Errors);
+        }
+
+        var response = mapper.Map<IEnumerable<AccessCodeResponse>>(result.Value);
+        return Ok(response);
     }
 
     /// <summary>
@@ -48,10 +56,12 @@ public class AccessCodeController(
     [HttpPut("{code:required}/retire")]
     public async Task<IActionResult> RetireCodeAsync(string code)
     {
-        var result = await service.RetireAccessCodeAsync(code);
+        var command = new RetireAccessCodeCommand(code, currentUserService.UserId, currentUserService.IsAdmin);
+        var result = await mediator.Send(command);
+
         return result.IsSuccess
             ? Ok()
-            : NotFound(result.GetErrorOrThrow());
+            : NotFound(result.Errors);
     }
 
     /// <summary>
@@ -63,8 +73,10 @@ public class AccessCodeController(
     [HttpPost("validate")]
     public async Task<ActionResult<bool>> ValidateAccessCodeAsync(AccessCodeRequest accessCodeRequest)
     {
-        var result = await service.ValidateAccessCode(accessCodeRequest);
-        return Ok(result);
+        var query = new ValidateAccessCodeQuery(accessCodeRequest.Code, currentUserService.UserId, currentUserService.IsAdmin);
+        var result = await mediator.Send(query);
+
+        return Ok(result.Value);
     }
 
     /// <summary>
@@ -77,22 +89,23 @@ public class AccessCodeController(
     public async Task<ActionResult<AccessCodeResponse>> AddValidCodeToProjectAsync(
         CreateAccessCodeRequest createCodeRequest)
     {
-        var project = await projectService.GetProjectAsync(createCodeRequest.ProjectId);
-        if (project.IsFailure)
-            return NotFound(project.GetErrorOrThrow());
+        var command = new AddValidCodeToProjectCommand(
+            createCodeRequest.ProjectId,
+            createCodeRequest.Expiration,
+            createCodeRequest.CustomExpiration,
+            currentUserService.UserId,
+            currentUserService.IsAdmin);
+        var result = await mediator.Send(command);
 
-        var result = await service.AddValidCodeToProjectAsync(createCodeRequest);
-        if (result.IsFailure)
-            return BadRequest(result.GetErrorOrThrow());
+        if (!result.IsSuccess)
+        {
+            return BadRequest(result.Errors);
+        }
 
-        var createdAccessCode = result.GetValueOrThrow();
-        var accessCodeResponse = mapper.Map<AccessCodeResponse>(createdAccessCode);
-
-
+        var response = mapper.Map<AccessCodeResponse>(result.Value);
         return CreatedAtAction(
             "GetAccessCodesByProject",
-            new { projectId = createdAccessCode.Project.Id },
-            accessCodeResponse
-        );
+            new { projectId = result.Value.Project.Id },
+            response);
     }
 }

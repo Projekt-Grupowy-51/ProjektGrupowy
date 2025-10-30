@@ -1,28 +1,21 @@
 ﻿using ProjektGrupowy.API.Extensions;
+using ProjektGrupowy.Infrastructure.IoC;
 
-var builder = WebApplication.CreateBuilder(args)
-    .RegisterDataSources()
-    .RegisterHttpServices()
-    .ConfigureJson()
-    .ConfigureLogging()
-    .ConfigureHealthChecks()
-    .RegisterBasicHangfire()
-    .RegisterCors()
-    .ApplySwaggerConfig()
-    .ApplyKestrelConfig()
-    .RegisterScopedRepositories()
-    .RegisterScopedServices()
-    .RegisterMapper()
-    .RegisterFilters()
-    .RegisterAuth();
+var builder = WebApplication.CreateBuilder(args);
 
-var app = builder.Build()
-    .RegisterHangfireDashboard()
-    .RegisterHealth()
-    .ConfigureSwagger()
-    .ConfigureBasicSettings()
-    .ConfigureExceptionHandling();
+// Configure all services
+builder.ConfigureServices();
 
+var app = builder.Build();
+
+// Configure middleware pipeline
+app.UseExceptionHandlingConfiguration()
+    .UseSwaggerConfiguration()
+    .UseHangfireDashboardConfiguration()
+    .UseHealthChecksConfiguration()
+    .UseBasicConfiguration();
+
+// Apply migrations
 await app.ApplyMigrationsAsync();
 
 app.Run();

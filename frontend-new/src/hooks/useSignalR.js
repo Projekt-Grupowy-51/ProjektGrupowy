@@ -81,5 +81,15 @@ export const useSignalR = () => {
       }
       throw new Error("SignalR not initialized");
     },
+    on: (methodName, callback) => {
+      if (signalRClient.isServiceInitialized()) {
+        return signalRClient.getService().connection.on(methodName, callback);
+      }
+    },
+    off: (methodName, callback) => {
+      if (signalRClient.isServiceInitialized()) {
+        return signalRClient.getService().connection.off(methodName, callback);
+      }
+    },
   };
 };

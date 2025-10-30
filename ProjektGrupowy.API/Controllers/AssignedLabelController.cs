@@ -1,8 +1,13 @@
-﻿using AutoMapper;
+using AutoMapper;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ProjektGrupowy.API.Filters;
 using ProjektGrupowy.Application.DTOs.AssignedLabel;
+using ProjektGrupowy.Application.Features.AssignedLabels.Commands.AddAssignedLabel;
+using ProjektGrupowy.Application.Features.AssignedLabels.Commands.DeleteAssignedLabel;
+using ProjektGrupowy.Application.Features.AssignedLabels.Queries.GetAssignedLabel;
+using ProjektGrupowy.Application.Features.AssignedLabels.Queries.GetAssignedLabels;
 using ProjektGrupowy.Application.Services;
 
 namespace ProjektGrupowy.API.Controllers;
@@ -10,19 +15,14 @@ namespace ProjektGrupowy.API.Controllers;
 /// <summary>
 /// Controller for managing assigned labels. Handles operations such as retrieving, adding, and deleting assigned labels.
 /// </summary>
-/// <param name="assignedLabelService"></param>
-/// <param name="labelService"></param>
-/// <param name="videoService"></param>
-/// <param name="mapper"></param>
 [Route("api/assigned-labels")]
 [ApiController]
 [ServiceFilter(typeof(ValidateModelStateFilter))]
 [ServiceFilter(typeof(NonSuccessGetFilter))]
 [Authorize]
 public class AssignedLabelController(
-    IAssignedLabelService assignedLabelService,
-    ILabelService labelService,
-    IVideoService videoService,
+    IMediator mediator,
+    ICurrentUserService currentUserService,
     IMapper mapper) : ControllerBase
 {
     /// <summary>
@@ -32,11 +32,16 @@ public class AssignedLabelController(
     [HttpGet]
     public async Task<ActionResult<IEnumerable<AssignedLabelResponse>>> GetAssignedLabelsAsync()
     {
-        var assignedLabels = await assignedLabelService.GetAssignedLabelsAsync();
+        var query = new GetAssignedLabelsQuery(currentUserService.UserId, currentUserService.IsAdmin);
+        var result = await mediator.Send(query);
 
-        return assignedLabels.IsSuccess
-            ? Ok(mapper.Map<IEnumerable<AssignedLabelResponse>>(assignedLabels.GetValueOrThrow()))
-            : NotFound(assignedLabels.GetErrorOrThrow());
+        if (!result.IsSuccess)
+        {
+            return NotFound(result.Errors);
+        }
+
+        var response = mapper.Map<IEnumerable<AssignedLabelResponse>>(result.Value);
+        return Ok(response);
     }
 
     /// <summary>
@@ -47,10 +52,16 @@ public class AssignedLabelController(
     [HttpGet("{id:int}")]
     public async Task<ActionResult<AssignedLabelResponse>> GetAssignedLabelAsync(int id)
     {
-        var assignedLabel = await assignedLabelService.GetAssignedLabelAsync(id);
-        return assignedLabel.IsSuccess
-            ? Ok(mapper.Map<AssignedLabelResponse>(assignedLabel.GetValueOrThrow()))
-            : NotFound(assignedLabel.GetErrorOrThrow());
+        var query = new GetAssignedLabelQuery(id, currentUserService.UserId, currentUserService.IsAdmin);
+        var result = await mediator.Send(query);
+
+        if (!result.IsSuccess)
+        {
+            return NotFound(result.Errors);
+        }
+
+        var response = mapper.Map<AssignedLabelResponse>(result.Value);
+        return Ok(response);
     }
 
     /// <summary>
@@ -61,23 +72,22 @@ public class AssignedLabelController(
     [HttpPost]
     public async Task<ActionResult<AssignedLabelResponse>> AddAssignedLabelAsync(AssignedLabelRequest assignedLabelRequest)
     {
-        var labelResult = await labelService.GetLabelAsync(assignedLabelRequest.LabelId);
-        if (!labelResult.IsSuccess)
-            return NotFound(labelResult.GetErrorOrThrow());
+        var command = new AddAssignedLabelCommand(
+            assignedLabelRequest.LabelId,
+            assignedLabelRequest.VideoId,
+            assignedLabelRequest.Start,
+            assignedLabelRequest.End,
+            currentUserService.UserId,
+            currentUserService.IsAdmin);
+        var result = await mediator.Send(command);
 
-        var video = await videoService.GetVideoAsync(assignedLabelRequest.VideoId);
-        if (!video.IsSuccess)
-            return NotFound(video.GetErrorOrThrow());
+        if (!result.IsSuccess)
+        {
+            return BadRequest(result.Errors);
+        }
 
-        var result = await assignedLabelService.AddAssignedLabelAsync(assignedLabelRequest);
-
-        if (result.IsFailure)
-            return BadRequest(result.GetErrorOrThrow());
-
-        var createdAssignedLabel = result.GetValueOrThrow();
-        var assignedLabelResponse = mapper.Map<AssignedLabelResponse>(createdAssignedLabel);
-
-        return CreatedAtAction("GetAssignedLabel", new { id = createdAssignedLabel.Id }, assignedLabelResponse);
+        var response = mapper.Map<AssignedLabelResponse>(result.Value);
+        return CreatedAtAction("GetAssignedLabel", new { id = result.Value.Id }, response);
     }
 
     /// <summary>
@@ -88,13 +98,11 @@ public class AssignedLabelController(
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteAssignedLabelAsync(int id)
     {
-        var assignedLabelResult = await assignedLabelService.GetAssignedLabelAsync(id);
-        if (assignedLabelResult.IsFailure)
-        {
-            return NotFound(assignedLabelResult.GetErrorOrThrow());
-        }
+        var command = new DeleteAssignedLabelCommand(id, currentUserService.UserId, currentUserService.IsAdmin);
+        var result = await mediator.Send(command);
 
-        await assignedLabelService.DeleteAssignedLabelAsync(id);
-        return NoContent();
+        return result.IsSuccess
+            ? NoContent()
+            : NotFound(result.Errors);
     }
 }

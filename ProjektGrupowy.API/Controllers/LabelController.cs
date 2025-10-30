@@ -1,8 +1,14 @@
-﻿using AutoMapper;
+using AutoMapper;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ProjektGrupowy.API.Filters;
 using ProjektGrupowy.Application.DTOs.Label;
+using ProjektGrupowy.Application.Features.Labels.Commands.AddLabel;
+using ProjektGrupowy.Application.Features.Labels.Commands.DeleteLabel;
+using ProjektGrupowy.Application.Features.Labels.Commands.UpdateLabel;
+using ProjektGrupowy.Application.Features.Labels.Queries.GetLabel;
+using ProjektGrupowy.Application.Features.Labels.Queries.GetLabels;
 using ProjektGrupowy.Application.Services;
 using ProjektGrupowy.Domain.Utils.Constants;
 
@@ -11,15 +17,14 @@ namespace ProjektGrupowy.API.Controllers;
 /// <summary>
 /// Controller for managing labels. Handles operations such as retrieving, adding, updating, and deleting labels.
 /// </summary>
-/// <param name="labelService"></param>
-/// <param name="mapper"></param>
 [Route("api/labels")]
 [ApiController]
 [ServiceFilter(typeof(ValidateModelStateFilter))]
 [ServiceFilter(typeof(NonSuccessGetFilter))]
 [Authorize]
 public class LabelController(
-    ILabelService labelService,
+    IMediator mediator,
+    ICurrentUserService currentUserService,
     IMapper mapper) : ControllerBase
 {
     /// <summary>
@@ -30,13 +35,18 @@ public class LabelController(
     [HttpGet]
     public async Task<ActionResult<IEnumerable<LabelResponse>>> GetLabelsAsync()
     {
-        var labels = await labelService.GetLabelsAsync();
+        var query = new GetLabelsQuery(currentUserService.UserId, currentUserService.IsAdmin);
+        var result = await mediator.Send(query);
 
-        return labels.IsSuccess
-            ? Ok(mapper.Map<IEnumerable<LabelResponse>>(labels.GetValueOrThrow()))
-            : NotFound(labels.GetErrorOrThrow());
+        if (!result.IsSuccess)
+        {
+            return NotFound(result.Errors);
+        }
+
+        var response = mapper.Map<IEnumerable<LabelResponse>>(result.Value);
+        return Ok(response);
     }
-    
+
     /// <summary>
     /// Get a specific label by its ID.
     /// </summary>
@@ -46,12 +56,18 @@ public class LabelController(
     [HttpGet("{id:int}")]
     public async Task<ActionResult<LabelResponse>> GetLabelAsync(int id)
     {
-        var label = await labelService.GetLabelAsync(id);
-        return label.IsSuccess
-            ? Ok(mapper.Map<LabelResponse>(label.GetValueOrThrow()))
-            : NotFound(label.GetErrorOrThrow());
+        var query = new GetLabelQuery(id, currentUserService.UserId, currentUserService.IsAdmin);
+        var result = await mediator.Send(query);
+
+        if (!result.IsSuccess)
+        {
+            return NotFound(result.Errors);
+        }
+
+        var response = mapper.Map<LabelResponse>(result.Value);
+        return Ok(response);
     }
-    
+
     /// <summary>
     /// Create a new label.
     /// </summary>
@@ -61,15 +77,24 @@ public class LabelController(
     [HttpPost]
     public async Task<ActionResult<LabelResponse>> AddLabelAsync(LabelRequest labelRequest)
     {
-        var result = await labelService.AddLabelAsync(labelRequest);
+        var command = new AddLabelCommand(
+            labelRequest.Name,
+            null,
+            currentUserService.UserId,
+            labelRequest.SubjectId,
+            labelRequest.ColorHex,
+            labelRequest.Shortcut,
+            labelRequest.Type,
+            currentUserService.IsAdmin);
+        var result = await mediator.Send(command);
 
-        if (result.IsFailure)
-            return BadRequest(result.GetErrorOrThrow());
+        if (!result.IsSuccess)
+        {
+            return BadRequest(result.Errors);
+        }
 
-        var createdLabel = result.GetValueOrThrow();
-        var labelResponse = mapper.Map<LabelResponse>(createdLabel);
-
-        return CreatedAtAction("GetLabel", new { id = createdLabel.Id }, labelResponse);
+        var response = mapper.Map<LabelResponse>(result.Value);
+        return CreatedAtAction("GetLabel", new { id = result.Value.Id }, response);
     }
 
     /// <summary>
@@ -82,17 +107,21 @@ public class LabelController(
     [HttpPut("{id:int}")]
     public async Task<IActionResult> PutLabelAsync(int id, LabelRequest labelRequest)
     {
-        var labelResult = await labelService.GetLabelAsync(id);
-        if (labelResult.IsFailure)
-        {
-            return NotFound(labelResult.GetErrorOrThrow());
-        }
-
-        var result = await labelService.UpdateLabelAsync(id, labelRequest);
+        var command = new UpdateLabelCommand(
+            id,
+            labelRequest.Name,
+            null,
+            currentUserService.UserId,
+            labelRequest.SubjectId,
+            labelRequest.Shortcut,
+            labelRequest.ColorHex,
+            labelRequest.Type,
+            currentUserService.IsAdmin);
+        var result = await mediator.Send(command);
 
         return result.IsSuccess
             ? NoContent()
-            : BadRequest(result.GetErrorOrThrow());
+            : BadRequest(result.Errors);
     }
 
     /// <summary>
@@ -104,14 +133,11 @@ public class LabelController(
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteLabelAsync(int id)
     {
-        var labelResult = await labelService.GetLabelAsync(id);
-        if (labelResult.IsFailure)
-        {
-            return NotFound(labelResult.GetErrorOrThrow());
-        }
+        var command = new DeleteLabelCommand(id, currentUserService.UserId, currentUserService.IsAdmin);
+        var result = await mediator.Send(command);
 
-        await labelService.DeleteLabelAsync(id);
-
-        return NoContent();
+        return result.IsSuccess
+            ? NoContent()
+            : NotFound(result.Errors);
     }
 }

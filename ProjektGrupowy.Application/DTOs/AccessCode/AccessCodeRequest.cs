@@ -12,5 +12,5 @@ public class AccessCodeRequest
     /// </summary>
     [Required]
     [StringLength(16, MinimumLength = 16)]
-    public string Code { get; set; }
+    public string Code { get; set; } = string.Empty;
 }

@@ -13,12 +13,12 @@ public class SubjectResponse
     /// <summary>
     /// The name of the subject.
     /// </summary>
-    public string Name { get; set; }
-    
+    public string Name { get; set; } = string.Empty;
+
     /// <summary>
     /// The description of the subject.
     /// </summary>
-    public string Description { get; set; }
+    public string Description { get; set; } = string.Empty;
     
     /// <summary>
     /// The unique identifier of the project associated with the subject.

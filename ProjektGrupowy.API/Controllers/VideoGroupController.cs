@@ -1,9 +1,16 @@
-﻿using AutoMapper;
+using AutoMapper;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ProjektGrupowy.API.Filters;
 using ProjektGrupowy.Application.DTOs.Video;
 using ProjektGrupowy.Application.DTOs.VideoGroup;
+using ProjektGrupowy.Application.Features.VideoGroups.Commands.AddVideoGroup;
+using ProjektGrupowy.Application.Features.VideoGroups.Commands.DeleteVideoGroup;
+using ProjektGrupowy.Application.Features.VideoGroups.Commands.UpdateVideoGroup;
+using ProjektGrupowy.Application.Features.VideoGroups.Queries.GetVideoGroup;
+using ProjektGrupowy.Application.Features.VideoGroups.Queries.GetVideoGroups;
+using ProjektGrupowy.Application.Features.VideoGroups.Queries.GetVideosByVideoGroupId;
 using ProjektGrupowy.Application.Services;
 using ProjektGrupowy.Domain.Utils.Constants;
 
@@ -12,17 +19,14 @@ namespace ProjektGrupowy.API.Controllers;
 /// <summary>
 /// Controller for managing video groups. Handles operations such as retrieving, adding, updating, deleting video groups, and fetching videos by video group ID.
 /// </summary>
-/// <param name="videoGroupService"></param>
-/// <param name="videoService"></param>
-/// <param name="mapper"></param>
 [Route("api/video-groups")]
 [ApiController]
 [ServiceFilter(typeof(ValidateModelStateFilter))]
 [ServiceFilter(typeof(NonSuccessGetFilter))]
 [Authorize]
 public class VideoGroupController(
-    IVideoGroupService videoGroupService,
-    IVideoService videoService,
+    IMediator mediator,
+    ICurrentUserService currentUserService,
     IMapper mapper) : ControllerBase
 {
     /// <summary>
@@ -33,11 +37,16 @@ public class VideoGroupController(
     [HttpGet]
     public async Task<ActionResult<IEnumerable<VideoGroupResponse>>> GetVideoGroupsAsync()
     {
-        var videoGroups = await videoGroupService.GetVideoGroupsAsync();
+        var query = new GetVideoGroupsQuery(currentUserService.UserId, currentUserService.IsAdmin);
+        var result = await mediator.Send(query);
 
-        return videoGroups.IsSuccess
-            ? Ok(mapper.Map<IEnumerable<VideoGroupResponse>>(videoGroups.GetValueOrThrow()))
-            : NotFound(videoGroups.GetErrorOrThrow());
+        if (!result.IsSuccess)
+        {
+            return NotFound(result.Errors);
+        }
+
+        var response = mapper.Map<IEnumerable<VideoGroupResponse>>(result.Value);
+        return Ok(response);
     }
 
     /// <summary>
@@ -48,10 +57,16 @@ public class VideoGroupController(
     [HttpGet("{id:int}")]
     public async Task<ActionResult<VideoGroupResponse>> GetVideoGroupAsync(int id)
     {
-        var videoGroupResult = await videoGroupService.GetVideoGroupAsync(id);
-        return videoGroupResult.IsSuccess
-            ? Ok(mapper.Map<VideoGroupResponse>(videoGroupResult.GetValueOrThrow()))
-            : NotFound(videoGroupResult.GetErrorOrThrow());
+        var query = new GetVideoGroupQuery(id, currentUserService.UserId, currentUserService.IsAdmin);
+        var result = await mediator.Send(query);
+
+        if (!result.IsSuccess)
+        {
+            return NotFound(result.Errors);
+        }
+
+        var response = mapper.Map<VideoGroupResponse>(result.Value);
+        return Ok(response);
     }
 
     /// <summary>
@@ -63,14 +78,21 @@ public class VideoGroupController(
     [HttpPost]
     public async Task<ActionResult<VideoGroupResponse>> PostVideoGroupAsync(VideoGroupRequest videoGroupRequest)
     {
-        var result = await videoGroupService.AddVideoGroupAsync(videoGroupRequest);
-        if (result.IsFailure)
-            return BadRequest(result.GetErrorOrThrow());
+        var command = new AddVideoGroupCommand(
+            videoGroupRequest.Name,
+            videoGroupRequest.Description,
+            videoGroupRequest.ProjectId,
+            currentUserService.UserId,
+            currentUserService.IsAdmin);
+        var result = await mediator.Send(command);
 
-        var createdVideoGroup = result.GetValueOrThrow();
-        var videoGroupResponse = mapper.Map<VideoGroupResponse>(createdVideoGroup);
+        if (!result.IsSuccess)
+        {
+            return BadRequest(result.Errors);
+        }
 
-        return CreatedAtAction("GetVideoGroup", new { id = createdVideoGroup.Id }, videoGroupResponse);
+        var response = mapper.Map<VideoGroupResponse>(result.Value);
+        return CreatedAtAction("GetVideoGroup", new { id = result.Value.Id }, response);
     }
 
     /// <summary>
@@ -83,16 +105,18 @@ public class VideoGroupController(
     [HttpPut("{id:int}")]
     public async Task<IActionResult> PutVideoGroupAsync(int id, VideoGroupRequest videoGroupRequest)
     {
-        var videoGroupResult = await videoGroupService.GetVideoGroupAsync(id);
-        if (videoGroupResult.IsFailure)
-        {
-            return NotFound(videoGroupResult.GetErrorOrThrow());
-        }
+        var command = new UpdateVideoGroupCommand(
+            id,
+            videoGroupRequest.Name,
+            videoGroupRequest.Description,
+            videoGroupRequest.ProjectId,
+            currentUserService.UserId,
+            currentUserService.IsAdmin);
+        var result = await mediator.Send(command);
 
-        var result = await videoGroupService.UpdateVideoGroupAsync(id, videoGroupRequest);
         return result.IsSuccess
             ? NoContent()
-            : BadRequest(result.GetErrorOrThrow());
+            : BadRequest(result.Errors);
     }
 
     /// <summary>
@@ -104,14 +128,12 @@ public class VideoGroupController(
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteVideoGroupAsync(int id)
     {
-        var videoGroupResult = await videoGroupService.GetVideoGroupAsync(id);
-        if (videoGroupResult.IsFailure)
-        {
-            return NotFound(videoGroupResult.GetErrorOrThrow());
-        }
+        var command = new DeleteVideoGroupCommand(id, currentUserService.UserId, currentUserService.IsAdmin);
+        var result = await mediator.Send(command);
 
-        await videoGroupService.DeleteVideoGroupAsync(id);
-        return NoContent();
+        return result.IsSuccess
+            ? NoContent()
+            : NotFound(result.Errors);
     }
 
     /// <summary>
@@ -122,9 +144,15 @@ public class VideoGroupController(
     [HttpGet("{id:int}/videos")]
     public async Task<ActionResult<IEnumerable<VideoResponse>>> GetVideosByVideoGroupIdAsync(int id)
     {
-        var videosResult = await videoGroupService.GetVideosByVideoGroupIdAsync(id);
-        return videosResult.IsSuccess
-            ? Ok(mapper.Map<IEnumerable<VideoResponse>>(videosResult.GetValueOrThrow()))
-            : NotFound(videosResult.GetErrorOrThrow());
+        var query = new GetVideosByVideoGroupIdQuery(id, currentUserService.UserId, currentUserService.IsAdmin);
+        var result = await mediator.Send(query);
+
+        if (!result.IsSuccess)
+        {
+            return NotFound(result.Errors);
+        }
+
+        var response = mapper.Map<IEnumerable<VideoResponse>>(result.Value);
+        return Ok(response);
     }
 }

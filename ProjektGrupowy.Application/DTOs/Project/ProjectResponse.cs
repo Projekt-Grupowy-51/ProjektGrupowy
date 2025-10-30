@@ -13,17 +13,17 @@ public class ProjectResponse
     /// <summary>
     /// The name of the project.
     /// </summary>
-    public string Name { get; set; }
-    
+    public string Name { get; set; } = string.Empty;
+
     /// <summary>
     /// The description of the project.
     /// </summary>
-    public string Description { get; set; }
-    
+    public string Description { get; set; } = string.Empty;
+
     /// <summary>
     /// The unique identifier of the scientist who owns the project. This is a GUID/UUID string.
     /// </summary>
-    public string ScientistId { get; set; }
+    public string ScientistId { get; set; } = string.Empty;
     
     /// <summary>
     /// The name of the scientist who owns the project.

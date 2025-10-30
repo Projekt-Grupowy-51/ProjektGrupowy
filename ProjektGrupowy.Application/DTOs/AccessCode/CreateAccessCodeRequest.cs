@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using ProjektGrupowy.Application.Enums;
+using ProjektGrupowy.Domain.Enums;
 
 namespace ProjektGrupowy.Application.DTOs.AccessCode;
 

@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+using AutoMapper;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ProjektGrupowy.API.Filters;
@@ -9,9 +10,22 @@ using ProjektGrupowy.Application.DTOs.ProjectReport;
 using ProjektGrupowy.Application.DTOs.Subject;
 using ProjektGrupowy.Application.DTOs.SubjectVideoGroupAssignment;
 using ProjektGrupowy.Application.DTOs.VideoGroup;
+using ProjektGrupowy.Application.Features.ProjectReport.Queries.GetReports;
+using ProjektGrupowy.Application.Features.Projects.Commands.AddLabelerToProject;
+using ProjektGrupowy.Application.Features.Projects.Commands.AddProject;
+using ProjektGrupowy.Application.Features.Projects.Commands.DeleteProject;
+using ProjektGrupowy.Application.Features.Projects.Commands.DistributeLabelersEqually;
+using ProjektGrupowy.Application.Features.Projects.Commands.UnassignLabelersFromProject;
+using ProjektGrupowy.Application.Features.Projects.Commands.UpdateProject;
+using ProjektGrupowy.Application.Features.Projects.Queries.GetLabelersByProject;
+using ProjektGrupowy.Application.Features.Projects.Queries.GetProject;
+using ProjektGrupowy.Application.Features.Projects.Queries.GetProjects;
+using ProjektGrupowy.Application.Features.Projects.Queries.GetProjectStats;
+using ProjektGrupowy.Application.Features.Projects.Queries.GetUnassignedLabelersOfProject;
+using ProjektGrupowy.Application.Features.Subjects.Queries.GetSubjectsByProject;
+using ProjektGrupowy.Application.Features.SubjectVideoGroupAssignments.Queries.GetSubjectVideoGroupAssignmentsByProject;
+using ProjektGrupowy.Application.Features.VideoGroups.Queries.GetVideoGroupsByProject;
 using ProjektGrupowy.Application.Services;
-using ProjektGrupowy.Application.SignalR;
-using ProjektGrupowy.Application.Utils.Extensions;
 using ProjektGrupowy.Domain.Utils.Constants;
 
 namespace ProjektGrupowy.API.Controllers;
@@ -19,25 +33,14 @@ namespace ProjektGrupowy.API.Controllers;
 /// <summary>
 /// Controller for managing projects. Handles operations such as retrieving, creating, updating, deleting projects, and managing related entities like subjects, video groups, and labelers.
 /// </summary>
-/// <param name="projectService"></param>
-/// <param name="subjectService"></param>
-/// <param name="videoGroupService"></param>
-/// <param name="projectReportService"></param>
-/// <param name="messageService"></param>
-/// <param name="subjectVideoGroupAssignmentService"></param>
-/// <param name="mapper"></param>
 [Route("api/projects")]
 [ApiController]
 [ServiceFilter(typeof(ValidateModelStateFilter))]
 [ServiceFilter(typeof(NonSuccessGetFilter))]
 [Authorize]
 public class ProjectController(
-    IProjectService projectService,
-    ISubjectService subjectService,
-    IVideoGroupService videoGroupService,
-    IProjectReportService projectReportService,
-    IMessageService messageService,
-    ISubjectVideoGroupAssignmentService subjectVideoGroupAssignmentService,
+    IMediator mediator,
+    ICurrentUserService currentUserService,
     IMapper mapper) : ControllerBase
 {
     /// <summary>
@@ -47,19 +50,16 @@ public class ProjectController(
     [HttpGet]
     public async Task<ActionResult<IEnumerable<ProjectResponse>>> GetProjectsAsync()
     {
-        try
-        {
-            var projects = await projectService.GetProjectsAsync();
-            if (!projects.IsSuccess)
-                return NotFound(projects.GetErrorOrThrow());
+        var query = new GetProjectsQuery(currentUserService.UserId, currentUserService.IsAdmin);
+        var result = await mediator.Send(query);
 
-            var result = mapper.Map<IEnumerable<ProjectResponse>>(projects.GetValueOrThrow());
-            return Ok(result);
-        }
-        catch (Exception ex)
+        if (!result.IsSuccess)
         {
-            return StatusCode(500, $"Internal error: {ex.Message}");
+            return NotFound(result.Errors);
         }
+
+        var response = mapper.Map<IEnumerable<ProjectResponse>>(result.Value);
+        return Ok(response);
     }
 
     /// <summary>
@@ -71,10 +71,16 @@ public class ProjectController(
     [HttpGet("{id:int}")]
     public async Task<ActionResult<ProjectResponse>> GetProjectAsync(int id)
     {
-        var project = await projectService.GetProjectAsync(id);
-        return project.IsSuccess
-            ? Ok(mapper.Map<ProjectResponse>(project.GetValueOrThrow()))
-            : NotFound(project.GetErrorOrThrow());
+        var query = new GetProjectQuery(id, currentUserService.UserId, currentUserService.IsAdmin);
+        var result = await mediator.Send(query);
+
+        if (!result.IsSuccess)
+        {
+            return NotFound(result.Errors);
+        }
+
+        var response = mapper.Map<ProjectResponse>(result.Value);
+        return Ok(response);
     }
 
     /// <summary>
@@ -86,10 +92,16 @@ public class ProjectController(
     [HttpGet("{id:int}/reports")]
     public async Task<ActionResult<IEnumerable<GeneratedReportResponse>>> GetProjectReports(int id)
     {
-        var result = await projectReportService.GetReportsAsync(id);
-        return result.IsSuccess
-            ? Ok(mapper.Map<IEnumerable<GeneratedReportResponse>>(result.GetValueOrThrow()))
-            : NotFound(result.GetErrorOrThrow());
+        var query = new GetReportsQuery(id, currentUserService.UserId, currentUserService.IsAdmin);
+        var result = await mediator.Send(query);
+
+        if (!result.IsSuccess)
+        {
+            return NotFound(result.Errors);
+        }
+
+        var response = mapper.Map<IEnumerable<GeneratedReportResponse>>(result.Value);
+        return Ok(response);
     }
 
     /// <summary>
@@ -101,10 +113,16 @@ public class ProjectController(
     [HttpGet("{id:int}/unassigned-labelers")]
     public async Task<ActionResult<ProjectResponse>> GetUnassignedLabelers(int id)
     {
-        var result = await projectService.GetUnassignedLabelersOfProjectAsync(id);
-        return result.IsSuccess
-            ? Ok(mapper.Map<IEnumerable<LabelerResponse>>(result.GetValueOrThrow()))
-            : NotFound(result.GetErrorOrThrow());
+        var query = new GetUnassignedLabelersOfProjectQuery(id, currentUserService.UserId, currentUserService.IsAdmin);
+        var result = await mediator.Send(query);
+
+        if (!result.IsSuccess)
+        {
+            return NotFound(result.Errors);
+        }
+
+        var response = mapper.Map<IEnumerable<LabelerResponse>>(result.Value);
+        return Ok(response);
     }
 
     /// <summary>
@@ -117,10 +135,18 @@ public class ProjectController(
     [HttpPut("{id:int}")]
     public async Task<IActionResult> PutProjectAsync(int id, ProjectRequest projectRequest)
     {
-        var updateResult = await projectService.UpdateProjectAsync(id, projectRequest);
-        return updateResult.IsSuccess
+        var command = new UpdateProjectCommand(
+            id,
+            projectRequest.Name,
+            projectRequest.Description,
+            projectRequest.Finished,
+            currentUserService.UserId,
+            currentUserService.IsAdmin);
+        var result = await mediator.Send(command);
+
+        return result.IsSuccess
             ? NoContent()
-            : BadRequest(updateResult.GetErrorOrThrow());
+            : BadRequest(result.Errors);
     }
 
     /// <summary>
@@ -132,34 +158,40 @@ public class ProjectController(
     [HttpPost]
     public async Task<ActionResult<ProjectResponse>> PostProject(ProjectRequest projectRequest)
     {
-        var projectResult = await projectService.AddProjectAsync(projectRequest);
-        if (!projectResult.IsSuccess)
+        var command = new AddProjectCommand(
+            projectRequest.Name,
+            projectRequest.Description,
+            projectRequest.Finished,
+            currentUserService.UserId,
+            currentUserService.IsAdmin);
+        var result = await mediator.Send(command);
+
+        if (!result.IsSuccess)
         {
-            await messageService.SendErrorAsync(
-                User.GetUserId(),
-                $"Failed to create project: {projectResult.GetErrorOrThrow()}");
-            return BadRequest(projectResult.GetErrorOrThrow());
+            return BadRequest(result.Errors);
         }
 
-        var createdProject = projectResult.GetValueOrThrow();
-
-        return CreatedAtAction("GetProject", new { id = createdProject.Id },
-            mapper.Map<ProjectResponse>(createdProject));
+        var response = mapper.Map<ProjectResponse>(result.Value);
+        return CreatedAtAction("GetProject", new { id = result.Value.Id }, response);
     }
 
     /// <summary>
     /// Assign a labeler to a group assignment within a project.
     /// </summary>
-    /// <param name="laveAssignmentDto">The DTO containing the labeler assignment details.</param>
+    /// <param name="labelerAssignmentDto">The DTO containing the labeler assignment details.</param>
     /// <returns>Ok if successful, or BadRequest if the assignment fails.</returns>
     [HttpPost("join")]
-    public async Task<IActionResult> AssignLabelerToGroupAssignment(LabelerAssignmentDto laveAssignmentDto)
+    public async Task<IActionResult> AssignLabelerToGroupAssignment(LabelerAssignmentDto labelerAssignmentDto)
     {
-        var result = await projectService.AddLabelerToProjectAsync(laveAssignmentDto);
+        var command = new AddLabelerToProjectCommand(
+            labelerAssignmentDto.AccessCode,
+            currentUserService.UserId,
+            currentUserService.IsAdmin);
+        var result = await mediator.Send(command);
 
         return result.IsSuccess
             ? Ok()
-            : BadRequest(result.GetErrorOrThrow());
+            : BadRequest(result.Errors);
     }
 
     /// <summary>
@@ -171,10 +203,12 @@ public class ProjectController(
     [HttpPost("{projectId:int}/unassign-all")]
     public async Task<IActionResult> UnassignAllLabelers(int projectId)
     {
-        var result = await projectService.UnassignLabelersFromProjectAsync(projectId);
+        var command = new UnassignLabelersFromProjectCommand(projectId, currentUserService.UserId, currentUserService.IsAdmin);
+        var result = await mediator.Send(command);
+
         return result.IsSuccess
             ? Ok()
-            : BadRequest(result.GetErrorOrThrow());
+            : BadRequest(result.Errors);
     }
 
 
@@ -187,10 +221,12 @@ public class ProjectController(
     [HttpPost("{projectId:int}/distribute")]
     public async Task<IActionResult> DistributeLabelersEqually(int projectId)
     {
-        var result = await projectService.DistributeLabelersEquallyAsync(projectId);
+        var command = new DistributeLabelersEquallyCommand(projectId, currentUserService.UserId, currentUserService.IsAdmin);
+        var result = await mediator.Send(command);
+
         return result.IsSuccess
-            ? Ok(result.GetValueOrThrow())
-            : NotFound(result.GetErrorOrThrow());
+            ? Ok(result.Value)
+            : NotFound(result.Errors);
     }
 
     /// <summary>
@@ -202,15 +238,12 @@ public class ProjectController(
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteProject(int id)
     {
-        var project = await projectService.GetProjectAsync(id);
+        var command = new DeleteProjectCommand(id, currentUserService.UserId, currentUserService.IsAdmin);
+        var result = await mediator.Send(command);
 
-        if (project.IsFailure)
-        {
-            return NotFound(project.GetErrorOrThrow());
-        }
-
-        await projectService.DeleteProjectAsync(id);
-        return NoContent();
+        return result.IsSuccess
+            ? NoContent()
+            : NotFound(result.Errors);
     }
 
     /// <summary>
@@ -222,10 +255,16 @@ public class ProjectController(
     [HttpGet("{projectId:int}/subjects")]
     public async Task<ActionResult<IEnumerable<SubjectResponse>>> GetSubjectsByProjectAsync(int projectId)
     {
-        var subjectsResult = await subjectService.GetSubjectsByProjectAsync(projectId);
-        return subjectsResult.IsSuccess
-            ? Ok(mapper.Map<IEnumerable<SubjectResponse>>(subjectsResult.GetValueOrThrow()))
-            : NotFound(subjectsResult.GetErrorOrThrow());
+        var query = new GetSubjectsByProjectQuery(projectId, currentUserService.UserId, currentUserService.IsAdmin);
+        var result = await mediator.Send(query);
+
+        if (!result.IsSuccess)
+        {
+            return NotFound(result.Errors);
+        }
+
+        var response = mapper.Map<IEnumerable<SubjectResponse>>(result.Value);
+        return Ok(response);
     }
 
     /// <summary>
@@ -237,10 +276,16 @@ public class ProjectController(
     [HttpGet("{projectId:int}/video-groups")]
     public async Task<ActionResult<IEnumerable<VideoGroupResponse>>> GetVideoGroupsByProjectAsync(int projectId)
     {
-        var videoGroupsResult = await videoGroupService.GetVideoGroupsByProjectAsync(projectId);
-        return videoGroupsResult.IsSuccess
-            ? Ok(mapper.Map<IEnumerable<VideoGroupResponse>>(videoGroupsResult.GetValueOrThrow()))
-            : NotFound(videoGroupsResult.GetErrorOrThrow());
+        var query = new GetVideoGroupsByProjectQuery(projectId, currentUserService.UserId, currentUserService.IsAdmin);
+        var result = await mediator.Send(query);
+
+        if (!result.IsSuccess)
+        {
+            return NotFound(result.Errors);
+        }
+
+        var response = mapper.Map<IEnumerable<VideoGroupResponse>>(result.Value);
+        return Ok(response);
     }
 
     /// <summary>
@@ -252,10 +297,16 @@ public class ProjectController(
     [HttpGet("{projectId:int}/subject-video-group-assignments")]
     public async Task<ActionResult<IEnumerable<SubjectVideoGroupAssignmentResponse>>> GetSubjectVideoGroupAssignmentsByProjectAsync(int projectId)
     {
-        var assignmentsResult = await subjectVideoGroupAssignmentService.GetSubjectVideoGroupAssignmentsByProjectAsync(projectId);
-        return assignmentsResult.IsSuccess
-            ? Ok(mapper.Map<IEnumerable<SubjectVideoGroupAssignmentResponse>>(assignmentsResult.GetValueOrThrow()))
-            : NotFound(assignmentsResult.GetErrorOrThrow());
+        var query = new GetSubjectVideoGroupAssignmentsByProjectQuery(projectId, currentUserService.UserId, currentUserService.IsAdmin);
+        var result = await mediator.Send(query);
+
+        if (!result.IsSuccess)
+        {
+            return NotFound(result.Errors);
+        }
+
+        var response = mapper.Map<IEnumerable<SubjectVideoGroupAssignmentResponse>>(result.Value);
+        return Ok(response);
     }
 
     /// <summary>
@@ -267,10 +318,16 @@ public class ProjectController(
     [HttpGet("{projectId:int}/labelers")]
     public async Task<ActionResult<IEnumerable<LabelerResponse>>> GetLabelersByProjectAsync(int projectId)
     {
-        var labelersResult = await projectService.GetLabelersByProjectAsync(projectId);
-        return labelersResult.IsSuccess
-            ? Ok(mapper.Map<IEnumerable<LabelerResponse>>(labelersResult.GetValueOrThrow()))
-            : NotFound(labelersResult.GetErrorOrThrow());
+        var query = new GetLabelersByProjectQuery(projectId, currentUserService.UserId, currentUserService.IsAdmin);
+        var result = await mediator.Send(query);
+
+        if (!result.IsSuccess)
+        {
+            return NotFound(result.Errors);
+        }
+
+        var response = mapper.Map<IEnumerable<LabelerResponse>>(result.Value);
+        return Ok(response);
     }
 
     /// <summary>
@@ -282,9 +339,9 @@ public class ProjectController(
     [HttpGet("{projectId:int}/stats")]
     public async Task<ActionResult<ProjectStatsResponse>> GetProjectStatsAsync(int projectId)
     {
-        var statsResult = await projectService.GetProjectStatsAsync(projectId);
-        return statsResult.IsSuccess
-            ? Ok(statsResult.GetValueOrThrow())
-            : NotFound(statsResult.GetErrorOrThrow());
+        var query = new GetProjectStatsQuery(projectId, currentUserService.UserId, currentUserService.IsAdmin);
+        var result = await mediator.Send(query);
+
+        return !result.IsSuccess ? (ActionResult<ProjectStatsResponse>)NotFound(result.Errors) : (ActionResult<ProjectStatsResponse>)Ok(result.Value);
     }
 }

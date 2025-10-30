@@ -4,7 +4,7 @@ class SignalRService {
   connection = null;
   hubUrl =
     import.meta.env.VITE_SIGNALR_HUB_URL ??
-    "http://localhost:5000/notifications/hub/app";
+    "http://localhost:5000/signalr";
 
   constructor(addNotification, getToken, isAuthenticated) {
     this.addNotification = addNotification;

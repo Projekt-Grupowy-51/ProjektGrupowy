@@ -13,7 +13,7 @@ public class GeneratedReportResponse
     /// <summary>
     /// The name of the generated report.
     /// </summary>
-    public string Name { get; set; }
+    public string Name { get; set; } = string.Empty;
     
     /// <summary>
     /// The date and time when the report was created in UTC.

@@ -13,20 +13,20 @@ public class    VideoGroupResponse
     /// <summary>
     /// The name of the video group.
     /// </summary>
-    public string Name { get; set; }
-    
+    public string Name { get; set; } = string.Empty;
+
     /// <summary>
     /// The description of the video group.
     /// </summary>
-    public string Description { get; set; }
-    
+    public string Description { get; set; } = string.Empty;
+
     /// <summary>
     /// The unique identifier of the project associated with the video group.
     /// </summary>
     public int ProjectId { get; set; }
-    
+
     /// <summary>
     /// A dictionary/map mapping positions to video IDs in the video group.
     /// </summary>
-    public Dictionary<int, int> VideosAtPositions { get; set; }
+    public Dictionary<int, int> VideosAtPositions { get; set; } = new();
 }

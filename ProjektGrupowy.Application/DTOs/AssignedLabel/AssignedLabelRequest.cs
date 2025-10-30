@@ -23,11 +23,11 @@ public class AssignedLabelRequest
     /// The start time of the label in the video.
     /// </summary>
     [Required]
-    public string Start { get; set; }
+    public string Start { get; set; } = string.Empty;
 
     /// <summary>
     /// The end time of the label in the video.
     /// </summary>
     [Required]
-    public string End { get; set; }
+    public string End { get; set; } = string.Empty;
 }

@@ -10,12 +10,12 @@ public class VideoRequest
     /// <summary>
     /// The title of the video.
     /// </summary>
-    public string Title { get; set; }
-    
+    public string Title { get; set; } = string.Empty;
+
     /// <summary>
     /// The video file to be uploaded.
     /// </summary>
-    public IFormFile File { get; set; }
+    public IFormFile File { get; set; } = default!;
     
     /// <summary>
     /// The unique identifier of the video group associated with the video.

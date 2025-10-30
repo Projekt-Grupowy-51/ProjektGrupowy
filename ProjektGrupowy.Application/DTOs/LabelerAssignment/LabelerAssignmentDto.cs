@@ -12,5 +12,5 @@ public class LabelerAssignmentDto
     /// </summary>
     [Required]
     [StringLength(16, MinimumLength = 16)]
-    public string AccessCode { get; set; }
+    public string AccessCode { get; set; } = string.Empty;
 }
