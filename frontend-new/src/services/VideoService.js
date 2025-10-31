@@ -1,4 +1,4 @@
-import apiClient from './ApiClient.js';
+import apiClient from "./ApiClient.js";
 
 /**
  * VideoService - Handles video file operations and streaming
@@ -6,7 +6,6 @@ import apiClient from './ApiClient.js';
  * Streaming and labeling are authenticated, CRUD requires Admin/Scientist
  */
 class VideoService {
-
   /**
    * Get all videos
    * GET /api/Video
@@ -14,7 +13,7 @@ class VideoService {
    */
   async getAll() {
     try {
-      return await apiClient.get('/videos');
+      return await apiClient.get("/videos");
     } catch (error) {
       throw new Error(`Failed to get videos: ${error.message}`);
     }
@@ -29,7 +28,9 @@ class VideoService {
    */
   async getBatch(videoGroupId, positionInQueue) {
     try {
-      return await apiClient.get(`/videos/batch/${videoGroupId}/${positionInQueue}`);
+      return await apiClient.get(
+        `/videos/batch/${videoGroupId}/${positionInQueue}`
+      );
     } catch (error) {
       throw new Error(`Failed to get video batch: ${error.message}`);
     }
@@ -62,14 +63,17 @@ class VideoService {
   async create(videoRequest) {
     try {
       const formData = new FormData();
-      formData.append('Title', videoRequest.title);
-      formData.append('File', videoRequest.file);
-      formData.append('VideoGroupId', videoRequest.videoGroupId.toString());
-      formData.append('PositionInQueue', videoRequest.positionInQueue.toString());
+      formData.append("Title", videoRequest.title);
+      formData.append("File", videoRequest.file);
+      formData.append("VideoGroupId", videoRequest.videoGroupId.toString());
+      formData.append(
+        "PositionInQueue",
+        videoRequest.positionInQueue.toString()
+      );
 
-      return await apiClient.client.post('/videos', formData, {
+      return await apiClient.client.post("/videos", formData, {
         headers: {
-          'Content-Type': 'multipart/form-data',
+          "Content-Type": "multipart/form-data",
         },
       });
     } catch (error) {
@@ -110,7 +114,7 @@ class VideoService {
   async getStreamBlob(id) {
     try {
       const response = await apiClient.client.get(`/videos/${id}/stream`, {
-        responseType: 'blob'
+        responseType: "blob",
       });
       return URL.createObjectURL(response.data);
     } catch (error) {
@@ -142,7 +146,32 @@ class VideoService {
     try {
       return await apiClient.get(`/videos/${id}/assigned-labels`);
     } catch (error) {
-      throw new Error(`Failed to get assigned labels for video ${id}: ${error.message}`);
+      throw new Error(
+        `Failed to get assigned labels for video ${id}: ${error.message}`
+      );
+    }
+  }
+
+  /**
+   * Get video's assigned labels with pagination
+   * GET /api/Video/{id}/assigned-labels/page?pageNumber={pageNumber}&pageSize={pageSize}
+   * @param {number} id - Video ID
+   * @param {number} pageNumber - Page number (1-based)
+   * @param {number} pageSize - Number of items per page
+   * @returns {Promise<Object>} Paginated response with items and pagination metadata
+   */
+  async getAssignedLabelsPaginated(id, pageNumber = 1, pageSize = 10) {
+    try {
+      return await apiClient.get(`/videos/${id}/assigned-labels/page`, {
+        params: {
+          pageNumber,
+          pageSize,
+        },
+      });
+    } catch (error) {
+      throw new Error(
+        `Failed to get assigned labels for video ${id}: ${error.message}`
+      );
     }
   }
 
@@ -155,12 +184,15 @@ class VideoService {
    */
   async getAssignedLabelsBySubject(videoId, subjectId) {
     try {
-      return await apiClient.get(`/videos/${videoId}/${subjectId}/assigned-labels`);
+      return await apiClient.get(
+        `/videos/${videoId}/${subjectId}/assigned-labels`
+      );
     } catch (error) {
-      throw new Error(`Failed to get assigned labels for video ${videoId} and subject ${subjectId}: ${error.message}`);
+      throw new Error(
+        `Failed to get assigned labels for video ${videoId} and subject ${subjectId}: ${error.message}`
+      );
     }
   }
-
 }
 
 export default new VideoService();

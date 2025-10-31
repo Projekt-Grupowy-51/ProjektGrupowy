@@ -6,7 +6,7 @@ public class AssignedLabelMap : Profile
 {
     public AssignedLabelMap()
     {
-        CreateMap<ProjektGrupowy.Domain.Models.AssignedLabel, DTOs.AssignedLabel.AssignedLabelResponse>()
+        CreateMap<Domain.Models.AssignedLabel, DTOs.AssignedLabel.AssignedLabelResponse>()
             .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
             .ForMember(dest => dest.LabelId, opt => opt.MapFrom(src => src.Label.Id))
             .ForMember(dest => dest.VideoId, opt => opt.MapFrom(src => src.Video.Id))

@@ -8,6 +8,7 @@ using ProjektGrupowy.Application.DTOs.AssignedLabel;
 using ProjektGrupowy.Application.DTOs.Video;
 using ProjektGrupowy.Application.Features.AssignedLabels.Queries.GetAssignedLabelsByVideoId;
 using ProjektGrupowy.Application.Features.AssignedLabels.Queries.GetAssignedLabelsByVideoIdAndSubjectId;
+using ProjektGrupowy.Application.Features.AssignedLabels.Queries.GetAssignedLabelsPage;
 using ProjektGrupowy.Application.Features.Videos.Commands.AddVideo;
 using ProjektGrupowy.Application.Features.Videos.Commands.DeleteVideo;
 using ProjektGrupowy.Application.Features.Videos.Commands.UpdateVideo;
@@ -210,6 +211,46 @@ public class VideoController(
 
         var response = mapper.Map<IEnumerable<AssignedLabelResponse>>(result.Value);
         return Ok(response);
+    }
+
+    /// <summary>
+    /// Get a paginated list of assigned labels.
+    /// </summary>
+    /// <param name="id">The ID of the video.</param>
+    /// <param name="pageNumber">The page number to retrieve.</param>
+    /// <param name="pageSize">The number of items per page.</param>
+    /// <returns>A paginated list of assigned labels.</returns>
+    [HttpGet("{id:int}/assigned-labels/page")]
+    public async Task<ActionResult<AssignedLabelPageResponse>> GetAssignedLabelsPageAsync(
+        [FromRoute] int id,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10)
+    {
+        var pageQuery = new GetAssignedLabelsPageQuery(
+            id,
+            pageNumber,
+            pageSize,
+            currentUserService.UserId,
+            currentUserService.IsAdmin);
+        
+        var countQuery = new GetAssignedLabelsByVideoIdQuery(
+            id,
+            currentUserService.UserId,
+            currentUserService.IsAdmin);
+
+        var pageResult = await mediator.Send(pageQuery);
+        if (pageResult.IsFailed)
+            return NotFound(pageResult.Errors);
+        
+        var countResult = await mediator.Send(countQuery);
+        if (countResult.IsFailed)
+            return NotFound(countResult.Errors);
+
+        return Ok(new AssignedLabelPageResponse
+        {
+            AssignedLabels = mapper.Map<List<AssignedLabelResponse>>(pageResult.Value),
+            TotalLabelCount = countResult.Value.Count
+        });
     }
 
     /// <summary>

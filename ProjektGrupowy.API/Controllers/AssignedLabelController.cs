@@ -8,6 +8,7 @@ using ProjektGrupowy.Application.Features.AssignedLabels.Commands.AddAssignedLab
 using ProjektGrupowy.Application.Features.AssignedLabels.Commands.DeleteAssignedLabel;
 using ProjektGrupowy.Application.Features.AssignedLabels.Queries.GetAssignedLabel;
 using ProjektGrupowy.Application.Features.AssignedLabels.Queries.GetAssignedLabels;
+using ProjektGrupowy.Application.Features.AssignedLabels.Queries.GetAssignedLabelsPage;
 using ProjektGrupowy.Application.Services;
 
 namespace ProjektGrupowy.API.Controllers;
@@ -43,7 +44,7 @@ public class AssignedLabelController(
         var response = mapper.Map<IEnumerable<AssignedLabelResponse>>(result.Value);
         return Ok(response);
     }
-
+    
     /// <summary>
     /// Get a specific assigned label by its ID.
     /// </summary>
@@ -70,7 +71,8 @@ public class AssignedLabelController(
     /// <param name="assignedLabelRequest">The request containing the details of the label to be created.</param>
     /// <returns></returns>
     [HttpPost]
-    public async Task<ActionResult<AssignedLabelResponse>> AddAssignedLabelAsync(AssignedLabelRequest assignedLabelRequest)
+    public async Task<ActionResult<AssignedLabelResponse>> AddAssignedLabelAsync(
+        AssignedLabelRequest assignedLabelRequest)
     {
         var command = new AddAssignedLabelCommand(
             assignedLabelRequest.LabelId,

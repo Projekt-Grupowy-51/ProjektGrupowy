@@ -36,11 +36,28 @@ public class AssignedLabelRepository(IReadWriteContext context) : IAssignedLabel
                 .ToListAsync();
     }
 
+    public Task<int> CountAssignedLabelsByVideoIdAsync(int videoId, string userId, bool isAdmin)
+    {
+        return context.AssignedLabels.FilteredAssignedLabels(userId, isAdmin)
+            .Where(a => a.Video.Id == videoId)
+            .CountAsync();
+    }
+
     public Task<List<AssignedLabel>> GetAssignedLabelsByVideoIdAndSubjectIdAsync(int videoId, int subjectId, string userId, bool isAdmin)
     {
         return context.AssignedLabels.FilteredAssignedLabels(userId, isAdmin)
                 .Where(a => a.Video.Id == videoId && a.Label.Subject.Id == subjectId)
                 .OrderByDescending(a => a.InsDate)
                 .ToListAsync();
+    }
+
+    public Task<List<AssignedLabel> > GetAssignedLabelsByVideoPageAsync(int videoId, int page, int pageSize, string userId, bool isAdmin)
+    {
+        return context.AssignedLabels.FilteredAssignedLabels(userId, isAdmin)
+            .Where(a => a.Video.Id == videoId)
+            .OrderByDescending(a => a.Id)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
     }
 }
