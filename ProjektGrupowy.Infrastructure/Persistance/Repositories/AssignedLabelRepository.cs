@@ -51,6 +51,24 @@ public class AssignedLabelRepository(IReadWriteContext context) : IAssignedLabel
                 .ToListAsync();
     }
 
+    public Task<List<AssignedLabel>> GetAssignedLabelsByVideoIdAndSubjectIdPageAsync(int videoId, int subjectId, int page, int pageSize, string userId,
+        bool isAdmin)
+    {
+        return context.AssignedLabels.FilteredAssignedLabels(userId, isAdmin)
+            .Where(a => a.Video.Id == videoId && a.Label.Subject.Id == subjectId)
+            .OrderByDescending(a => a.Id)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+    }
+
+    public Task<int> GetAssignedLabelsByVideoIdAndSubjectIdCountAsync(int videoId, int subjectId, string userId, bool isAdmin)
+    {
+        return context.AssignedLabels.FilteredAssignedLabels(userId, isAdmin)
+            .Where(a => a.Video.Id == videoId && a.Label.Subject.Id == subjectId)
+            .CountAsync();
+    }
+
     public Task<List<AssignedLabel> > GetAssignedLabelsByVideoPageAsync(int videoId, int page, int pageSize, string userId, bool isAdmin)
     {
         return context.AssignedLabels.FilteredAssignedLabels(userId, isAdmin)

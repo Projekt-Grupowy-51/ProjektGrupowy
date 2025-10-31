@@ -193,6 +193,38 @@ class VideoService {
       );
     }
   }
+
+  /**
+   * Get labels by video and subject with pagination
+   * GET /api/Video/{videoId}/{subjectId}/assigned-labels/page?pageNumber={pageNumber}&pageSize={pageSize}
+   * @param {number} videoId - Video ID
+   * @param {number} subjectId - Subject ID
+   * @param {number} pageNumber - Page number (1-based)
+   * @param {number} pageSize - Number of items per page
+   * @returns {Promise<Object>} Paginated response with assignedLabels array and totalLabelCount
+   */
+  async getAssignedLabelsBySubjectPaginated(
+    videoId,
+    subjectId,
+    pageNumber = 1,
+    pageSize = 10
+  ) {
+    try {
+      return await apiClient.get(
+        `/videos/${videoId}/${subjectId}/assigned-labels/page`,
+        {
+          params: {
+            pageNumber,
+            pageSize,
+          },
+        }
+      );
+    } catch (error) {
+      throw new Error(
+        `Failed to get assigned labels for video ${videoId} and subject ${subjectId}: ${error.message}`
+      );
+    }
+  }
 }
 
 export default new VideoService();

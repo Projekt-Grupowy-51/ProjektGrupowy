@@ -1,24 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { Container, Card, Alert } from '../../components/ui';
-import { LoadingSpinner } from '../../components/common';
-import { useVideoControls } from './hooks/useVideoControls.js';
-import { useAssignedLabelsState } from './hooks/useAssignedLabelsState.js';
-import { useBatchManagement } from './hooks/useBatchManagement.js';
-import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts.js';
-import { useRangeLabels } from './hooks/useRangeLabels.js';
-import VideoGrid from './components/VideoGrid.jsx';
-import MediaControls from './components/MediaControls.jsx';
-import LabelingPanel from './components/LabelingPanel.jsx';
-import LabelButtons from './components/LabelButtons.jsx';
-import SubjectVideoGroupAssignmentService from '../../services/SubjectVideoGroupAssignmentService.js';
-import SubjectService from '../../services/SubjectService.js';
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { Container, Card, Alert } from "../../components/ui";
+import { LoadingSpinner } from "../../components/common";
+import { useVideoControls } from "./hooks/useVideoControls.js";
+import { useAssignedLabelsState } from "./hooks/useAssignedLabelsState.js";
+import { useBatchManagement } from "./hooks/useBatchManagement.js";
+import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts.js";
+import { useRangeLabels } from "./hooks/useRangeLabels.js";
+import VideoGrid from "./components/VideoGrid.jsx";
+import MediaControls from "./components/MediaControls.jsx";
+import LabelingPanel from "./components/LabelingPanel.jsx";
+import LabelButtons from "./components/LabelButtons.jsx";
+import SubjectVideoGroupAssignmentService from "../../services/SubjectVideoGroupAssignmentService.js";
+import SubjectService from "../../services/SubjectService.js";
 
 const VideoLabelingInterface = () => {
   const { assignmentId } = useParams();
-  const { t } = useTranslation(['videos', 'common']);
-  
+  const { t } = useTranslation(["videos", "common"]);
+
   const [assignment, setAssignment] = useState(null);
   const [labels, setLabels] = useState([]);
   const [assignmentLoading, setAssignmentLoading] = useState(false);
@@ -28,33 +28,36 @@ const VideoLabelingInterface = () => {
 
   useEffect(() => {
     if (!assignmentId) return;
-    
+
     setAssignmentLoading(true);
     setAssignmentError(null);
-    
+
     SubjectVideoGroupAssignmentService.getById(parseInt(assignmentId))
       .then(setAssignment)
-      .catch(err => setAssignmentError(err.message))
+      .catch((err) => setAssignmentError(err.message))
       .finally(() => setAssignmentLoading(false));
   }, [assignmentId]);
 
   useEffect(() => {
     if (!assignment?.subjectId) return;
-    
+
     setLabelsLoading(true);
     setLabelsError(null);
-    
+
     SubjectService.getLabels(assignment.subjectId)
       .then(setLabels)
-      .catch(err => setLabelsError(err.message))
+      .catch((err) => setLabelsError(err.message))
       .finally(() => setLabelsLoading(false));
   }, [assignment?.subjectId]);
 
   // Use all hooks independently
   const videoControls = useVideoControls();
   const batchManagement = useBatchManagement(assignment);
-  const assignedLabelsState = useAssignedLabelsState(batchManagement.videos, assignment);
-  
+  const assignedLabelsState = useAssignedLabelsState(
+    batchManagement.videos,
+    assignment
+  );
+
   // Range labels logic
   const rangeLabels = useRangeLabels(
     labels,
@@ -78,14 +81,14 @@ const VideoLabelingInterface = () => {
 
   useEffect(() => {
     videoControls.resetPlayerState();
-    videoControls.syncVideos('reset');
+    videoControls.syncVideos("reset");
   }, [batchManagement.currentBatch]);
 
   // Loading state
   if (loading) {
     return (
       <Container>
-        <LoadingSpinner message={t('videos:labeling.loading_session')} />
+        <LoadingSpinner message={t("videos:labeling.loading_session")} />
       </Container>
     );
   }
@@ -98,7 +101,9 @@ const VideoLabelingInterface = () => {
           <div className="d-flex align-items-center">
             <i className="fas fa-exclamation-triangle me-3"></i>
             <div>
-              <h5 className="alert-heading mb-1">{t('videos:labeling.error.failed_to_load_session')}</h5>
+              <h5 className="alert-heading mb-1">
+                {t("videos:labeling.error.failed_to_load_session")}
+              </h5>
               <p className="mb-0">{error}</p>
             </div>
           </div>
@@ -115,8 +120,12 @@ const VideoLabelingInterface = () => {
           <div className="d-flex align-items-center">
             <i className="fas fa-exclamation-triangle me-3"></i>
             <div>
-              <h5 className="alert-heading mb-1">{t('videos:labeling.error.assignment_not_found')}</h5>
-              <p className="mb-0">{t('videos:labeling.error.assignment_not_found_message')}</p>
+              <h5 className="alert-heading mb-1">
+                {t("videos:labeling.error.assignment_not_found")}
+              </h5>
+              <p className="mb-0">
+                {t("videos:labeling.error.assignment_not_found_message")}
+              </p>
             </div>
           </div>
         </Alert>
@@ -137,10 +146,11 @@ const VideoLabelingInterface = () => {
           </div>
           <div className="d-flex align-items-center gap-3">
             <span className="badge bg-secondary">
-              {t('videos:labeling.assignment')} #{assignment.id}
+              {t("videos:labeling.assignment")} #{assignment.id}
             </span>
             <span className="badge bg-secondary">
-              {t('videos:labeling.batch')} {batchManagement.currentBatch}/{batchManagement.totalBatches}
+              {t("videos:labeling.batch")} {batchManagement.currentBatch}/
+              {batchManagement.totalBatches}
             </span>
           </div>
         </div>
@@ -158,7 +168,7 @@ const VideoLabelingInterface = () => {
             onLoadedMetadata={videoControls.handleTimeUpdate}
             videoHeight={300}
             fillSpace={true}
-            displayMode={'auto'}
+            displayMode={"auto"}
           />
         </div>
 
@@ -183,7 +193,7 @@ const VideoLabelingInterface = () => {
             <Card.Header>
               <Card.Title level={6}>
                 <i className="fas fa-tags me-2"></i>
-                {t('videos:labeling.available_labels')}
+                {t("videos:labeling.available_labels")}
               </Card.Title>
             </Card.Header>
             <Card.Body>
@@ -201,6 +211,12 @@ const VideoLabelingInterface = () => {
             onDeleteLabel={assignedLabelsState.handleDeleteLabel}
             loading={assignedLabelsState.assignedLabelsLoading}
             operationLoading={assignedLabelsState.labelOperationLoading}
+            currentPage={assignedLabelsState.currentPage}
+            pageSize={assignedLabelsState.pageSize}
+            totalPages={assignedLabelsState.totalPages}
+            totalItems={assignedLabelsState.totalItems}
+            onPageChange={assignedLabelsState.handlePageChange}
+            onPageSizeChange={assignedLabelsState.handlePageSizeChange}
           />
         </div>
       </div>

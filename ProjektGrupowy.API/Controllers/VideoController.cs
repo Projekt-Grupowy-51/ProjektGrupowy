@@ -63,7 +63,8 @@ public class VideoController(
     [HttpGet("batch/{videoGroupId:int}/{positionInQueue:int}")]
     public async Task<ActionResult<IEnumerable<VideoResponse>>> GetVideosAsync(int videoGroupId, int positionInQueue)
     {
-        var query = new GetVideosByGroupAndPositionQuery(videoGroupId, positionInQueue, currentUserService.UserId, currentUserService.IsAdmin);
+        var query = new GetVideosByGroupAndPositionQuery(videoGroupId, positionInQueue, currentUserService.UserId,
+            currentUserService.IsAdmin);
         var result = await mediator.Send(query);
 
         if (!result.IsSuccess)
@@ -232,8 +233,8 @@ public class VideoController(
             pageSize,
             currentUserService.UserId,
             currentUserService.IsAdmin);
-        
-        var countQuery = new GetAssignedLabelsByVideoIdQuery(
+
+        var countQuery = new GetAssignedLabelsCountQuery(
             id,
             currentUserService.UserId,
             currentUserService.IsAdmin);
@@ -241,7 +242,7 @@ public class VideoController(
         var pageResult = await mediator.Send(pageQuery);
         if (pageResult.IsFailed)
             return NotFound(pageResult.Errors);
-        
+
         var countResult = await mediator.Send(countQuery);
         if (countResult.IsFailed)
             return NotFound(countResult.Errors);
@@ -249,7 +250,7 @@ public class VideoController(
         return Ok(new AssignedLabelPageResponse
         {
             AssignedLabels = mapper.Map<List<AssignedLabelResponse>>(pageResult.Value),
-            TotalLabelCount = countResult.Value.Count
+            TotalLabelCount = countResult.Value
         });
     }
 
@@ -260,9 +261,11 @@ public class VideoController(
     /// <param name="subjectId">The ID of the subject.</param>
     /// <returns>A collection of assigned labels for the specified video and subject.</returns>
     [HttpGet("{videoId:int}/{subjectId:int}/assigned-labels")]
-    public async Task<ActionResult<IEnumerable<AssignedLabelResponse>>> GetAssignedLabelsByVideoIdAndSubjectIdAsync(int videoId, int subjectId)
+    public async Task<ActionResult<IEnumerable<AssignedLabelResponse>>> GetAssignedLabelsByVideoIdAndSubjectIdAsync(
+        int videoId, int subjectId)
     {
-        var query = new GetAssignedLabelsByVideoIdAndSubjectIdQuery(videoId, subjectId, currentUserService.UserId, currentUserService.IsAdmin);
+        var query = new GetAssignedLabelsByVideoIdAndSubjectIdQuery(videoId, subjectId, currentUserService.UserId,
+            currentUserService.IsAdmin);
         var result = await mediator.Send(query);
 
         if (!result.IsSuccess)
@@ -272,5 +275,33 @@ public class VideoController(
 
         var response = mapper.Map<IEnumerable<AssignedLabelResponse>>(result.Value);
         return Ok(response);
+    }
+
+    [HttpGet("{videoId:int}/{subjectId:int}/assigned-labels/page")]
+    public async Task<ActionResult<AssignedLabelPageResponse>> GetAssignedLabelsByVideoIdAndSubjectIdPageAsync(
+        [FromRoute] int videoId,
+        [FromRoute] int subjectId,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10)
+    {
+        var pageQuery = new GetAssignedLabelsByVideoIdAndSubjectIdPageQuery(pageNumber, pageSize, videoId, subjectId,
+            currentUserService.UserId, currentUserService.IsAdmin);
+        var pageResult = await mediator.Send(pageQuery);
+
+        if (!pageResult.IsSuccess)
+            return NotFound(pageResult.Errors);
+
+        var countQuery = new GetAssignedLabelsByVideoIdAndSubjectIdCountQuery(videoId, subjectId,
+            currentUserService.UserId, currentUserService.IsAdmin);
+        var countResult = await mediator.Send(countQuery);
+
+        if (!countResult.IsSuccess)
+            return NotFound(countResult.Errors);
+
+        return Ok(new AssignedLabelPageResponse
+        {
+            AssignedLabels = mapper.Map<List<AssignedLabelResponse>>(pageResult.Value),
+            TotalLabelCount = countResult.Value
+        });
     }
 }

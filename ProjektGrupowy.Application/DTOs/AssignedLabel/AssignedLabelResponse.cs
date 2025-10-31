@@ -24,7 +24,11 @@ public class AssignedLabelResponse
     /// The unique identifier of the video associated with the assigned label.
     /// </summary>
     public int VideoId { get; set; }
-
+    
+    /// <summary>
+    /// The name of the video associated with the assigned label.
+    /// </summary>
+    public string VideoName { get; set; } = string.Empty;
 
     /// <summary>
     /// The unique identifier of the labeler who assigned the label.

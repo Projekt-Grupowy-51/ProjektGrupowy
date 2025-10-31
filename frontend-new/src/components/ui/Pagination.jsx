@@ -76,9 +76,9 @@ const Pagination = ({
     <div
       className={`d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 ${className}`}
     >
-      <div className="text-muted small">
+      {/* <div className="text-muted small">
         Showing {startItem} to {endItem} of {totalItems} items
-      </div>
+      </div> */}
 
       {showPageNavigation && (
         <nav aria-label="Page navigation">
@@ -134,9 +134,9 @@ const Pagination = ({
 
       {onPageSizeChange && (
         <div className="d-flex align-items-center gap-2">
-          <label htmlFor="pageSize" className="text-muted small mb-0">
+          {/* <label htmlFor="pageSize" className="text-muted small mb-0">
             Items per page:
-          </label>
+          </label> */}
           <select
             id="pageSize"
             className="form-select form-select-sm"

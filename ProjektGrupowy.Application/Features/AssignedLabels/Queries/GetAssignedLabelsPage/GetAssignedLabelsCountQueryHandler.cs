@@ -21,13 +21,6 @@ public class GetAssignedLabelsCountQueryHandler(
             request.UserId,
             request.IsAdmin);
 
-        var authResult = await authorizationService.AuthorizeAsync(
-            currentUserService.User,
-            null,
-            new ResourceOperationRequirement(ResourceOperation.Read));
-
-        return !authResult.Succeeded
-            ? throw new ForbiddenException()
-            : count;
+        return count;
     }
 }

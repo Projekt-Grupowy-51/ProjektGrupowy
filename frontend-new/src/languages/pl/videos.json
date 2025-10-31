@@ -16,6 +16,7 @@
     "not_found": "Wideo nie zostało znalezione"
   },
   "table": {
+    "video_name": "Wideo",
     "label": "Etykieta",
     "labeler": "Etykietujący",
     "subject": "Temat",

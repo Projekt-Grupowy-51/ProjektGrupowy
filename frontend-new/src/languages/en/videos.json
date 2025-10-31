@@ -16,6 +16,7 @@
     "not_found": "Video not found"
   },
   "table": {
+    "video_name": "Video",
     "label": "Label",
     "labeler": "Labeler",
     "subject": "Subject",
