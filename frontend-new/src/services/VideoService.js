@@ -85,12 +85,33 @@ class VideoService {
    * Update video
    * PUT /api/Video/{id}
    * @param {number} id - Video ID
-   * @param {Object} videoRequest - Video update request
+   * @param {Object} videoRequest - Video update request with [FromForm] binding
+   * @param {string} videoRequest.title - Video title
+   * @param {number} videoRequest.videoGroupId - Video group ID
+   * @param {number} videoRequest.positionInQueue - Position in queue
+   * @param {File} [videoRequest.file] - Optional video file for replacement
    * @returns {Promise<void>}
    */
   async update(id, videoRequest) {
     try {
-      await apiClient.put(`/videos/${id}`, videoRequest);
+      const formData = new FormData();
+      formData.append("Title", videoRequest.title);
+      formData.append("VideoGroupId", videoRequest.videoGroupId.toString());
+      formData.append(
+        "PositionInQueue",
+        videoRequest.positionInQueue.toString()
+      );
+
+      // Only append file if provided
+      if (videoRequest.file) {
+        formData.append("File", videoRequest.file);
+      }
+
+      await apiClient.client.put(`/videos/${id}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
     } catch (error) {
       throw new Error(`Failed to update video ${id}: ${error.message}`);
     }

@@ -8,7 +8,7 @@ namespace ProjektGrupowy.Application.Features.Videos.Commands.UpdateVideo;
 public record UpdateVideoCommand(
     int VideoId,
     string Title,
-    IFormFile File,
+    IFormFile? File,
     int VideoGroupId,
     int PositionInQueue,
     string UserId,
