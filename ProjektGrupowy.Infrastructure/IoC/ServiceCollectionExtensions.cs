@@ -24,6 +24,7 @@ public static class ServiceCollectionExtensions
             options
                 .UseNpgsql(configuration.GetConnectionString("DefaultConnection"))
                 .UseLazyLoadingProxies()
+                .UseSnakeCaseNamingConvention()
         );
 
         // Register AppDbContext as IReadWriteContext

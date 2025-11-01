@@ -12,8 +12,8 @@ using ProjektGrupowy.Infrastructure.Persistance;
 namespace ProjektGrupowy.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251030203533_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20251101080519_FreshNewMigration")]
+    partial class FreshNewMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -31,334 +31,429 @@ namespace ProjektGrupowy.Infrastructure.Migrations
             modelBuilder.Entity("ProjectUser", b =>
                 {
                     b.Property<int>("LabeledProjectsId")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("labeled_projects_id");
 
                     b.Property<string>("ProjectLabelersId")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("project_labelers_id");
 
-                    b.HasKey("LabeledProjectsId", "ProjectLabelersId");
+                    b.HasKey("LabeledProjectsId", "ProjectLabelersId")
+                        .HasName("pk_project_labelers");
 
-                    b.HasIndex("ProjectLabelersId");
+                    b.HasIndex("ProjectLabelersId")
+                        .HasDatabaseName("ix_project_labelers_project_labelers_id");
 
-                    b.ToTable("ProjectLabelers", (string)null);
+                    b.ToTable("project_labelers", (string)null);
                 });
 
             modelBuilder.Entity("ProjektGrupowy.Domain.Events.DomainEvent", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("EventData")
+                        .HasColumnType("text")
+                        .HasColumnName("event_data");
+
+                    b.Property<string>("EventType")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("event_type");
+
                     b.Property<bool>("IsPublished")
-                        .HasColumnType("boolean");
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_published");
 
                     b.Property<string>("Message")
                         .IsRequired()
                         .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("message");
 
                     b.Property<DateTime>("OccurredAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("occurred_at");
 
                     b.Property<DateTime?>("PublishedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("published_at");
 
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("user_id");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_domain_events");
 
-                    b.HasIndex("IsPublished");
+                    b.HasIndex("IsPublished")
+                        .HasDatabaseName("ix_domain_events_is_published");
 
-                    b.ToTable("DomainEvents");
+                    b.ToTable("domain_events", (string)null);
                 });
 
             modelBuilder.Entity("ProjektGrupowy.Domain.Models.AssignedLabel", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("CreatedById")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("created_by_id");
 
                     b.Property<DateTime?>("DelDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("del_date");
 
                     b.Property<string>("End")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("end");
 
                     b.Property<DateTime>("InsDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("ins_date");
 
                     b.Property<int>("LabelId")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("label_id");
 
                     b.Property<string>("Start")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("start");
 
                     b.Property<int>("VideoId")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("video_id");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_assigned_labels");
 
-                    b.HasIndex("CreatedById");
+                    b.HasIndex("CreatedById")
+                        .HasDatabaseName("ix_assigned_labels_created_by_id");
 
-                    b.HasIndex("LabelId");
+                    b.HasIndex("LabelId")
+                        .HasDatabaseName("ix_assigned_labels_label_id");
 
-                    b.HasIndex("VideoId");
+                    b.HasIndex("VideoId")
+                        .HasDatabaseName("ix_assigned_labels_video_id");
 
-                    b.ToTable("AssignedLabels");
+                    b.ToTable("assigned_labels", (string)null);
                 });
 
             modelBuilder.Entity("ProjektGrupowy.Domain.Models.GeneratedReport", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at_utc");
 
                     b.Property<string>("CreatedById")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("created_by_id");
 
                     b.Property<DateTime?>("DelDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("del_date");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("name");
 
                     b.Property<string>("Path")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("path");
 
                     b.Property<int>("ProjectId")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("project_id");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_generated_reports");
 
-                    b.HasIndex("CreatedById");
+                    b.HasIndex("CreatedById")
+                        .HasDatabaseName("ix_generated_reports_created_by_id");
 
                     b.HasIndex("Path")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("ix_generated_reports_path");
 
-                    b.HasIndex("ProjectId");
+                    b.HasIndex("ProjectId")
+                        .HasDatabaseName("ix_generated_reports_project_id");
 
-                    b.ToTable("GeneratedReports");
+                    b.ToTable("generated_reports", (string)null);
                 });
 
             modelBuilder.Entity("ProjektGrupowy.Domain.Models.Label", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ColorHex")
                         .IsRequired()
                         .HasMaxLength(7)
-                        .HasColumnType("character varying(7)");
+                        .HasColumnType("character varying(7)")
+                        .HasColumnName("color_hex");
 
                     b.Property<string>("CreatedById")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("created_by_id");
 
                     b.Property<DateTime?>("DelDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("del_date");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("name");
 
                     b.Property<char?>("Shortcut")
-                        .HasColumnType("character(1)");
+                        .HasColumnType("character(1)")
+                        .HasColumnName("shortcut");
 
                     b.Property<int>("SubjectId")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("subject_id");
 
                     b.Property<string>("Type")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("type");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_labels");
 
-                    b.HasIndex("CreatedById");
+                    b.HasIndex("CreatedById")
+                        .HasDatabaseName("ix_labels_created_by_id");
 
-                    b.HasIndex("SubjectId");
+                    b.HasIndex("SubjectId")
+                        .HasDatabaseName("ix_labels_subject_id");
 
-                    b.ToTable("Labels");
+                    b.ToTable("labels", (string)null);
                 });
 
             modelBuilder.Entity("ProjektGrupowy.Domain.Models.Project", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("CreatedById")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("created_by_id");
 
                     b.Property<DateOnly>("CreationDate")
-                        .HasColumnType("date");
+                        .HasColumnType("date")
+                        .HasColumnName("creation_date");
 
                     b.Property<DateTime?>("DelDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("del_date");
 
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("description");
 
                     b.Property<DateOnly?>("EndDate")
-                        .HasColumnType("date");
+                        .HasColumnType("date")
+                        .HasColumnName("end_date");
 
                     b.Property<DateOnly?>("ModificationDate")
-                        .HasColumnType("date");
+                        .HasColumnType("date")
+                        .HasColumnName("modification_date");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("name");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_projects");
 
-                    b.HasIndex("CreatedById");
+                    b.HasIndex("CreatedById")
+                        .HasDatabaseName("ix_projects_created_by_id");
 
-                    b.ToTable("Projects");
+                    b.ToTable("projects", (string)null);
                 });
 
             modelBuilder.Entity("ProjektGrupowy.Domain.Models.ProjectAccessCode", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Code")
                         .IsRequired()
                         .HasMaxLength(16)
-                        .HasColumnType("character varying(16)");
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("code");
 
                     b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at_utc");
 
                     b.Property<string>("CreatedById")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("created_by_id");
 
                     b.Property<DateTime?>("DelDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("del_date");
 
                     b.Property<DateTime?>("ExpiresAtUtc")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at_utc");
 
                     b.Property<int>("ProjectId")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("project_id");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_project_access_codes");
 
                     b.HasIndex("Code")
                         .IsUnique()
                         .HasDatabaseName("IX_ProjectAccessCode_Code");
 
-                    b.HasIndex("CreatedById");
+                    b.HasIndex("CreatedById")
+                        .HasDatabaseName("ix_project_access_codes_created_by_id");
 
-                    b.HasIndex("ProjectId");
+                    b.HasIndex("ProjectId")
+                        .HasDatabaseName("ix_project_access_codes_project_id");
 
-                    b.ToTable("ProjectAccessCodes");
+                    b.ToTable("project_access_codes", (string)null);
                 });
 
             modelBuilder.Entity("ProjektGrupowy.Domain.Models.Subject", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("CreatedById")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("created_by_id");
 
                     b.Property<DateTime?>("DelDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("del_date");
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("description");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("name");
 
                     b.Property<int>("ProjectId")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("project_id");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_subjects");
 
-                    b.HasIndex("CreatedById");
+                    b.HasIndex("CreatedById")
+                        .HasDatabaseName("ix_subjects_created_by_id");
 
-                    b.HasIndex("ProjectId");
+                    b.HasIndex("ProjectId")
+                        .HasDatabaseName("ix_subjects_project_id");
 
-                    b.ToTable("Subjects");
+                    b.ToTable("subjects", (string)null);
                 });
 
             modelBuilder.Entity("ProjektGrupowy.Domain.Models.SubjectVideoGroupAssignment", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("CreatedById")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("created_by_id");
 
                     b.Property<DateOnly>("CreationDate")
-                        .HasColumnType("date");
+                        .HasColumnType("date")
+                        .HasColumnName("creation_date");
 
                     b.Property<DateTime?>("DelDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("del_date");
 
                     b.Property<DateOnly?>("ModificationDate")
-                        .HasColumnType("date");
+                        .HasColumnType("date")
+                        .HasColumnName("modification_date");
 
                     b.Property<int>("SubjectId")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("subject_id");
 
                     b.Property<int>("VideoGroupId")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("video_group_id");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_subject_video_group_assignments");
 
-                    b.HasIndex("CreatedById");
+                    b.HasIndex("CreatedById")
+                        .HasDatabaseName("ix_subject_video_group_assignments_created_by_id");
 
-                    b.HasIndex("SubjectId");
+                    b.HasIndex("SubjectId")
+                        .HasDatabaseName("ix_subject_video_group_assignments_subject_id");
 
-                    b.HasIndex("VideoGroupId");
+                    b.HasIndex("VideoGroupId")
+                        .HasDatabaseName("ix_subject_video_group_assignments_video_group_id");
 
-                    b.ToTable("SubjectVideoGroupAssignments");
+                    b.ToTable("subject_video_group_assignments", (string)null);
                 });
 
             modelBuilder.Entity("ProjektGrupowy.Domain.Models.User", b =>
@@ -392,7 +487,8 @@ namespace ProjektGrupowy.Infrastructure.Migrations
                         .HasColumnType("text")
                         .HasColumnName("username");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_user_entity");
 
                     b.ToTable("user_entity", null, t =>
                         {
@@ -404,94 +500,118 @@ namespace ProjektGrupowy.Infrastructure.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ContentType")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("content_type");
 
                     b.Property<string>("CreatedById")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("created_by_id");
 
                     b.Property<DateTime?>("DelDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("del_date");
 
                     b.Property<string>("Path")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("path");
 
                     b.Property<int>("PositionInQueue")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("position_in_queue");
 
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("title");
 
                     b.Property<int>("VideoGroupId")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("video_group_id");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_videos");
 
-                    b.HasIndex("CreatedById");
+                    b.HasIndex("CreatedById")
+                        .HasDatabaseName("ix_videos_created_by_id");
 
-                    b.HasIndex("VideoGroupId", "PositionInQueue");
+                    b.HasIndex("VideoGroupId", "PositionInQueue")
+                        .HasDatabaseName("ix_videos_video_group_id_position_in_queue");
 
-                    b.ToTable("Videos");
+                    b.ToTable("videos", (string)null);
                 });
 
             modelBuilder.Entity("ProjektGrupowy.Domain.Models.VideoGroup", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("CreatedById")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("created_by_id");
 
                     b.Property<DateTime?>("DelDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("del_date");
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("description");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("name");
 
                     b.Property<int>("ProjectId")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("project_id");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_video_groups");
 
-                    b.HasIndex("CreatedById");
+                    b.HasIndex("CreatedById")
+                        .HasDatabaseName("ix_video_groups_created_by_id");
 
-                    b.HasIndex("ProjectId");
+                    b.HasIndex("ProjectId")
+                        .HasDatabaseName("ix_video_groups_project_id");
 
-                    b.ToTable("VideoGroups");
+                    b.ToTable("video_groups", (string)null);
                 });
 
             modelBuilder.Entity("SubjectVideoGroupAssignmentUser", b =>
                 {
                     b.Property<int>("LabeledAssignmentsId")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("labeled_assignments_id");
 
                     b.Property<string>("LabelersId")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("labelers_id");
 
-                    b.HasKey("LabeledAssignmentsId", "LabelersId");
+                    b.HasKey("LabeledAssignmentsId", "LabelersId")
+                        .HasName("pk_labelers_assignments");
 
-                    b.HasIndex("LabelersId");
+                    b.HasIndex("LabelersId")
+                        .HasDatabaseName("ix_labelers_assignments_labelers_id");
 
-                    b.ToTable("LabelersAssignments", (string)null);
+                    b.ToTable("labelers_assignments", (string)null);
                 });
 
             modelBuilder.Entity("ProjectUser", b =>
@@ -500,13 +620,15 @@ namespace ProjektGrupowy.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("LabeledProjectsId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_project_labelers_projects_labeled_projects_id");
 
                     b.HasOne("ProjektGrupowy.Domain.Models.User", null)
                         .WithMany()
                         .HasForeignKey("ProjectLabelersId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_project_labelers_user_entity_project_labelers_id");
                 });
 
             modelBuilder.Entity("ProjektGrupowy.Domain.Models.AssignedLabel", b =>
@@ -515,19 +637,22 @@ namespace ProjektGrupowy.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("CreatedById")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_assigned_labels_user_entity_created_by_id");
 
                     b.HasOne("ProjektGrupowy.Domain.Models.Label", "Label")
                         .WithMany("AssignedLabels")
                         .HasForeignKey("LabelId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_assigned_labels_labels_label_id");
 
                     b.HasOne("ProjektGrupowy.Domain.Models.Video", "Video")
                         .WithMany("AssignedLabels")
                         .HasForeignKey("VideoId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_assigned_labels_videos_video_id");
 
                     b.Navigation("CreatedBy");
 
@@ -542,13 +667,15 @@ namespace ProjektGrupowy.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("CreatedById")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_generated_reports_user_entity_created_by_id");
 
                     b.HasOne("ProjektGrupowy.Domain.Models.Project", "Project")
                         .WithMany("GeneratedReports")
                         .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_generated_reports_projects_project_id");
 
                     b.Navigation("CreatedBy");
 
@@ -561,13 +688,15 @@ namespace ProjektGrupowy.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("CreatedById")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_labels_user_entity_created_by_id");
 
                     b.HasOne("ProjektGrupowy.Domain.Models.Subject", "Subject")
                         .WithMany("Labels")
                         .HasForeignKey("SubjectId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_labels_subjects_subject_id");
 
                     b.Navigation("CreatedBy");
 
@@ -580,7 +709,8 @@ namespace ProjektGrupowy.Infrastructure.Migrations
                         .WithMany("OwnedProjects")
                         .HasForeignKey("CreatedById")
                         .OnDelete(DeleteBehavior.SetNull)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_projects_user_entity_created_by_id");
 
                     b.Navigation("CreatedBy");
                 });
@@ -591,13 +721,15 @@ namespace ProjektGrupowy.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("CreatedById")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_project_access_codes_user_entity_created_by_id");
 
                     b.HasOne("ProjektGrupowy.Domain.Models.Project", "Project")
                         .WithMany("AccessCodes")
                         .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_project_access_codes_projects_project_id");
 
                     b.Navigation("CreatedBy");
 
@@ -610,13 +742,15 @@ namespace ProjektGrupowy.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("CreatedById")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_subjects_user_entity_created_by_id");
 
                     b.HasOne("ProjektGrupowy.Domain.Models.Project", "Project")
                         .WithMany("Subjects")
                         .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_subjects_projects_project_id");
 
                     b.Navigation("CreatedBy");
 
@@ -629,19 +763,22 @@ namespace ProjektGrupowy.Infrastructure.Migrations
                         .WithMany("OwnedAssignments")
                         .HasForeignKey("CreatedById")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_subject_video_group_assignments_user_entity_created_by_id");
 
                     b.HasOne("ProjektGrupowy.Domain.Models.Subject", "Subject")
                         .WithMany("SubjectVideoGroupAssignments")
                         .HasForeignKey("SubjectId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_subject_video_group_assignments_subjects_subject_id");
 
                     b.HasOne("ProjektGrupowy.Domain.Models.VideoGroup", "VideoGroup")
                         .WithMany("SubjectVideoGroupAssignments")
                         .HasForeignKey("VideoGroupId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_subject_video_group_assignments_video_groups_video_group_id");
 
                     b.Navigation("CreatedBy");
 
@@ -656,13 +793,15 @@ namespace ProjektGrupowy.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("CreatedById")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_videos_user_entity_created_by_id");
 
                     b.HasOne("ProjektGrupowy.Domain.Models.VideoGroup", "VideoGroup")
                         .WithMany("Videos")
                         .HasForeignKey("VideoGroupId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_videos_video_groups_video_group_id");
 
                     b.Navigation("CreatedBy");
 
@@ -675,13 +814,15 @@ namespace ProjektGrupowy.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("CreatedById")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_video_groups_user_entity_created_by_id");
 
                     b.HasOne("ProjektGrupowy.Domain.Models.Project", "Project")
                         .WithMany("VideoGroups")
                         .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_video_groups_projects_project_id");
 
                     b.Navigation("CreatedBy");
 
@@ -694,13 +835,15 @@ namespace ProjektGrupowy.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("LabeledAssignmentsId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_labelers_assignments_subject_video_group_assignments_labele");
 
                     b.HasOne("ProjektGrupowy.Domain.Models.User", null)
                         .WithMany()
                         .HasForeignKey("LabelersId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_labelers_assignments_user_entity_labelers_id");
                 });
 
             modelBuilder.Entity("ProjektGrupowy.Domain.Models.Label", b =>

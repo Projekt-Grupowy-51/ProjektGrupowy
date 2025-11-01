@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
+using Microsoft.Extensions.Configuration;
 using ProjektGrupowy.Application.Services;
 using System.Security.Claims;
 
@@ -15,17 +16,25 @@ public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
     {
         var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
 
-        // Read connection string from environment variable
-        var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
+        // Build configuration from appsettings.json
+        var configuration = new ConfigurationBuilder()
+            .SetBasePath(Path.Combine(Directory.GetCurrentDirectory(), "../ProjektGrupowy.API"))
+            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
+            .AddEnvironmentVariables()
+            .Build();
+
+        // Read connection string from configuration
+        var connectionString = configuration.GetConnectionString("DefaultConnection");
 
         if (string.IsNullOrEmpty(connectionString))
         {
             throw new InvalidOperationException(
-                "Connection string not found. Please set the 'ConnectionStrings__DefaultConnection' environment variable before running migrations.");
+                "Connection string not found in appsettings.json. Please ensure 'ConnectionStrings:DefaultConnection' is configured.");
         }
 
         optionsBuilder.UseNpgsql(connectionString);
         optionsBuilder.UseLazyLoadingProxies();
+        optionsBuilder.UseSnakeCaseNamingConvention();
 
         // Create a design-time instance of ICurrentUserService
         var designTimeUserService = new DesignTimeCurrentUserService();

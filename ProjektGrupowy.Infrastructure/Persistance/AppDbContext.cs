@@ -126,7 +126,7 @@ public class AppDbContext : DbContext, IApplicationDbContext, IReadWriteContext
         modelBuilder.Entity<Project>()
             .HasMany(p => p.ProjectLabelers)
             .WithMany(u => u.LabeledProjects) // Musi istnieć w User.cs
-            .UsingEntity(j => j.ToTable("ProjectLabelers"));
+            .UsingEntity(j => j.ToTable("project_labelers"));
 
         // 1:N - Właściciel przypisania
         modelBuilder.Entity<User>()
@@ -139,7 +139,7 @@ public class AppDbContext : DbContext, IApplicationDbContext, IReadWriteContext
         modelBuilder.Entity<SubjectVideoGroupAssignment>()
             .HasMany(svga => svga.Labelers)
             .WithMany(u => u.LabeledAssignments)
-            .UsingEntity(j => j.ToTable("LabelersAssignments"));
+            .UsingEntity(j => j.ToTable("labelers_assignments"));
 
         // === Soft Delete Filters ===
         ApplySoftDeleteFilter(modelBuilder);

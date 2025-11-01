@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ProjektGrupowy.Domain.Models;
 
-[Table("Projects")]
+// [Table("Projects")]
 public class Project : BaseEntity, IOwnedEntity
 {
     [Key]

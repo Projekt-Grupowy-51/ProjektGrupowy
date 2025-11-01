@@ -5,7 +5,7 @@ using System.Text.Json;
 
 namespace ProjektGrupowy.Domain.Models;
 
-[Table("AssignedLabels")]
+// [Table("AssignedLabels")]
 public class AssignedLabel : BaseEntity, IOwnedEntity
 {
     [Key]

@@ -49,8 +49,8 @@ services:
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
       - ASPNETCORE_URLS=${ASPNETCORE_URLS}
 
-      - ConnectionStrings__DefaultConnection=Host=${PGSQL_HOST};Database=${PGSQL_DB};UserName=${PGSQL_USER};Password=${PGSQL_PASSWORD};Port=${PGSQL_PORT}
-      - ConnectionStrings__HangfireConnection=Host=${PGSQL_HOST};Database=${PGSQL_DB};UserName=${PGSQL_USER};Password=${PGSQL_PASSWORD};Port=${PGSQL_PORT}
+      - ConnectionStrings__DefaultConnection=Host=${PGSQL_HOST};Database=${PGSQL_DB};UserName=${PGSQL_USER};Password=${PGSQL_PASSWORD};Port=${PGSQL_PORT};Pooling=true;Minimum Pool Size=64; Maximum Pool Size=96; Connection Pruning Interval=60;Connection Idle Lifetime=900;Max Auto Prepare=200;
+      - ConnectionStrings__HangfireConnection=Host=${PGSQL_HOST};Database=${PGSQL_DB};UserName=${PGSQL_USER};Password=${PGSQL_PASSWORD};Port=${PGSQL_PORT};Pooling=true;Minimum Pool Size=64; Maximum Pool Size=96; Connection Pruning Interval=60;Connection Idle Lifetime=900;Max Auto Prepare=200;
 
       - Logging__LogLevel__Default=${LOGGING_DEFAULT_LEVEL}
       - Logging__LogLevel__Microsoft.AspNetCore=${LOGGING_ASPNETCORE_LEVEL}

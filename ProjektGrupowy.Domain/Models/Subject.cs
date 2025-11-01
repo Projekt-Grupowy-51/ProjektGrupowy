@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ProjektGrupowy.Domain.Models;
 
-[Table("Subjects")]
+// [Table("Subjects")]
 public class Subject : BaseEntity, IOwnedEntity
 {
     [Key]
