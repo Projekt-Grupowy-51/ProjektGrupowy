@@ -47,7 +47,17 @@ public static class ServiceCollectionExtensions
         _ = services.AddScoped<IDomainEventRepository, DomainEventRepository>();
 
         // SignalR
-        _ = services.AddSignalR();
+        _ = services.AddSignalR(options =>
+        {
+            options.KeepAliveInterval = TimeSpan.FromSeconds(15);
+            options.ClientTimeoutInterval = TimeSpan.FromSeconds(30);
+            options.EnableDetailedErrors = environment.IsDevelopment();
+            options.MaximumReceiveMessageSize = 102400; // 100 KB
+        });
+        
+        // Configure SignalR to use the 'sub' claim as the user identifier
+        // _ = services.AddSingleton<Microsoft.AspNetCore.SignalR.IUserIdProvider, SubClaimUserIdProvider>();
+        
         _ = services.AddScoped<IMessageService, SignalRMessageService>();
 
         // Hangfire Storage and Server

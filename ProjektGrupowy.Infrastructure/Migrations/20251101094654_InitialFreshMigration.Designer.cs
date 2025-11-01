@@ -12,8 +12,8 @@ using ProjektGrupowy.Infrastructure.Persistance;
 namespace ProjektGrupowy.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251101080519_FreshNewMigration")]
-    partial class FreshNewMigration
+    [Migration("20251101094654_InitialFreshMigration")]
+    partial class InitialFreshMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

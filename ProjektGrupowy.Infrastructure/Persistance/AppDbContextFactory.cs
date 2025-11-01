@@ -39,7 +39,7 @@ public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
         // Create a design-time instance of ICurrentUserService
         var designTimeUserService = new DesignTimeCurrentUserService();
 
-        return new AppDbContext(optionsBuilder.Options, designTimeUserService);
+        return new AppDbContext(optionsBuilder.Options, designTimeUserService, mediator: null);
     }
 
     /// <summary>

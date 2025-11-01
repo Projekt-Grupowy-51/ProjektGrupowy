@@ -37,11 +37,13 @@ public static class ServiceCollectionExtensions
     /// </summary>
     public static void RegisterHangfireJobs()
     {
-        // Register recurring job for publishing domain events (every 10 seconds)
+        // Domain events are now published immediately via MediatR pipeline (see DomainEventSavedNotificationHandler)
+        // This Hangfire job is kept as a fallback mechanism for unpublished events
         RecurringJob.AddOrUpdate<IDomainEventPublisher>(
-            "publish-domain-events",
+            "publish-domain-events-fallback",
             publisher => publisher.PublishPendingEventsAsync(),
-            "*/10 * * * * *" // Every 10 seconds
+            // "*/30 * * * * *" // Every 30 seconds (fallback only)
+            Cron.Never()
         );
     }
 }
