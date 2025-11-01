@@ -36,6 +36,12 @@
     "confirm": "Usuń",
     "cancel": "Anuluj"
   },
+  "acceptConfirmation": {
+    "title": "Potwierdź operacje",
+    "message": "Czy na pewno chcesz zatwierdzić tę operację?",
+    "confirm": "Zatwierdź",
+    "cancel": "Anuluj"
+  },
   "states": {
     "loading": "Ładowanie...",
     "error": "Błąd",
