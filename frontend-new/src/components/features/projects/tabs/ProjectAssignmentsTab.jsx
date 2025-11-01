@@ -61,7 +61,7 @@ const ProjectAssignmentsTab = ({ projectId }) => {
                       {t('assignments:status.completed')}
                     </span>
                   ) : (
-                    <span className="badge bg-warning">
+                    <span className="badge bg-warning p-2">
                       <i className="fas fa-clock me-1"></i>
                       {t('assignments:status.pending')}
                     </span>

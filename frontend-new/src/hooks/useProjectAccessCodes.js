@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo } from 'react';
-import AccessCodeService from '../services/AccessCodeService.js';
+import { useState, useEffect, useMemo } from "react";
+import AccessCodeService from "../services/AccessCodeService.js";
 
 export const useProjectAccessCodes = (projectIdRaw) => {
   const projectId = useMemo(() => parseInt(projectIdRaw, 10), [projectIdRaw]);
@@ -10,15 +10,18 @@ export const useProjectAccessCodes = (projectIdRaw) => {
 
   const fetchAccessCodes = () => {
     if (!projectId) return Promise.resolve();
-    
+
     setLoading(true);
     setError(null);
     return AccessCodeService.getByProjectId(projectId)
-      .then(codes => {
-        const sortedCodes = codes.sort((a, b) => new Date(b.createdAtUtc || 0) - new Date(a.createdAtUtc || 0));
+      .then((codes) => {
+        const sortedCodes = codes.sort(
+          (a, b) =>
+            new Date(b.createdAtUtc || 0) - new Date(a.createdAtUtc || 0)
+        );
         setAccessCodes(sortedCodes);
       })
-      .catch(err => setError(err.message))
+      .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   };
 
@@ -26,9 +29,13 @@ export const useProjectAccessCodes = (projectIdRaw) => {
     fetchAccessCodes();
   }, [projectId]);
 
-  const createAccessCode = async (description = 'Access code for project') => {
+  const createAccessCode = async ({ expiration, customExpiration }) => {
     try {
-      await AccessCodeService.createForProject({ projectId, description });
+      await AccessCodeService.createForProject({
+        projectId,
+        expiration,
+        customExpiration,
+      });
       await fetchAccessCodes();
     } catch (err) {
       setError(err.message);
@@ -50,17 +57,17 @@ export const useProjectAccessCodes = (projectIdRaw) => {
     try {
       await navigator.clipboard.writeText(code);
     } catch {
-      const textArea = document.createElement('textarea');
+      const textArea = document.createElement("textarea");
       textArea.value = code;
       document.body.appendChild(textArea);
       textArea.select();
-      document.execCommand('copy');
+      document.execCommand("copy");
       document.body.removeChild(textArea);
     }
   };
 
   const toggleVisibility = (code) => {
-    setVisibleCodes(prev => ({ ...prev, [code]: !prev[code] }));
+    setVisibleCodes((prev) => ({ ...prev, [code]: !prev[code] }));
   };
 
   return {
@@ -72,6 +79,6 @@ export const useProjectAccessCodes = (projectIdRaw) => {
     retireCode,
     copyCode,
     toggleVisibility,
-    refetch: fetchAccessCodes
+    refetch: fetchAccessCodes,
   };
 };
