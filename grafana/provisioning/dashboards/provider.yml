@@ -1,0 +1,12 @@
+apiVersion: 1
+providers:
+  - name: "App Dashboards"
+    folder: "Observability"
+    type: file
+    disableDeletion: false # delete from DB if removed from files
+    editable: true
+    allowUiUpdates: true # keep UI edits in DB until files change
+    updateIntervalSeconds: 10
+    options:
+      path: /etc/grafana/provisioning/dashboards/app
+      foldersFromFilesStructure: true

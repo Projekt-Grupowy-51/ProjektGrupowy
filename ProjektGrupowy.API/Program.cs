@@ -4,7 +4,7 @@ using ProjektGrupowy.Infrastructure.IoC;
 var builder = WebApplication.CreateBuilder(args);
 
 // Configure all services
-builder.ConfigureServices();
+builder.ConfigureServices(builder.Configuration);
 
 var app = builder.Build();
 
@@ -17,5 +17,7 @@ app.UseExceptionHandlingConfiguration()
 
 // Apply migrations
 await app.ApplyMigrationsAsync();
+
+app.MapPrometheusScrapingEndpoint("/metrics");
 
 app.Run();

@@ -2,6 +2,9 @@ using Hangfire;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Npgsql;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Trace;
 using ProjektGrupowy.Application.Authorization;
 using ProjektGrupowy.Application.Services;
 using ProjektGrupowy.Application.Services.Background;
@@ -28,6 +31,17 @@ public static class ServiceCollectionExtensions
 
         // Authorization
         _ = services.AddScoped<IAuthorizationHandler, CustomAuthorizationHandler>();
+
+        _ = services.AddOpenTelemetry()
+            .WithMetrics(b => b
+                .AddAspNetCoreInstrumentation()
+                .AddRuntimeInstrumentation()
+                .AddProcessInstrumentation()
+                .AddMeter("Npgsql")
+                .AddPrometheusExporter())
+            .WithTracing(t => t
+                .AddAspNetCoreInstrumentation(o => o.RecordException = true)
+                .AddNpgsql());
 
         return services;
     }

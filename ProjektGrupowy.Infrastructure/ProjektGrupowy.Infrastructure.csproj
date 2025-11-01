@@ -12,6 +12,7 @@
 		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
 		<PackageReference Include="EFCore.BulkExtensions" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" />
+		<PackageReference Include="Npgsql.OpenTelemetry" />
 
 	</ItemGroup>
 

@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Npgsql;
 using ProjektGrupowy.Application.Interfaces.Persistence;
 using ProjektGrupowy.Application.Interfaces.Repositories;
 using ProjektGrupowy.Application.Interfaces.SignalR;
@@ -15,17 +16,39 @@ using ProjektGrupowy.Infrastructure.SignalR;
 
 namespace ProjektGrupowy.Infrastructure.IoC;
 
+public sealed class HangfireNpgsqlConnectionFactory(NpgsqlDataSource ds) : IConnectionFactory
+{
+    public NpgsqlConnection GetOrCreateConnection() => ds.CreateConnection();
+}
+
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
+    public static IServiceCollection AddInfrastructureServices(this IServiceCollection services,
+        IConfiguration configuration, IHostEnvironment environment)
     {
         // Database
-        _ = services.AddDbContext<AppDbContext>(options =>
+        var connectionString = configuration.GetConnectionString("DefaultConnection");
+        var dataSourceBuilder = new NpgsqlDataSourceBuilder(connectionString)
+        {
+            Name = $"{nameof(AppDbContext)}"
+        };
+
+        dataSourceBuilder.ConfigureTracing(o =>
+        {
+            o.ConfigureCommandFilter(cmd => !cmd.CommandText.StartsWith("COMMIT", StringComparison.OrdinalIgnoreCase) &&
+                                            !cmd.CommandText.StartsWith("ROLLBACK", StringComparison.OrdinalIgnoreCase));
+        });
+        
+        var dataSource = dataSourceBuilder.Build();
+
+        _ = services.AddDbContextPool<AppDbContext>(options =>
             options
-                .UseNpgsql(configuration.GetConnectionString("DefaultConnection"))
+                .UseNpgsql(dataSource)
                 .UseLazyLoadingProxies()
                 .UseSnakeCaseNamingConvention()
         );
+
+        services.AddSingleton(dataSource);
 
         // Register AppDbContext as IReadWriteContext
         _ = services.AddScoped<IReadWriteContext>(provider => provider.GetRequiredService<AppDbContext>());
@@ -54,14 +77,14 @@ public static class ServiceCollectionExtensions
             options.EnableDetailedErrors = environment.IsDevelopment();
             options.MaximumReceiveMessageSize = 102400; // 100 KB
         });
-        
+
         // Configure SignalR to use the 'sub' claim as the user identifier
         // _ = services.AddSingleton<Microsoft.AspNetCore.SignalR.IUserIdProvider, SubClaimUserIdProvider>();
-        
+
         _ = services.AddScoped<IMessageService, SignalRMessageService>();
 
         // Hangfire Storage and Server
-        _ = services.AddHangfireStorage(configuration, environment);
+        _ = services.AddHangfireStorage(environment);
         services.AddHangfireServer();
 
         return services;
@@ -69,10 +92,10 @@ public static class ServiceCollectionExtensions
 
     private static IServiceCollection AddHangfireStorage(
         this IServiceCollection services,
-        IConfiguration configuration,
         IHostEnvironment environment)
     {
-        services.AddHangfire(config =>
+        services.AddSingleton<IConnectionFactory, HangfireNpgsqlConnectionFactory>();
+        services.AddHangfire((sp, config) =>
         {
             config.UseSerilogLogProvider();
             config.UseSimpleAssemblyNameTypeSerializer();
@@ -84,8 +107,8 @@ public static class ServiceCollectionExtensions
             }
             else
             {
-                var hangfireConnectionString = configuration.GetConnectionString("HangfireConnection");
-                config.UsePostgreSqlStorage(c => c.UseNpgsqlConnection(hangfireConnectionString));
+                var connectionFactory = sp.GetRequiredService<IConnectionFactory>();
+                config.UsePostgreSqlStorage(c => c.UseConnectionFactory(connectionFactory));
             }
         });
 
