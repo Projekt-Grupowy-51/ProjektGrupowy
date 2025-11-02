@@ -16,7 +16,7 @@ public static class WebApplicationExtensions
         _ = app.UseHangfireDashboard("/hangfire", new DashboardOptions { Authorization = [new HangfireDashboardFilter()] });
 
         // Register Hangfire jobs after the application has started and JobStorage is configured
-        Application.IoC.ServiceCollectionExtensions.RegisterHangfireJobs();
+        Application.IoC.ServiceCollectionExtensions.RegisterHangfireJobs(app.Configuration);
 
         return app;
     }

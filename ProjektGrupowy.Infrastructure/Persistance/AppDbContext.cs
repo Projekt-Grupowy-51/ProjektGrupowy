@@ -1,6 +1,4 @@
-﻿using MediatR;
-using Microsoft.EntityFrameworkCore;
-using ProjektGrupowy.Application.Events;
+﻿using Microsoft.EntityFrameworkCore;
 using ProjektGrupowy.Application.Services;
 using ProjektGrupowy.Domain.Events;
 using ProjektGrupowy.Domain.Models;
@@ -11,13 +9,11 @@ namespace ProjektGrupowy.Infrastructure.Persistance;
 public class AppDbContext : DbContext, IApplicationDbContext, IReadWriteContext
 {
     private readonly ICurrentUserService? _currentUserService;
-    private readonly IMediator? _mediator;
 
-    public AppDbContext(DbContextOptions<AppDbContext> options, ICurrentUserService currentUserService, IMediator? mediator = null)
+    public AppDbContext(DbContextOptions<AppDbContext> options, ICurrentUserService currentUserService)
         : base(options)
     {
         _currentUserService = currentUserService;
-        _mediator = mediator;
     }
 
     public DbSet<Project> Projects { get; set; }
@@ -41,19 +37,13 @@ public class AppDbContext : DbContext, IApplicationDbContext, IReadWriteContext
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         ApplySoftDelete();
-        var domainEventsToPublish = await DispatchDomainEventsAsync();
+        await DispatchDomainEventsAsync();
         var result = await base.SaveChangesAsync(cancellationToken);
-        
-        // Publish events immediately after successful save
-        if (_mediator != null && domainEventsToPublish.Any())
-        {
-            await _mediator.Publish(new DomainEventSavedNotification(domainEventsToPublish), cancellationToken);
-        }
-        
+
         return result;
     }
 
-    private async Task<List<DomainEvent>> DispatchDomainEventsAsync()
+    private async Task DispatchDomainEventsAsync()
     {
         var entities = ChangeTracker.Entries<BaseEntity>()
             .Where(e => e.Entity.DomainEvents.Any())
@@ -67,8 +57,6 @@ public class AppDbContext : DbContext, IApplicationDbContext, IReadWriteContext
         entities.ForEach(e => e.ClearDomainEvents());
 
         await DomainEvents.AddRangeAsync(domainEvents);
-        
-        return domainEvents;
     }
 
     private void ApplySoftDelete()

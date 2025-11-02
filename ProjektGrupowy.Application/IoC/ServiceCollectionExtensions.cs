@@ -17,8 +17,17 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration configuration)
     {
+        // Configuration
+        services.Configure<Configuration.OutboxSettings>(configuration.GetSection(Configuration.OutboxSettings.SectionName));
+
         // MediatR
-        _ = services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(ServiceCollectionExtensions).Assembly));
+        _ = services.AddMediatR(cfg =>
+        {
+            cfg.RegisterServicesFromAssembly(typeof(ServiceCollectionExtensions).Assembly);
+
+            // Register pipeline behaviors
+            cfg.AddOpenBehavior(typeof(Pipelines.OutboxProcessingBehavior<,>));
+        });
 
         // AutoMapper
         services.AddAutoMapper(cfg => cfg.AddMaps(typeof(ServiceCollectionExtensions).Assembly));
@@ -49,15 +58,21 @@ public static class ServiceCollectionExtensions
     /// <summary>
     /// Registers Hangfire recurring jobs. Should be called after the application has started and JobStorage is configured.
     /// </summary>
-    public static void RegisterHangfireJobs()
+    /// <param name="configuration">Configuration to read OutboxSettings</param>
+    public static void RegisterHangfireJobs(IConfiguration configuration)
     {
-        // Domain events are now published immediately via MediatR pipeline (see DomainEventSavedNotificationHandler)
-        // This Hangfire job is kept as a fallback mechanism for unpublished events
-        RecurringJob.AddOrUpdate<IDomainEventPublisher>(
-            "publish-domain-events-fallback",
-            publisher => publisher.PublishPendingEventsAsync(),
-            // "*/30 * * * * *" // Every 30 seconds (fallback only)
-            Cron.Never()
-        );
+        var outboxSettings = configuration.GetSection("Outbox").Get<Configuration.OutboxSettings>()
+            ?? new Configuration.OutboxSettings();
+
+        if (outboxSettings.IsCronMode)
+        {
+            // Process outbox via Hangfire cron job
+            RecurringJob.AddOrUpdate<IDomainEventPublisher>(
+                "publish-domain-events",
+                publisher => publisher.PublishPendingEventsAsync(),
+                "*/10 * * * * *" // Every 10 seconds
+            );
+        }
+        // Otherwise don't register any job - processing is handled by MediatR pipeline
     }
 }
