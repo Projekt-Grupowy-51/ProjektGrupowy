@@ -277,21 +277,21 @@ public class VideoController(
         return Ok(response);
     }
 
-    [HttpGet("{videoId:int}/{subjectId:int}/assigned-labels/page")]
+    [HttpGet("{subjectId:int}/assigned-labels/page/video-ids")]
     public async Task<ActionResult<AssignedLabelPageResponse>> GetAssignedLabelsByVideoIdAndSubjectIdPageAsync(
-        [FromRoute] int videoId,
         [FromRoute] int subjectId,
+        [FromQuery] int[] videoIds,
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 10)
     {
-        var pageQuery = new GetAssignedLabelsByVideoIdAndSubjectIdPageQuery(pageNumber, pageSize, videoId, subjectId,
+        var pageQuery = new GetAssignedLabelsByVideoIdAndSubjectIdPageQuery(pageNumber, pageSize, videoIds, subjectId,
             currentUserService.UserId, currentUserService.IsAdmin);
         var pageResult = await mediator.Send(pageQuery);
 
         if (!pageResult.IsSuccess)
             return NotFound(pageResult.Errors);
 
-        var countQuery = new GetAssignedLabelsByVideoIdAndSubjectIdCountQuery(videoId, subjectId,
+        var countQuery = new GetAssignedLabelsByVideoIdAndSubjectIdCountQuery(videoIds, subjectId,
             currentUserService.UserId, currentUserService.IsAdmin);
         var countResult = await mediator.Send(countQuery);
 

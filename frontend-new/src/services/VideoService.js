@@ -216,33 +216,37 @@ class VideoService {
   }
 
   /**
-   * Get labels by video and subject with pagination
-   * GET /api/Video/{videoId}/{subjectId}/assigned-labels/page?pageNumber={pageNumber}&pageSize={pageSize}
-   * @param {number} videoId - Video ID
+   * Get labels by video IDs and subject with pagination
+   * GET /api/videos/{subjectId}/assigned-labels/page/video-ids?videoIds={videoIds}&pageNumber={pageNumber}&pageSize={pageSize}
+   * @param {Array<number>} videoIds - Array of Video IDs
    * @param {number} subjectId - Subject ID
    * @param {number} pageNumber - Page number (1-based)
    * @param {number} pageSize - Number of items per page
    * @returns {Promise<Object>} Paginated response with assignedLabels array and totalLabelCount
    */
   async getAssignedLabelsBySubjectPaginated(
-    videoId,
+    videoIds,
     subjectId,
     pageNumber = 1,
     pageSize = 10
   ) {
     try {
       return await apiClient.get(
-        `/videos/${videoId}/${subjectId}/assigned-labels/page`,
+        `/videos/${subjectId}/assigned-labels/page/video-ids`,
         {
           params: {
+            videoIds: videoIds,
             pageNumber,
             pageSize,
+          },
+          paramsSerializer: {
+            indexes: null, // No brackets for array parameters
           },
         }
       );
     } catch (error) {
       throw new Error(
-        `Failed to get assigned labels for video ${videoId} and subject ${subjectId}: ${error.message}`
+        `Failed to get assigned labels for subject ${subjectId} and videos ${videoIds}: ${error.message}`
       );
     }
   }

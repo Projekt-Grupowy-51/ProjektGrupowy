@@ -51,21 +51,23 @@ public class AssignedLabelRepository(IReadWriteContext context) : IAssignedLabel
                 .ToListAsync();
     }
 
-    public Task<List<AssignedLabel>> GetAssignedLabelsByVideoIdAndSubjectIdPageAsync(int videoId, int subjectId, int page, int pageSize, string userId,
+    public Task<List<AssignedLabel>> GetAssignedLabelsByVideoIdAndSubjectIdPageAsync(int[] videoIds, int subjectId, int page, int pageSize, string userId,
         bool isAdmin)
     {
         return context.AssignedLabels.FilteredAssignedLabels(userId, isAdmin)
-            .Where(a => a.Video.Id == videoId && a.Label.Subject.Id == subjectId)
+            .Where(a => a.Label.Subject.Id == subjectId)
+            .Where(a => videoIds.Contains(a.Video.Id))
             .OrderByDescending(a => a.Id)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
     }
 
-    public Task<int> GetAssignedLabelsByVideoIdAndSubjectIdCountAsync(int videoId, int subjectId, string userId, bool isAdmin)
+    public Task<int> GetAssignedLabelsByVideoIdAndSubjectIdCountAsync(int[] videoIds, int subjectId, string userId, bool isAdmin)
     {
         return context.AssignedLabels.FilteredAssignedLabels(userId, isAdmin)
-            .Where(a => a.Video.Id == videoId && a.Label.Subject.Id == subjectId)
+            .Where(a => a.Label.Subject.Id == subjectId)
+            .Where(a => videoIds.Contains(a.Video.Id))
             .CountAsync();
     }
 

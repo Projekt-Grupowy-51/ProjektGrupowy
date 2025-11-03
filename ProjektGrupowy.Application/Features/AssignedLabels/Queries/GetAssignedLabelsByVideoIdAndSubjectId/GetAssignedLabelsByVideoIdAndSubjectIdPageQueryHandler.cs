@@ -18,7 +18,7 @@ public class GetAssignedLabelsByVideoIdAndSubjectIdPageQueryHandler(
     public async Task<Result<List<AssignedLabel>>> Handle(GetAssignedLabelsByVideoIdAndSubjectIdPageQuery request, CancellationToken cancellationToken)
     {
         var assignedLabels = await assignedLabelRepository.GetAssignedLabelsByVideoIdAndSubjectIdPageAsync(
-            request.VideoId,
+            request.VideoIds,
             request.SubjectId,
             request.Page,
             request.PageSize,

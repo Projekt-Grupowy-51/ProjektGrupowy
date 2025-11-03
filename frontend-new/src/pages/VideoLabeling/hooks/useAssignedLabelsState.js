@@ -22,32 +22,20 @@ export const useAssignedLabelsState = (videos, assignment) => {
       setLoading(true);
 
       try {
-        // Fetch paginated labels for all videos
-        const promises = videos.map((video) =>
-          VideoService.getAssignedLabelsBySubjectPaginated(
-            video.id,
-            assignment.subjectId,
-            page,
-            size
-          )
-        );
-        const responses = await Promise.all(promises);
+        // Extract all video IDs
+        const videoIds = videos.map((video) => video.id);
 
-        // Combine all assigned labels from all videos
-        const allLabels = responses.flatMap(
-          (response) => response.assignedLabels || []
+        // Fetch paginated labels for all videos in a single request
+        const response = await VideoService.getAssignedLabelsBySubjectPaginated(
+          videoIds,
+          assignment.subjectId,
+          page,
+          size
         );
 
-        // Use the total count from the first video (assuming all have similar counts)
-        // Or sum them if labels are unique per video
-        const totalCount = responses.reduce(
-          (sum, response) => sum + (response.totalLabelCount || 0),
-          0
-        );
-
-        setAssignedLabels(allLabels);
-        setTotalItems(totalCount);
-        setTotalPages(Math.ceil(totalCount / size));
+        setAssignedLabels(response.assignedLabels || []);
+        setTotalItems(response.totalLabelCount || 0);
+        setTotalPages(Math.ceil((response.totalLabelCount || 0) / size));
         setCurrentPage(page);
       } catch (error) {
         console.error("Failed to load assigned labels:", error);

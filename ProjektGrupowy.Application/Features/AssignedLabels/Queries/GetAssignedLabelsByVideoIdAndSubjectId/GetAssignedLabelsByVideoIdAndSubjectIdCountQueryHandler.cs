@@ -18,7 +18,7 @@ public class GetAssignedLabelsByVideoIdAndSubjectIdCountQueryHandler(
     public async Task<Result<int>> Handle(GetAssignedLabelsByVideoIdAndSubjectIdCountQuery request, CancellationToken cancellationToken)
     {
         var assignedLabelCount = await assignedLabelRepository.GetAssignedLabelsByVideoIdAndSubjectIdCountAsync(
-            request.VideoId,
+            request.VideoIds,
             request.SubjectId,
             request.UserId,
             request.IsAdmin);
