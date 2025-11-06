@@ -162,7 +162,7 @@ public class VideoController(
     /// </summary>
     /// <param name="id">The ID of the video to be streamed.</param>
     /// <param name="quality">The desired quality of the video stream (optional). If not specified, the original quality is used.</param>
-    /// <returns>A redirect to the Nginx URL or the video file stream. Might produce 200, 302, 400 or 206 Partial Content for range requests.</returns>
+    /// <returns>A URL for streaming the video.</returns>
     [HttpGet("{id:int}/stream")]
     public async Task<IActionResult> GetVideoStreamAsync(int id, [FromQuery] string? quality)
     {
