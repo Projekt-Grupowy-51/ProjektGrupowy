@@ -16,6 +16,7 @@ const Input = ({
   helpText,
   size = 'md',
   className = '',
+  divClassName = 'mb-3',
   rows = 3,
   checked,
   multiple = false,
@@ -164,7 +165,7 @@ const Input = ({
   };
 
   return (
-    <div className="mb-3">
+    <div className={divClassName}>
       {/* For checkbox, label is rendered inside renderInput() */}
       {label && type !== 'checkbox' && (
         <label htmlFor={inputId} className="form-label">

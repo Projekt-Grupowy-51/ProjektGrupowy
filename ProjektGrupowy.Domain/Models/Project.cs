@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ProjektGrupowy.Domain.Models;
 
-[Table("Projects")]
+// [Table("Projects")]
 public class Project : BaseEntity, IOwnedEntity
 {
     [Key]
@@ -67,7 +67,7 @@ public class Project : BaseEntity, IOwnedEntity
         if (!ProjectLabelers.Contains(labeler))
         {
             ProjectLabelers.Add(labeler);
-            AddDomainEvent($"Użytkownik dołączył do projektu!", userId);
+            AddDomainEvent($"Użytkownik {labeler.UserName} dołączył do projektu {Name}!", CreatedById);
         }
     }
 }

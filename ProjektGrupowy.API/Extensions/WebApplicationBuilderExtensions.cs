@@ -1,19 +1,36 @@
 using ProjektGrupowy.Application.IoC;
 using ProjektGrupowy.Infrastructure.IoC;
 using Serilog;
+using Serilog.Sinks.Grafana.Loki;
 
 namespace ProjektGrupowy.API.Extensions;
 
 public static class WebApplicationBuilderExtensions
 {
-    public static WebApplicationBuilder ConfigureServices(this WebApplicationBuilder builder)
+    public static WebApplicationBuilder ConfigureServices(this WebApplicationBuilder builder, IConfiguration configuration)
     {
         // Logging
+        var lokiUrl = configuration["Loki:Url"] ?? "http://loki:3100";
+        var envName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
+
+        var labels = new[]
+        {
+            new LokiLabel { Key = "app", Value = "projektgrupowy" },
+            new LokiLabel { Key = "env", Value = envName },
+            new LokiLabel { Key = "service", Value = "api" }
+        };
+
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Warning()
+            .Enrich.FromLogContext()
+            .Enrich.WithProperty("app", "ProjektGrupowy.API")
+            .Enrich.WithProperty("env", envName)
             .WriteTo.Console()
-            .WriteTo.File("Logs/internal_api.log", rollingInterval: RollingInterval.Day)
+            .WriteTo.File("Logs/projekt_grupowy.log", rollingInterval: RollingInterval.Day)
+            .WriteTo.GrafanaLoki(lokiUrl, labels: labels)
             .CreateLogger();
+
+        builder.Services.AddLogging(lb => lb.ClearProviders().AddSerilog());
 
         builder.Host.UseSerilog();
 

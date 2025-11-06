@@ -11,31 +11,21 @@ using ProjektGrupowy.Domain.Models;
 
 namespace ProjektGrupowy.Application.Features.AssignedLabels.Queries.GetAssignedLabelsByVideoId;
 
-public class GetAssignedLabelsByVideoIdQueryHandler : IRequestHandler<GetAssignedLabelsByVideoIdQuery, Result<List<AssignedLabel>>>
+public class GetAssignedLabelsByVideoIdQueryHandler(
+    IAssignedLabelRepository assignedLabelRepository,
+    ICurrentUserService currentUserService,
+    IAuthorizationService authorizationService)
+    : IRequestHandler<GetAssignedLabelsByVideoIdQuery, Result<List<AssignedLabel>>>
 {
-    private readonly IAssignedLabelRepository _assignedLabelRepository;
-    private readonly ICurrentUserService _currentUserService;
-    private readonly IAuthorizationService _authorizationService;
-
-    public GetAssignedLabelsByVideoIdQueryHandler(
-        IAssignedLabelRepository assignedLabelRepository,
-        ICurrentUserService currentUserService,
-        IAuthorizationService authorizationService)
-    {
-        _assignedLabelRepository = assignedLabelRepository;
-        _currentUserService = currentUserService;
-        _authorizationService = authorizationService;
-    }
-
     public async Task<Result<List<AssignedLabel>>> Handle(GetAssignedLabelsByVideoIdQuery request, CancellationToken cancellationToken)
     {
-        var assignedLabels = await _assignedLabelRepository.GetAssignedLabelsByVideoIdAsync(request.VideoId, request.UserId, request.IsAdmin);
+        var assignedLabels = await assignedLabelRepository.GetAssignedLabelsByVideoIdAsync(request.VideoId, request.UserId, request.IsAdmin);
         if (assignedLabels is null)
         {
             return Result.Fail("No assigned labels found");
         }
 
-        var authResult = await _authorizationService.AuthorizeAsync(_currentUserService.User, assignedLabels, new ResourceOperationRequirement(ResourceOperation.Read));
+        var authResult = await authorizationService.AuthorizeAsync(currentUserService.User, assignedLabels, new ResourceOperationRequirement(ResourceOperation.Read));
         return !authResult.Succeeded ? throw new ForbiddenException() : assignedLabels;
     }
 }

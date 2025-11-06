@@ -1,0 +1,53 @@
+auth_enabled: false
+
+server:
+  http_listen_port: 3100
+  grpc_listen_port: 9095
+
+common:
+  path_prefix: /loki
+  storage:
+    filesystem:
+      chunks_directory: /loki/chunks
+      rules_directory: /loki/rules
+  replication_factor: 1
+  ring:
+    kvstore:
+      store: memberlist # <-- no Consul
+
+schema_config:
+  configs:
+    - from: 2020-10-24
+      store: tsdb
+      object_store: filesystem
+      schema: v13
+      index:
+        prefix: index_
+        period: 24h
+
+memberlist:
+  # bind_addr must be a list, or just omit it entirely (defaults work fine)
+  bind_addr:
+    - 0.0.0.0
+  bind_port: 7946
+  # for single node you can omit join_members; keeping it is harmless
+  join_members:
+    - loki
+
+ruler:
+  storage:
+    type: local
+    local:
+      directory: /loki/rules
+
+compactor:
+  working_directory: /loki/compactor
+  shared_store: filesystem
+
+limits_config:
+  retention_period: 168h
+chunk_store_config:
+  max_look_back_period: 168h
+table_manager:
+  retention_deletes_enabled: true
+  retention_period: 168h

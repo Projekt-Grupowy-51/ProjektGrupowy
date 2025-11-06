@@ -1,4 +1,5 @@
 using AutoMapper;
+using Hangfire;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -8,12 +9,15 @@ using ProjektGrupowy.Application.DTOs.AssignedLabel;
 using ProjektGrupowy.Application.DTOs.Video;
 using ProjektGrupowy.Application.Features.AssignedLabels.Queries.GetAssignedLabelsByVideoId;
 using ProjektGrupowy.Application.Features.AssignedLabels.Queries.GetAssignedLabelsByVideoIdAndSubjectId;
+using ProjektGrupowy.Application.Features.AssignedLabels.Queries.GetAssignedLabelsPage;
 using ProjektGrupowy.Application.Features.Videos.Commands.AddVideo;
 using ProjektGrupowy.Application.Features.Videos.Commands.DeleteVideo;
+using ProjektGrupowy.Application.Features.Videos.Commands.ProcessVideo;
 using ProjektGrupowy.Application.Features.Videos.Commands.UpdateVideo;
 using ProjektGrupowy.Application.Features.Videos.Queries.GetVideo;
 using ProjektGrupowy.Application.Features.Videos.Queries.GetVideos;
 using ProjektGrupowy.Application.Features.Videos.Queries.GetVideosByGroupAndPosition;
+using ProjektGrupowy.Application.Helpers;
 using ProjektGrupowy.Application.Services;
 using ProjektGrupowy.Domain.Utils.Constants;
 
@@ -62,7 +66,8 @@ public class VideoController(
     [HttpGet("batch/{videoGroupId:int}/{positionInQueue:int}")]
     public async Task<ActionResult<IEnumerable<VideoResponse>>> GetVideosAsync(int videoGroupId, int positionInQueue)
     {
-        var query = new GetVideosByGroupAndPositionQuery(videoGroupId, positionInQueue, currentUserService.UserId, currentUserService.IsAdmin);
+        var query = new GetVideosByGroupAndPositionQuery(videoGroupId, positionInQueue, currentUserService.UserId,
+            currentUserService.IsAdmin);
         var result = await mediator.Send(query);
 
         if (!result.IsSuccess)
@@ -118,7 +123,12 @@ public class VideoController(
             return BadRequest(result.Errors);
         }
 
-        var response = mapper.Map<VideoResponse>(result.Value);
+        var addedVideo = result.Value;
+
+        var vpCommand = new ProcessVideoCommand(addedVideo.Id, currentUserService.UserId, currentUserService.IsAdmin);
+        BackgroundJob.Enqueue<IMediator>(x => x.Send(vpCommand, CancellationToken.None));
+
+        var response = mapper.Map<VideoResponse>(addedVideo);
         return CreatedAtAction("GetVideo", new { id = result.Value.Id }, response);
     }
 
@@ -151,28 +161,35 @@ public class VideoController(
     /// Stream a video file by its ID. If running in Docker, redirects to Nginx URL; otherwise, serves the file directly.
     /// </summary>
     /// <param name="id">The ID of the video to be streamed.</param>
-    /// <returns>A redirect to the Nginx URL or the video file stream. Might produce 200, 302, 400 or 206 Partial Content for range requests.</returns>
+    /// <param name="quality">The desired quality of the video stream (optional). If not specified, the original quality is used.</param>
+    /// <returns>A URL for streaming the video.</returns>
     [HttpGet("{id:int}/stream")]
-    public async Task<IActionResult> GetVideoStreamAsync(int id)
+    public async Task<ActionResult<VideoStreamUrlResponse>> GetVideoStreamAsync(int id, [FromQuery] string? quality)
     {
         var query = new GetVideoQuery(id, currentUserService.UserId, currentUserService.IsAdmin);
         var result = await mediator.Send(query);
-
-        if (!result.IsSuccess)
-        {
-            return NotFound(result.Errors);
-        }
+        if (!result.IsSuccess) return NotFound(result.Errors);
 
         var video = result.Value;
+        var fullPath = quality is null
+            ? video.Path
+            : Path.Combine(Path.GetDirectoryName(video.Path)!,
+                $"{Path.GetFileNameWithoutExtension(video.Path)}_{quality}{Path.GetExtension(video.Path)}");
+        
+        Console.WriteLine($"\n\n{fullPath}\n\n");
 
-        if (DockerDetector.IsRunningInDocker())
-        {
-            var baseUrl = configuration["Videos:NginxUrl"];
-            var path = $"{baseUrl}/{video.VideoGroup.Project.Id}/{video.VideoGroupId}/{Path.GetFileName(video.Path)}";
-            return Redirect(path);
-        }
+        if (!System.IO.File.Exists(fullPath))
+            return BadRequest("Requested quality not available.");
 
-        return File(video.ToStream(), video.ContentType, Path.GetFileName(video.Path), enableRangeProcessing: true);
+        var fileName = Path.GetFileName(fullPath);
+        var uriPath = $"/videos/{video.VideoGroup.Project.Id}/{video.VideoGroupId}/{fileName}";
+
+        var publicBaseUrl = configuration["Videos:NginxPublicBaseUrl"];
+        var secret = configuration["Videos:SecureLinkSecret"];
+        var expires = DateTimeOffset.UtcNow.AddHours(12);
+
+        var signedUrl = NginxSignedUrl.Sign(publicBaseUrl!, uriPath, expires, secret!);
+        return Ok(new VideoStreamUrlResponse { Url = signedUrl });
     }
 
     /// <summary>
@@ -213,15 +230,57 @@ public class VideoController(
     }
 
     /// <summary>
+    /// Get a paginated list of assigned labels.
+    /// </summary>
+    /// <param name="id">The ID of the video.</param>
+    /// <param name="pageNumber">The page number to retrieve.</param>
+    /// <param name="pageSize">The number of items per page.</param>
+    /// <returns>A paginated list of assigned labels.</returns>
+    [HttpGet("{id:int}/assigned-labels/page")]
+    public async Task<ActionResult<AssignedLabelPageResponse>> GetAssignedLabelsPageAsync(
+        [FromRoute] int id,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10)
+    {
+        var pageQuery = new GetAssignedLabelsPageQuery(
+            id,
+            pageNumber,
+            pageSize,
+            currentUserService.UserId,
+            currentUserService.IsAdmin);
+
+        var countQuery = new GetAssignedLabelsCountQuery(
+            id,
+            currentUserService.UserId,
+            currentUserService.IsAdmin);
+
+        var pageResult = await mediator.Send(pageQuery);
+        if (pageResult.IsFailed)
+            return NotFound(pageResult.Errors);
+
+        var countResult = await mediator.Send(countQuery);
+        if (countResult.IsFailed)
+            return NotFound(countResult.Errors);
+
+        return Ok(new AssignedLabelPageResponse
+        {
+            AssignedLabels = mapper.Map<List<AssignedLabelResponse>>(pageResult.Value),
+            TotalLabelCount = countResult.Value
+        });
+    }
+
+    /// <summary>
     /// Get assigned labels for a specific video and subject by their IDs.
     /// </summary>
     /// <param name="videoId">The ID of the video.</param>
     /// <param name="subjectId">The ID of the subject.</param>
     /// <returns>A collection of assigned labels for the specified video and subject.</returns>
     [HttpGet("{videoId:int}/{subjectId:int}/assigned-labels")]
-    public async Task<ActionResult<IEnumerable<AssignedLabelResponse>>> GetAssignedLabelsByVideoIdAndSubjectIdAsync(int videoId, int subjectId)
+    public async Task<ActionResult<IEnumerable<AssignedLabelResponse>>> GetAssignedLabelsByVideoIdAndSubjectIdAsync(
+        int videoId, int subjectId)
     {
-        var query = new GetAssignedLabelsByVideoIdAndSubjectIdQuery(videoId, subjectId, currentUserService.UserId, currentUserService.IsAdmin);
+        var query = new GetAssignedLabelsByVideoIdAndSubjectIdQuery(videoId, subjectId, currentUserService.UserId,
+            currentUserService.IsAdmin);
         var result = await mediator.Send(query);
 
         if (!result.IsSuccess)
@@ -231,5 +290,33 @@ public class VideoController(
 
         var response = mapper.Map<IEnumerable<AssignedLabelResponse>>(result.Value);
         return Ok(response);
+    }
+
+    [HttpGet("{subjectId:int}/assigned-labels/page/video-ids")]
+    public async Task<ActionResult<AssignedLabelPageResponse>> GetAssignedLabelsByVideoIdAndSubjectIdPageAsync(
+        [FromRoute] int subjectId,
+        [FromQuery] int[] videoIds,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10)
+    {
+        var pageQuery = new GetAssignedLabelsByVideoIdAndSubjectIdPageQuery(pageNumber, pageSize, videoIds, subjectId,
+            currentUserService.UserId, currentUserService.IsAdmin);
+        var pageResult = await mediator.Send(pageQuery);
+
+        if (!pageResult.IsSuccess)
+            return NotFound(pageResult.Errors);
+
+        var countQuery = new GetAssignedLabelsByVideoIdAndSubjectIdCountQuery(videoIds, subjectId,
+            currentUserService.UserId, currentUserService.IsAdmin);
+        var countResult = await mediator.Send(countQuery);
+
+        if (!countResult.IsSuccess)
+            return NotFound(countResult.Errors);
+
+        return Ok(new AssignedLabelPageResponse
+        {
+            AssignedLabels = mapper.Map<List<AssignedLabelResponse>>(pageResult.Value),
+            TotalLabelCount = countResult.Value
+        });
     }
 }

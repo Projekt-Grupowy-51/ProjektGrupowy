@@ -5,7 +5,7 @@ using System.Security.Cryptography;
 
 namespace ProjektGrupowy.Domain.Models;
 
-[Table("ProjectAccessCodes")]
+// [Table("ProjectAccessCodes")]
 public class ProjectAccessCode : BaseEntity, IOwnedEntity
 {
     [Key] public int Id { get; set; }

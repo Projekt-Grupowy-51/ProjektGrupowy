@@ -1,17 +1,17 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { useConfirmation } from '../../hooks/useConfirmation.js';
+import React from "react";
+import PropTypes from "prop-types";
+import { useConfirmation } from "../../hooks/useConfirmation.js";
 
-const Button = ({ 
-  children, 
-  variant = 'primary', 
-  size = 'md', 
-  type = 'button',
+const Button = ({
+  children,
+  variant = "primary",
+  size = "md",
+  type = "button",
   disabled = false,
   loading = false,
   icon,
   onClick,
-  className = '',
+  className = "",
   // Confirmation props
   confirmAction = false,
   confirmTitle,
@@ -20,38 +20,38 @@ const Button = ({
   cancelText,
   confirmVariant,
   onConfirm,
-  ...props 
+  ...props
 }) => {
   const getVariantClass = () => {
     const variants = {
-      primary: 'btn-primary',
-      secondary: 'btn-secondary',
-      success: 'btn-success',
-      danger: 'btn-danger',
-      warning: 'btn-warning',
-      info: 'btn-info',
-      light: 'btn-light',
-      dark: 'btn-dark',
-      link: 'btn-link',
-      outline: 'btn-primary',
-      'outline-secondary': 'btn-outline-secondary',
-      'outline-success': 'btn-outline-success',
-      'outline-danger': 'btn-outline-danger',
-      'outline-warning': 'btn-outline-warning',
-      'outline-info': 'btn-outline-info',
-      'outline-light': 'btn-outline-light',
-      'outline-dark': 'btn-outline-dark',
+      primary: "btn-primary",
+      secondary: "btn-secondary",
+      success: "btn-success",
+      danger: "btn-danger",
+      warning: "btn-warning",
+      info: "btn-info",
+      light: "btn-light",
+      dark: "btn-dark",
+      link: "btn-link",
+      outline: "btn-primary",
+      "outline-secondary": "btn-outline-secondary",
+      "outline-success": "btn-outline-success",
+      "outline-danger": "btn-outline-danger",
+      "outline-warning": "btn-outline-warning",
+      "outline-info": "btn-outline-info",
+      "outline-light": "btn-outline-light",
+      "outline-dark": "btn-outline-dark",
     };
     return variants[variant] || variants.primary;
   };
 
   const getSizeClass = () => {
     const sizes = {
-      sm: 'btn-sm',
-      md: '',
-      lg: 'btn-lg'
+      sm: "btn-sm",
+      md: "",
+      lg: "btn-lg",
     };
-    return sizes[size] || '';
+    return sizes[size] || "";
   };
 
   const { showConfirmation } = useConfirmation();
@@ -59,14 +59,15 @@ const Button = ({
   const handleClick = (event) => {
     if (confirmAction) {
       event.preventDefault();
-      
+
       const confirmationOptions = {
         title: confirmTitle,
         message: confirmMessage,
-        variant: confirmVariant || (variant === 'danger' ? 'danger' : 'warning'),
+        variant:
+          confirmVariant || (variant === "danger" ? "danger" : "warning"),
         confirmText: confirmText,
         cancelText: cancelText,
-        onConfirm: onConfirm || onClick
+        onConfirm: onConfirm || onClick,
       };
 
       showConfirmation(confirmationOptions);
@@ -75,12 +76,9 @@ const Button = ({
     }
   };
 
-  const classes = [
-    'btn',
-    getVariantClass(),
-    getSizeClass(),
-    className
-  ].filter(Boolean).join(' ');
+  const classes = ["btn", getVariantClass(), getSizeClass(), className]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <button
@@ -91,11 +89,13 @@ const Button = ({
       {...props}
     >
       {loading && (
-        <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+        <span
+          className="spinner-border spinner-border-sm me-2"
+          role="status"
+          aria-hidden="true"
+        ></span>
       )}
-      {icon && !loading && (
-        <i className={`${icon} me-2`}></i>
-      )}
+      {icon && !loading && <i className={`${icon} me-2`}></i>}
       {children}
     </button>
   );
@@ -104,12 +104,26 @@ const Button = ({
 Button.propTypes = {
   children: PropTypes.node.isRequired,
   variant: PropTypes.oneOf([
-    'primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark', 'link',
-    'outline', 'outline-secondary', 'outline-success', 'outline-danger', 
-    'outline-warning', 'outline-info', 'outline-light', 'outline-dark'
+    "primary",
+    "secondary",
+    "success",
+    "danger",
+    "warning",
+    "info",
+    "light",
+    "dark",
+    "link",
+    "outline",
+    "outline-secondary",
+    "outline-success",
+    "outline-danger",
+    "outline-warning",
+    "outline-info",
+    "outline-light",
+    "outline-dark",
   ]),
-  size: PropTypes.oneOf(['sm', 'md', 'lg']),
-  type: PropTypes.oneOf(['button', 'submit', 'reset']),
+  size: PropTypes.oneOf(["sm", "md", "lg"]),
+  type: PropTypes.oneOf(["button", "submit", "reset"]),
   disabled: PropTypes.bool,
   loading: PropTypes.bool,
   icon: PropTypes.string,
@@ -121,8 +135,8 @@ Button.propTypes = {
   confirmMessage: PropTypes.string,
   confirmText: PropTypes.string,
   cancelText: PropTypes.string,
-  confirmVariant: PropTypes.oneOf(['danger', 'warning', 'info', 'success']),
-  onConfirm: PropTypes.func
+  confirmVariant: PropTypes.oneOf(["danger", "warning", "info", "success"]),
+  onConfirm: PropTypes.func,
 };
 
 export default Button;
