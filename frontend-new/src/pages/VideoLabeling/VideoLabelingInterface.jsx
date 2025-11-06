@@ -248,8 +248,9 @@ const VideoLabelingInterface = () => {
 
               {/* Quality Selector */}
               <QualitySelector
-                videos={batchManagement.videos}
-                selectedQuality={batchManagement.selectedQuality}
+                availableQualities={batchManagement.availableQualities}
+                originalQuality={batchManagement.originalQuality}
+                selectedQualityIndex={batchManagement.selectedQualityIndex}
                 onQualityChange={handleQualityChange}
               />
             </Card.Body>

@@ -2,41 +2,45 @@ import React from "react";
 import PropTypes from "prop-types";
 import { useTranslation } from "react-i18next";
 
-const QualitySelector = ({ videos, selectedQuality, onQualityChange }) => {
+const QualitySelector = ({
+  availableQualities,
+  originalQuality,
+  selectedQualityIndex,
+  onQualityChange,
+}) => {
   const { t } = useTranslation(["videos"]);
 
-  // Get quality options based on available qualities from videos
+  // Get quality options based on available qualities
   const getQualityOptions = () => {
-    if (!videos || videos.length === 0) return [];
-
-    // Get the first video's qualities as reference
-    const firstVideo = videos[0];
-    if (!firstVideo?.availableQualities || !firstVideo?.originalQuality) {
+    if (
+      !availableQualities ||
+      availableQualities.length === 0 ||
+      !originalQuality
+    ) {
       return [];
     }
 
-    const qualities = firstVideo.availableQualities;
-    const original = firstVideo.originalQuality;
+    const qualities = availableQualities;
+    const original = originalQuality;
 
     const options = [
       {
-        value: "original", // Use "original" as marker instead of actual quality
+        value: "original",
         label: t("videos:quality.original"),
         description: original,
-        isOriginal: true,
       },
     ];
 
     // Find 2x lower quality
+    const [origHeight] = original.split("x").map(Number);
     const twoXLower = qualities.find((q) => {
       const [height] = q.split("x").map(Number);
-      const [origHeight] = original.split("x").map(Number);
       return height === Math.floor(origHeight / 2);
     });
 
     if (twoXLower) {
       options.push({
-        value: twoXLower,
+        value: "2x",
         label: t("videos:quality.2x_lower"),
         description: twoXLower,
       });
@@ -45,13 +49,12 @@ const QualitySelector = ({ videos, selectedQuality, onQualityChange }) => {
     // Find 4x lower quality
     const fourXLower = qualities.find((q) => {
       const [height] = q.split("x").map(Number);
-      const [origHeight] = original.split("x").map(Number);
       return height === Math.floor(origHeight / 4);
     });
 
     if (fourXLower) {
       options.push({
-        value: fourXLower,
+        value: "4x",
         label: t("videos:quality.4x_lower"),
         description: fourXLower,
       });
@@ -67,8 +70,8 @@ const QualitySelector = ({ videos, selectedQuality, onQualityChange }) => {
   }
 
   const handleQualityChange = (value) => {
-    // Pass null if "original" is selected, otherwise pass the actual quality value
-    onQualityChange(value === "original" ? null : value);
+    // Pass the quality index directly ("original", "2x", or "4x")
+    onQualityChange(value);
   };
 
   return (
@@ -79,7 +82,7 @@ const QualitySelector = ({ videos, selectedQuality, onQualityChange }) => {
       </label>
       <select
         className="form-select form-select-sm"
-        value={selectedQuality || "original"}
+        value={selectedQualityIndex || "original"}
         onChange={(e) => handleQualityChange(e.target.value)}
       >
         {qualityOptions.map((option) => (
@@ -93,13 +96,9 @@ const QualitySelector = ({ videos, selectedQuality, onQualityChange }) => {
 };
 
 QualitySelector.propTypes = {
-  videos: PropTypes.arrayOf(
-    PropTypes.shape({
-      availableQualities: PropTypes.arrayOf(PropTypes.string),
-      originalQuality: PropTypes.string,
-    })
-  ).isRequired,
-  selectedQuality: PropTypes.string,
+  availableQualities: PropTypes.arrayOf(PropTypes.string),
+  originalQuality: PropTypes.string,
+  selectedQualityIndex: PropTypes.string,
   onQualityChange: PropTypes.func.isRequired,
 };
 

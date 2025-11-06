@@ -7,9 +7,12 @@ export const useBatchManagement = (assignment) => {
   const [totalBatches, setTotalBatches] = useState(1);
   const [videos, setVideos] = useState([]);
   const [videoStreamUrls, setVideoStreamUrls] = useState({});
-  const [selectedQuality, setSelectedQuality] = useState(null);
+  const [selectedQualityIndex, setSelectedQualityIndex] = useState("original"); // "original", "2x", or "4x"
+  const [availableQualities, setAvailableQualities] = useState([]);
+  const [originalQuality, setOriginalQuality] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [initialLoadDone, setInitialLoadDone] = useState(false);
 
   // Load video group info to determine total batches
   const loadVideoGroupInfo = useCallback(async () => {
@@ -28,8 +31,42 @@ export const useBatchManagement = (assignment) => {
     }
   }, [assignment?.videoGroupId]);
 
+  // Helper function to calculate quality string from index and video metadata
+  const calculateQualityFromIndex = useCallback(
+    (qualityIndex, videoOriginal, videoQualities) => {
+      if (qualityIndex === "original") {
+        return null; // null means use original quality
+      }
+
+      const [origHeight] = videoOriginal.split("x").map(Number);
+
+      if (qualityIndex === "2x") {
+        // Find 2x lower quality
+        const targetHeight = Math.floor(origHeight / 2);
+        return videoQualities.find((q) => {
+          const [height] = q.split("x").map(Number);
+          return height === targetHeight;
+        });
+      }
+
+      if (qualityIndex === "4x") {
+        // Find 4x lower quality
+        const targetHeight = Math.floor(origHeight / 4);
+        return videoQualities.find((q) => {
+          const [height] = q.split("x").map(Number);
+          return height === targetHeight;
+        });
+      }
+
+      return null; // Fallback to original
+    },
+    []
+  );
+
   const loadBatch = useCallback(
-    async (batchNumber, quality = undefined) => {
+    async (batchNumber, qualityIndex = undefined) => {
+      if (!assignment?.videoGroupId) return;
+
       setLoading(true);
       setError(null);
 
@@ -39,28 +76,34 @@ export const useBatchManagement = (assignment) => {
           batchNumber
         );
 
-        // Only set default quality on first load if not explicitly provided
-        if (
-          selectedQuality === null &&
-          quality === undefined &&
-          batchVideos.length > 0
-        ) {
-          // Default to null (original quality without parameter)
-          setSelectedQuality(null);
+        // Extract quality information from the first video (all videos at same position have same qualities)
+        if (batchVideos.length > 0) {
+          const firstVideo = batchVideos[0];
+          if (firstVideo.availableQualities && firstVideo.originalQuality) {
+            setAvailableQualities(firstVideo.availableQualities);
+            setOriginalQuality(firstVideo.originalQuality);
+          }
         }
 
-        // Use provided quality, or fall back to selectedQuality
-        // If both are undefined/null, pass null to get original
-        const qualityToUse = quality !== undefined ? quality : selectedQuality;
+        // Use provided quality index, or fall back to selectedQualityIndex
+        const qualityIndexToUse =
+          qualityIndex !== undefined ? qualityIndex : selectedQualityIndex;
 
         const newVideoStreamUrls = {};
         for (const video of batchVideos) {
           try {
+            // Calculate the appropriate quality string for this specific video based on the quality index
+            const qualityString = calculateQualityFromIndex(
+              qualityIndexToUse,
+              video.originalQuality,
+              video.availableQualities
+            );
+
             // Get pre-signed URL for authenticated access
             // Pass null for original quality (no parameter), or specific quality string
             const preSignedUrl = await VideoService.getStreamBlob(
               video.id,
-              qualityToUse
+              qualityString
             );
 
             if (preSignedUrl) {
@@ -77,29 +120,33 @@ export const useBatchManagement = (assignment) => {
         setCurrentBatch(batchNumber);
         setVideos(batchVideos);
         setVideoStreamUrls(newVideoStreamUrls);
+        setInitialLoadDone(true);
       } catch (error) {
         setError(error.message || "Failed to load batch");
       } finally {
         setLoading(false);
       }
     },
-    [assignment?.videoGroupId, selectedQuality]
+    [assignment?.videoGroupId, selectedQualityIndex, calculateQualityFromIndex]
   );
 
   useEffect(() => {
     loadVideoGroupInfo();
   }, [loadVideoGroupInfo]);
 
+  // Initial load only - load batch 1 when assignment changes
   useEffect(() => {
-    loadBatch(1);
-  }, [loadBatch]);
+    if (assignment?.videoGroupId && !initialLoadDone) {
+      loadBatch(1);
+    }
+  }, [assignment?.videoGroupId, initialLoadDone, loadBatch]);
 
   const handleQualityChange = useCallback(
-    (quality) => {
+    (qualityIndex) => {
       // No need to cleanup pre-signed URLs, they're not blob URLs
-      setSelectedQuality(quality);
-      // Reload current batch with new quality
-      loadBatch(currentBatch, quality);
+      setSelectedQualityIndex(qualityIndex);
+      // Reload current batch with new quality index
+      loadBatch(currentBatch, qualityIndex);
     },
     [currentBatch, loadBatch]
   );
@@ -118,7 +165,9 @@ export const useBatchManagement = (assignment) => {
     totalBatches,
     videos,
     videoStreamUrls,
-    selectedQuality,
+    selectedQualityIndex,
+    availableQualities,
+    originalQuality,
     loading,
     error,
     loadBatch,
