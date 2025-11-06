@@ -18,6 +18,63 @@ services:
       timeout: 5s
       retries: 5
 
+  postgres-exporter:
+    image: quay.io/prometheuscommunity/postgres-exporter:latest
+    environment:
+      DATA_SOURCE_NAME: "postgresql://${PGSQL_USER}:${PGSQL_PASSWORD}@db:5432/${PGSQL_DB}?sslmode=disable"
+    ports:
+      - "9187:9187"
+    networks:
+      - mynetwork
+    depends_on:
+      db:
+        condition: service_healthy
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.retention.time=15d
+      - --web.enable-lifecycle
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prom_data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - mynetwork
+    depends_on:
+      - app
+      - keycloak
+      - postgres-exporter
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+    ports:
+      - "3030:3000"
+    networks:
+      - mynetwork
+    depends_on:
+      - prometheus
+
+  loki:
+    image: grafana/loki:2.9.6
+    command: -config.file=/etc/loki/loki-config.yml
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./loki/loki-config.yml:/etc/loki/loki-config.yml:ro
+      - loki_data:/loki
+    networks:
+      - mynetwork
+
   keycloak:
     image: quay.io/keycloak/keycloak:24.0
     container_name: keycloak
@@ -29,6 +86,8 @@ services:
       KC_HOSTNAME: ${KEYCLOAK_HOSTNAME}
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KC_METRICS_ENABLED: "true"
+      KC_HEALTH_ENABLED: "true"
     ports:
       - "${KEYCLOAK_PORT}:8080"
     networks:
@@ -49,11 +108,13 @@ services:
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
       - ASPNETCORE_URLS=${ASPNETCORE_URLS}
 
-      - ConnectionStrings__DefaultConnection=Host=${PGSQL_HOST};Database=${PGSQL_DB};UserName=${PGSQL_USER};Password=${PGSQL_PASSWORD};Port=${PGSQL_PORT}
-      - ConnectionStrings__HangfireConnection=Host=${PGSQL_HOST};Database=${PGSQL_DB};UserName=${PGSQL_USER};Password=${PGSQL_PASSWORD};Port=${PGSQL_PORT}
+      - ConnectionStrings__DefaultConnection=Host=${PGSQL_HOST};Database=${PGSQL_DB};UserName=${PGSQL_USER};Password=${PGSQL_PASSWORD};Port=${PGSQL_PORT};Pooling=true;Minimum Pool Size=64; Maximum Pool Size=96; Connection Pruning Interval=60;Connection Idle Lifetime=900;Max Auto Prepare=200;
+      - ConnectionStrings__HangfireConnection=Host=${PGSQL_HOST};Database=${PGSQL_DB};UserName=${PGSQL_USER};Password=${PGSQL_PASSWORD};Port=${PGSQL_PORT};Pooling=true;Minimum Pool Size=64; Maximum Pool Size=96; Connection Pruning Interval=60;Connection Idle Lifetime=900;Max Auto Prepare=200;
 
       - Logging__LogLevel__Default=${LOGGING_DEFAULT_LEVEL}
       - Logging__LogLevel__Microsoft.AspNetCore=${LOGGING_ASPNETCORE_LEVEL}
+
+      - Loki__Url=${LOKI_URL}
 
       - JWT__ValidIssuer=${KEYCLOAK_ISSUER}
       - JWT__ValidAudience=${KEYCLOAK_AUDIENCE}
@@ -70,6 +131,8 @@ services:
 
       - Videos__RootDirectory=${VIDEOS_ROOT}
       - Videos__NginxUrl=http://localhost:${NGINX_PORT}/videos
+      - Videos__NginxPublicBaseUrl=${NGINX_PUBLIC_BASEURL}
+      - Videos__SecureLinkSecret=${NGINX_SECURELINK_SECRET}
 
       - Reports__RootDirectory=${REPORTS_ROOT}
       - Reports__NginxUrl=http://localhost:${NGINX_PORT}/reports
@@ -111,8 +174,11 @@ services:
 volumes:
   postgres_data:
   videos_data:
+  loki_data:
   reports_data:
   logs_data:
+  prom_data:
+  grafana_data:
 
 networks:
   mynetwork:

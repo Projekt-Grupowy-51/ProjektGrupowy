@@ -33,5 +33,15 @@ public class VideoResponse
     /// <summary>
     /// The position of the video in the display queue.
     /// </summary>
+    
     public int PositionInQueue { get; set; }
+    /// <summary>
+    /// The available quality options for the video.
+    /// </summary>
+    public string[] AvailableQualities { get; set; } = [];
+    
+    /// <summary>
+    /// The original quality of the video.
+    /// </summary>
+    public string OriginalQuality { get; set; } = string.Empty;
 }

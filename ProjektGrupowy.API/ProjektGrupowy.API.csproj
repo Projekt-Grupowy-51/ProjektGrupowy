@@ -25,6 +25,7 @@
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
 		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" />
 		<PackageReference Include="Swashbuckle.AspNetCore" />
+		<PackageReference Include="OpenTelemetry.Exporter.Prometheus.AspNetCore" />
 	</ItemGroup>
 
 	<ItemGroup>

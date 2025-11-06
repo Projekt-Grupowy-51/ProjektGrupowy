@@ -1,9 +1,14 @@
 // useSignalR.js
+// This hook should ONLY be called once at the app level (App.jsx)
+// For child components that need SignalR access, use useSignalRConnection instead
 import { useEffect, useRef } from "react";
 import { useKeycloak } from "./useKeycloak.js";
 import { useNotification } from "../contexts/NotificationContext.jsx";
 import signalRClient from "../services/signalR/SignalRClientSingleton.js";
 import { MessageTypes } from "../services/signalR/MessageTypes.js";
+
+// Global flag to ensure initialization happens only once across all instances
+let globalInitialized = false;
 
 export const useSignalR = () => {
   const { isAuthenticated, getToken } = useKeycloak();
@@ -12,7 +17,7 @@ export const useSignalR = () => {
   const addNotificationRef = useRef(addNotification);
   const getTokenRef = useRef(getToken);
   const isAuthRef = useRef(isAuthenticated);
-  const initializedRef = useRef(false);
+  const previousAuthRef = useRef(isAuthenticated);
 
   // keep refs fresh without retriggering init
   useEffect(() => {
@@ -25,9 +30,11 @@ export const useSignalR = () => {
     isAuthRef.current = isAuthenticated;
   }, [isAuthenticated]);
 
-  // one-time init & handlers
+  // one-time global initialization - happens only once per app lifecycle
   useEffect(() => {
-    if (!initializedRef.current) {
+    if (!globalInitialized && !signalRClient.isServiceInitialized()) {
+      console.log("Initializing SignalR client (global)");
+
       signalRClient.initialize(
         (msg, level) => addNotificationRef.current(msg, level),
         () => getTokenRef.current(),
@@ -47,27 +54,48 @@ export const useSignalR = () => {
         addNotificationRef.current(msg, "info");
       });
 
-      initializedRef.current = true;
+      globalInitialized = true;
     }
 
-    // stop ONLY on unmount
-    return () => {
-      if (signalRClient.isServiceInitialized()) {
-        signalRClient.stop().catch(console.error);
-      }
-    };
+    // NO cleanup here - the singleton persists across component mounts/unmounts
   }, []); // <- important: empty deps
 
-  // start/stop when auth flips
+  // start/stop when auth changes (but only if it actually changed)
   useEffect(() => {
-    if (!initializedRef.current) return;
+    if (!globalInitialized) return;
+
+    // Only act if auth state actually changed
+    if (previousAuthRef.current === isAuthenticated) {
+      return;
+    }
+
+    console.log(
+      `Auth state changed: ${previousAuthRef.current} -> ${isAuthenticated}`
+    );
+    previousAuthRef.current = isAuthenticated;
+
+    let isMounted = true;
+
     if (isAuthenticated) {
-      signalRClient
-        .start()
-        .catch((err) => console.error("SignalR start failed:", err));
+      const startConnection = async () => {
+        try {
+          if (isMounted) {
+            await signalRClient.start();
+          }
+        } catch (err) {
+          if (isMounted) {
+            console.error("SignalR start failed:", err);
+          }
+        }
+      };
+      startConnection();
     } else if (signalRClient.isServiceInitialized()) {
       signalRClient.stop().catch(console.error);
     }
+
+    return () => {
+      isMounted = false;
+    };
   }, [isAuthenticated]);
 
   return {

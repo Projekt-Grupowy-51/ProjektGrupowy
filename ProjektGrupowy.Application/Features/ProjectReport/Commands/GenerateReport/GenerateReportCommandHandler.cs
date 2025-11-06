@@ -14,39 +14,24 @@ using ProjektGrupowy.Application.Events;
 
 namespace ProjektGrupowy.Application.Features.ProjectReport.Commands.GenerateReport;
 
-public class GenerateReportCommandHandler : IRequestHandler<GenerateReportCommand, Result<GeneratedReport>>
+public class GenerateReportCommandHandler(
+    IProjectRepository projectRepository,
+    IProjectReportRepository reportRepository,
+    IUnitOfWork unitOfWork,
+    IConfiguration configuration,
+    ICurrentUserService currentUserService,
+    IAuthorizationService authorizationService,
+    ILogger<GenerateReportCommandHandler> logger)
+    : IRequestHandler<GenerateReportCommand, Result<GeneratedReport>>
 {
-    private readonly IProjectRepository _projectRepository;
-    private readonly IProjectReportRepository _reportRepository;
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly IConfiguration _configuration;
-    private readonly ICurrentUserService _currentUserService;
-    private readonly IAuthorizationService _authorizationService;
-    private readonly ILogger<GenerateReportCommandHandler> _logger;
-
-    public GenerateReportCommandHandler(
-        IProjectRepository projectRepository,
-        IProjectReportRepository reportRepository,
-        IUnitOfWork unitOfWork,
-        IConfiguration configuration,
-        ICurrentUserService currentUserService,
-        IAuthorizationService authorizationService,
-        ILogger<GenerateReportCommandHandler> logger)
-    {
-        _projectRepository = projectRepository;
-        _reportRepository = reportRepository;
-        _unitOfWork = unitOfWork;
-        _configuration = configuration;
-        _currentUserService = currentUserService;
-        _authorizationService = authorizationService;
-        _logger = logger;
-    }
+    private readonly ICurrentUserService _currentUserService = currentUserService;
+    private readonly IAuthorizationService _authorizationService = authorizationService;
 
     public async Task<Result<GeneratedReport>> Handle(GenerateReportCommand request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Generating report for project {ProjectId}", request.ProjectId);
+        logger.LogInformation("Generating report for project {ProjectId}", request.ProjectId);
 
-        var project = await _projectRepository.GetProjectAsync(request.ProjectId, request.UserId, request.IsAdmin);
+        var project = await projectRepository.GetProjectAsync(request.ProjectId, request.UserId, request.IsAdmin);
 
         if (project is null)
         {
@@ -56,20 +41,20 @@ public class GenerateReportCommandHandler : IRequestHandler<GenerateReportComman
         var reportResult = await WriteReportToFileAsync(project);
         if (reportResult.IsFailed)
         {
-            _logger.LogError("Failed to generate report for project {ProjectId}: {Error}", request.ProjectId, reportResult.Errors);
+            logger.LogError("Failed to generate report for project {ProjectId}: {Error}", request.ProjectId, reportResult.Errors);
             return reportResult;
         }
 
         var report = reportResult.Value;
 
-        await _reportRepository.AddReportAsync(report);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await reportRepository.AddReportAsync(report);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
 
         // Add SignalR event after save so we have the report ID
         report.AddReportGeneratedEvent();
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("Report generated successfully for project {ProjectId}", request.ProjectId);
+        logger.LogInformation("Report generated successfully for project {ProjectId}", request.ProjectId);
 
         return Result.Ok(report);
     }
@@ -78,7 +63,7 @@ public class GenerateReportCommandHandler : IRequestHandler<GenerateReportComman
     {
         try
         {
-            var reportsDirectory = _configuration["Reports:RootDirectory"] ?? "reports";
+            var reportsDirectory = configuration["Reports:RootDirectory"] ?? "reports";
             var directoryPath = Path.Combine(AppContext.BaseDirectory, reportsDirectory);
 
             Directory.CreateDirectory(directoryPath);

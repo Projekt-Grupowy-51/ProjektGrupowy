@@ -16,6 +16,7 @@
     "not_found": "Video not found"
   },
   "table": {
+    "video_name": "Video",
     "label": "Label",
     "labeler": "Labeler",
     "subject": "Subject",
@@ -25,7 +26,8 @@
     "ins_date": "Ins Date",
     "title": "Title",
     "position": "Position",
-    "videoId": "Video Id"
+    "videoId": "Video Id",
+    "available_qualities": "Qualities"
   },
   "buttons": {
     "save": "Save",
@@ -131,5 +133,11 @@
       "assignment_not_found": "Assignment Not Found",
       "assignment_not_found_message": "The requested labeling assignment could not be found."
     }
+  },
+  "quality": {
+    "video_quality": "Video Quality",
+    "original": "Original",
+    "2x_lower": "2x Lower",
+    "4x_lower": "4x Lower"
   }
 }

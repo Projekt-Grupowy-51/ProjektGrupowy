@@ -36,6 +36,12 @@
     "confirm": "Delete",
     "cancel": "Cancel"
   },
+  "acceptConfirmation": {
+    "title": "Accept action",
+    "message": "Do you really want to proceed with this action?",
+    "confirm": "Accept",
+    "cancel": "Cancel"
+  },
   "states": {
     "loading": "Loading...",
     "error": "Error",

@@ -27,18 +27,23 @@ public class DomainEventPublisher : IDomainEventPublisher
 
     public async Task PublishPendingEventsAsync()
     {
-        try
+        // Get unpublished events with row-level lock (FOR UPDATE SKIP LOCKED)
+        // This prevents race conditions when multiple instances try to process the same events
+        var unpublishedEvents = await _domainEventRepository.GetUnpublishedEventsAsync();
+
+        if (!unpublishedEvents.Any())
         {
-            var unpublishedEvents = await _domainEventRepository.GetUnpublishedEventsAsync();
+            return;
+        }
 
-            if (!unpublishedEvents.Any())
-            {
-                return;
-            }
+        _logger.LogInformation("Publishing {Count} domain events", unpublishedEvents.Count);
 
-            _logger.LogInformation("Publishing {Count} domain events", unpublishedEvents.Count);
+        var publishedCount = 0;
+        var failedCount = 0;
 
-            foreach (var domainEvent in unpublishedEvents)
+        foreach (var domainEvent in unpublishedEvents)
+        {
+            try
             {
                 // Check if it's a typed event
                 if (!string.IsNullOrEmpty(domainEvent.EventType))
@@ -57,17 +62,34 @@ public class DomainEventPublisher : IDomainEventPublisher
                     await _mediator.Publish(notification);
                 }
 
+                // Mark as published and save immediately after successful publication
+                // This ensures that if next event fails, we won't republish this one
                 domainEvent.MarkAsPublished();
                 _domainEventRepository.Update(domainEvent);
+                await _unitOfWork.SaveChangesAsync();
+
+                publishedCount++;
             }
-
-            await _unitOfWork.SaveChangesAsync();
-
-            _logger.LogInformation("Successfully published {Count} domain events", unpublishedEvents.Count);
+            catch (Exception ex)
+            {
+                failedCount++;
+                _logger.LogError(ex,
+                    "Error occurred while publishing domain event {EventId}. Event type: {EventType}, Message: {Message}",
+                    domainEvent.Id,
+                    domainEvent.EventType ?? "notification",
+                    domainEvent.Message);
+                // Continue processing other events - don't mark this one as published
+            }
         }
-        catch (Exception ex)
+
+        if (publishedCount > 0)
         {
-            _logger.LogError(ex, "Error occurred while publishing domain events");
+            _logger.LogInformation("Successfully published {PublishedCount} domain events", publishedCount);
+        }
+
+        if (failedCount > 0)
+        {
+            _logger.LogWarning("Failed to publish {FailedCount} domain events. They will be retried on next processing cycle.", failedCount);
         }
     }
 

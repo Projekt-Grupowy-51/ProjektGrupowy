@@ -16,6 +16,7 @@
     "not_found": "Wideo nie zostało znalezione"
   },
   "table": {
+    "video_name": "Wideo",
     "label": "Etykieta",
     "labeler": "Etykietujący",
     "subject": "Temat",
@@ -25,7 +26,8 @@
     "ins_date": "Data dodania",
     "title": "Tytuł",
     "position": "Pozycja",
-    "videoId": "ID wideo"
+    "videoId": "ID wideo",
+    "available_qualities": "Jakości"
   },
   "buttons": {
     "save": "Zapisz",
@@ -131,5 +133,11 @@
       "assignment_not_found": "Przydział nie znaleziony",
       "assignment_not_found_message": "Żądany przydział oznaczania nie został znaleziony."
     }
+  },
+  "quality": {
+    "video_quality": "Jakość wideo",
+    "original": "Oryginalna",
+    "2x_lower": "2x niższa",
+    "4x_lower": "4x niższa"
   }
 }

@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import VideoService from '../services/VideoService.js';
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import VideoService from "../services/VideoService.js";
+import config from "../config/config.js";
 
 export const useVideoDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  
+
   const [video, setVideo] = useState(null);
   const [assignedLabels, setAssignedLabels] = useState([]);
   const [videoLoading, setVideoLoading] = useState(false);
@@ -15,34 +16,58 @@ export const useVideoDetails = () => {
   const [videoStreamUrl, setVideoStreamUrl] = useState(null);
   const [videoStreamLoading, setVideoStreamLoading] = useState(false);
 
-  const fetchData = () => {
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(config.ui.defaultPageSize);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalItems, setTotalItems] = useState(0);
+
+  const fetchVideo = async () => {
     const videoId = parseInt(id);
-    
     setVideoLoading(true);
-    setLabelsLoading(true);
     setVideoError(null);
+
+    try {
+      const videoData = await VideoService.getById(videoId);
+      setVideo(videoData);
+    } catch (err) {
+      setVideoError(err.message);
+    } finally {
+      setVideoLoading(false);
+    }
+  };
+
+  const fetchLabels = async (page = currentPage, size = pageSize) => {
+    const videoId = parseInt(id);
+    setLabelsLoading(true);
     setLabelsError(null);
-    
-    Promise.all([
-      VideoService.getById(videoId),
-      VideoService.getAssignedLabels(videoId)
-    ])
-      .then(([videoData, labelsData]) => {
-        setVideo(videoData);
-        setAssignedLabels(labelsData || []);
-      })
-      .catch(err => {
-        setVideoError(err.message);
-        setLabelsError(err.message);
-      })
-      .finally(() => {
-        setVideoLoading(false);
-        setLabelsLoading(false);
-      });
+
+    try {
+      const response = await VideoService.getAssignedLabelsPaginated(
+        videoId,
+        page,
+        size
+      );
+
+      // Handle response structure: { assignedLabels: [...], totalLabelCount: number }
+      const labels = response.assignedLabels || [];
+      const totalCount = response.totalLabelCount || 0;
+
+      setAssignedLabels(labels);
+      setTotalItems(totalCount);
+      setTotalPages(Math.ceil(totalCount / size));
+      setCurrentPage(page);
+    } catch (err) {
+      setLabelsError(err.message);
+      setAssignedLabels([]);
+    } finally {
+      setLabelsLoading(false);
+    }
   };
 
   useEffect(() => {
-    fetchData();
+    fetchVideo();
+    fetchLabels();
   }, [id]);
 
   // Load video stream URL when video data is available
@@ -78,10 +103,19 @@ export const useVideoDetails = () => {
     }
   };
 
+  const handlePageChange = (newPage) => {
+    fetchLabels(newPage, pageSize);
+  };
+
+  const handlePageSizeChange = (newSize) => {
+    setPageSize(newSize);
+    fetchLabels(1, newSize);
+  };
+
   const formatDuration = (seconds) => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
   };
 
   return {
@@ -93,7 +127,13 @@ export const useVideoDetails = () => {
     labelsError,
     videoStreamUrl,
     videoStreamLoading,
+    currentPage,
+    pageSize,
+    totalPages,
+    totalItems,
     handleBackToVideoGroup,
-    formatDuration
+    handlePageChange,
+    handlePageSizeChange,
+    formatDuration,
   };
 };

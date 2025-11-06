@@ -4,7 +4,7 @@ using System.Text.Json;
 
 namespace ProjektGrupowy.Domain.Models;
 
-[Table("SubjectVideoGroupAssignments")]
+// [Table("SubjectVideoGroupAssignments")]
 public class SubjectVideoGroupAssignment : BaseEntity, IOwnedEntity
 {
     [Key]

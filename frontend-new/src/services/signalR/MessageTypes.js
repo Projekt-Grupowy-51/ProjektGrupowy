@@ -6,4 +6,5 @@ export const MessageTypes = {
   Message: "NotifyFromBackendServerMessage",
   LabelersCountChanged: "LabelersCountChanged",
   ReportGenerated: "ReportGenerated",
+  VideoProcessed: "VideoProcessed",
 };

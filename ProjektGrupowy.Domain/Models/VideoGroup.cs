@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ProjektGrupowy.Domain.Models;
 
-[Table("VideoGroups")]
+// [Table("VideoGroups")]
 public class VideoGroup : BaseEntity, IOwnedEntity
 {
     [Key]

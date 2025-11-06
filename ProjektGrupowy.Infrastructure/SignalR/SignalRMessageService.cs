@@ -19,6 +19,9 @@ public class SignalRMessageService(IHubContext<AppHub> hubContext) : IMessageSer
 
     public async Task SendRegularMessageAsync(string userId, string message, CancellationToken cancellationToken = default) =>
         await SendMessageAsync(userId, MessageTypes.Message, message, cancellationToken);
+    
+    public async Task SendVideoProcessedAsync(string userId, string message, CancellationToken cancellationToken = default) =>
+        await SendMessageAsync(userId, MessageTypes.VideoProcessed, message, cancellationToken);
 
     public async Task SendMessageAsync(string userId, string method, string message, CancellationToken cancellationToken = default)
     {

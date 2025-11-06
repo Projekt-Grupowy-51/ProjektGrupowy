@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ProjektGrupowy.Domain.Models;
 
-[Table("Videos")]
+// [Table("Videos")]
 public class Video : BaseEntity, IOwnedEntity
 {
     [Key]
@@ -31,12 +31,20 @@ public class Video : BaseEntity, IOwnedEntity
     [ForeignKey(nameof(CreatedById))]
     public virtual User CreatedBy { get; set; } = default!;
     public DateTime? DelDate { get; set; } = null;
+    
+    public string OriginalQuality { get; set; } = string.Empty;
 
-    public Stream ToStream()
+    public string[] AvailableQualities { get; set; } = [];
+
+    public Stream ToStream(string? quality = null)
     {
         try
         {
-            return new FileStream(Path, FileMode.Open);
+            var filePath = quality != null && AvailableQualities.Contains(quality)
+                ? System.IO.Path.Combine(System.IO.Path.GetDirectoryName(Path) ?? string.Empty, $"{System.IO.Path.GetFileNameWithoutExtension(Path)}_{quality}{System.IO.Path.GetExtension(Path)}")
+                : Path;
+
+            return new FileStream(filePath, FileMode.Open, FileAccess.Read);
         }
         catch (Exception)
         {

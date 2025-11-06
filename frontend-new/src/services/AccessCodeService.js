@@ -1,4 +1,4 @@
-import apiClient from './ApiClient.js';
+import apiClient from "./ApiClient.js";
 
 /**
  * AccessCodeService - Handles project access code operations
@@ -6,7 +6,6 @@ import apiClient from './ApiClient.js';
  * Requires Admin or Scientist role for all operations
  */
 class AccessCodeService {
-
   /**
    * Get access codes by project ID
    * GET /api/AccessCode/project/{projectId}
@@ -17,7 +16,9 @@ class AccessCodeService {
     try {
       return await apiClient.get(`/access-codes/projects/${projectId}`);
     } catch (error) {
-      throw new Error(`Failed to get access codes for project ${projectId}: ${error.message}`);
+      throw new Error(
+        `Failed to get access codes for project ${projectId}: ${error.message}`
+      );
     }
   }
 
@@ -44,7 +45,7 @@ class AccessCodeService {
    */
   async validateCode(accessCodeRequest) {
     try {
-      return await apiClient.post('/access-codes/validate', accessCodeRequest);
+      return await apiClient.post("/access-codes/validate", accessCodeRequest);
     } catch (error) {
       throw new Error(`Failed to validate access code: ${error.message}`);
     }
@@ -55,12 +56,18 @@ class AccessCodeService {
    * POST /api/AccessCode/project
    * @param {Object} createAccessCodeRequest - Access code creation request
    * @param {number} createAccessCodeRequest.projectId - Project ID
-   * @param {string} createAccessCodeRequest.description - Code description
+   * @param {number} createAccessCodeRequest.expiration - Expiration type (0=In14Days, 1=In30Days, 2=Never, 3=Custom)
+   * @param {number} createAccessCodeRequest.customExpiration - Custom expiration time in hours (required if expiration=3)
    * @returns {Promise<Object>} AccessCodeResponse object
    */
   async createForProject(createAccessCodeRequest) {
     try {
-      return await apiClient.post('/access-codes/project', createAccessCodeRequest);
+      const payload = {
+        projectId: createAccessCodeRequest.projectId,
+        expiration: createAccessCodeRequest.expiration,
+        customExpiration: createAccessCodeRequest.customExpiration,
+      };
+      return await apiClient.post("/access-codes/project", payload);
     } catch (error) {
       throw new Error(`Failed to create access code: ${error.message}`);
     }
@@ -75,7 +82,9 @@ class AccessCodeService {
    */
   async joinProject(accessCodeRequest) {
     try {
-      await apiClient.post('/projects/join', { AccessCode: accessCodeRequest.code });
+      await apiClient.post("/projects/join", {
+        AccessCode: accessCodeRequest.code,
+      });
     } catch (error) {
       throw new Error(`Failed to join project: ${error.message}`);
     }

@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ProjektGrupowy.Domain.Events;
 
-[Table("DomainEvents")]
+// [Table("DomainEvents")]
 public class DomainEvent
 {
     [Key]

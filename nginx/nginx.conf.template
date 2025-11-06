@@ -14,7 +14,7 @@ http {
   # --- gzip for JSON (and friends) ---
   gzip on;
   gzip_comp_level 5;          # 1–9; 4–6 is a good balance
-  gzip_min_length 512;        # don’t bother for tiny files
+  gzip_min_length 2048;        # don’t bother for tiny files
   gzip_vary on;               # adds Vary: Accept-Encoding
   gzip_http_version 1.1;
   gzip_disable "msie6";
@@ -43,7 +43,13 @@ http {
 
     location /videos/ {
       root /mnt;
-      autoindex on;
+      autoindex off;
+
+      secure_link $arg_md5,$arg_expires;
+      secure_link_md5 "$secure_link_expires$uri super-secret-link-key";
+
+      if ($secure_link = "") { return 403; } 
+      if ($secure_link = "0") { return 410; }
 
       sendfile on;
       tcp_nopush on;
@@ -73,7 +79,7 @@ http {
 
     location /reports/ {
       root /mnt;
-      autoindex on;
+      autoindex off;
 
       sendfile on;
       tcp_nopush on;

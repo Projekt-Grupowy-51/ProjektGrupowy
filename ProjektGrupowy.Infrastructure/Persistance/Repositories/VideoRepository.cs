@@ -30,6 +30,11 @@ public class VideoRepository(IReadWriteContext context) : IVideoRepository
         _ = await context.Videos.AddAsync(video);
     }
 
+    public void UpdateVideo(Video video)
+    {
+        _ = context.Videos.Update(video);
+    }
+
     public void DeleteVideo(Video video)
     {
         _ = context.Videos.Remove(video);

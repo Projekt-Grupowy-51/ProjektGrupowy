@@ -4,7 +4,7 @@ using System.Text.Json;
 
 namespace ProjektGrupowy.Domain.Models;
 
-[Table("Labels")]
+// [Table("Labels")]
 public class Label : BaseEntity, IOwnedEntity
 {
     [Key]

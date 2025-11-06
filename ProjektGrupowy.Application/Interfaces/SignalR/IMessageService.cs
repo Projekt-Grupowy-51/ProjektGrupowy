@@ -9,6 +9,7 @@ public interface IMessageService
     Task SendWarningAsync(string userId, string message, CancellationToken cancellationToken = default);
     Task SendInfoAsync(string userId, string message, CancellationToken cancellationToken = default);
     Task SendRegularMessageAsync(string userId, string message, CancellationToken cancellationToken = default);
+    Task SendVideoProcessedAsync(string userId, string message, CancellationToken cancellationToken = default);
 
     Task SendToUserAsync(string userId, string method, object data, CancellationToken cancellationToken = default);
     Task SendToUsersAsync(IEnumerable<string> userIds, string method, object data, CancellationToken cancellationToken = default);

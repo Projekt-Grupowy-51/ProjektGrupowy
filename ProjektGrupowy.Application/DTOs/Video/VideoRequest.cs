@@ -15,7 +15,7 @@ public class VideoRequest
     /// <summary>
     /// The video file to be uploaded.
     /// </summary>
-    public IFormFile File { get; set; } = default!;
+    public IFormFile? File { get; set; } = default!;
     
     /// <summary>
     /// The unique identifier of the video group associated with the video.
