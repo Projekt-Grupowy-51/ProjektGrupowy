@@ -20,6 +20,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Hangfire.AspNetCore" />
+		<PackageReference Include="Hangfire.Core" />
 		<PackageReference Include="Hangfire.MemoryStorage" />
 		<PackageReference Include="Hangfire.PostgreSql" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
