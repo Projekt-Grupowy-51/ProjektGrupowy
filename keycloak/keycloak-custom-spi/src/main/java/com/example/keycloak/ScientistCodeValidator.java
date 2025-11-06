@@ -1,6 +1,5 @@
 package com.example.keycloak;
 
-import org.keycloak.models.UserModel;
 import org.keycloak.validate.Validator;
 import org.keycloak.validate.ValidationContext;
 import org.keycloak.validate.ValidationError;
