@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Container, Card, Button, Table, Input } from "../components/ui";
@@ -11,11 +11,14 @@ import {
   DetailSection,
 } from "../components/common";
 import { useVideoGroupDetails } from "../hooks/useVideoGroupDetails.js";
+import { useSignalRConnection } from "../hooks/useSignalRConnection.js";
+import { MessageTypes } from "../services/signalR/MessageTypes.js";
 
 const VideoGroupDetails = () => {
   const { t } = useTranslation(["videoGroups", "videos", "common"]);
   const { id } = useParams();
   const navigate = useNavigate();
+  const signalR = useSignalRConnection();
 
   const {
     videoGroup,
@@ -28,10 +31,26 @@ const VideoGroupDetails = () => {
     handleBack,
     handleAddVideo,
     handleEditVideoGroup,
+    refetchVideos,
   } = useVideoGroupDetails(id);
 
   const [editingVideo, setEditingVideo] = useState(null);
   const [editForm, setEditForm] = useState({ title: "", positionInQueue: "" });
+
+  useEffect(() => {
+    if (!signalR) return;
+
+    const handleVideoProcessed = (data) => {
+      console.log("VideoProcessed event received:", data);
+      refetchVideos();
+    };
+
+    signalR.on(MessageTypes.VideoProcessed, handleVideoProcessed);
+
+    return () => {
+      signalR.off(MessageTypes.VideoProcessed, handleVideoProcessed);
+    };
+  }, [signalR, refetchVideos]);
 
   const startEditing = (video) => {
     setEditingVideo(video.id);
@@ -138,6 +157,9 @@ const VideoGroupDetails = () => {
                 <Table.Cell header={true}>#</Table.Cell>
                 <Table.Cell header={true}>{t("videos:table.title")}</Table.Cell>
                 <Table.Cell header={true}>
+                  {t("videos:table.available_qualities")}
+                </Table.Cell>
+                <Table.Cell header={true}>
                   {t("videos:table.position")}
                 </Table.Cell>
                 <Table.Cell header={true}>{t("common:actions")}</Table.Cell>
@@ -160,6 +182,22 @@ const VideoGroupDetails = () => {
                     ) : (
                       video.title
                     )}
+                  </Table.Cell>
+                  <Table.Cell>
+                    <div className="d-flex gap-1 flex-wrap">
+                      {video.availableQualities.map((quality, idx) => (
+                        <span
+                          key={idx}
+                          className={`badge rounded-pill ${
+                            quality === video.originalQuality
+                              ? "bg-primary"
+                              : "bg-info"
+                          }`}
+                        >
+                          {quality}
+                        </span>
+                      ))}
+                    </div>
                   </Table.Cell>
                   <Table.Cell>
                     {editingVideo === video.id ? (

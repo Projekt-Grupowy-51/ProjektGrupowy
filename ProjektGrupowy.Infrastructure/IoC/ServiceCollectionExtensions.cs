@@ -41,7 +41,7 @@ public static class ServiceCollectionExtensions
         
         var dataSource = dataSourceBuilder.Build();
 
-        _ = services.AddDbContextPool<AppDbContext>(options =>
+        _ = services.AddDbContext<AppDbContext>(options =>
             options
                 .UseNpgsql(dataSource)
                 .UseLazyLoadingProxies()
@@ -75,7 +75,6 @@ public static class ServiceCollectionExtensions
             options.KeepAliveInterval = TimeSpan.FromSeconds(15);
             options.ClientTimeoutInterval = TimeSpan.FromSeconds(30);
             options.EnableDetailedErrors = environment.IsDevelopment();
-            options.MaximumReceiveMessageSize = 102400; // 100 KB
         });
 
         // Configure SignalR to use the 'sub' claim as the user identifier

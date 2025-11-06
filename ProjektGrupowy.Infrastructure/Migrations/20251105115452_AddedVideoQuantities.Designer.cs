@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using ProjektGrupowy.Infrastructure.Persistance;
@@ -11,9 +12,11 @@ using ProjektGrupowy.Infrastructure.Persistance;
 namespace ProjektGrupowy.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251105115452_AddedVideoQuantities")]
+    partial class AddedVideoQuantities
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -520,11 +523,6 @@ namespace ProjektGrupowy.Infrastructure.Migrations
                     b.Property<DateTime?>("DelDate")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("del_date");
-
-                    b.Property<string>("OriginalQuality")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("original_quality");
 
                     b.Property<string>("Path")
                         .IsRequired()

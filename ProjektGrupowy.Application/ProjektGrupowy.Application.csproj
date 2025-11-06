@@ -2,6 +2,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="AutoMapper" />
+		<PackageReference Include="FFMpegCore" />
 		<PackageReference Include="Hangfire.Core" />
 		<PackageReference Include="MediatR" />
 		<PackageReference Include="Microsoft.AspNetCore.Authorization" />

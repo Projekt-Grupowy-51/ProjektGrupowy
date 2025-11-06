@@ -1,4 +1,5 @@
 using AutoMapper;
+using Hangfire;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,6 +12,7 @@ using ProjektGrupowy.Application.Features.AssignedLabels.Queries.GetAssignedLabe
 using ProjektGrupowy.Application.Features.AssignedLabels.Queries.GetAssignedLabelsPage;
 using ProjektGrupowy.Application.Features.Videos.Commands.AddVideo;
 using ProjektGrupowy.Application.Features.Videos.Commands.DeleteVideo;
+using ProjektGrupowy.Application.Features.Videos.Commands.ProcessVideo;
 using ProjektGrupowy.Application.Features.Videos.Commands.UpdateVideo;
 using ProjektGrupowy.Application.Features.Videos.Queries.GetVideo;
 using ProjektGrupowy.Application.Features.Videos.Queries.GetVideos;
@@ -119,8 +121,13 @@ public class VideoController(
         {
             return BadRequest(result.Errors);
         }
+        
+        var addedVideo = result.Value;
+        
+        var vpCommand = new ProcessVideoCommand(addedVideo.Id, currentUserService.UserId, currentUserService.IsAdmin);
+        BackgroundJob.Enqueue<IMediator>(x => x.Send(vpCommand, CancellationToken.None));
 
-        var response = mapper.Map<VideoResponse>(result.Value);
+        var response = mapper.Map<VideoResponse>(addedVideo);
         return CreatedAtAction("GetVideo", new { id = result.Value.Id }, response);
     }
 
@@ -153,28 +160,33 @@ public class VideoController(
     /// Stream a video file by its ID. If running in Docker, redirects to Nginx URL; otherwise, serves the file directly.
     /// </summary>
     /// <param name="id">The ID of the video to be streamed.</param>
+    /// <param name="quality">The desired quality of the video stream (optional). If not specified, the original quality is used.</param>
     /// <returns>A redirect to the Nginx URL or the video file stream. Might produce 200, 302, 400 or 206 Partial Content for range requests.</returns>
     [HttpGet("{id:int}/stream")]
-    public async Task<IActionResult> GetVideoStreamAsync(int id)
+    public async Task<IActionResult> GetVideoStreamAsync(int id, [FromQuery] string? quality)
     {
         var query = new GetVideoQuery(id, currentUserService.UserId, currentUserService.IsAdmin);
         var result = await mediator.Send(query);
 
         if (!result.IsSuccess)
-        {
             return NotFound(result.Errors);
-        }
-
+        
         var video = result.Value;
+        
+        var fullPath = quality is null
+            ? video.Path
+            : Path.Combine(
+                Path.GetDirectoryName(video.Path)!, $"{Path.GetFileNameWithoutExtension(video.Path)}_{quality}{Path.GetExtension(video.Path)}");
+        
+        if (!System.IO.File.Exists(fullPath))
+            return BadRequest("Requested quality not available.");
 
-        if (DockerDetector.IsRunningInDocker())
-        {
-            var baseUrl = configuration["Videos:NginxUrl"];
-            var path = $"{baseUrl}/{video.VideoGroup.Project.Id}/{video.VideoGroupId}/{Path.GetFileName(video.Path)}";
-            return Redirect(path);
-        }
-
-        return File(video.ToStream(), video.ContentType, Path.GetFileName(video.Path), enableRangeProcessing: true);
+        if (!DockerDetector.IsRunningInDocker())
+            return File(video.ToStream(quality), video.ContentType, Path.GetFileName(fullPath), enableRangeProcessing: true);
+        
+        var baseUrl = configuration["Videos:NginxUrl"];
+        var path = $"{baseUrl}/{video.VideoGroup.Project.Id}/{video.VideoGroupId}/{Path.GetFileName(fullPath)}";
+        return Redirect(path);
     }
 
     /// <summary>

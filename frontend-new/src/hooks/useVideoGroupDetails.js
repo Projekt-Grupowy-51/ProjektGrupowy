@@ -87,5 +87,6 @@ export const useVideoGroupDetails = (videoGroupId) => {
     handleBack,
     handleAddVideo,
     handleEditVideoGroup,
+    refetchVideos: fetchVideos,
   };
 };

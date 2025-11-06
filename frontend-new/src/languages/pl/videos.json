@@ -26,7 +26,8 @@
     "ins_date": "Data dodania",
     "title": "Tytuł",
     "position": "Pozycja",
-    "videoId": "ID wideo"
+    "videoId": "ID wideo",
+    "available_qualities": "Jakości"
   },
   "buttons": {
     "save": "Zapisz",

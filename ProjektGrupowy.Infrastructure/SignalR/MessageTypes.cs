@@ -9,5 +9,6 @@ namespace ProjektGrupowy.Infrastructure.SignalR
         public const string Message = "NotifyFromBackendServerMessage";
         public const string LabelersCountChanged = "LabelersCountChanged";
         public const string ReportGenerated = "ReportGenerated";
+        public const string VideoProcessed = "VideoProcessed";
     }
 }

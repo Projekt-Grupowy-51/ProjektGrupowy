@@ -26,7 +26,8 @@
     "ins_date": "Ins Date",
     "title": "Title",
     "position": "Position",
-    "videoId": "Video Id"
+    "videoId": "Video Id",
+    "available_qualities": "Qualities"
   },
   "buttons": {
     "save": "Save",
