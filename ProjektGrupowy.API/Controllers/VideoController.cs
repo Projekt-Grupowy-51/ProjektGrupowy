@@ -164,7 +164,7 @@ public class VideoController(
     /// <param name="quality">The desired quality of the video stream (optional). If not specified, the original quality is used.</param>
     /// <returns>A URL for streaming the video.</returns>
     [HttpGet("{id:int}/stream")]
-    public async Task<IActionResult> GetVideoStreamAsync(int id, [FromQuery] string? quality)
+    public async Task<ActionResult<VideoStreamUrlResponse>> GetVideoStreamAsync(int id, [FromQuery] string? quality)
     {
         var query = new GetVideoQuery(id, currentUserService.UserId, currentUserService.IsAdmin);
         var result = await mediator.Send(query);
