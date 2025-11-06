@@ -76,8 +76,8 @@ services:
       - mynetwork
 
   keycloak:
-    image: quay.io/keycloak/keycloak:24.0
-    container_name: keycloak
+    build:
+      context: ./keycloak
     environment:
       KC_DB: postgres
       KC_DB_URL: ${KEYCLOAK_DB_URL}
@@ -86,6 +86,8 @@ services:
       KC_HOSTNAME: ${KEYCLOAK_HOSTNAME}
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KC_FEATURES: scripts
+      SCIENTIST_CODE: ${SCIENTIST_ACCESS_CODE}
       KC_METRICS_ENABLED: "true"
       KC_HEALTH_ENABLED: "true"
     ports:
@@ -95,7 +97,6 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    command: start-dev --import-realm
     volumes:
       - ./keycloak/data:/opt/keycloak/data
       - ./keycloak/themes:/opt/keycloak/themes
@@ -146,6 +147,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      keycloak:
+          condition: service_started
     volumes:
       - videos_data:/app/videos
       - reports_data:/app/reports
