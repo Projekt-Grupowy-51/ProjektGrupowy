@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Container, Card, Alert } from "../../components/ui";
@@ -12,6 +12,7 @@ import VideoGrid from "./components/VideoGrid.jsx";
 import MediaControls from "./components/MediaControls.jsx";
 import LabelingPanel from "./components/LabelingPanel.jsx";
 import LabelButtons from "./components/LabelButtons.jsx";
+import QualitySelector from "./components/QualitySelector.jsx";
 import SubjectVideoGroupAssignmentService from "../../services/SubjectVideoGroupAssignmentService.js";
 import SubjectService from "../../services/SubjectService.js";
 
@@ -78,6 +79,62 @@ const VideoLabelingInterface = () => {
 
   const loading = assignmentLoading || labelsLoading || batchManagement.loading;
   const error = assignmentError || labelsError || batchManagement.error;
+
+  // Store playback state reference for quality changes
+  const playbackStateRef = useRef({
+    wasPlaying: false,
+    currentTime: 0,
+    playbackSpeed: 1.0,
+    shouldRestore: false,
+  });
+
+  // Handle quality change with playback state preservation
+  const handleQualityChange = async (quality) => {
+    // Capture current playback state
+    playbackStateRef.current = {
+      wasPlaying: videoControls.playerState.isPlaying,
+      currentTime: videoControls.playerState.currentTime,
+      playbackSpeed: videoControls.playerState.playbackSpeed,
+      shouldRestore: true,
+    };
+
+    // Pause videos before quality change
+    if (videoControls.playerState.isPlaying) {
+      videoControls.handlePlayPause();
+    }
+
+    // Change quality (this will reload videos)
+    await batchManagement.handleQualityChange(quality);
+  };
+
+  // Restore playback state when videos are reloaded after quality change
+  const handleVideoLoaded = () => {
+    if (playbackStateRef.current.shouldRestore) {
+      const { currentTime, playbackSpeed, wasPlaying } =
+        playbackStateRef.current;
+
+      // Use setTimeout to ensure video metadata is fully loaded
+      setTimeout(() => {
+        // Restore time position
+        videoControls.handleSeek(currentTime);
+
+        // Restore playback speed
+        if (playbackSpeed !== 1.0) {
+          videoControls.handleSpeedChange(playbackSpeed);
+        }
+
+        // Resume playback if it was playing
+        if (wasPlaying) {
+          setTimeout(() => {
+            videoControls.handlePlayPause();
+          }, 100);
+        }
+
+        // Reset flag
+        playbackStateRef.current.shouldRestore = false;
+      }, 200);
+    }
+  };
 
   useEffect(() => {
     videoControls.resetPlayerState();
@@ -165,7 +222,10 @@ const VideoLabelingInterface = () => {
             videoStreamUrls={batchManagement.videoStreamUrls}
             videoRefs={videoControls.videoRefs}
             onTimeUpdate={videoControls.handleTimeUpdate}
-            onLoadedMetadata={videoControls.handleTimeUpdate}
+            onLoadedMetadata={() => {
+              videoControls.handleTimeUpdate();
+              handleVideoLoaded();
+            }}
             videoHeight={300}
             fillSpace={true}
             displayMode={"auto"}
@@ -184,6 +244,13 @@ const VideoLabelingInterface = () => {
                 onSeek={videoControls.handleSeek}
                 onSpeedChange={videoControls.handleSpeedChange}
                 onBatchChange={batchManagement.loadBatch}
+              />
+
+              {/* Quality Selector */}
+              <QualitySelector
+                videos={batchManagement.videos}
+                selectedQuality={batchManagement.selectedQuality}
+                onQualityChange={handleQualityChange}
               />
             </Card.Body>
           </Card>

@@ -133,5 +133,11 @@
       "assignment_not_found": "Assignment Not Found",
       "assignment_not_found_message": "The requested labeling assignment could not be found."
     }
+  },
+  "quality": {
+    "video_quality": "Video Quality",
+    "original": "Original",
+    "2x_lower": "2x Lower",
+    "4x_lower": "4x Lower"
   }
 }

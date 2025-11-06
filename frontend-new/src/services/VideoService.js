@@ -118,23 +118,29 @@ class VideoService {
   }
 
   /**
-   * Get video stream URL
-   * GET /api/Video/{id}/stream
+   * Get video stream URL (non-authenticated, for direct usage)
+   * GET /api/Video/{id}/stream?quality={quality}
    * @param {number} id - Video ID
+   * @param {string} [quality] - Optional video quality (e.g., "288x512"). If not provided, returns original quality
    * @returns {string} Video stream URL
    */
-  getStreamUrl(id) {
-    return `${apiClient.client.defaults.baseURL}/videos/${id}/stream`;
+  getStreamUrl(id, quality) {
+    const baseUrl = `${apiClient.client.defaults.baseURL}/videos/${id}/stream`;
+    return quality ? `${baseUrl}?quality=${quality}` : baseUrl;
   }
 
   /**
    * Get video stream as blob with authentication
    * @param {number} id - Video ID
+   * @param {string|null} [quality] - Optional video quality (e.g., "288x512"). Pass null or omit for original quality.
    * @returns {Promise<string>} Blob URL
    */
-  async getStreamBlob(id) {
+  async getStreamBlob(id, quality = null) {
     try {
+      // Only add quality parameter if it's a non-null, non-empty string
+      const params = quality ? { quality } : {};
       const response = await apiClient.client.get(`/videos/${id}/stream`, {
+        params,
         responseType: "blob",
       });
       return URL.createObjectURL(response.data);

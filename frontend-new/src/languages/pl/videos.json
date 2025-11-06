@@ -133,5 +133,11 @@
       "assignment_not_found": "Przydział nie znaleziony",
       "assignment_not_found_message": "Żądany przydział oznaczania nie został znaleziony."
     }
+  },
+  "quality": {
+    "video_quality": "Jakość wideo",
+    "original": "Oryginalna",
+    "2x_lower": "2x niższa",
+    "4x_lower": "4x niższa"
   }
 }

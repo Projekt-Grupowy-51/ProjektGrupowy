@@ -178,6 +178,8 @@ public class VideoController(
             : Path.Combine(
                 Path.GetDirectoryName(video.Path)!, $"{Path.GetFileNameWithoutExtension(video.Path)}_{quality}{Path.GetExtension(video.Path)}");
         
+        Console.WriteLine($"\n\nChecking: {fullPath}\n\n");
+        
         if (!System.IO.File.Exists(fullPath))
             return BadRequest("Requested quality not available.");
 
