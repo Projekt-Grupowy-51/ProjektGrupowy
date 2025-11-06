@@ -56,15 +56,15 @@ export const useBatchManagement = (assignment) => {
         const newVideoStreamUrls = {};
         for (const video of batchVideos) {
           try {
-            // Use getStreamBlob with quality parameter for authenticated access
+            // Get pre-signed URL for authenticated access
             // Pass null for original quality (no parameter), or specific quality string
-            const streamUrl = await VideoService.getStreamBlob(
+            const preSignedUrl = await VideoService.getStreamBlob(
               video.id,
               qualityToUse
             );
 
-            if (streamUrl) {
-              newVideoStreamUrls[video.id] = streamUrl;
+            if (preSignedUrl) {
+              newVideoStreamUrls[video.id] = preSignedUrl;
             }
           } catch (streamError) {
             console.error(
@@ -96,30 +96,15 @@ export const useBatchManagement = (assignment) => {
 
   const handleQualityChange = useCallback(
     (quality) => {
-      // Cleanup old blob URLs before loading new ones
-      Object.values(videoStreamUrls).forEach((url) => {
-        if (url.startsWith("blob:")) {
-          URL.revokeObjectURL(url);
-        }
-      });
-
+      // No need to cleanup pre-signed URLs, they're not blob URLs
       setSelectedQuality(quality);
       // Reload current batch with new quality
       loadBatch(currentBatch, quality);
     },
-    [currentBatch, loadBatch, videoStreamUrls]
+    [currentBatch, loadBatch]
   );
 
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      Object.values(videoStreamUrls).forEach((url) => {
-        if (url.startsWith("blob:")) {
-          URL.revokeObjectURL(url);
-        }
-      });
-    };
-  }, [videoStreamUrls]);
+  // No cleanup needed for pre-signed URLs (not blob URLs)
 
   const getBatchInfo = () => ({
     current: currentBatch,

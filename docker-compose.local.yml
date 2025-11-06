@@ -131,6 +131,8 @@ services:
 
       - Videos__RootDirectory=${VIDEOS_ROOT}
       - Videos__NginxUrl=http://localhost:${NGINX_PORT}/videos
+      - Videos__NginxPublicBaseUrl=${NGINX_PUBLIC_BASEURL}
+      - Videos__SecureLinkSecret=${NGINX_SECURELINK_SECRET}
 
       - Reports__RootDirectory=${REPORTS_ROOT}
       - Reports__NginxUrl=http://localhost:${NGINX_PORT}/reports

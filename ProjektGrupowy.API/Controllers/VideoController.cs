@@ -17,6 +17,7 @@ using ProjektGrupowy.Application.Features.Videos.Commands.UpdateVideo;
 using ProjektGrupowy.Application.Features.Videos.Queries.GetVideo;
 using ProjektGrupowy.Application.Features.Videos.Queries.GetVideos;
 using ProjektGrupowy.Application.Features.Videos.Queries.GetVideosByGroupAndPosition;
+using ProjektGrupowy.Application.Helpers;
 using ProjektGrupowy.Application.Services;
 using ProjektGrupowy.Domain.Utils.Constants;
 
@@ -121,9 +122,9 @@ public class VideoController(
         {
             return BadRequest(result.Errors);
         }
-        
+
         var addedVideo = result.Value;
-        
+
         var vpCommand = new ProcessVideoCommand(addedVideo.Id, currentUserService.UserId, currentUserService.IsAdmin);
         BackgroundJob.Enqueue<IMediator>(x => x.Send(vpCommand, CancellationToken.None));
 
@@ -167,28 +168,28 @@ public class VideoController(
     {
         var query = new GetVideoQuery(id, currentUserService.UserId, currentUserService.IsAdmin);
         var result = await mediator.Send(query);
+        if (!result.IsSuccess) return NotFound(result.Errors);
 
-        if (!result.IsSuccess)
-            return NotFound(result.Errors);
-        
         var video = result.Value;
-        
         var fullPath = quality is null
             ? video.Path
-            : Path.Combine(
-                Path.GetDirectoryName(video.Path)!, $"{Path.GetFileNameWithoutExtension(video.Path)}_{quality}{Path.GetExtension(video.Path)}");
+            : Path.Combine(Path.GetDirectoryName(video.Path)!,
+                $"{Path.GetFileNameWithoutExtension(video.Path)}_{quality}{Path.GetExtension(video.Path)}");
         
-        Console.WriteLine($"\n\nChecking: {fullPath}\n\n");
-        
+        Console.WriteLine($"\n\n{fullPath}\n\n");
+
         if (!System.IO.File.Exists(fullPath))
             return BadRequest("Requested quality not available.");
 
-        if (!DockerDetector.IsRunningInDocker())
-            return File(video.ToStream(quality), video.ContentType, Path.GetFileName(fullPath), enableRangeProcessing: true);
-        
-        var baseUrl = configuration["Videos:NginxUrl"];
-        var path = $"{baseUrl}/{video.VideoGroup.Project.Id}/{video.VideoGroupId}/{Path.GetFileName(fullPath)}";
-        return Redirect(path);
+        var fileName = Path.GetFileName(fullPath);
+        var uriPath = $"/videos/{video.VideoGroup.Project.Id}/{video.VideoGroupId}/{fileName}";
+
+        var publicBaseUrl = configuration["Videos:NginxPublicBaseUrl"];
+        var secret = configuration["Videos:SecureLinkSecret"];
+        var expires = DateTimeOffset.UtcNow.AddHours(12);
+
+        var signedUrl = NginxSignedUrl.Sign(publicBaseUrl!, uriPath, expires, secret!);
+        return Ok(new VideoStreamUrlResponse { Url = signedUrl });
     }
 
     /// <summary>

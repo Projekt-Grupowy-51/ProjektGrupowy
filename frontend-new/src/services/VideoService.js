@@ -130,10 +130,11 @@ class VideoService {
   }
 
   /**
-   * Get video stream as blob with authentication
+   * Get pre-signed video stream URL with authentication
+   * GET /api/Video/{id}/stream?quality={quality}
    * @param {number} id - Video ID
    * @param {string|null} [quality] - Optional video quality (e.g., "288x512"). Pass null or omit for original quality.
-   * @returns {Promise<string>} Blob URL
+   * @returns {Promise<string>} Pre-signed URL for direct video streaming
    */
   async getStreamBlob(id, quality = null) {
     try {
@@ -141,9 +142,12 @@ class VideoService {
       const params = quality ? { quality } : {};
       const response = await apiClient.client.get(`/videos/${id}/stream`, {
         params,
-        responseType: "blob",
       });
-      return URL.createObjectURL(response.data);
+      // Response is JSON with { url: "pre-signed-url" }
+      if (response.data && response.data.url) {
+        return response.data.url;
+      }
+      throw new Error("Invalid response format: missing URL");
     } catch (error) {
       throw new Error(`Failed to get video stream ${id}: ${error.message}`);
     }
