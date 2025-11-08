@@ -32,8 +32,10 @@ const Button = ({
       info: "btn-info",
       light: "btn-light",
       dark: "btn-dark",
-      link: "btn-link",
-      outline: "btn-primary",
+    link: "btn-link",
+    // treat variant "outline" as outlined primary (used for Details)
+    // so <Button variant="outline"> becomes an outline-style button
+    outline: "btn-outline-primary",
       "outline-secondary": "btn-outline-secondary",
       "outline-success": "btn-outline-success",
       "outline-danger": "btn-outline-danger",

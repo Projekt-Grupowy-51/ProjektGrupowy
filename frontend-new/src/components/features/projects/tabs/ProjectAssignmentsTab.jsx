@@ -19,14 +19,24 @@ const ProjectAssignmentsTab = ({ projectId }) => {
             <i className="fas fa-tasks me-2"></i>
             {t('projects:tabs.assignments')}
           </Card.Title>
-          <Button
-            variant="primary"
-            size="sm"
-            icon="fas fa-plus"
-            onClick={() => navigate(`/projects/${projectId}/assignments/add`)}
-          >
-            {t('projects:add.assignment')}
-          </Button>
+          <div className="d-flex gap-1">
+            <Button
+              variant="outline"
+              size="sm"
+              icon="fas fa-user-tag"
+              onClick={() => navigate(`/projects/${projectId}/labelers/assign`)}
+            >
+              Przypisz etykietujących
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              icon="fas fa-plus"
+              onClick={() => navigate(`/projects/${projectId}/assignments/add`)}
+            >
+              {t('projects:add.assignment')}
+            </Button>
+          </div>
         </div>
       </Card.Header>
       <Card.Body>
@@ -68,7 +78,7 @@ const ProjectAssignmentsTab = ({ projectId }) => {
                   )}
                   <Button
                     size="sm"
-                    variant="info"
+                    variant="outline"
                     icon="fas fa-eye"
                     onClick={() => navigate(`/assignments/${assignment.id}`)}
                   >

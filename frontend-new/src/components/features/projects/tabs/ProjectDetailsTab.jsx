@@ -110,9 +110,10 @@ const ProjectDetailsTab = ({ projectId, onDeleteProject }) => {
             </div>
           </Card.Body>
           <Card.Footer>
-            <div className="d-flex gap-2">
+              <div className="d-flex gap-2">
               <Button
-                variant="warning"
+                size="sm"
+                variant="outline-warning"
                 icon="fas fa-edit"
                 onClick={() => navigate(`/projects/${projectId}/edit`, { 
                   state: { from: `/projects/${projectId}` } 
@@ -121,6 +122,7 @@ const ProjectDetailsTab = ({ projectId, onDeleteProject }) => {
                 {t('common:buttons.edit')}
               </Button>
               <Button
+                size="sm"
                 variant="outline-danger"
                 icon="fas fa-trash"
                 confirmAction={true}

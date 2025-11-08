@@ -78,7 +78,7 @@ const ProjectLabelersTab = ({ projectId }) => {
         </Card.Header>
         <Card.Body>
           <div className="row g-3">
-            <div className="col-md-5">
+            <div className="col-md-4">
               <Select
                 value={selectedLabeler}
                 onChange={(e) => setSelectedLabeler(e.target.value)}
@@ -94,7 +94,7 @@ const ProjectLabelersTab = ({ projectId }) => {
                 ]}
               />
             </div>
-            <div className="col-md-5">
+            <div className="col-md-4">
               <Select
                 value={selectedAssignment}
                 onChange={(e) => setSelectedAssignment(e.target.value)}
@@ -110,17 +110,18 @@ const ProjectLabelersTab = ({ projectId }) => {
                 ]}
               />
             </div>
-            <div className="col-md-2">
+            <div className="col-md-4">
               <Button
-                variant="success"
+                variant="dark"
+                size="sm"
+                className="btn-standard"
                 disabled={!selectedLabeler || !selectedAssignment}
                 onClick={() => handleAssign()}
-                className="w-100"
               >
                 {t("projects:labeler_tab.assign_labeler")}
               </Button>
             </div>
-          </div>
+            </div>
         </Card.Body>
       </Card>
 

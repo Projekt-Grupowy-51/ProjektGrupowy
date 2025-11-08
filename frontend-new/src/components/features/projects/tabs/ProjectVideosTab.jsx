@@ -26,10 +26,10 @@ const ProjectVideosTab = ({ projectId }) => {
         <div className="fw-bold">{videoGroup.name}</div>
         <small className="text-muted">{videoGroup.description}</small>
       </div>
-      <div className="d-flex gap-1">
+        <div className="d-flex gap-1">
         <Button
           size="sm"
-          variant="info"
+          variant="outline"
           icon="fas fa-eye"
           onClick={() => navigate(`/videogroups/${videoGroup.id}`)}
         >

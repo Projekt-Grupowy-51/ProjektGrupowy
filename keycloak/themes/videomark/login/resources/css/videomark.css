@@ -663,7 +663,7 @@ a:hover {
 }
 
 .alert-info {
-    background: rgba(230, 246, 255, 0.45) !important;
+    background: rgba(237, 246, 251, 0.542) !important;
     color: #0288d1 !important;
     border-color: rgba(187, 222, 251, 0.38) !important;
     max-width: 30vw !important;
