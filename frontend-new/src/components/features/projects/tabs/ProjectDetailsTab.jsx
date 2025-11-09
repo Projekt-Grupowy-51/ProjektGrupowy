@@ -36,7 +36,7 @@ const ProjectDetailsTab = ({ projectId, onDeleteProject }) => {
 
   return (
     <div className="row">
-      <div className="col-lg-8">
+      <div className="col-lg-6">
         <Card>
           <Card.Header>
             <Card.Title level={5}>
@@ -139,7 +139,7 @@ const ProjectDetailsTab = ({ projectId, onDeleteProject }) => {
         </Card>
       </div>
 
-      <div className="col-lg-4">
+      <div className="col-lg-6">
         <ProjectReportsSection projectId={projectId} />
       </div>
     </div>

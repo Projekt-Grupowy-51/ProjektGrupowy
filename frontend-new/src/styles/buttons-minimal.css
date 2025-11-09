@@ -12,6 +12,7 @@
   --btn-success-rgb: 16,185,129; /* rgb for success (used in rgba) */
   --btn-danger: #ef4444; /* red-500 */
   --btn-warning: #f59e0b; /* amber-500 */
+  --btn-warning-rgb: 245,158,11; /* rgb for warning (used in rgba) */
   --btn-info: #7c3aed; /* violet-600 */
   --btn-radius: 8px;
   --btn-transition: 150ms ease;
@@ -76,10 +77,10 @@
 /* Make success use an outline-like, subtle background to match destructive/warning styles
    (strong border, very light background, colored text) */
 .btn-success {
-  /* stronger subtle fill so the success accent reads more clearly */
-  background: rgba(var(--btn-success-rgb), 0.14) !important;
+  /* Minimalist success: subtle, outline-like background matching other outline buttons */
+  background: rgba(var(--btn-success-rgb), 0.06) !important;
   color: var(--btn-success) !important;
-  border-color: rgba(var(--btn-success-rgb), 0.26) !important;
+  border-color: rgba(var(--btn-success-rgb), 0.16) !important;
 }
 
 .btn-primary:hover:not(:disabled) {
@@ -138,8 +139,8 @@
 .btn-outline-light { color: var(--btn-text) !important; border-color: rgba(15,23,42,0.06) !important; background: rgba(15,23,42,0.02) !important; }
 .btn-outline-dark { color: #0f172a !important; border-color: rgba(15,23,42,0.16) !important; background: rgba(15,23,42,0.04) !important; }
 .btn-outline-danger { color: var(--btn-danger) !important; border-color: rgba(239,68,68,0.18) !important; background: rgba(239,68,68,0.05) !important; }
-.btn-outline-warning { color: var(--btn-warning) !important; border-color: rgba(245,158,11,0.16) !important; background: rgba(245,158,11,0.05) !important; }
-.btn-outline-success { color: var(--btn-success) !important; border-color: rgba(16,185,129,0.16) !important; background: rgba(16,185,129,0.05) !important; }
+.btn-outline-warning { color: var(--btn-warning) !important; border-color: rgba(var(--btn-warning-rgb),0.16) !important; background: rgba(var(--btn-warning-rgb),0.05) !important; }
+.btn-outline-success { color: var(--btn-success) !important; border-color: rgba(var(--btn-success-rgb),0.14) !important; background: rgba(var(--btn-success-rgb),0.04) !important; }
 .btn-outline-info { color: var(--btn-info) !important; border-color: rgba(124,58,237,0.14) !important; background: rgba(124,58,237,0.05) !important; }
 
 .btn-outline-primary:hover:not(:disabled),
@@ -164,19 +165,19 @@
 
 /* subtle green accent for success buttons */
 .btn-success:hover:not(:disabled) {
-  /* Boosted hover: stronger tint, darker border and a clearer shadow. Text turns white for contrast. */
-  background: rgba(var(--btn-success-rgb), 0.22) !important;
-  border-color: rgba(var(--btn-success-rgb), 0.40) !important;
-  box-shadow: 0 10px 30px rgba(var(--btn-success-rgb), 0.14) !important;
+  /* Hover: slightly stronger tint and border but still minimalist */
+  background: rgba(var(--btn-success-rgb), 0.12) !important;
+  border-color: rgba(var(--btn-success-rgb), 0.30) !important;
+  box-shadow: 0 8px 24px rgba(var(--btn-success-rgb), 0.08) !important;
   transform: translateY(-1px);
-  color: var(--btn-success) !important; /* keep text green on hover */
+  color: var(--btn-success) !important;
 }
 
 .btn-outline-success:hover:not(:disabled) {
   transform: translateY(-1px) !important;
-  background: rgba(var(--btn-success-rgb),0.14) !important;
-  border-color: rgba(var(--btn-success-rgb),0.30) !important;
-  box-shadow: 0 10px 24px rgba(var(--btn-success-rgb),0.10) !important;
+  background: rgba(var(--btn-success-rgb),0.10) !important;
+  border-color: rgba(var(--btn-success-rgb),0.26) !important;
+  box-shadow: 0 8px 20px rgba(var(--btn-success-rgb),0.06) !important;
   color: var(--btn-success) !important;
 }
 
@@ -241,9 +242,10 @@
 
 /* finished / success - subtle green */
 .badge.bg-success {
-  background: rgba(16,185,129,0.12) !important;
-  color: #064e3b !important; /* darker green text for contrast */
-  border-color: rgba(16,185,129,0.18) !important;
+  /* Subtle badge that follows outline/minimalist look */
+  background: rgba(var(--btn-success-rgb),0.06) !important;
+  color: var(--btn-success) !important;
+  border-color: rgba(var(--btn-success-rgb),0.14) !important;
 }
 
 /* in-progress / primary - more vivid blue */
@@ -251,6 +253,13 @@
   background: rgba(var(--btn-primary-rgb),0.12) !important;
   color: var(--btn-text) !important;
   border-color: rgba(var(--btn-primary-rgb),0.18) !important;
+}
+
+/* pending / warning - subtle amber */
+.badge.bg-warning {
+  background: rgba(var(--btn-warning-rgb),0.06) !important;
+  color: var(--btn-warning) !important;
+  border-color: rgba(var(--btn-warning-rgb),0.14) !important;
 }
 
 /* neutral / secondary */

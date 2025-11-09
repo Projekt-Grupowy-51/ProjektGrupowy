@@ -16,7 +16,7 @@ const Input = ({
   helpText,
   size = 'md',
   className = '',
-  divClassName = 'mb-3',
+  divClassName = 'mb-2',
   rows = 3,
   checked,
   multiple = false,

@@ -21,14 +21,6 @@ const ProjectAssignmentsTab = ({ projectId }) => {
           </Card.Title>
           <div className="d-flex gap-1">
             <Button
-              variant="outline"
-              size="sm"
-              icon="fas fa-user-tag"
-              onClick={() => navigate(`/projects/${projectId}/labelers/assign`)}
-            >
-              Przypisz etykietujących
-            </Button>
-            <Button
               variant="primary"
               size="sm"
               icon="fas fa-plus"

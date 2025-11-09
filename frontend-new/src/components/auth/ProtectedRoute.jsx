@@ -48,7 +48,7 @@ const ProtectedRoute = ({
         return (
             <>
             <TopNavbar />
-            <Container className="d-flex justify-content-center align-items-center vh-100">
+            <Container className="d-flex justify-content-center align-items-center" style={{ height: '86vh' }}>
 
                 <Card className="text-center" style={{ maxWidth: '400px', width: '100%' }}>
                     <Card.Header>

@@ -543,12 +543,27 @@ body {
     margin-top: 0;
   }
 }
+
 /* === UTILITIES === */
-.text-primary { color: var(--color-primary-900) !important; }
-.text-danger { color: var(--color-danger-600) !important; }
-.text-success { color: var(--color-success-600) !important; }
-.text-warning { color: var(--color-warning-600) !important; }
-.text-info { color: var(--color-info-600) !important; }
+.text-primary {
+  color: var(--color-primary-900) !important;
+}
+
+.text-danger {
+  color: var(--color-danger-600) !important;
+}
+
+.text-success {
+  color: var(--color-success-600) !important;
+}
+
+.text-warning {
+  color: var(--color-warning-600) !important;
+}
+
+.text-info {
+  color: var(--color-info-600) !important;
+}
 
 /* === WATER TILE EFFECTS === */
 .water-tile {
@@ -582,4 +597,18 @@ body {
 
 .modal .modal-footer {
   background: var(--color-surface-secondary) !important;
+}
+
+.card-title {
+  margin-bottom: 0 !important;
+}
+
+.text-white {
+  color: white !important;
+}
+
+td {
+  justify-content: center;
+  align-items: center;
+  vertical-align: middle !important;
 }

@@ -77,8 +77,8 @@ const ProjectLabelersTab = ({ projectId }) => {
           </Card.Title>
         </Card.Header>
         <Card.Body>
-          <div className="row g-3">
-            <div className="col-md-4">
+          <div className="d-flex justify-content-between align-items-center row g-3">
+            <div className="col-md-5">
               <Select
                 value={selectedLabeler}
                 onChange={(e) => setSelectedLabeler(e.target.value)}
@@ -94,7 +94,7 @@ const ProjectLabelersTab = ({ projectId }) => {
                 ]}
               />
             </div>
-            <div className="col-md-4">
+            <div className="col-md-5">
               <Select
                 value={selectedAssignment}
                 onChange={(e) => setSelectedAssignment(e.target.value)}
@@ -110,11 +110,11 @@ const ProjectLabelersTab = ({ projectId }) => {
                 ]}
               />
             </div>
-            <div className="col-md-4">
+            <div className="d-flex col-md-2 justify-content-end">
               <Button
                 variant="dark"
                 size="sm"
-                className="btn-standard"
+                className="btn-standard w-100"
                 disabled={!selectedLabeler || !selectedAssignment}
                 onClick={() => handleAssign()}
               >
@@ -128,7 +128,8 @@ const ProjectLabelersTab = ({ projectId }) => {
       {/* Unassigned Labelers Section */}
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h4 className="mb-0">
-          {t("projects:labeler_tab.unassigned_labelers")}
+          {t("projects:labeler_tab.unassigned_labelers")}(
+          {unassignedLabelers?.length || 0})
         </h4>
         <div className="d-flex gap-2">
           {unassignedLabelers?.length > 0 && (
@@ -206,11 +207,13 @@ const ProjectLabelersTab = ({ projectId }) => {
                             })),
                           ]}
                           className="me-2"
-                          style={{ minWidth: "300px" }}
+                          style={{ minWidth: "50%" }}
                         />
                         <Button
                           variant="success"
                           size="sm"
+                          className="btn-standard"
+                          style={{ minWidth: '25%' }}
                           onClick={() =>
                             assignLabeler(
                               labeler.id,
@@ -259,11 +262,11 @@ const ProjectLabelersTab = ({ projectId }) => {
       </div>
 
       <Card>
-        <Card.Header>
+        {/* <Card.Header>
           <Card.Title level={5}>
             {t("projects:labeler_tab.assigned_labelers")}
           </Card.Title>
-        </Card.Header>
+        </Card.Header> */}
         <Card.Body>
           {!assignedLabelerRows || assignedLabelerRows.length === 0 ? (
             <EmptyState
@@ -332,7 +335,9 @@ const ProjectLabelersTab = ({ projectId }) => {
 
       {/* All Labelers Section */}
       <div className="d-flex justify-content-between align-items-center mb-3 mt-5">
-        <h4 className="mb-0">{t("projects:labeler_tab.all_labelers")}</h4>
+        <h4 className="mb-0">{t("projects:labeler_tab.all_labelers")}(
+          {allLabelers?.length || 0})
+        </h4>
         <div className="d-flex gap-2">
           {allLabelers?.length > 0 &&
             Object.keys(selectedCustomAssignments).length > 0 && (
@@ -392,11 +397,13 @@ const ProjectLabelersTab = ({ projectId }) => {
                             })),
                           ]}
                           className="me-2"
-                          style={{ minWidth: "300px" }}
+                          style={{ minWidth: "50%" }}
                         />
                         <Button
                           variant="success"
                           size="sm"
+                          className="btn-standard"
+                          style={{ minWidth: '25%' }}
                           onClick={() =>
                             assignLabeler(
                               labeler.id,
