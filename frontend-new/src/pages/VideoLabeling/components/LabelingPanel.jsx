@@ -116,6 +116,7 @@ const LabelingPanel = ({
                             variant="outline-danger"
                             disabled={operationLoading}
                             loading={operationLoading}
+                            confirmVariant="outline-danger"
                             confirmAction={true}
                             confirmTitle={t("common:deleteConfirmation.title")}
                             confirmMessage={t(

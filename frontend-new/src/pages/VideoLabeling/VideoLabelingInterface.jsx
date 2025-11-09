@@ -202,10 +202,10 @@ const VideoLabelingInterface = () => {
             </h1>
           </div>
           <div className="d-flex align-items-center gap-3">
-            <span className="badge bg-secondary">
+            <span className="badge bg-primary">
               {t("videos:labeling.assignment")} #{assignment.id}
             </span>
-            <span className="badge bg-secondary">
+            <span className="badge bg-primary">
               {t("videos:labeling.batch")} {batchManagement.currentBatch}/
               {batchManagement.totalBatches}
             </span>
