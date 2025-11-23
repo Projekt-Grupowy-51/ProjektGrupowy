@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json;
 using ProjektGrupowy.Domain.Events;
 
@@ -6,7 +5,6 @@ namespace ProjektGrupowy.Domain.Models;
 
 public abstract class BaseEntity
 {
-    [NotMapped]
     public List<DomainEvent> DomainEvents { get; private set; } = new();
 
     public void AddDomainEvent(string message, string userId)

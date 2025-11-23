@@ -15,18 +15,31 @@ public class GetAccessCodesByProjectQueryHandler : IRequestHandler<GetAccessCode
     private readonly IAuthorizationService _authorizationService;
     private readonly ICurrentUserService _currentUserService;
     private readonly IProjectAccessCodeRepository _projectAccessCodeRepository;
-    public GetAccessCodesByProjectQueryHandler(IAuthorizationService authorizationService, ICurrentUserService currentUserService, IProjectAccessCodeRepository projectAccessCodeRepository)
+    private readonly IProjectRepository _projectRepository;
+
+    public GetAccessCodesByProjectQueryHandler(
+        IAuthorizationService authorizationService,
+        ICurrentUserService currentUserService,
+        IProjectAccessCodeRepository projectAccessCodeRepository,
+        IProjectRepository projectRepository)
     {
         _authorizationService = authorizationService;
         _currentUserService = currentUserService;
         _projectAccessCodeRepository = projectAccessCodeRepository;
+        _projectRepository = projectRepository;
     }
 
     public async Task<Result<List<ProjectAccessCode>>> Handle(GetAccessCodesByProjectQuery request, CancellationToken cancellationToken)
     {
+        var project = await _projectRepository.GetProjectAsync(request.ProjectId, request.UserId, request.IsAdmin);
+        if (project is null)
+        {
+            return Result.Fail("Project not found");
+        }
+
         var accessCodes = await _projectAccessCodeRepository.GetAccessCodesByProjectAsync(request.ProjectId, request.UserId, request.IsAdmin);
 
-        var authResult = await _authorizationService.AuthorizeAsync(_currentUserService.User, accessCodes, new ResourceOperationRequirement(ResourceOperation.Read));
+        var authResult = await _authorizationService.AuthorizeAsync(_currentUserService.User, project, new ResourceOperationRequirement(ResourceOperation.Read));
         if (!authResult.Succeeded)
         {
             throw new ForbiddenException("You do not have permission to perform this action");

@@ -44,7 +44,7 @@ public class AddValidCodeToProjectCommandHandler : IRequestHandler<AddValidCodeT
         var accessCode = await _projectAccessCodeRepository.GetValidAccessCodeByProjectAsync(project.Id, request.UserId, request.IsAdmin);
         accessCode?.Retire(request.UserId);
 
-        var newAccessCode = ProjectAccessCode.Create(project, request.Expiration, request.UserId);
+        var newAccessCode = ProjectAccessCode.Create(project, request.Expiration, request.UserId, request.CustomExpiration);
 
         await _projectAccessCodeRepository.AddAccessCodeAsync(newAccessCode);
         await _unitOfWork.SaveChangesAsync();

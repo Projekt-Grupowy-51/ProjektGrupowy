@@ -277,6 +277,7 @@ const VideoLabelingInterface = () => {
             labels={labels}
             assignedLabels={assignedLabelsState.assignedLabels}
             onDeleteLabel={assignedLabelsState.handleDeleteLabel}
+            onTimeClick={videoControls.handleSeek}
             loading={assignedLabelsState.assignedLabelsLoading}
             operationLoading={assignedLabelsState.labelOperationLoading}
             currentPage={assignedLabelsState.currentPage}

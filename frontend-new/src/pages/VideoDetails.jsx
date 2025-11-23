@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Container,
@@ -38,6 +38,14 @@ const VideoDetails = () => {
   } = useVideoDetails();
 
   const [duration, setDuration] = useState(null);
+  const videoRef = useRef(null);
+
+  const handleTimeClick = (time) => {
+    if (videoRef.current) {
+      videoRef.current.currentTime = parseFloat(time);
+      videoRef.current.play();
+    }
+  };
 
   // Extract duration from video metadata
   useEffect(() => {
@@ -122,6 +130,7 @@ const VideoDetails = () => {
               </div>
             ) : videoStreamUrl ? (
               <video
+                ref={videoRef}
                 style={{
                   position: "absolute",
                   top: 0,
@@ -191,14 +200,38 @@ const VideoDetails = () => {
                         {label.subjectName || t("common:states.unknown")}
                       </Table.Cell>
                       <Table.Cell>
-                        {label.start
-                          ? `${label.start} s`
-                          : t("common:states.not_available")}
+                        {label.start ? (
+                          <span
+                            onClick={() => handleTimeClick(label.start)}
+                            style={{
+                              cursor: "pointer",
+                              color: "#0d6efd",
+                              textDecoration: "underline",
+                            }}
+                            title={t("videos:labeling.seek_to_time")}
+                          >
+                            {label.start} s
+                          </span>
+                        ) : (
+                          t("common:states.not_available")
+                        )}
                       </Table.Cell>
                       <Table.Cell>
-                        {label.end
-                          ? `${label.end} s`
-                          : t("common:states.not_available")}
+                        {label.end ? (
+                          <span
+                            onClick={() => handleTimeClick(label.end)}
+                            style={{
+                              cursor: "pointer",
+                              color: "#0d6efd",
+                              textDecoration: "underline",
+                            }}
+                            title={t("videos:labeling.seek_to_time")}
+                          >
+                            {label.end} s
+                          </span>
+                        ) : (
+                          t("common:states.not_available")
+                        )}
                       </Table.Cell>
                       <Table.Cell>
                         {label.insDate

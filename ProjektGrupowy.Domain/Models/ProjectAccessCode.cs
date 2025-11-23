@@ -1,28 +1,24 @@
 ﻿using ProjektGrupowy.Domain.Enums;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Security.Cryptography;
 
 namespace ProjektGrupowy.Domain.Models;
 
-// [Table("ProjectAccessCodes")]
 public class ProjectAccessCode : BaseEntity, IOwnedEntity
 {
-    [Key] public int Id { get; set; }
+    public int Id { get; set; }
+    public int ProjectId { get; set; }
     public virtual Project Project { get; set; } = default!;
-    [StringLength(16, MinimumLength = 16)]
+
     public string Code { get; set; } = string.Empty;
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
     public DateTime? ExpiresAtUtc { get; set; } = null;
 
-    [NotMapped]
     public bool IsExpired => CreatedAtUtc switch
     {
         _ when ExpiresAtUtc is null => false,
         _ => DateTime.UtcNow > ExpiresAtUtc
     };
 
-    [NotMapped]
     public bool IsValid => !IsExpired;
 
     public void Retire(string userId)
@@ -32,7 +28,7 @@ public class ProjectAccessCode : BaseEntity, IOwnedEntity
     }
     public string CreatedById { get; set; } = string.Empty;
 
-    [ForeignKey(nameof(CreatedById))]
+    
     public virtual User CreatedBy { get; set; } = default!;
 
     public DateTime? DelDate { get; set; } = null;
@@ -58,14 +54,14 @@ public class ProjectAccessCode : BaseEntity, IOwnedEntity
         return new string(data.Select(b => chars[b % chars.Length]).ToArray());
     }
 
-    public static ProjectAccessCode Create(Project project, AccessCodeExpiration expiration, string createdById)
+    public static ProjectAccessCode Create(Project project, AccessCodeExpiration expiration, string createdById, int customDays = -1)
     {
         var accessCode = new ProjectAccessCode
         {
             Project = project,
             Code = GenerateCode(),
             CreatedAtUtc = DateTime.UtcNow,
-            ExpiresAtUtc = GetExpirationDate(expiration),
+            ExpiresAtUtc = GetExpirationDate(expiration, customDays),
             CreatedById = createdById
         };
         accessCode.AddDomainEvent("Kod dostępu został utworzony!", createdById);

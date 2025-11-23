@@ -12,8 +12,8 @@ using ProjektGrupowy.Infrastructure.Persistance;
 namespace ProjektGrupowy.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251105115452_AddedVideoQuantities")]
-    partial class AddedVideoQuantities
+    [Migration("20251123211802_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -109,7 +109,8 @@ namespace ProjektGrupowy.Infrastructure.Migrations
 
                     b.Property<string>("CreatedById")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("created_by_id");
 
                     b.Property<DateTime?>("DelDate")
@@ -168,7 +169,8 @@ namespace ProjektGrupowy.Infrastructure.Migrations
 
                     b.Property<string>("CreatedById")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("created_by_id");
 
                     b.Property<DateTime?>("DelDate")
@@ -216,13 +218,13 @@ namespace ProjektGrupowy.Infrastructure.Migrations
 
                     b.Property<string>("ColorHex")
                         .IsRequired()
-                        .HasMaxLength(7)
-                        .HasColumnType("character varying(7)")
+                        .HasColumnType("text")
                         .HasColumnName("color_hex");
 
                     b.Property<string>("CreatedById")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("created_by_id");
 
                     b.Property<DateTime?>("DelDate")
@@ -231,7 +233,8 @@ namespace ProjektGrupowy.Infrastructure.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("name");
 
                     b.Property<char?>("Shortcut")
@@ -270,7 +273,8 @@ namespace ProjektGrupowy.Infrastructure.Migrations
 
                     b.Property<string>("CreatedById")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("created_by_id");
 
                     b.Property<DateOnly>("CreationDate")
@@ -283,8 +287,7 @@ namespace ProjektGrupowy.Infrastructure.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)")
+                        .HasColumnType("text")
                         .HasColumnName("description");
 
                     b.Property<DateOnly?>("EndDate")
@@ -331,14 +334,15 @@ namespace ProjektGrupowy.Infrastructure.Migrations
 
                     b.Property<string>("CreatedById")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("created_by_id");
 
                     b.Property<DateTime?>("DelDate")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("del_date");
 
-                    b.Property<DateTime?>("ExpiresAtUtc")
+                    b.Property<DateTime>("ExpiresAtUtc")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("expires_at_utc");
 
@@ -351,7 +355,7 @@ namespace ProjektGrupowy.Infrastructure.Migrations
 
                     b.HasIndex("Code")
                         .IsUnique()
-                        .HasDatabaseName("IX_ProjectAccessCode_Code");
+                        .HasDatabaseName("ix_project_access_codes_code");
 
                     b.HasIndex("CreatedById")
                         .HasDatabaseName("ix_project_access_codes_created_by_id");
@@ -373,7 +377,8 @@ namespace ProjektGrupowy.Infrastructure.Migrations
 
                     b.Property<string>("CreatedById")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("created_by_id");
 
                     b.Property<DateTime?>("DelDate")
@@ -418,7 +423,8 @@ namespace ProjektGrupowy.Infrastructure.Migrations
 
                     b.Property<string>("CreatedById")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("created_by_id");
 
                     b.Property<DateOnly>("CreationDate")
@@ -517,12 +523,18 @@ namespace ProjektGrupowy.Infrastructure.Migrations
 
                     b.Property<string>("CreatedById")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("created_by_id");
 
                     b.Property<DateTime?>("DelDate")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("del_date");
+
+                    b.Property<string>("OriginalQuality")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("original_quality");
 
                     b.Property<string>("Path")
                         .IsRequired()
@@ -567,7 +579,8 @@ namespace ProjektGrupowy.Infrastructure.Migrations
 
                     b.Property<string>("CreatedById")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("created_by_id");
 
                     b.Property<DateTime?>("DelDate")
@@ -641,9 +654,9 @@ namespace ProjektGrupowy.Infrastructure.Migrations
                     b.HasOne("ProjektGrupowy.Domain.Models.User", "CreatedBy")
                         .WithMany()
                         .HasForeignKey("CreatedById")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.SetNull)
                         .IsRequired()
-                        .HasConstraintName("fk_assigned_labels_user_entity_created_by_id");
+                        .HasConstraintName("fk_assigned_labels_users_created_by_id");
 
                     b.HasOne("ProjektGrupowy.Domain.Models.Label", "Label")
                         .WithMany("AssignedLabels")
@@ -671,9 +684,9 @@ namespace ProjektGrupowy.Infrastructure.Migrations
                     b.HasOne("ProjektGrupowy.Domain.Models.User", "CreatedBy")
                         .WithMany()
                         .HasForeignKey("CreatedById")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.SetNull)
                         .IsRequired()
-                        .HasConstraintName("fk_generated_reports_user_entity_created_by_id");
+                        .HasConstraintName("fk_generated_reports_users_created_by_id");
 
                     b.HasOne("ProjektGrupowy.Domain.Models.Project", "Project")
                         .WithMany("GeneratedReports")
@@ -692,9 +705,9 @@ namespace ProjektGrupowy.Infrastructure.Migrations
                     b.HasOne("ProjektGrupowy.Domain.Models.User", "CreatedBy")
                         .WithMany()
                         .HasForeignKey("CreatedById")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.SetNull)
                         .IsRequired()
-                        .HasConstraintName("fk_labels_user_entity_created_by_id");
+                        .HasConstraintName("fk_labels_users_created_by_id");
 
                     b.HasOne("ProjektGrupowy.Domain.Models.Subject", "Subject")
                         .WithMany("Labels")
@@ -715,7 +728,7 @@ namespace ProjektGrupowy.Infrastructure.Migrations
                         .HasForeignKey("CreatedById")
                         .OnDelete(DeleteBehavior.SetNull)
                         .IsRequired()
-                        .HasConstraintName("fk_projects_user_entity_created_by_id");
+                        .HasConstraintName("fk_projects_users_created_by_id");
 
                     b.Navigation("CreatedBy");
                 });
@@ -725,9 +738,9 @@ namespace ProjektGrupowy.Infrastructure.Migrations
                     b.HasOne("ProjektGrupowy.Domain.Models.User", "CreatedBy")
                         .WithMany()
                         .HasForeignKey("CreatedById")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.SetNull)
                         .IsRequired()
-                        .HasConstraintName("fk_project_access_codes_user_entity_created_by_id");
+                        .HasConstraintName("fk_project_access_codes_users_created_by_id");
 
                     b.HasOne("ProjektGrupowy.Domain.Models.Project", "Project")
                         .WithMany("AccessCodes")
@@ -746,9 +759,9 @@ namespace ProjektGrupowy.Infrastructure.Migrations
                     b.HasOne("ProjektGrupowy.Domain.Models.User", "CreatedBy")
                         .WithMany()
                         .HasForeignKey("CreatedById")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.SetNull)
                         .IsRequired()
-                        .HasConstraintName("fk_subjects_user_entity_created_by_id");
+                        .HasConstraintName("fk_subjects_users_created_by_id");
 
                     b.HasOne("ProjektGrupowy.Domain.Models.Project", "Project")
                         .WithMany("Subjects")
@@ -769,7 +782,7 @@ namespace ProjektGrupowy.Infrastructure.Migrations
                         .HasForeignKey("CreatedById")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
-                        .HasConstraintName("fk_subject_video_group_assignments_user_entity_created_by_id");
+                        .HasConstraintName("fk_subject_video_group_assignments_users_created_by_id");
 
                     b.HasOne("ProjektGrupowy.Domain.Models.Subject", "Subject")
                         .WithMany("SubjectVideoGroupAssignments")
@@ -797,9 +810,9 @@ namespace ProjektGrupowy.Infrastructure.Migrations
                     b.HasOne("ProjektGrupowy.Domain.Models.User", "CreatedBy")
                         .WithMany()
                         .HasForeignKey("CreatedById")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.SetNull)
                         .IsRequired()
-                        .HasConstraintName("fk_videos_user_entity_created_by_id");
+                        .HasConstraintName("fk_videos_users_created_by_id");
 
                     b.HasOne("ProjektGrupowy.Domain.Models.VideoGroup", "VideoGroup")
                         .WithMany("Videos")
@@ -818,9 +831,9 @@ namespace ProjektGrupowy.Infrastructure.Migrations
                     b.HasOne("ProjektGrupowy.Domain.Models.User", "CreatedBy")
                         .WithMany()
                         .HasForeignKey("CreatedById")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.SetNull)
                         .IsRequired()
-                        .HasConstraintName("fk_video_groups_user_entity_created_by_id");
+                        .HasConstraintName("fk_video_groups_users_created_by_id");
 
                     b.HasOne("ProjektGrupowy.Domain.Models.Project", "Project")
                         .WithMany("VideoGroups")

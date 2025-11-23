@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using ProjektGrupowy.Infrastructure.Persistance;
 
 namespace ProjektGrupowy.Infrastructure.IoC;
@@ -12,6 +13,12 @@ public static class WebApplicationExtensions
     /// </summary>
     public static async Task ApplyMigrationsAsync(this WebApplication app)
     {
+        // Skip migrations in Testing environment
+        if (app.Environment.EnvironmentName == "Testing")
+        {
+            return;
+        }
+
         using var scope = app.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         await context.Database.MigrateAsync();

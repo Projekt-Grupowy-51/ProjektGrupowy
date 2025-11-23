@@ -26,7 +26,7 @@ public class ValidateAccessCodeQueryHandler : IRequestHandler<ValidateAccessCode
         var accessCode = await _projectAccessCodeRepository.GetAccessCodeByCodeAsync(request.Code, request.UserId, request.IsAdmin);
         if (accessCode is null)
         {
-            return Result.Fail("Access code does not exist!");
+            return Result.Ok(false); // Invalid/non-existent code is simply not valid
         }
 
         var authResult = await _authorizationService.AuthorizeAsync(_currentUserService.User, accessCode, new ResourceOperationRequirement(ResourceOperation.Read));

@@ -100,7 +100,7 @@ public static class ServiceCollectionExtensions
             config.UseSimpleAssemblyNameTypeSerializer();
             config.UseRecommendedSerializerSettings();
 
-            if (environment.IsDevelopment())
+            if (environment.IsDevelopment() || environment.EnvironmentName == "Testing")
             {
                 config.UseMemoryStorage();
             }

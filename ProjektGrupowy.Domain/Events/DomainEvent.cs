@@ -1,23 +1,13 @@
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-
 namespace ProjektGrupowy.Domain.Events;
 
-// [Table("DomainEvents")]
 public class DomainEvent
 {
-    [Key]
     public int Id { get; set; }
 
-    [Required]
-    [StringLength(500)]
     public string Message { get; set; } = string.Empty;
 
-    [Required]
-    [StringLength(255)]
     public string UserId { get; set; } = string.Empty;
 
-    [StringLength(255)]
     public string? EventType { get; set; }
 
     public string? EventData { get; set; }

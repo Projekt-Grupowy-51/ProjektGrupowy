@@ -1,29 +1,27 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json;
 
 namespace ProjektGrupowy.Domain.Models;
 
-// [Table("SubjectVideoGroupAssignments")]
 public class SubjectVideoGroupAssignment : BaseEntity, IOwnedEntity
 {
-    [Key]
+    
     public int Id { get; set; }
     
     public DateOnly CreationDate { get; set; }
     
     public DateOnly? ModificationDate { get; set; }
 
-    [Required]
+    
     public virtual Subject Subject { get; set; } = default!;
 
-    [Required]
+    
     public virtual VideoGroup VideoGroup { get; set; } = default!;
 
     public virtual ICollection<User> Labelers { get; set; } = new List<User>();
     public string CreatedById { get; set; } = string.Empty;
 
-    [ForeignKey(nameof(CreatedById))]
+    
     public virtual User CreatedBy { get; set; } = default!;
     public DateTime? DelDate { get; set; } = null;
 

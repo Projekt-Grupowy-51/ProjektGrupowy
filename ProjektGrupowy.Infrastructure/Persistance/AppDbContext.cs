@@ -95,74 +95,37 @@ public class AppDbContext : DbContext, IApplicationDbContext, IReadWriteContext
         };
     }
 
-    private void ApplySoftDeleteFilter(ModelBuilder modelBuilder)
-    {
-        modelBuilder.Entity<Project>().HasQueryFilter(p => p.DelDate == null);
-        modelBuilder.Entity<VideoGroup>().HasQueryFilter(vg => vg.DelDate == null);
-        modelBuilder.Entity<Video>().HasQueryFilter(v => v.DelDate == null);
-        modelBuilder.Entity<Subject>().HasQueryFilter(s => s.DelDate == null);
-        modelBuilder.Entity<Label>().HasQueryFilter(l => l.DelDate == null);
-        modelBuilder.Entity<SubjectVideoGroupAssignment>().HasQueryFilter(svga => svga.DelDate == null);
-        modelBuilder.Entity<AssignedLabel>().HasQueryFilter(al => al.DelDate == null);
-        modelBuilder.Entity<ProjectAccessCode>().HasQueryFilter(pac => pac.DelDate == null);
-        modelBuilder.Entity<GeneratedReport>().HasQueryFilter(re => re.DelDate == null);
-    }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
-        // Configure User as read-only mapping to Keycloak table (exclude from migrations)
-        modelBuilder.Entity<User>(entity =>
-        {
-            entity.ToTable("user_entity", t => t.ExcludeFromMigrations());
-            entity.HasKey(u => u.Id);
-        });
+        // Apply all entity configurations from the assembly
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
 
-        modelBuilder.Entity<Project>()
-            .HasOne(p => p.CreatedBy)
-            .WithMany(u => u.OwnedProjects) // Musi istnieć w User.cs
-            .HasForeignKey(p => p.CreatedById)
-            .OnDelete(DeleteBehavior.SetNull);
+        // === Additional configurations for N:N relationships ===
 
-        // === Relacja N:N - Labelerzy w projekcie ===
+        // N:N - Labelers in project
         modelBuilder.Entity<Project>()
             .HasMany(p => p.ProjectLabelers)
-            .WithMany(u => u.LabeledProjects) // Musi istnieć w User.cs
+            .WithMany(u => u.LabeledProjects)
             .UsingEntity(j => j.ToTable("project_labelers"));
 
-        // 1:N - Właściciel przypisania
-        modelBuilder.Entity<User>()
-            .HasMany(u => u.OwnedAssignments)
-            .WithOne(svga => svga.CreatedBy)
-            .HasForeignKey(svga => svga.CreatedById)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        // N:N - Labelerzy przypisani do zadań
+        // N:N - Labelers assigned to SubjectVideoGroupAssignments
+        // Note: This is already configured in SubjectVideoGroupAssignmentConfiguration
+        // but we override the table name here for consistency with existing database
         modelBuilder.Entity<SubjectVideoGroupAssignment>()
             .HasMany(svga => svga.Labelers)
             .WithMany(u => u.LabeledAssignments)
             .UsingEntity(j => j.ToTable("labelers_assignments"));
 
-        // === Soft Delete Filters ===
-        ApplySoftDeleteFilter(modelBuilder);
+        // Override CreatedBy relationship DeleteBehavior for SubjectVideoGroupAssignment
+        modelBuilder.Entity<SubjectVideoGroupAssignment>()
+            .HasOne(svga => svga.CreatedBy)
+            .WithMany(u => u.OwnedAssignments)
+            .HasForeignKey(svga => svga.CreatedById)
+            .OnDelete(DeleteBehavior.Restrict);
 
-        // === Pozostałe konfiguracje ===
-
-        // 1:N - Project -> VideoGroups  
-        modelBuilder.Entity<Project>()
-            .HasMany(p => p.VideoGroups)
-            .WithOne(vg => vg.Project)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<ProjectAccessCode>()
-            .HasIndex(p => p.Code)
-            .HasDatabaseName("IX_ProjectAccessCode_Code")
-            .IsUnique();
-
-        modelBuilder.Entity<Video>()
-            .HasOne(v => v.VideoGroup)
-            .WithMany(vg => vg.Videos)
-            .HasForeignKey(v => v.VideoGroupId);
+        // === Additional indexes ===
 
         modelBuilder.Entity<Video>()
             .HasIndex(v => new { v.VideoGroupId, v.PositionInQueue });
@@ -171,7 +134,6 @@ public class AppDbContext : DbContext, IApplicationDbContext, IReadWriteContext
             .HasIndex(r => r.Path)
             .IsUnique();
 
-        // === DomainEvent Configuration ===
         modelBuilder.Entity<DomainEvent>()
             .HasIndex(de => de.IsPublished);
     }

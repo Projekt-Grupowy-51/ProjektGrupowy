@@ -1,18 +1,16 @@
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ProjektGrupowy.Domain.Models;
 
 public class GeneratedReport : BaseEntity, IOwnedEntity
 {
-    [Key]
+    
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
     public string Path { get; set; } = string.Empty;
     public string CreatedById { get; set; } = string.Empty;
 
-    [ForeignKey(nameof(CreatedById))]
+    
     public virtual User CreatedBy { get; set; } = default!;
 
     public virtual Project Project { get; set; } = default!;

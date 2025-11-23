@@ -117,18 +117,9 @@ services:
 
       - Loki__Url=${LOKI_URL}
 
-      - JWT__ValidIssuer=${KEYCLOAK_ISSUER}
-      - JWT__ValidAudience=${KEYCLOAK_AUDIENCE}
-      - JWT__Secret=${KEYCLOAK_SECRET}
-      - JWT__JwtCookieName=${KEYCLOAK_COOKIENAME}
-      - JWT__RefreshCookieName=${KEYCLOAK_REFRESHCOOKIENAME}
-      - JWT__ScientistCreateToken=${KEYCLOAK_SCIENTISTTOKEN}
-      - JWT__RegularTokenExpiresInMinutes=${KEYCLOAK_REGULAREXPMINUTES}
-      - JWT__RefreshTokenExpiresInDays=${KEYCLOAK_REFRESHEXPDAYS}
-
       - Keycloak__Authority=${KEYCLOAK_AUTHORITY}
       - Keycloak__Issuer=${KEYCLOAK_ISSUER}
-      - Keycloak__Audience=projektgrupowy-client
+      - Keycloak__Audience=${KEYCLOAK_AUDIENCE}
 
       - Videos__RootDirectory=${VIDEOS_ROOT}
       - Videos__NginxUrl=http://localhost:${NGINX_PORT}/videos

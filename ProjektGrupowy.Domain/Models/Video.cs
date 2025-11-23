@@ -1,23 +1,21 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ProjektGrupowy.Domain.Models;
 
-// [Table("Videos")]
 public class Video : BaseEntity, IOwnedEntity
 {
-    [Key]
+    
     public int Id { get; set; }
 
-    [Required]
-    [StringLength(255)]
+    
+    
     public string Title { get; set; } = string.Empty;
 
-    [Required]
-    [StringLength(255)]
+    
+    
     public string Path { get; set; } = string.Empty;
 
-    [Required]
+    
     public virtual VideoGroup VideoGroup { get; set; } = default!;
 
     public int PositionInQueue { get; set; }
@@ -28,7 +26,7 @@ public class Video : BaseEntity, IOwnedEntity
     public virtual ICollection<AssignedLabel> AssignedLabels { get; set; } = new List<AssignedLabel>();
     public string CreatedById { get; set; } = string.Empty;
 
-    [ForeignKey(nameof(CreatedById))]
+    
     public virtual User CreatedBy { get; set; } = default!;
     public DateTime? DelDate { get; set; } = null;
     

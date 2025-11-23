@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ProjektGrupowy.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialFreshMigration : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -38,18 +38,18 @@ namespace ProjektGrupowy.Infrastructure.Migrations
                     id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
-                    description = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: false),
+                    description = table.Column<string>(type: "text", nullable: false),
                     creation_date = table.Column<DateOnly>(type: "date", nullable: false),
                     modification_date = table.Column<DateOnly>(type: "date", nullable: true),
                     end_date = table.Column<DateOnly>(type: "date", nullable: true),
-                    created_by_id = table.Column<string>(type: "text", nullable: false),
+                    created_by_id = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     del_date = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("pk_projects", x => x.id);
                     table.ForeignKey(
-                        name: "fk_projects_user_entity_created_by_id",
+                        name: "fk_projects_users_created_by_id",
                         column: x => x.created_by_id,
                         principalTable: "user_entity",
                         principalColumn: "id",
@@ -65,7 +65,7 @@ namespace ProjektGrupowy.Infrastructure.Migrations
                     name = table.Column<string>(type: "text", nullable: false),
                     created_at_utc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     path = table.Column<string>(type: "text", nullable: false),
-                    created_by_id = table.Column<string>(type: "text", nullable: false),
+                    created_by_id = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     project_id = table.Column<int>(type: "integer", nullable: false),
                     del_date = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
@@ -79,11 +79,11 @@ namespace ProjektGrupowy.Infrastructure.Migrations
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "fk_generated_reports_user_entity_created_by_id",
+                        name: "fk_generated_reports_users_created_by_id",
                         column: x => x.created_by_id,
                         principalTable: "user_entity",
                         principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.CreateTable(
@@ -95,8 +95,8 @@ namespace ProjektGrupowy.Infrastructure.Migrations
                     project_id = table.Column<int>(type: "integer", nullable: false),
                     code = table.Column<string>(type: "character varying(16)", maxLength: 16, nullable: false),
                     created_at_utc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    expires_at_utc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    created_by_id = table.Column<string>(type: "text", nullable: false),
+                    expires_at_utc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    created_by_id = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     del_date = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
@@ -109,11 +109,11 @@ namespace ProjektGrupowy.Infrastructure.Migrations
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "fk_project_access_codes_user_entity_created_by_id",
+                        name: "fk_project_access_codes_users_created_by_id",
                         column: x => x.created_by_id,
                         principalTable: "user_entity",
                         principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.CreateTable(
@@ -149,7 +149,7 @@ namespace ProjektGrupowy.Infrastructure.Migrations
                     name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     description = table.Column<string>(type: "text", nullable: false),
                     project_id = table.Column<int>(type: "integer", nullable: false),
-                    created_by_id = table.Column<string>(type: "text", nullable: false),
+                    created_by_id = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     del_date = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
@@ -162,11 +162,11 @@ namespace ProjektGrupowy.Infrastructure.Migrations
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "fk_subjects_user_entity_created_by_id",
+                        name: "fk_subjects_users_created_by_id",
                         column: x => x.created_by_id,
                         principalTable: "user_entity",
                         principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.CreateTable(
@@ -178,7 +178,7 @@ namespace ProjektGrupowy.Infrastructure.Migrations
                     name = table.Column<string>(type: "text", nullable: false),
                     description = table.Column<string>(type: "text", nullable: false),
                     project_id = table.Column<int>(type: "integer", nullable: false),
-                    created_by_id = table.Column<string>(type: "text", nullable: false),
+                    created_by_id = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     del_date = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
@@ -191,11 +191,11 @@ namespace ProjektGrupowy.Infrastructure.Migrations
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "fk_video_groups_user_entity_created_by_id",
+                        name: "fk_video_groups_users_created_by_id",
                         column: x => x.created_by_id,
                         principalTable: "user_entity",
                         principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.CreateTable(
@@ -204,12 +204,12 @@ namespace ProjektGrupowy.Infrastructure.Migrations
                 {
                     id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    name = table.Column<string>(type: "text", nullable: false),
-                    color_hex = table.Column<string>(type: "character varying(7)", maxLength: 7, nullable: false),
+                    name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    color_hex = table.Column<string>(type: "text", nullable: false),
                     type = table.Column<string>(type: "text", nullable: false),
                     shortcut = table.Column<char>(type: "character(1)", nullable: true),
                     subject_id = table.Column<int>(type: "integer", nullable: false),
-                    created_by_id = table.Column<string>(type: "text", nullable: false),
+                    created_by_id = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     del_date = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
@@ -222,11 +222,11 @@ namespace ProjektGrupowy.Infrastructure.Migrations
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "fk_labels_user_entity_created_by_id",
+                        name: "fk_labels_users_created_by_id",
                         column: x => x.created_by_id,
                         principalTable: "user_entity",
                         principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.CreateTable(
@@ -239,7 +239,7 @@ namespace ProjektGrupowy.Infrastructure.Migrations
                     modification_date = table.Column<DateOnly>(type: "date", nullable: true),
                     subject_id = table.Column<int>(type: "integer", nullable: false),
                     video_group_id = table.Column<int>(type: "integer", nullable: false),
-                    created_by_id = table.Column<string>(type: "text", nullable: false),
+                    created_by_id = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     del_date = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
@@ -252,7 +252,7 @@ namespace ProjektGrupowy.Infrastructure.Migrations
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "fk_subject_video_group_assignments_user_entity_created_by_id",
+                        name: "fk_subject_video_group_assignments_users_created_by_id",
                         column: x => x.created_by_id,
                         principalTable: "user_entity",
                         principalColumn: "id",
@@ -276,18 +276,20 @@ namespace ProjektGrupowy.Infrastructure.Migrations
                     position_in_queue = table.Column<int>(type: "integer", nullable: false),
                     content_type = table.Column<string>(type: "text", nullable: false),
                     video_group_id = table.Column<int>(type: "integer", nullable: false),
-                    created_by_id = table.Column<string>(type: "text", nullable: false),
-                    del_date = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    created_by_id = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    del_date = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    original_quality = table.Column<string>(type: "text", nullable: false),
+                    available_qualities = table.Column<string[]>(type: "text[]", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("pk_videos", x => x.id);
                     table.ForeignKey(
-                        name: "fk_videos_user_entity_created_by_id",
+                        name: "fk_videos_users_created_by_id",
                         column: x => x.created_by_id,
                         principalTable: "user_entity",
                         principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
                         name: "fk_videos_video_groups_video_group_id",
                         column: x => x.video_group_id,
@@ -327,7 +329,7 @@ namespace ProjektGrupowy.Infrastructure.Migrations
                     id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     label_id = table.Column<int>(type: "integer", nullable: false),
-                    created_by_id = table.Column<string>(type: "text", nullable: false),
+                    created_by_id = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     video_id = table.Column<int>(type: "integer", nullable: false),
                     start = table.Column<string>(type: "text", nullable: false),
                     end = table.Column<string>(type: "text", nullable: false),
@@ -344,11 +346,11 @@ namespace ProjektGrupowy.Infrastructure.Migrations
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "fk_assigned_labels_user_entity_created_by_id",
+                        name: "fk_assigned_labels_users_created_by_id",
                         column: x => x.created_by_id,
                         principalTable: "user_entity",
                         principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
                         name: "fk_assigned_labels_videos_video_id",
                         column: x => x.video_id,
@@ -409,6 +411,12 @@ namespace ProjektGrupowy.Infrastructure.Migrations
                 column: "subject_id");
 
             migrationBuilder.CreateIndex(
+                name: "ix_project_access_codes_code",
+                table: "project_access_codes",
+                column: "code",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "ix_project_access_codes_created_by_id",
                 table: "project_access_codes",
                 column: "created_by_id");
@@ -417,12 +425,6 @@ namespace ProjektGrupowy.Infrastructure.Migrations
                 name: "ix_project_access_codes_project_id",
                 table: "project_access_codes",
                 column: "project_id");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ProjectAccessCode_Code",
-                table: "project_access_codes",
-                column: "code",
-                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "ix_project_labelers_project_labelers_id",

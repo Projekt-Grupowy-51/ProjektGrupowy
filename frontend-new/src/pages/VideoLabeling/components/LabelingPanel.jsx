@@ -10,6 +10,7 @@ const LabelingPanel = ({
   labels,
   assignedLabels,
   onDeleteLabel,
+  onTimeClick,
   loading = false,
   operationLoading = false,
   currentPage,
@@ -97,18 +98,38 @@ const LabelingPanel = ({
                           </div>
                         </Table.Cell>
                         <Table.Cell className="font-monospace">
-                          {label.start
-                            ? parseFloat(label.start).toFixed(2)
-                            : label.startTime
-                            ? parseFloat(label.startTime).toFixed(2)
-                            : t("common:states.empty")}
+                          {label.start || label.startTime ? (
+                            <span
+                              onClick={() => onTimeClick(parseFloat(label.start || label.startTime))}
+                              style={{
+                                cursor: "pointer",
+                                color: "#0d6efd",
+                                textDecoration: "underline",
+                              }}
+                              title={t("videos:labeling.seek_to_time")}
+                            >
+                              {parseFloat(label.start || label.startTime).toFixed(2)}
+                            </span>
+                          ) : (
+                            t("common:states.empty")
+                          )}
                         </Table.Cell>
                         <Table.Cell className="font-monospace">
-                          {label.end
-                            ? parseFloat(label.end).toFixed(2)
-                            : label.endTime
-                            ? parseFloat(label.endTime).toFixed(2)
-                            : t("common:states.empty")}
+                          {label.end || label.endTime ? (
+                            <span
+                              onClick={() => onTimeClick(parseFloat(label.end || label.endTime))}
+                              style={{
+                                cursor: "pointer",
+                                color: "#0d6efd",
+                                textDecoration: "underline",
+                              }}
+                              title={t("videos:labeling.seek_to_time")}
+                            >
+                              {parseFloat(label.end || label.endTime).toFixed(2)}
+                            </span>
+                          ) : (
+                            t("common:states.empty")
+                          )}
                         </Table.Cell>
                         <Table.Cell>
                           <Button
@@ -187,6 +208,7 @@ LabelingPanel.propTypes = {
     })
   ).isRequired,
   onDeleteLabel: PropTypes.func.isRequired,
+  onTimeClick: PropTypes.func.isRequired,
   loading: PropTypes.bool,
   operationLoading: PropTypes.bool,
   currentPage: PropTypes.number,
