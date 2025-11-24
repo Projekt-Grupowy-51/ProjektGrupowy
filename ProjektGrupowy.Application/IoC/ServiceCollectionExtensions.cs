@@ -18,19 +18,16 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration configuration)
     {
         // Configuration
-        services.Configure<Configuration.OutboxSettings>(configuration.GetSection(Configuration.OutboxSettings.SectionName));
+        _ = services.Configure<Configuration.OutboxSettings>(configuration.GetSection(Configuration.OutboxSettings.SectionName));
 
         // MediatR
         _ = services.AddMediatR(cfg =>
         {
-            cfg.RegisterServicesFromAssembly(typeof(ServiceCollectionExtensions).Assembly);
+            _ = cfg.RegisterServicesFromAssembly(typeof(ServiceCollectionExtensions).Assembly);
 
             // Register pipeline behaviors
-            cfg.AddOpenBehavior(typeof(Pipelines.OutboxProcessingBehavior<,>));
+            _ = cfg.AddOpenBehavior(typeof(Pipelines.OutboxProcessingBehavior<,>));
         });
-
-        // AutoMapper
-        services.AddAutoMapper(cfg => cfg.AddMaps(typeof(ServiceCollectionExtensions).Assembly));
 
         // Services
         _ = services.AddScoped<ICurrentUserService, CurrentUserService>();

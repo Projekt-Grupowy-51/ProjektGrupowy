@@ -1,5 +1,5 @@
 using FluentAssertions;
-using ProjektGrupowy.Application.DTOs.Video;
+using ProjektGrupowy.API.DTOs.Video;
 using ProjektGrupowy.IntegrationTests.Helpers;
 using ProjektGrupowy.IntegrationTests.Infrastructure;
 using System.Net;

@@ -1,13 +1,14 @@
 ﻿using AutoMapper;
+using ProjektGrupowy.API.DTOs.AccessCode;
 using ProjektGrupowy.Domain.Models;
 
-namespace ProjektGrupowy.Application.Mapper;
+namespace ProjektGrupowy.API.Mapper;
 
 public class AccessCodeMap : Profile
 {
     public AccessCodeMap()
     {
-        CreateMap<ProjectAccessCode, DTOs.AccessCode.AccessCodeResponse>()
+        CreateMap<ProjectAccessCode, AccessCodeResponse>()
             .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
             .ForMember(dest => dest.ProjectId, opt => opt.MapFrom(src => src.Project.Id))
             .ForMember(dest => dest.Code, opt => opt.MapFrom(src => src.Code))

@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
-using ProjektGrupowy.Application.DTOs.Video;
+using ProjektGrupowy.API.DTOs.Video;
 using ProjektGrupowy.Domain.Models;
 
-namespace ProjektGrupowy.Application.Mapper;
+namespace ProjektGrupowy.API.Mapper;
 
 public class VideoMap : Profile
 {

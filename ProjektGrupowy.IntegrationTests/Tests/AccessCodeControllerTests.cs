@@ -1,5 +1,5 @@
 using FluentAssertions;
-using ProjektGrupowy.Application.DTOs.AccessCode;
+using ProjektGrupowy.API.DTOs.AccessCode;
 using ProjektGrupowy.Domain.Enums;
 using ProjektGrupowy.IntegrationTests.Helpers;
 using ProjektGrupowy.IntegrationTests.Infrastructure;

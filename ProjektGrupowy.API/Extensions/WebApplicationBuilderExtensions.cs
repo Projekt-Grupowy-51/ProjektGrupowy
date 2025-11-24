@@ -34,6 +34,9 @@ public static class WebApplicationBuilderExtensions
 
         builder.Host.UseSerilog();
 
+        // AutoMapper
+        builder.Services.AddAutoMapper(cfg => cfg.AddMaps(typeof(ServiceCollectionExtensions).Assembly));
+
         // Infrastructure layer (Database, Repositories, UnitOfWork, Hangfire Storage & Server, SignalR)
         builder.Services.AddInfrastructureServices(builder.Configuration, builder.Environment);
 

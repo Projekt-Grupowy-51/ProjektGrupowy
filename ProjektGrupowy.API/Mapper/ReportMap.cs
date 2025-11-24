@@ -1,8 +1,8 @@
 using AutoMapper;
-using ProjektGrupowy.Application.DTOs.ProjectReport;
+using ProjektGrupowy.API.DTOs.ProjectReport;
 using ProjektGrupowy.Domain.Models;
 
-namespace ProjektGrupowy.Application.Mapper;
+namespace ProjektGrupowy.API.Mapper;
 
 public class ReportMap : Profile
 {

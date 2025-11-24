@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
-using ProjektGrupowy.Application.DTOs.Subject;
+using ProjektGrupowy.API.DTOs.Subject;
 using ProjektGrupowy.Domain.Models;
 
-namespace ProjektGrupowy.Application.Mapper;
+namespace ProjektGrupowy.API.Mapper;
 
 public class SubjectMap : Profile
 {

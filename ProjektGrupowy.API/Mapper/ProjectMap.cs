@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
-using ProjektGrupowy.Application.DTOs.Project;
+using ProjektGrupowy.API.DTOs.Project;
 using ProjektGrupowy.Domain.Models;
 
-namespace ProjektGrupowy.Application.Mapper;
+namespace ProjektGrupowy.API.Mapper;
 
 public class ProjectMap : Profile
 {

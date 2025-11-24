@@ -264,7 +264,17 @@ public static class DatabaseSeeder
                 ?? throw new InvalidOperationException($"Project with ID {projectId} not found");
         }
 
+        // Ensure project has been saved and has an ID
+        if (project.Id == 0)
+        {
+            throw new InvalidOperationException("Project must be saved to database before creating access code");
+        }
+
         var createdById = userId ?? project.CreatedById;
+
+        // Ensure user exists
+        await EnsureUserExistsAsync(context, createdById);
+
         var accessCode = ProjectAccessCode.Create(
             project,
             AccessCodeExpiration.In14Days,
@@ -355,5 +365,125 @@ public static class DatabaseSeeder
         context.DomainEvents.RemoveRange(context.DomainEvents);
 
         await context.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// Seeds complete database with full entity hierarchy:
+    /// - Creates scientist and labeler users
+    /// - Creates project with access code
+    /// - Creates subject with label
+    /// - Creates video group with video
+    /// - Creates assignment (subject + video group) and assigns labeler
+    /// </summary>
+    public static async Task<CompleteDatabaseSeed> SeedCompleteDatabaseAsync(AppDbContext context)
+    {
+        // 1. Create users
+        var scientistId = Guid.NewGuid().ToString();
+        var labelerId = Guid.NewGuid().ToString();
+
+        await EnsureUserExistsAsync(context, scientistId);
+        await EnsureUserExistsAsync(context, labelerId);
+
+        // 2. Create project
+        var project = Project.Create(
+            name: $"Complete Test Project {Guid.NewGuid()}",
+            description: "Fully seeded test project",
+            createdById: scientistId
+        );
+        context.Projects.Add(project);
+        await context.SaveChangesAsync();
+
+        // 3. Create subject for the project
+        var subject = Subject.Create(
+            name: $"Test Subject {Guid.NewGuid()}",
+            description: "Test subject in complete database",
+            project: project,
+            createdById: scientistId
+        );
+        context.Subjects.Add(subject);
+        await context.SaveChangesAsync();
+
+        // 4. Create label for the subject
+        var label = Label.Create(
+            name: $"Test Label {Guid.NewGuid()}",
+            colorHex: "#00FF00",
+            type: "range",
+            shortcut: 'L',
+            subject: subject,
+            createdById: scientistId
+        );
+        context.Labels.Add(label);
+        await context.SaveChangesAsync();
+
+        // 5. Create video group for the project
+        var videoGroup = VideoGroup.Create(
+            name: $"Test Video Group {Guid.NewGuid()}",
+            description: "Test video group in complete database",
+            project: project,
+            createdById: scientistId
+        );
+        context.VideoGroups.Add(videoGroup);
+        await context.SaveChangesAsync();
+
+        // 6. Create video in the video group
+        var video = Video.Create(
+            title: $"Test Video {Guid.NewGuid()}",
+            path: $"/videos/test-{Guid.NewGuid()}.mp4",
+            videoGroup: videoGroup,
+            contentType: "video/mp4",
+            positionInQueue: 1,
+            createdById: scientistId
+        );
+        context.Videos.Add(video);
+        await context.SaveChangesAsync();
+
+        // 7. Create assignment (subject + video group)
+        var assignment = SubjectVideoGroupAssignment.Create(
+            subject: subject,
+            videoGroup: videoGroup,
+            createdById: scientistId
+        );
+        context.SubjectVideoGroupAssignments.Add(assignment);
+        await context.SaveChangesAsync();
+
+        // 8. Assign labeler to the assignment
+        var labelerUser = await context.Users.FindAsync(labelerId);
+        assignment.AssignLabeler(labelerUser!, scientistId);
+        await context.SaveChangesAsync();
+
+        // 9. Create access code for the project
+        var accessCode = ProjectAccessCode.Create(
+            project: project,
+            expiration: AccessCodeExpiration.In14Days,
+            createdById: scientistId
+        );
+        context.ProjectAccessCodes.Add(accessCode);
+        await context.SaveChangesAsync();
+
+        return new CompleteDatabaseSeed
+        {
+            ScientistId = scientistId,
+            LabelerId = labelerId,
+            Project = project,
+            Subject = subject,
+            Label = label,
+            VideoGroup = videoGroup,
+            Video = video,
+            Assignment = assignment,
+            AccessCode = accessCode
+        };
+    }
+
+    public class CompleteDatabaseSeed
+    {
+        public string ScientistId { get; set; } = string.Empty;
+        public string LabelerId { get; set; } = string.Empty;
+        public Project Project { get; set; } = default!;
+        public Subject Subject { get; set; } = default!;
+        public Label Label { get; set; } = default!;
+        public VideoGroup VideoGroup { get; set; } = default!;
+        public Video Video { get; set; } = default!;
+        public SubjectVideoGroupAssignment Assignment { get; set; } = default!;
+        public ProjectAccessCode AccessCode { get; set; } = default!;
     }
 }

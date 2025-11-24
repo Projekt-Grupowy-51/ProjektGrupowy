@@ -1,5 +1,5 @@
 using FluentAssertions;
-using ProjektGrupowy.Application.DTOs.Project;
+using ProjektGrupowy.API.DTOs.Project;
 using ProjektGrupowy.IntegrationTests.Helpers;
 using ProjektGrupowy.IntegrationTests.Infrastructure;
 using System.Net;

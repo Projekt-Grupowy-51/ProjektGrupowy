@@ -1,12 +1,12 @@
 ﻿using AutoMapper;
 
-namespace ProjektGrupowy.Application.Mapper;
+namespace ProjektGrupowy.API.Mapper;
 
 public class SubjectVideoGroupAssignmentMap : Profile
 {
     public SubjectVideoGroupAssignmentMap()
     {
-        CreateMap<ProjektGrupowy.Domain.Models.SubjectVideoGroupAssignment, DTOs.SubjectVideoGroupAssignment.SubjectVideoGroupAssignmentResponse>()
+        CreateMap<Domain.Models.SubjectVideoGroupAssignment, DTOs.SubjectVideoGroupAssignment.SubjectVideoGroupAssignmentResponse>()
             .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
             .ForMember(dest => dest.SubjectId, opt => opt.MapFrom(src => src.Subject.Id))
             .ForMember(dest => dest.VideoGroupId, opt => opt.MapFrom(src => src.VideoGroup.Id))

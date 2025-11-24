@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ProjektGrupowy.API.DTOs.User;
 using ProjektGrupowy.API.Filters;
-using ProjektGrupowy.Application.DTOs.User;
 using ProjektGrupowy.Application.Services;
 
 namespace ProjektGrupowy.API.Controllers;

@@ -1,12 +1,13 @@
 ﻿using AutoMapper;
+using ProjektGrupowy.API.DTOs.AssignedLabel;
 
-namespace ProjektGrupowy.Application.Mapper;
+namespace ProjektGrupowy.API.Mapper;
 
 public class AssignedLabelMap : Profile
 {
     public AssignedLabelMap()
     {
-        CreateMap<Domain.Models.AssignedLabel, DTOs.AssignedLabel.AssignedLabelResponse>()
+        CreateMap<Domain.Models.AssignedLabel, AssignedLabelResponse>()
             .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
             .ForMember(dest => dest.LabelId, opt => opt.MapFrom(src => src.Label.Id))
             .ForMember(dest => dest.VideoId, opt => opt.MapFrom(src => src.Video.Id))

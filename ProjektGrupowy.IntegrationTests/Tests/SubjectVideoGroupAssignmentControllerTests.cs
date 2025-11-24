@@ -2,8 +2,8 @@ using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using ProjektGrupowy.Application.DTOs.Labeler;
-using ProjektGrupowy.Application.DTOs.SubjectVideoGroupAssignment;
+using ProjektGrupowy.API.DTOs.Labeler;
+using ProjektGrupowy.API.DTOs.SubjectVideoGroupAssignment;
 using ProjektGrupowy.IntegrationTests.Helpers;
 using ProjektGrupowy.IntegrationTests.Infrastructure;
 
