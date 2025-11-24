@@ -373,7 +373,9 @@ public static class DatabaseSeeder
     /// - Creates project with access code
     /// - Creates subject with label
     /// - Creates video group with video
-    /// - Creates assignment (subject + video group) and assigns labeler
+    /// - Creates assignment (subject + video group) and assigns labeler to assignment and project
+    /// - Creates assigned label (labeler labels video)
+    /// - Creates generated report for project
     /// </summary>
     public static async Task<CompleteDatabaseSeed> SeedCompleteDatabaseAsync(AppDbContext context)
     {
@@ -451,6 +453,10 @@ public static class DatabaseSeeder
         assignment.AssignLabeler(labelerUser!, scientistId);
         await context.SaveChangesAsync();
 
+        // 8.5. Add labeler to project labelers
+        project.AddLabeler(labelerUser!, scientistId);
+        await context.SaveChangesAsync();
+
         // 9. Create access code for the project
         var accessCode = ProjectAccessCode.Create(
             project: project,
@@ -458,6 +464,29 @@ public static class DatabaseSeeder
             createdById: scientistId
         );
         context.ProjectAccessCodes.Add(accessCode);
+        await context.SaveChangesAsync();
+
+        // 10. Create assigned label (labeler assigns label to video)
+        var assignedLabel = AssignedLabel.Create(
+            label: label,
+            userId: labelerId,
+            video: video,
+            start: "00:00:05",
+            end: "00:00:15"
+        );
+        context.AssignedLabels.Add(assignedLabel);
+        await context.SaveChangesAsync();
+
+        // 11. Create generated report for the project
+        var reportName = $"Report-{Guid.NewGuid().ToString()[..8]}";
+        var reportPath = $"/reports/{reportName}.json";
+        var generatedReport = GeneratedReport.Create(
+            name: reportName,
+            path: reportPath,
+            project: project,
+            createdById: scientistId
+        );
+        context.GeneratedReports.Add(generatedReport);
         await context.SaveChangesAsync();
 
         return new CompleteDatabaseSeed
@@ -470,7 +499,9 @@ public static class DatabaseSeeder
             VideoGroup = videoGroup,
             Video = video,
             Assignment = assignment,
-            AccessCode = accessCode
+            AccessCode = accessCode,
+            AssignedLabel = assignedLabel,
+            GeneratedReport = generatedReport
         };
     }
 
@@ -485,5 +516,7 @@ public static class DatabaseSeeder
         public Video Video { get; set; } = default!;
         public SubjectVideoGroupAssignment Assignment { get; set; } = default!;
         public ProjectAccessCode AccessCode { get; set; } = default!;
+        public AssignedLabel AssignedLabel { get; set; } = default!;
+        public GeneratedReport GeneratedReport { get; set; } = default!;
     }
 }

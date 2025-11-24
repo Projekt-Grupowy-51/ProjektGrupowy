@@ -27,13 +27,12 @@ public class AssignedLabelControllerTests : IClassFixture<IntegrationTestWebAppF
     public Task DisposeAsync() => Task.CompletedTask;
 
     [Fact]
-    public async Task GetAssignedLabels_AsAuthenticated_ReturnsOk()
+    public async Task GetAssignedLabels_AsLabeler_ReturnsOk()
     {
         // Arrange
         var context = await _factory.GetDbContextAsync();
-        var labelerId = Guid.NewGuid().ToString();
-        await DatabaseSeeder.SeedAssignedLabelAsync(context, null, null, labelerId);
-        var client = _client.WithLabelerUser(labelerId);
+        var seed = await DatabaseSeeder.SeedCompleteDatabaseAsync(context);
+        var client = _client.WithLabelerUser(seed.LabelerId);
 
         // Act
         var response = await client.GetAsync("/api/assigned-labels");
@@ -45,22 +44,38 @@ public class AssignedLabelControllerTests : IClassFixture<IntegrationTestWebAppF
     }
 
     [Fact]
-    public async Task GetAssignedLabel_WithValidId_ReturnsAssignedLabel()
+    public async Task GetAssignedLabel_WithValidId_ReturnsAssignedLabelWithDetails()
     {
         // Arrange
         var context = await _factory.GetDbContextAsync();
-        var labelerId = Guid.NewGuid().ToString();
-        var assignedLabel = await DatabaseSeeder.SeedAssignedLabelAsync(context, null, null, labelerId);
-        var client = _client.WithLabelerUser(labelerId);
+        var seed = await DatabaseSeeder.SeedCompleteDatabaseAsync(context);
+        var client = _client.WithLabelerUser(seed.LabelerId);
 
         // Act
-        var response = await client.GetAsync($"/api/assigned-labels/{assignedLabel.Id}");
+        var response = await client.GetAsync($"/api/assigned-labels/{seed.AssignedLabel.Id}");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var returnedLabel = await response.Content.ReadFromJsonAsync<AssignedLabelResponse>();
         returnedLabel.Should().NotBeNull();
-        returnedLabel!.Id.Should().Be(assignedLabel.Id);
+        returnedLabel!.Id.Should().Be(seed.AssignedLabel.Id);
+        returnedLabel.LabelId.Should().Be(seed.Label.Id);
+        returnedLabel.VideoId.Should().Be(seed.Video.Id);
+    }
+
+    [Fact]
+    public async Task GetAssignedLabel_WithInvalidId_ReturnsNotFound()
+    {
+        // Arrange
+        var context = await _factory.GetDbContextAsync();
+        var seed = await DatabaseSeeder.SeedCompleteDatabaseAsync(context);
+        var client = _client.WithLabelerUser(seed.LabelerId);
+
+        // Act
+        var response = await client.GetAsync("/api/assigned-labels/99999");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     [Fact]
@@ -68,39 +83,30 @@ public class AssignedLabelControllerTests : IClassFixture<IntegrationTestWebAppF
     {
         // Arrange
         var context = await _factory.GetDbContextAsync();
-        var labelerId = Guid.NewGuid().ToString();
-
-        // Ensure labeler user exists in database
-        await DatabaseSeeder.EnsureUserExistsAsync(context, labelerId);
-
-        var label = await DatabaseSeeder.SeedLabelAsync(context, null, labelerId);
-        var video = await DatabaseSeeder.SeedVideoAsync(context, null, labelerId);
+        var seed = await DatabaseSeeder.SeedCompleteDatabaseAsync(context);
 
         var assignedLabelRequest = new AssignedLabelRequest
         {
-            LabelId = label.Id,
-            VideoId = video.Id,
-            Start = "5.5",
-            End = "15.8"
+            LabelId = seed.Label.Id,
+            VideoId = seed.Video.Id,
+            Start = "20.5",
+            End = "25.8"
         };
-        var client = _client.WithLabelerUser(labelerId);
+        var client = _client.WithLabelerUser(seed.LabelerId);
 
         // Act
         var response = await client.PostAsJsonAsync("/api/assigned-labels", assignedLabelRequest);
 
-        // Debug: Print error if not Created
-        if (response.StatusCode != HttpStatusCode.Created)
-        {
-            var errorContent = await response.Content.ReadAsStringAsync();
-            Console.WriteLine($"Error: {response.StatusCode} - {errorContent}");
-        }
-
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Created);
+        response.Headers.Location.Should().NotBeNull();
+
         var createdLabel = await response.Content.ReadFromJsonAsync<AssignedLabelResponse>();
         createdLabel.Should().NotBeNull();
-        createdLabel!.LabelId.Should().Be(label.Id);
-        createdLabel.VideoId.Should().Be(video.Id);
+        createdLabel!.LabelId.Should().Be(seed.Label.Id);
+        createdLabel.VideoId.Should().Be(seed.Video.Id);
+        createdLabel.Start.Should().Be("20.5");
+        createdLabel.End.Should().Be("25.8");
     }
 
     [Fact]
@@ -108,15 +114,33 @@ public class AssignedLabelControllerTests : IClassFixture<IntegrationTestWebAppF
     {
         // Arrange
         var context = await _factory.GetDbContextAsync();
-        var labelerId = Guid.NewGuid().ToString();
-        var assignedLabel = await DatabaseSeeder.SeedAssignedLabelAsync(context, null, null, labelerId);
-        var client = _client.WithLabelerUser(labelerId);
+        var seed = await DatabaseSeeder.SeedCompleteDatabaseAsync(context);
+        var client = _client.WithLabelerUser(seed.LabelerId);
 
         // Act
-        var response = await client.DeleteAsync($"/api/assigned-labels/{assignedLabel.Id}");
+        var response = await client.DeleteAsync($"/api/assigned-labels/{seed.AssignedLabel.Id}");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+        // Verify deletion (soft delete)
+        var getResponse = await client.GetAsync($"/api/assigned-labels/{seed.AssignedLabel.Id}");
+        getResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task DeleteAssignedLabel_WithInvalidId_ReturnsNotFound()
+    {
+        // Arrange
+        var context = await _factory.GetDbContextAsync();
+        var seed = await DatabaseSeeder.SeedCompleteDatabaseAsync(context);
+        var client = _client.WithLabelerUser(seed.LabelerId);
+
+        // Act
+        var response = await client.DeleteAsync("/api/assigned-labels/99999");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     [Fact]

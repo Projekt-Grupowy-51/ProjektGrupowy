@@ -33,21 +33,19 @@ public class SubjectVideoGroupAssignmentControllerTests : IClassFixture<Integrat
     {
         // Arrange
         var context = await _factory.GetDbContextAsync();
-        var scientistId = Guid.NewGuid().ToString();
-        var assignment1 = await DatabaseSeeder.SeedSubjectVideoGroupAssignmentAsync(context, userId: scientistId);
-        var assignment2 = await DatabaseSeeder.SeedSubjectVideoGroupAssignmentAsync(context, userId: scientistId);
+        var seed = await DatabaseSeeder.SeedCompleteDatabaseAsync(context);
+        var client = _client.WithScientistUser(seed.ScientistId);
 
         // Act
-        var client = _client.WithScientistUser(scientistId);
         var response = await client.GetAsync("/api/subject-video-group-assignments");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var assignments = await response.Content.ReadFromJsonAsync<List<SubjectVideoGroupAssignmentResponse>>();
-        assignments.Should().NotBeNull();
-        assignments!.Should().HaveCountGreaterOrEqualTo(2);
-        assignments.Should().Contain(a => a.Id == assignment1.Id);
-        assignments.Should().Contain(a => a.Id == assignment2.Id);
+        assignments.Should().NotBeNull().And.HaveCount(1);
+        assignments![0].Id.Should().Be(seed.Assignment.Id);
+        assignments[0].SubjectId.Should().Be(seed.Subject.Id);
+        assignments[0].VideoGroupId.Should().Be(seed.VideoGroup.Id);
     }
 
     [Fact]
@@ -55,20 +53,18 @@ public class SubjectVideoGroupAssignmentControllerTests : IClassFixture<Integrat
     {
         // Arrange
         var context = await _factory.GetDbContextAsync();
-        var scientistId = Guid.NewGuid().ToString();
-        var assignment = await DatabaseSeeder.SeedSubjectVideoGroupAssignmentAsync(context, userId: scientistId);
-
-        // Act
+        var seed = await DatabaseSeeder.SeedCompleteDatabaseAsync(context);
         var adminId = Guid.NewGuid().ToString();
         var client = _client.WithAdminUser(adminId);
+
+        // Act
         var response = await client.GetAsync("/api/subject-video-group-assignments");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var assignments = await response.Content.ReadFromJsonAsync<List<SubjectVideoGroupAssignmentResponse>>();
-        assignments.Should().NotBeNull();
-        assignments!.Should().HaveCountGreaterOrEqualTo(1);
-        assignments.Should().Contain(a => a.Id == assignment.Id);
+        assignments.Should().NotBeNull().And.HaveCount(1);
+        assignments![0].Id.Should().Be(seed.Assignment.Id);
     }
 
     [Fact]
@@ -76,32 +72,31 @@ public class SubjectVideoGroupAssignmentControllerTests : IClassFixture<Integrat
     {
         // Arrange
         var context = await _factory.GetDbContextAsync();
-        var scientistId = Guid.NewGuid().ToString();
-        var assignment = await DatabaseSeeder.SeedSubjectVideoGroupAssignmentAsync(context, userId: scientistId);
+        var seed = await DatabaseSeeder.SeedCompleteDatabaseAsync(context);
+        var client = _client.WithScientistUser(seed.ScientistId);
 
         // Act
-        var client = _client.WithScientistUser(scientistId);
-        var response = await client.GetAsync($"/api/subject-video-group-assignments/{assignment.Id}");
+        var response = await client.GetAsync($"/api/subject-video-group-assignments/{seed.Assignment.Id}");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var assignmentResponse = await response.Content.ReadFromJsonAsync<SubjectVideoGroupAssignmentResponse>();
         assignmentResponse.Should().NotBeNull();
-        assignmentResponse!.Id.Should().Be(assignment.Id);
-        assignmentResponse.SubjectId.Should().Be(assignment.Subject.Id);
-        assignmentResponse.VideoGroupId.Should().Be(assignment.VideoGroup.Id);
+        assignmentResponse!.Id.Should().Be(seed.Assignment.Id);
+        assignmentResponse.SubjectId.Should().Be(seed.Subject.Id);
+        assignmentResponse.VideoGroupId.Should().Be(seed.VideoGroup.Id);
     }
 
     [Fact]
-    public async Task GetSubjectVideoGroupAssignment_ForNonExistentAssignment_ReturnsNotFound()
+    public async Task GetSubjectVideoGroupAssignment_WithInvalidId_ReturnsNotFound()
     {
         // Arrange
-        var scientistId = Guid.NewGuid().ToString();
-        var nonExistentAssignmentId = 99999;
+        var context = await _factory.GetDbContextAsync();
+        var seed = await DatabaseSeeder.SeedCompleteDatabaseAsync(context);
+        var client = _client.WithScientistUser(seed.ScientistId);
 
         // Act
-        var client = _client.WithScientistUser(scientistId);
-        var response = await client.GetAsync($"/api/subject-video-group-assignments/{nonExistentAssignmentId}");
+        var response = await client.GetAsync("/api/subject-video-group-assignments/99999");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -112,17 +107,17 @@ public class SubjectVideoGroupAssignmentControllerTests : IClassFixture<Integrat
     {
         // Arrange
         var context = await _factory.GetDbContextAsync();
-        var scientistId = Guid.NewGuid().ToString();
-        var assignment = await DatabaseSeeder.SeedSubjectVideoGroupAssignmentAsync(context, userId: scientistId);
+        var seed = await DatabaseSeeder.SeedCompleteDatabaseAsync(context);
+        var client = _client.WithScientistUser(seed.ScientistId);
 
         // Act
-        var client = _client.WithScientistUser(scientistId);
-        var response = await client.GetAsync($"/api/subject-video-group-assignments/{assignment.Id}/labelers");
+        var response = await client.GetAsync($"/api/subject-video-group-assignments/{seed.Assignment.Id}/labelers");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var labelers = await response.Content.ReadFromJsonAsync<List<LabelerResponse>>();
-        labelers.Should().NotBeNull();
+        labelers.Should().NotBeNull().And.HaveCount(1);
+        labelers![0].Id.Should().Be(seed.LabelerId);
     }
 
     [Fact]
@@ -130,26 +125,29 @@ public class SubjectVideoGroupAssignmentControllerTests : IClassFixture<Integrat
     {
         // Arrange
         var context = await _factory.GetDbContextAsync();
-        var scientistId = Guid.NewGuid().ToString();
-        var subject = await DatabaseSeeder.SeedSubjectAsync(context, null, scientistId);
-        var videoGroup = await DatabaseSeeder.SeedVideoGroupAsync(context, subject.Project.Id, scientistId);
+        var seed = await DatabaseSeeder.SeedCompleteDatabaseAsync(context);
+
+        // Create another subject for the new assignment
+        var newSubject = await DatabaseSeeder.SeedSubjectAsync(context, seed.Project.Id, seed.ScientistId);
 
         var assignmentRequest = new SubjectVideoGroupAssignmentRequest
         {
-            SubjectId = subject.Id,
-            VideoGroupId = videoGroup.Id
+            SubjectId = newSubject.Id,
+            VideoGroupId = seed.VideoGroup.Id
         };
+        var client = _client.WithScientistUser(seed.ScientistId);
 
         // Act
-        var client = _client.WithScientistUser(scientistId);
         var response = await client.PostAsJsonAsync("/api/subject-video-group-assignments", assignmentRequest);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Created);
+        response.Headers.Location.Should().NotBeNull();
+
         var createdAssignment = await response.Content.ReadFromJsonAsync<SubjectVideoGroupAssignmentResponse>();
         createdAssignment.Should().NotBeNull();
-        createdAssignment!.SubjectId.Should().Be(subject.Id);
-        createdAssignment.VideoGroupId.Should().Be(videoGroup.Id);
+        createdAssignment!.SubjectId.Should().Be(newSubject.Id);
+        createdAssignment.VideoGroupId.Should().Be(seed.VideoGroup.Id);
     }
 
     [Fact]
@@ -157,19 +155,16 @@ public class SubjectVideoGroupAssignmentControllerTests : IClassFixture<Integrat
     {
         // Arrange
         var context = await _factory.GetDbContextAsync();
-        var scientistId = Guid.NewGuid().ToString();
-        var subject = await DatabaseSeeder.SeedSubjectAsync(context, null, scientistId);
-        var videoGroup = await DatabaseSeeder.SeedVideoGroupAsync(context, subject.Project.Id, scientistId);
+        var seed = await DatabaseSeeder.SeedCompleteDatabaseAsync(context);
 
         var assignmentRequest = new SubjectVideoGroupAssignmentRequest
         {
-            SubjectId = subject.Id,
-            VideoGroupId = videoGroup.Id
+            SubjectId = seed.Subject.Id,
+            VideoGroupId = seed.VideoGroup.Id
         };
+        var client = _client.WithLabelerUser(seed.LabelerId);
 
         // Act
-        var labelerId = Guid.NewGuid().ToString();
-        var client = _client.WithLabelerUser(labelerId);
         var response = await client.PostAsJsonAsync("/api/subject-video-group-assignments", assignmentRequest);
 
         // Assert
@@ -181,19 +176,20 @@ public class SubjectVideoGroupAssignmentControllerTests : IClassFixture<Integrat
     {
         // Arrange
         var context = await _factory.GetDbContextAsync();
-        var scientistId = Guid.NewGuid().ToString();
-        var assignment = await DatabaseSeeder.SeedSubjectVideoGroupAssignmentAsync(context, userId: scientistId);
-        var newSubject = await DatabaseSeeder.SeedSubjectAsync(context, null, scientistId);
+        var seed = await DatabaseSeeder.SeedCompleteDatabaseAsync(context);
+
+        // Create another subject for updating the assignment
+        var newSubject = await DatabaseSeeder.SeedSubjectAsync(context, seed.Project.Id, seed.ScientistId);
 
         var updateRequest = new SubjectVideoGroupAssignmentRequest
         {
             SubjectId = newSubject.Id,
-            VideoGroupId = assignment.VideoGroup.Id
+            VideoGroupId = seed.VideoGroup.Id
         };
+        var client = _client.WithScientistUser(seed.ScientistId);
 
         // Act
-        var client = _client.WithScientistUser(scientistId);
-        var response = await client.PutAsJsonAsync($"/api/subject-video-group-assignments/{assignment.Id}", updateRequest);
+        var response = await client.PutAsJsonAsync($"/api/subject-video-group-assignments/{seed.Assignment.Id}", updateRequest);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
@@ -202,7 +198,7 @@ public class SubjectVideoGroupAssignmentControllerTests : IClassFixture<Integrat
         var updatedContext = await _factory.GetDbContextAsync();
         var updatedAssignment = await updatedContext.SubjectVideoGroupAssignments
             .Include(a => a.Subject)
-            .FirstOrDefaultAsync(a => a.Id == assignment.Id);
+            .FirstOrDefaultAsync(a => a.Id == seed.Assignment.Id);
         updatedAssignment.Should().NotBeNull();
         updatedAssignment!.Subject.Id.Should().Be(newSubject.Id);
     }
@@ -212,31 +208,30 @@ public class SubjectVideoGroupAssignmentControllerTests : IClassFixture<Integrat
     {
         // Arrange
         var context = await _factory.GetDbContextAsync();
-        var scientistId = Guid.NewGuid().ToString();
-        var assignment = await DatabaseSeeder.SeedSubjectVideoGroupAssignmentAsync(context, userId: scientistId);
+        var seed = await DatabaseSeeder.SeedCompleteDatabaseAsync(context);
+        var client = _client.WithScientistUser(seed.ScientistId);
 
         // Act
-        var client = _client.WithScientistUser(scientistId);
-        var response = await client.DeleteAsync($"/api/subject-video-group-assignments/{assignment.Id}");
+        var response = await client.DeleteAsync($"/api/subject-video-group-assignments/{seed.Assignment.Id}");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
-        // Verify deletion
-        var getResponse = await client.GetAsync($"/api/subject-video-group-assignments/{assignment.Id}");
+        // Verify deletion (soft delete)
+        var getResponse = await client.GetAsync($"/api/subject-video-group-assignments/{seed.Assignment.Id}");
         getResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     [Fact]
-    public async Task DeleteSubjectVideoGroupAssignment_ForNonExistentAssignment_ReturnsNotFound()
+    public async Task DeleteSubjectVideoGroupAssignment_WithInvalidId_ReturnsNotFound()
     {
         // Arrange
-        var scientistId = Guid.NewGuid().ToString();
-        var nonExistentAssignmentId = 99999;
+        var context = await _factory.GetDbContextAsync();
+        var seed = await DatabaseSeeder.SeedCompleteDatabaseAsync(context);
+        var client = _client.WithScientistUser(seed.ScientistId);
 
         // Act
-        var client = _client.WithScientistUser(scientistId);
-        var response = await client.DeleteAsync($"/api/subject-video-group-assignments/{nonExistentAssignmentId}");
+        var response = await client.DeleteAsync("/api/subject-video-group-assignments/99999");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -247,16 +242,15 @@ public class SubjectVideoGroupAssignmentControllerTests : IClassFixture<Integrat
     {
         // Arrange
         var context = await _factory.GetDbContextAsync();
-        var scientistId = Guid.NewGuid().ToString();
-        var assignment = await DatabaseSeeder.SeedSubjectVideoGroupAssignmentAsync(context, userId: scientistId);
-        var labelerId = Guid.NewGuid().ToString();
+        var seed = await DatabaseSeeder.SeedCompleteDatabaseAsync(context);
+        var newLabelerId = Guid.NewGuid().ToString();
 
-        // Ensure labeler exists in database
-        await DatabaseSeeder.EnsureUserExistsAsync(context, labelerId);
+        // Ensure new labeler exists in database
+        await DatabaseSeeder.EnsureUserExistsAsync(context, newLabelerId);
+        var client = _client.WithScientistUser(seed.ScientistId);
 
         // Act
-        var client = _client.WithScientistUser(scientistId);
-        var response = await client.PostAsync($"/api/subject-video-group-assignments/{assignment.Id}/assign-labeler/{labelerId}", null);
+        var response = await client.PostAsync($"/api/subject-video-group-assignments/{seed.Assignment.Id}/assign-labeler/{newLabelerId}", null);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -265,9 +259,9 @@ public class SubjectVideoGroupAssignmentControllerTests : IClassFixture<Integrat
         var updatedContext = await _factory.GetDbContextAsync();
         var updatedAssignment = await updatedContext.SubjectVideoGroupAssignments
             .Include(a => a.Labelers)
-            .FirstOrDefaultAsync(a => a.Id == assignment.Id);
+            .FirstOrDefaultAsync(a => a.Id == seed.Assignment.Id);
         updatedAssignment.Should().NotBeNull();
-        updatedAssignment!.Labelers.Should().Contain(l => l.Id == labelerId);
+        updatedAssignment!.Labelers.Should().Contain(l => l.Id == newLabelerId);
     }
 
     [Fact]
@@ -275,19 +269,11 @@ public class SubjectVideoGroupAssignmentControllerTests : IClassFixture<Integrat
     {
         // Arrange
         var context = await _factory.GetDbContextAsync();
-        var scientistId = Guid.NewGuid().ToString();
-        var assignment = await DatabaseSeeder.SeedSubjectVideoGroupAssignmentAsync(context, userId: scientistId);
-        var labelerId = Guid.NewGuid().ToString();
+        var seed = await DatabaseSeeder.SeedCompleteDatabaseAsync(context);
+        var client = _client.WithScientistUser(seed.ScientistId);
 
-        // Ensure labeler exists in database
-        await DatabaseSeeder.EnsureUserExistsAsync(context, labelerId);
-
-        // First assign the labeler
-        var client = _client.WithScientistUser(scientistId);
-        await client.PostAsync($"/api/subject-video-group-assignments/{assignment.Id}/assign-labeler/{labelerId}", null);
-
-        // Act - Unassign the labeler
-        var response = await client.DeleteAsync($"/api/subject-video-group-assignments/{assignment.Id}/unassign-labeler/{labelerId}");
+        // Act - Unassign the existing labeler from seed
+        var response = await client.DeleteAsync($"/api/subject-video-group-assignments/{seed.Assignment.Id}/unassign-labeler/{seed.LabelerId}");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -296,8 +282,8 @@ public class SubjectVideoGroupAssignmentControllerTests : IClassFixture<Integrat
         var updatedContext = await _factory.GetDbContextAsync();
         var updatedAssignment = await updatedContext.SubjectVideoGroupAssignments
             .Include(a => a.Labelers)
-            .FirstOrDefaultAsync(a => a.Id == assignment.Id);
+            .FirstOrDefaultAsync(a => a.Id == seed.Assignment.Id);
         updatedAssignment.Should().NotBeNull();
-        updatedAssignment!.Labelers.Should().NotContain(l => l.Id == labelerId);
+        updatedAssignment!.Labelers.Should().NotContain(l => l.Id == seed.LabelerId);
     }
 }

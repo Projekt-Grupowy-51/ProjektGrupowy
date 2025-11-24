@@ -27,13 +27,12 @@ public class VideoControllerTests : IClassFixture<IntegrationTestWebAppFactory>,
     public Task DisposeAsync() => Task.CompletedTask;
 
     [Fact]
-    public async Task GetVideos_AsScientist_ReturnsOk()
+    public async Task GetVideos_AsScientist_ReturnsOwnVideos()
     {
         // Arrange
         var context = await _factory.GetDbContextAsync();
-        var scientistId = Guid.NewGuid().ToString();
-        await DatabaseSeeder.SeedVideoAsync(context, null, scientistId);
-        var client = _client.WithScientistUser(scientistId);
+        var seed = await DatabaseSeeder.SeedCompleteDatabaseAsync(context);
+        var client = _client.WithScientistUser(seed.ScientistId);
 
         // Act
         var response = await client.GetAsync("/api/videos");
@@ -41,34 +40,38 @@ public class VideoControllerTests : IClassFixture<IntegrationTestWebAppFactory>,
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var videos = await response.Content.ReadFromJsonAsync<List<VideoResponse>>();
-        videos.Should().NotBeNull().And.HaveCountGreaterOrEqualTo(1);
+        videos.Should().NotBeNull().And.HaveCount(1);
+        videos![0].Id.Should().Be(seed.Video.Id);
+        videos[0].Title.Should().Be(seed.Video.Title);
     }
 
     [Fact]
-    public async Task GetVideo_WithValidId_ReturnsVideo()
+    public async Task GetVideo_WithValidId_ReturnsVideoWithDetails()
     {
         // Arrange
         var context = await _factory.GetDbContextAsync();
-        var scientistId = Guid.NewGuid().ToString();
-        var video = await DatabaseSeeder.SeedVideoAsync(context, null, scientistId);
-        var client = _client.WithScientistUser(scientistId);
+        var seed = await DatabaseSeeder.SeedCompleteDatabaseAsync(context);
+        var client = _client.WithScientistUser(seed.ScientistId);
 
         // Act
-        var response = await client.GetAsync($"/api/videos/{video.Id}");
+        var response = await client.GetAsync($"/api/videos/{seed.Video.Id}");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var returnedVideo = await response.Content.ReadFromJsonAsync<VideoResponse>();
         returnedVideo.Should().NotBeNull();
-        returnedVideo!.Id.Should().Be(video.Id);
-        returnedVideo.Title.Should().Be(video.Title);
+        returnedVideo!.Id.Should().Be(seed.Video.Id);
+        returnedVideo.Title.Should().Be(seed.Video.Title);
+        returnedVideo.VideoGroupId.Should().Be(seed.VideoGroup.Id);
     }
 
     [Fact]
     public async Task GetVideo_WithInvalidId_ReturnsNotFound()
     {
         // Arrange
-        var client = _client.WithScientistUser();
+        var context = await _factory.GetDbContextAsync();
+        var seed = await DatabaseSeeder.SeedCompleteDatabaseAsync(context);
+        var client = _client.WithScientistUser(seed.ScientistId);
 
         // Act
         var response = await client.GetAsync("/api/videos/99999");
@@ -105,22 +108,27 @@ public class VideoControllerTests : IClassFixture<IntegrationTestWebAppFactory>,
     {
         // Arrange
         var context = await _factory.GetDbContextAsync();
-        var scientistId = Guid.NewGuid().ToString();
-        var video = await DatabaseSeeder.SeedVideoAsync(context, null, scientistId);
-        var client = _client.WithScientistUser(scientistId);
+        var seed = await DatabaseSeeder.SeedCompleteDatabaseAsync(context);
+        var client = _client.WithScientistUser(seed.ScientistId);
 
         // Act
-        var response = await client.DeleteAsync($"/api/videos/{video.Id}");
+        var response = await client.DeleteAsync($"/api/videos/{seed.Video.Id}");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+        // Verify deletion (soft delete)
+        var getResponse = await client.GetAsync($"/api/videos/{seed.Video.Id}");
+        getResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     [Fact]
     public async Task DeleteVideo_WithInvalidId_ReturnsNotFound()
     {
         // Arrange
-        var client = _client.WithScientistUser();
+        var context = await _factory.GetDbContextAsync();
+        var seed = await DatabaseSeeder.SeedCompleteDatabaseAsync(context);
+        var client = _client.WithScientistUser(seed.ScientistId);
 
         // Act
         var response = await client.DeleteAsync("/api/videos/99999");
@@ -134,11 +142,11 @@ public class VideoControllerTests : IClassFixture<IntegrationTestWebAppFactory>,
     {
         // Arrange
         var context = await _factory.GetDbContextAsync();
-        var video = await DatabaseSeeder.SeedVideoAsync(context);
-        var client = _client.WithLabelerUser();
+        var seed = await DatabaseSeeder.SeedCompleteDatabaseAsync(context);
+        var client = _client.WithLabelerUser(seed.LabelerId);
 
         // Act
-        var response = await client.DeleteAsync($"/api/videos/{video.Id}");
+        var response = await client.DeleteAsync($"/api/videos/{seed.Video.Id}");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
@@ -149,16 +157,16 @@ public class VideoControllerTests : IClassFixture<IntegrationTestWebAppFactory>,
     {
         // Arrange
         var context = await _factory.GetDbContextAsync();
-        var scientistId = Guid.NewGuid().ToString();
-        var video = await DatabaseSeeder.SeedVideoAsync(context, null, scientistId);
-        var client = _client.WithScientistUser(scientistId);
+        var seed = await DatabaseSeeder.SeedCompleteDatabaseAsync(context);
+        var client = _client.WithScientistUser(seed.ScientistId);
 
         // Act
-        var response = await client.GetAsync($"/api/videos/batch/{video.VideoGroup.Id}/{video.PositionInQueue}");
+        var response = await client.GetAsync($"/api/videos/batch/{seed.VideoGroup.Id}/{seed.Video.PositionInQueue}");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var videos = await response.Content.ReadFromJsonAsync<List<VideoResponse>>();
-        videos.Should().NotBeNull().And.HaveCountGreaterOrEqualTo(1);
+        videos.Should().NotBeNull().And.HaveCount(1);
+        videos![0].Id.Should().Be(seed.Video.Id);
     }
 }

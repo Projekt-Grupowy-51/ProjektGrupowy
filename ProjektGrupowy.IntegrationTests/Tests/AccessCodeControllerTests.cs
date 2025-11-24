@@ -28,28 +28,31 @@ public class AccessCodeControllerTests : IClassFixture<IntegrationTestWebAppFact
     public Task DisposeAsync() => Task.CompletedTask;
 
     [Fact]
-    public async Task GetAccessCodesByProject_AsScientist_ReturnsOk()
+    public async Task GetAccessCodesByProject_AsScientist_ReturnsOwnAccessCodes()
     {
         // Arrange
         var context = await _factory.GetDbContextAsync();
-        var scientistId = Guid.NewGuid().ToString();
-        var project = await DatabaseSeeder.SeedProjectAsync(context, scientistId);
-        var client = _client.WithScientistUser(scientistId);
+        var seed = await DatabaseSeeder.SeedCompleteDatabaseAsync(context);
+        var client = _client.WithScientistUser(seed.ScientistId);
 
         // Act
-        var response = await client.GetAsync($"/api/access-codes/projects/{project.Id}");
+        var response = await client.GetAsync($"/api/access-codes/projects/{seed.Project.Id}");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var accessCodes = await response.Content.ReadFromJsonAsync<List<AccessCodeResponse>>();
-        accessCodes.Should().NotBeNull();
+        accessCodes.Should().NotBeNull().And.HaveCount(1);
+        accessCodes![0].Id.Should().Be(seed.AccessCode.Id);
+        accessCodes[0].ProjectId.Should().Be(seed.Project.Id);
     }
 
     [Fact]
     public async Task GetAccessCodesByProject_WithInvalidProjectId_ReturnsNotFound()
     {
         // Arrange
-        var client = _client.WithScientistUser();
+        var context = await _factory.GetDbContextAsync();
+        var seed = await DatabaseSeeder.SeedCompleteDatabaseAsync(context);
+        var client = _client.WithScientistUser(seed.ScientistId);
 
         // Act
         var response = await client.GetAsync("/api/access-codes/projects/99999");
@@ -63,11 +66,11 @@ public class AccessCodeControllerTests : IClassFixture<IntegrationTestWebAppFact
     {
         // Arrange
         var context = await _factory.GetDbContextAsync();
-        var project = await DatabaseSeeder.SeedProjectAsync(context);
-        var client = _client.WithLabelerUser();
+        var seed = await DatabaseSeeder.SeedCompleteDatabaseAsync(context);
+        var client = _client.WithLabelerUser(seed.LabelerId);
 
         // Act
-        var response = await client.GetAsync($"/api/access-codes/projects/{project.Id}");
+        var response = await client.GetAsync($"/api/access-codes/projects/{seed.Project.Id}");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
@@ -88,37 +91,42 @@ public class AccessCodeControllerTests : IClassFixture<IntegrationTestWebAppFact
     {
         // Arrange
         var context = await _factory.GetDbContextAsync();
-        var scientistId = Guid.NewGuid().ToString();
+        var seed = await DatabaseSeeder.SeedCompleteDatabaseAsync(context);
 
-        var project = await DatabaseSeeder.SeedProjectAsync(context, scientistId);
         var createRequest = new CreateAccessCodeRequest
         {
-            ProjectId = project.Id,
+            ProjectId = seed.Project.Id,
             Expiration = AccessCodeExpiration.Custom,
             CustomExpiration = 10
         };
-        var client = _client.WithScientistUser(scientistId);
+        var client = _client.WithScientistUser(seed.ScientistId);
 
         // Act
         var response = await client.PostAsJsonAsync("/api/access-codes/project", createRequest);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Created);
+        response.Headers.Location.Should().NotBeNull();
+
         var createdCode = await response.Content.ReadFromJsonAsync<AccessCodeResponse>();
         createdCode.Should().NotBeNull();
-        createdCode!.ProjectId.Should().Be(project.Id);
+        createdCode!.ProjectId.Should().Be(seed.Project.Id);
+        createdCode.Code.Should().NotBeNullOrEmpty();
     }
 
     [Fact]
     public async Task AddValidCodeToProject_AsLabeler_ReturnsForbidden()
     {
         // Arrange
+        var context = await _factory.GetDbContextAsync();
+        var seed = await DatabaseSeeder.SeedCompleteDatabaseAsync(context);
+
         var createRequest = new CreateAccessCodeRequest
         {
-            ProjectId = 1,
+            ProjectId = seed.Project.Id,
             Expiration = AccessCodeExpiration.In30Days
         };
-        var client = _client.WithLabelerUser();
+        var client = _client.WithLabelerUser(seed.LabelerId);
 
         // Act
         var response = await client.PostAsJsonAsync("/api/access-codes/project", createRequest);
@@ -132,11 +140,9 @@ public class AccessCodeControllerTests : IClassFixture<IntegrationTestWebAppFact
     {
         // Arrange
         var context = await _factory.GetDbContextAsync();
-        var scientistId = Guid.NewGuid().ToString();
-        var project = await DatabaseSeeder.SeedProjectAsync(context, scientistId);
-        var accessCode = await DatabaseSeeder.SeedAccessCodeAsync(context, projectId: project.Id, userId: scientistId);
-        var validateRequest = new AccessCodeRequest { Code = accessCode.Code };
-        var client = _client.WithScientistUser(scientistId);
+        var seed = await DatabaseSeeder.SeedCompleteDatabaseAsync(context);
+        var validateRequest = new AccessCodeRequest { Code = seed.AccessCode.Code };
+        var client = _client.WithScientistUser(seed.ScientistId);
 
         // Act
         var response = await client.PostAsJsonAsync("/api/access-codes/validate", validateRequest);
@@ -151,8 +157,10 @@ public class AccessCodeControllerTests : IClassFixture<IntegrationTestWebAppFact
     public async Task ValidateAccessCode_WithInvalidCode_ReturnsFalse()
     {
         // Arrange
+        var context = await _factory.GetDbContextAsync();
+        var seed = await DatabaseSeeder.SeedCompleteDatabaseAsync(context);
         var validateRequest = new AccessCodeRequest { Code = "INVALID_CODE1234" }; // 16 characters
-        var client = _client.WithScientistUser();
+        var client = _client.WithScientistUser(seed.ScientistId);
 
         // Act
         var response = await client.PostAsJsonAsync("/api/access-codes/validate", validateRequest);
