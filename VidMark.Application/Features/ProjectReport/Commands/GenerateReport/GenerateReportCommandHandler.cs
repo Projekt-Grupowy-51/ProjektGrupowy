@@ -1,0 +1,156 @@
+using MediatR;
+using VidMark.Domain.Models;
+using FluentResults;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using VidMark.Application.Authorization;
+using VidMark.Application.Exceptions;
+using VidMark.Application.Interfaces.Repositories;
+using VidMark.Application.Interfaces.UnitOfWork;
+using VidMark.Application.Services;
+using VidMark.Application.Events;
+
+namespace VidMark.Application.Features.ProjectReport.Commands.GenerateReport;
+
+public class GenerateReportCommandHandler(
+    IProjectRepository projectRepository,
+    IProjectReportRepository reportRepository,
+    IUnitOfWork unitOfWork,
+    IConfiguration configuration,
+    ICurrentUserService currentUserService,
+    IAuthorizationService authorizationService,
+    ILogger<GenerateReportCommandHandler> logger)
+    : IRequestHandler<GenerateReportCommand, Result<GeneratedReport>>
+{
+    private readonly ICurrentUserService _currentUserService = currentUserService;
+    private readonly IAuthorizationService _authorizationService = authorizationService;
+
+    public async Task<Result<GeneratedReport>> Handle(GenerateReportCommand request, CancellationToken cancellationToken)
+    {
+        logger.LogInformation("Generating report for project {ProjectId}", request.ProjectId);
+
+        var project = await projectRepository.GetProjectAsync(request.ProjectId, request.UserId, request.IsAdmin);
+
+        if (project is null)
+        {
+            return Result.Fail("No project found!");
+        }
+
+        var reportResult = await WriteReportToFileAsync(project);
+        if (reportResult.IsFailed)
+        {
+            logger.LogError("Failed to generate report for project {ProjectId}: {Error}", request.ProjectId, reportResult.Errors);
+            return reportResult;
+        }
+
+        var report = reportResult.Value;
+
+        await reportRepository.AddReportAsync(report);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        // Add SignalR event after save so we have the report ID
+        report.AddReportGeneratedEvent();
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        logger.LogInformation("Report generated successfully for project {ProjectId}", request.ProjectId);
+
+        return Result.Ok(report);
+    }
+
+    private async Task<Result<GeneratedReport>> WriteReportToFileAsync(Project project)
+    {
+        try
+        {
+            var reportsDirectory = configuration["Reports:RootDirectory"] ?? "reports";
+            var directoryPath = Path.Combine(AppContext.BaseDirectory, reportsDirectory);
+
+            Directory.CreateDirectory(directoryPath);
+
+            var filename = $"{Guid.NewGuid():N}.report.json";
+            var filePath = Path.Combine(directoryPath, filename);
+
+            var json = ConvertProjectToJson(project);
+            await File.WriteAllTextAsync(filePath, json);
+
+            var report = GeneratedReport.Create(
+                $"Summary report {DateTime.UtcNow:dd.MM.yyyy HH:mm}",
+                filePath,
+                project,
+                project.CreatedById);
+
+            return Result.Ok(report);
+        }
+        catch (Exception e)
+        {
+            return Result.Fail(e.Message);
+        }
+    }
+
+    private string ConvertProjectToJson(Project project)
+    {
+        var json = new
+        {
+            ProjectId = project.Id,
+            ProjectName = project.Name,
+            ProjectDescription = project.Description,
+            ProjectOwner = project.CreatedBy.UserName,
+            Subjects = project.Subjects
+            .Select(subject => new
+            {
+                SubjectId = subject.Id,
+                SubjectName = subject.Name,
+                VideoGroups = subject.Labels
+                    .SelectMany(label => label.AssignedLabels)
+                    .Where(label => label.Video != null)
+                    .Select(label => new
+                    {
+                        LabelId = label.Label.Id,
+                        LabelerId = label.CreatedBy.Id,
+                        LabelerName = label.CreatedBy.UserName,
+                        LabelName = label.Label.Name,
+                        label.Start,
+                        label.End,
+                        label.Label.Type,
+                        label.Label.ColorHex,
+                        VideoPath = label.Video.Path,
+                        VideoTitle = label.Video.Title,
+                        VideoId = label.Video.Id,
+                        VideoGroupName = label.Video.VideoGroup.Name
+                    })
+                    .GroupBy(l => l.VideoGroupName)
+                    .Select(group => new
+                    {
+                        VideoGroupName = group.Key,
+                        Videos = group
+                            .GroupBy(l => l.VideoId)
+                            .Select(videoGroup =>
+                            {
+                                var first = videoGroup.First();
+                                return new
+                                {
+                                    first.VideoId,
+                                    first.VideoPath,
+                                    first.VideoTitle,
+                                    Labels = videoGroup.Select(label => new
+                                    {
+                                        label.LabelId,
+                                        label.LabelerId,
+                                        label.LabelName,
+                                        label.Start,
+                                        label.End,
+                                        label.Type,
+                                        label.ColorHex
+                                    }).ToList()
+                                };
+                            })
+                            .ToList()
+                    })
+                    .ToList()
+            })
+        };
+
+        return JsonConvert.SerializeObject(json, Formatting.Indented);
+    }
+}

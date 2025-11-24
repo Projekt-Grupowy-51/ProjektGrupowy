@@ -1,6 +1,8 @@
+name: vidmark_prod
+
 services:
   app:
-    image: ghcr.io/projekt-grupowy-51/vidmark-app:latest
+    image: ghcr.io/vidmark-51/vidmark-app:latest
     extra_hosts:
       - "host.docker.internal:host-gateway"
     environment:
@@ -12,15 +14,6 @@ services:
 
       - Logging__LogLevel__Default=Information
       - Logging__LogLevel__Microsoft.AspNetCore=Warning
-
-      - JWT__ValidIssuer=https://api.vidmark.affectivese.org/
-      - JWT__ValidAudience=https://vidmark.affectivese.org/
-      - JWT__Secret=${JWT_SECRET}
-      - JWT__JwtCookieName=AuthToken
-      - JWT__RefreshCookieName=RefreshToken
-      - JWT__ScientistCreateToken=${SCIENTIST_TOKEN}
-      - JWT__RegularTokenExpiresInMinutes=15
-      - JWT__RefreshTokenExpiresInDays=7
 
       - Videos__RootDirectory=videos
       - Videos__NginxUrl=https://nginx.vidmark.affectivese.org/videos
@@ -45,7 +38,7 @@ services:
     restart: unless-stopped
 
   frontend:
-    image: ghcr.io/projekt-grupowy-51/vidmark-frontend:latest
+    image: ghcr.io/vidmark-51/vidmark-frontend:latest
     ports:
       - "18131:80"
     networks:
@@ -55,7 +48,7 @@ services:
     restart: unless-stopped
 
   nginx:
-    image: ghcr.io/projekt-grupowy-51/vidmark-nginx:latest
+    image: ghcr.io/vidmark-51/vidmark-nginx:latest
     environment:
       - NGINX_HOST=nginx.vidmark.affectivese.org
       - NGINX_PORT=80

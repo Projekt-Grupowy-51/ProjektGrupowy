@@ -7,7 +7,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  ORG: projekt-grupowy-51
+  ORG: vidmark-51
   TAG: latest
 
 jobs:
@@ -34,7 +34,7 @@ jobs:
       - name: Build and push app image
         uses: docker/build-push-action@v5
         with:
-          context: ./ProjektGrupowy.API
+          context: ./VidMark.API
           push: true
           tags: ghcr.io/${{ env.ORG }}/vidmark-app:${{ env.TAG }}
 
