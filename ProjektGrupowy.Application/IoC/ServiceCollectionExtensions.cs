@@ -26,6 +26,9 @@ public static class ServiceCollectionExtensions
             _ = cfg.RegisterServicesFromAssembly(typeof(ServiceCollectionExtensions).Assembly);
 
             // Register pipeline behaviors
+            // IMPORTANT: TransactionBehavior must run BEFORE OutboxProcessingBehavior
+            // to ensure domain events are processed within the same transaction
+            _ = cfg.AddOpenBehavior(typeof(Pipelines.TransactionBehavior<,>));
             _ = cfg.AddOpenBehavior(typeof(Pipelines.OutboxProcessingBehavior<,>));
         });
 
