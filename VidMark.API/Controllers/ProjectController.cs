@@ -342,6 +342,13 @@ public class ProjectController(
         var query = new GetProjectStatsQuery(projectId, currentUserService.UserId, currentUserService.IsAdmin);
         var result = await mediator.Send(query);
 
-        return !result.IsSuccess ? (ActionResult<ProjectStatsResponse>)NotFound(result.Errors) : (ActionResult<ProjectStatsResponse>)Ok(result.Value);
+        if (!result.IsSuccess)
+        {
+            return NotFound(result.Errors);
+        }
+
+
+        var response = mapper.Map<ProjectStatsResponse>(result.Value);
+        return Ok(response);
     }
 }

@@ -2,11 +2,9 @@ using FluentResults;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using VidMark.Application.Authorization;
-using VidMark.Application.DTOs.AssignedLabel;
 using VidMark.Application.Exceptions;
 using VidMark.Application.Interfaces.Repositories;
 using VidMark.Application.Services;
-using VidMark.Application.Services.Impl;
 using VidMark.Domain.Models;
 
 namespace VidMark.Application.Features.AssignedLabels.Queries.GetAssignedLabelsByVideoId;

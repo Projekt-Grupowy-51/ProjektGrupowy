@@ -55,11 +55,11 @@ public class GetProjectStatsQueryHandlerTests
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        result.Value.Subjects.Should().Be(2);
-        result.Value.Videos.Should().Be(2);
-        result.Value.Assignments.Should().Be(1);
-        result.Value.Labelers.Should().Be(3);
-        result.Value.AccessCodes.Should().Be(1);
+        result.Value.Subjects.Should().HaveCount(2);
+        result.Value.VideoGroups.Should().HaveCount(2);
+        result.Value.Subjects.First().SubjectVideoGroupAssignments.Should().HaveCount(1);
+        result.Value.ProjectLabelers.Should().HaveCount(3);
+        result.Value.AccessCodes.Should().HaveCount(1);
     }
 
     [Fact]
