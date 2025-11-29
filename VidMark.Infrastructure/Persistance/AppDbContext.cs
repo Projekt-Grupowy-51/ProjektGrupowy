@@ -68,7 +68,6 @@ public class AppDbContext : DbContext, IApplicationDbContext, IReadWriteContext
                 entry.State = EntityState.Modified;
                 entry.Property(nameof(IOwnedEntity.DelDate)).CurrentValue = DateTime.UtcNow;
 
-                // Add domain event for soft delete
                 if (entry.Entity is BaseEntity baseEntity)
                 {
                     var entityName = entry.Entity.GetType().Name;
