@@ -48,7 +48,7 @@ public class DistributeLabelersEquallyCommandHandler : IRequestHandler<Distribut
         var authResult = await _authorizationService.AuthorizeAsync(
             _currentUserService.User,
             project,
-            new ResourceOperationRequirement(ResourceOperation.Update));
+            new ResourceOperationRequirement(ResourceOperation.Modify));
 
         if (!authResult.Succeeded)
         {
@@ -150,7 +150,7 @@ public class DistributeLabelersEquallyCommandHandler : IRequestHandler<Distribut
         var authResult = await _authorizationService.AuthorizeAsync(
             _currentUserService.User,
             assignment,
-            new ResourceOperationRequirement(ResourceOperation.Update));
+            new ResourceOperationRequirement(ResourceOperation.Modify));
 
         if (!authResult.Succeeded)
         {

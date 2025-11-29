@@ -33,7 +33,7 @@ public class RetireAccessCodeCommandHandler : IRequestHandler<RetireAccessCodeCo
             return Result.Fail("Access code does not exist!");
         }
 
-        var authResult = await _authorizationService.AuthorizeAsync(_currentUserService.User, accessCode, new ResourceOperationRequirement(ResourceOperation.Update));
+        var authResult = await _authorizationService.AuthorizeAsync(_currentUserService.User, accessCode, new ResourceOperationRequirement(ResourceOperation.Modify));
         if (!authResult.Succeeded)
         {
             throw new ForbiddenException("You dont have permission to perform this action");

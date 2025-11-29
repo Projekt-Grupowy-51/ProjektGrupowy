@@ -36,7 +36,7 @@ public class AddLabelCommandHandler : IRequestHandler<AddLabelCommand, Result<La
             return Result.Fail("No subject found");
         }
 
-        var authResult = await _authorizationService.AuthorizeAsync(_currentUserService.User, subject, new ResourceOperationRequirement(ResourceOperation.Create));
+        var authResult = await _authorizationService.AuthorizeAsync(_currentUserService.User, subject, new ResourceOperationRequirement(ResourceOperation.Modify));
         if (!authResult.Succeeded)
         {
             throw new ForbiddenException("You dont have permission to perform this action");

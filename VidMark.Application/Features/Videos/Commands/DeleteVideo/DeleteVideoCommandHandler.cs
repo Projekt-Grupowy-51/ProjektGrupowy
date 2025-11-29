@@ -28,7 +28,7 @@ public class DeleteVideoCommandHandler(
         var authResult = await authorizationService.AuthorizeAsync(
             currentUserService.User,
             video,
-            new ResourceOperationRequirement(ResourceOperation.Delete));
+            new ResourceOperationRequirement(ResourceOperation.Modify));
 
         if (!authResult.Succeeded)
         {

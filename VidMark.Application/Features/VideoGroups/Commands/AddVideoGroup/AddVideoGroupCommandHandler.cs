@@ -44,7 +44,7 @@ public class AddVideoGroupCommandHandler : IRequestHandler<AddVideoGroupCommand,
         var authResult = await _authorizationService.AuthorizeAsync(
             _currentUserService.User,
             project,
-            new ResourceOperationRequirement(ResourceOperation.Create));
+            new ResourceOperationRequirement(ResourceOperation.Modify));
 
         if (!authResult.Succeeded)
         {

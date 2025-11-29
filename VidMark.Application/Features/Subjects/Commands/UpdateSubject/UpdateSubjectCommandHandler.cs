@@ -44,7 +44,7 @@ public class UpdateSubjectCommandHandler : IRequestHandler<UpdateSubjectCommand,
         var authResult = await _authorizationService.AuthorizeAsync(
             _currentUserService.User,
             subject,
-            new ResourceOperationRequirement(ResourceOperation.Update));
+            new ResourceOperationRequirement(ResourceOperation.Modify));
 
         if (!authResult.Succeeded)
         {
@@ -61,7 +61,7 @@ public class UpdateSubjectCommandHandler : IRequestHandler<UpdateSubjectCommand,
         var authResultProject = await _authorizationService.AuthorizeAsync(
             _currentUserService.User,
             project,
-            new ResourceOperationRequirement(ResourceOperation.Update));
+            new ResourceOperationRequirement(ResourceOperation.Modify));
 
         if (!authResultProject.Succeeded)
         {

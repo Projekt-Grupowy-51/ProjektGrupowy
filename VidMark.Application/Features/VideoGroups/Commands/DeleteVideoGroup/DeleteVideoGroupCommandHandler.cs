@@ -40,7 +40,7 @@ public class DeleteVideoGroupCommandHandler : IRequestHandler<DeleteVideoGroupCo
         var authResult = await _authorizationService.AuthorizeAsync(
             _currentUserService.User,
             videoGroup,
-            new ResourceOperationRequirement(ResourceOperation.Delete));
+            new ResourceOperationRequirement(ResourceOperation.Modify));
 
         if (!authResult.Succeeded)
         {

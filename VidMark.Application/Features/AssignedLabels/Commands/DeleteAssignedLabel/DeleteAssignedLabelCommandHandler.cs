@@ -36,7 +36,7 @@ public class DeleteAssignedLabelCommandHandler : IRequestHandler<DeleteAssignedL
             return Result.Fail("No assigned label found");
         }
 
-        var authResult = await _authorizationService.AuthorizeAsync(_currentUserService.User, assignedLabel, new ResourceOperationRequirement(ResourceOperation.Delete));
+        var authResult = await _authorizationService.AuthorizeAsync(_currentUserService.User, assignedLabel, new ResourceOperationRequirement(ResourceOperation.Modify));
         if (!authResult.Succeeded)
         {
             throw new ForbiddenException();

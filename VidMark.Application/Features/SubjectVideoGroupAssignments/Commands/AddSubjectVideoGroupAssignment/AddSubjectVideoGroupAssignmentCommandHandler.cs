@@ -47,7 +47,7 @@ public class AddSubjectVideoGroupAssignmentCommandHandler : IRequestHandler<AddS
         var authResultSubject = await _authorizationService.AuthorizeAsync(
             _currentUserService.User,
             subject,
-            new ResourceOperationRequirement(ResourceOperation.Create));
+            new ResourceOperationRequirement(ResourceOperation.Modify));
 
         if (!authResultSubject.Succeeded)
         {
@@ -64,7 +64,7 @@ public class AddSubjectVideoGroupAssignmentCommandHandler : IRequestHandler<AddS
         var authResultVG = await _authorizationService.AuthorizeAsync(
             _currentUserService.User,
             videoGroup,
-            new ResourceOperationRequirement(ResourceOperation.Create));
+            new ResourceOperationRequirement(ResourceOperation.Modify));
 
         if (!authResultVG.Succeeded)
         {

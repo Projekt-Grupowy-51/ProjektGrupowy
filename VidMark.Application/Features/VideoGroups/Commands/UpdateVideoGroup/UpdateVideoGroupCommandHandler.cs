@@ -44,7 +44,7 @@ public class UpdateVideoGroupCommandHandler : IRequestHandler<UpdateVideoGroupCo
         var authResult = await _authorizationService.AuthorizeAsync(
             _currentUserService.User,
             videoGroup,
-            new ResourceOperationRequirement(ResourceOperation.Update));
+            new ResourceOperationRequirement(ResourceOperation.Modify));
 
         if (!authResult.Succeeded)
         {
@@ -61,7 +61,7 @@ public class UpdateVideoGroupCommandHandler : IRequestHandler<UpdateVideoGroupCo
         var authResultProject = await _authorizationService.AuthorizeAsync(
             _currentUserService.User,
             project,
-            new ResourceOperationRequirement(ResourceOperation.Update));
+            new ResourceOperationRequirement(ResourceOperation.Modify));
 
         if (!authResultProject.Succeeded)
         {

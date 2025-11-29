@@ -44,7 +44,7 @@ public class AddAssignedLabelCommandHandler : IRequestHandler<AddAssignedLabelCo
             return Result.Fail("Label does not exist");
         }
 
-        var authResult = await _authorizationService.AuthorizeAsync(_currentUserService.User, label, new ResourceOperationRequirement(ResourceOperation.Create));
+        var authResult = await _authorizationService.AuthorizeAsync(_currentUserService.User, label, new ResourceOperationRequirement(ResourceOperation.Read));
         if (!authResult.Succeeded)
         {
             throw new ForbiddenException();
@@ -56,7 +56,7 @@ public class AddAssignedLabelCommandHandler : IRequestHandler<AddAssignedLabelCo
             return Result.Fail("No subject video group assignment found");
         }
 
-        var authResultVideo = await _authorizationService.AuthorizeAsync(_currentUserService.User, video, new ResourceOperationRequirement(ResourceOperation.Create));
+        var authResultVideo = await _authorizationService.AuthorizeAsync(_currentUserService.User, video, new ResourceOperationRequirement(ResourceOperation.Read));
         if (!authResultVideo.Succeeded)
         {
             throw new ForbiddenException();

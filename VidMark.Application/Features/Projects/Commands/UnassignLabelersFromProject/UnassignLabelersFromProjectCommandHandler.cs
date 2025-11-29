@@ -40,7 +40,7 @@ public class UnassignLabelersFromProjectCommandHandler : IRequestHandler<Unassig
         var authResult = await _authorizationService.AuthorizeAsync(
             _currentUserService.User,
             project,
-            new ResourceOperationRequirement(ResourceOperation.Update));
+            new ResourceOperationRequirement(ResourceOperation.Modify));
 
         if (!authResult.Succeeded)
         {

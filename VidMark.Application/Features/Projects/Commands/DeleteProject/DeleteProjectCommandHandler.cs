@@ -40,7 +40,7 @@ public class DeleteProjectCommandHandler : IRequestHandler<DeleteProjectCommand,
         var authResult = await _authorizationService.AuthorizeAsync(
             _currentUserService.User,
             project,
-            new ResourceOperationRequirement(ResourceOperation.Delete));
+            new ResourceOperationRequirement(ResourceOperation.Modify));
 
         if (!authResult.Succeeded)
         {

@@ -40,7 +40,7 @@ public class DeleteReportCommandHandler : IRequestHandler<DeleteReportCommand, R
         var authResult = await _authorizationService.AuthorizeAsync(
             _currentUserService.User,
             report,
-            new ResourceOperationRequirement(ResourceOperation.Delete));
+            new ResourceOperationRequirement(ResourceOperation.Modify));
 
         if (!authResult.Succeeded)
         {

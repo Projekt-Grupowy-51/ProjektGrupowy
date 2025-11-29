@@ -33,7 +33,7 @@ public class DeleteLabelCommandHandler : IRequestHandler<DeleteLabelCommand, Res
             return Result.Fail("Label does not exist");
         }
 
-        var authResult = await _authorizationService.AuthorizeAsync(_currentUserService.User, label, new ResourceOperationRequirement(ResourceOperation.Delete));
+        var authResult = await _authorizationService.AuthorizeAsync(_currentUserService.User, label, new ResourceOperationRequirement(ResourceOperation.Modify));
         if (!authResult.Succeeded)
         {
             throw new ForbiddenException("You dont have permission to perform this action");

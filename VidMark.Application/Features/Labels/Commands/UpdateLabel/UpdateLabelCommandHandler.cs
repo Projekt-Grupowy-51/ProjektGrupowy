@@ -41,7 +41,7 @@ public class UpdateLabelCommandHandler : IRequestHandler<UpdateLabelCommand, Res
             return Result.Fail("Label does not exist");
         }
 
-        var authResult = await _authorizationService.AuthorizeAsync(_currentUserService.User, label, new ResourceOperationRequirement(ResourceOperation.Update));
+        var authResult = await _authorizationService.AuthorizeAsync(_currentUserService.User, label, new ResourceOperationRequirement(ResourceOperation.Modify));
         if (!authResult.Succeeded)
         {
             throw new ForbiddenException();
@@ -53,7 +53,7 @@ public class UpdateLabelCommandHandler : IRequestHandler<UpdateLabelCommand, Res
             return Result.Fail("No subject found");
         }
 
-        var authResultSubject = await _authorizationService.AuthorizeAsync(_currentUserService.User, subject, new ResourceOperationRequirement(ResourceOperation.Update));
+        var authResultSubject = await _authorizationService.AuthorizeAsync(_currentUserService.User, subject, new ResourceOperationRequirement(ResourceOperation.Modify));
         if (!authResultSubject.Succeeded)
         {
             throw new ForbiddenException();

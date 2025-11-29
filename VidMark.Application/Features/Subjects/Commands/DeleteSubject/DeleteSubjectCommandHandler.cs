@@ -40,7 +40,7 @@ public class DeleteSubjectCommandHandler : IRequestHandler<DeleteSubjectCommand,
         var authResult = await _authorizationService.AuthorizeAsync(
             _currentUserService.User,
             subject,
-            new ResourceOperationRequirement(ResourceOperation.Delete));
+            new ResourceOperationRequirement(ResourceOperation.Modify));
 
         if (!authResult.Succeeded)
         {

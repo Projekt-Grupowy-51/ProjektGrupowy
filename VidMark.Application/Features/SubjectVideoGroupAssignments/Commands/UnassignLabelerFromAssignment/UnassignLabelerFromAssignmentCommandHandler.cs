@@ -44,7 +44,7 @@ public class UnassignLabelerFromAssignmentCommandHandler : IRequestHandler<Unass
         var authResult = await _authorizationService.AuthorizeAsync(
             _currentUserService.User,
             assignment,
-            new ResourceOperationRequirement(ResourceOperation.Update));
+            new ResourceOperationRequirement(ResourceOperation.Modify));
 
         if (!authResult.Succeeded)
         {

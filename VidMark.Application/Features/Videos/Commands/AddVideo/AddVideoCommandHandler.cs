@@ -32,7 +32,7 @@ public class AddVideoCommandHandler(
         var authResult = await authorizationService.AuthorizeAsync(
             currentUserService.User,
             videoGroup,
-            new ResourceOperationRequirement(ResourceOperation.Create));
+            new ResourceOperationRequirement(ResourceOperation.Modify));
 
         if (!authResult.Succeeded)
         {
