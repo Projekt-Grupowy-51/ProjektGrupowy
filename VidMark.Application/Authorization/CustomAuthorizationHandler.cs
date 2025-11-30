@@ -110,26 +110,26 @@ namespace VidMark.Application.Authorization
             p.CreatedById == userId;
 
         private bool IsAuthorizedForModify(VideoGroup vg, string userId) =>
-            vg.Project.CreatedById == userId;
+            vg.CreatedById == userId;
 
         private bool IsAuthorizedForModify(Video v, string userId) =>
-            v.VideoGroup.Project.CreatedById == userId;
+            v.CreatedById == userId;
 
         private bool IsAuthorizedForModify(Subject s, string userId) =>
-            s.Project.CreatedById == userId;
+            s.CreatedById == userId;
 
         private bool IsAuthorizedForModify(Label l, string userId) =>
-            IsAuthorizedForModify(l.Subject, userId);
+            l.CreatedById == userId;
 
         // Exception: Labeler can modify their own AssignedLabel
         private bool IsAuthorizedForModify(AssignedLabel al, string userId) =>
-            al.CreatedById == userId;
+            al.CreatedById == userId || al.Label.CreatedById == userId;
 
         private bool IsAuthorizedForModify(ProjectAccessCode pac, string userId) =>
             pac.CreatedById == userId;
 
         private bool IsAuthorizedForModify(SubjectVideoGroupAssignment svga, string userId) =>
-            svga.Subject.Project.CreatedById == userId;
+            svga.CreatedById == userId;
 
         private bool IsAuthorizedForModify(GeneratedReport gr, string userId) =>
             gr.CreatedById == userId;
@@ -140,28 +140,30 @@ namespace VidMark.Application.Authorization
             p.CreatedById == userId || p.ProjectLabelers.Any(l => l.Id == userId);
 
         private bool IsAuthorizedForRead(VideoGroup vg, string userId) =>
-            vg.Project.CreatedById == userId ||
+            vg.CreatedById == userId ||
             vg.SubjectVideoGroupAssignments.Any(svga => svga.Labelers.Any(l => l.Id == userId));
 
         private bool IsAuthorizedForRead(Video v, string userId) =>
-            v.VideoGroup.Project.CreatedById == userId ||
+            v.CreatedById == userId ||
             v.VideoGroup.SubjectVideoGroupAssignments.Any(svga => svga.Labelers.Any(l => l.Id == userId));
 
         private bool IsAuthorizedForRead(Subject s, string userId) =>
-            s.Project.CreatedById == userId ||
+            s.CreatedById == userId ||
             s.SubjectVideoGroupAssignments.Any(svga => svga.Labelers.Any(l => l.Id == userId));
 
         private bool IsAuthorizedForRead(Label l, string userId) =>
-            IsAuthorizedForRead(l.Subject, userId);
+            l.CreatedById == userId ||
+            l.Subject.SubjectVideoGroupAssignments.Any(svga => svga.Labelers.Any(l => l.Id == userId));
 
         private bool IsAuthorizedForRead(AssignedLabel al, string userId) =>
-            al.CreatedById == userId || IsAuthorizedForRead(al.Video.VideoGroup, userId);
+            al.CreatedById == userId ||
+            al.Label.CreatedById == userId;
 
         private bool IsAuthorizedForRead(ProjectAccessCode pac, string userId) =>
             pac.CreatedById == userId;
 
         private bool IsAuthorizedForRead(SubjectVideoGroupAssignment svga, string userId) =>
-            svga.Subject.Project.CreatedById == userId || svga.Labelers.Any(l => l.Id == userId);
+            svga.CreatedById == userId || svga.Labelers.Any(l => l.Id == userId);
 
         private bool IsAuthorizedForRead(GeneratedReport gr, string userId) =>
             gr.CreatedById == userId;
