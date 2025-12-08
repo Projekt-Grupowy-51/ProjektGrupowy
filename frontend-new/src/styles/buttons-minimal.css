@@ -1,24 +1,21 @@
-/* Minimalist Button Styles - Neutral, unified look */
 :root{
-  --btn-bg: #f3f4f6; /* neutral surface */
+  --btn-bg: #f3f4f6; 
   --btn-border: #e5e7eb;
-  --btn-text: #0f172a; /* slate-900 */
-  --btn-muted: #6b7280; /* slate-500 */
-  /* more vivid but still restrained palette */
-  --btn-primary-bg: #171717; /* near-black / matches --color-primary-900 */
-  --btn-primary-rgb: 23,23,23; /* rgb for primary (used in rgba) - neutral black/gray */
+  --btn-text: #0f172a; 
+  --btn-muted: #6b7280; 
+  --btn-primary-bg: #171717; 
+  --btn-primary-rgb: 23,23,23; 
   --btn-primary-text: #ffffff;
-  --btn-success: #10b981; /* green-500 */
-  --btn-success-rgb: 16,185,129; /* rgb for success (used in rgba) */
-  --btn-danger: #ef4444; /* red-500 */
-  --btn-warning: #f59e0b; /* amber-500 */
-  --btn-warning-rgb: 245,158,11; /* rgb for warning (used in rgba) */
-  --btn-info: #7c3aed; /* violet-600 */
+  --btn-success: #10b981; 
+  --btn-success-rgb: 16,185,129; 
+  --btn-danger: #ef4444; 
+  --btn-warning: #f59e0b;
+  --btn-warning-rgb: 245,158,11;
+  --btn-info: #7c3aed; 
   --btn-radius: 8px;
   --btn-transition: 150ms ease;
 }
 
-/* Base button reset / unified size */
 .btn {
   background: var(--btn-bg);
   color: var(--btn-text);
@@ -54,7 +51,6 @@
   transform: translateY(-1px);
 }
 
-/* Sizes */
 .btn-sm {
   padding: 0.25rem 0.5rem;
   font-size: 0.8rem;
@@ -67,24 +63,19 @@
   border-radius: 10px;
 }
 
-/* Variants */
 .btn-primary {
   background: var(--btn-primary-bg);
   color: var(--btn-primary-text);
   border-color: rgba(255,255,255,0.08);
 }
 
-/* Make success use an outline-like, subtle background to match destructive/warning styles
-   (strong border, very light background, colored text) */
 .btn-success {
-  /* Minimalist success: subtle, outline-like background matching other outline buttons */
   background: rgba(var(--btn-success-rgb), 0.06) !important;
   color: var(--btn-success) !important;
   border-color: rgba(var(--btn-success-rgb), 0.16) !important;
 }
 
 .btn-primary:hover:not(:disabled) {
-  /* Hover: keep the gradient look but use the primary RGB variable so it's consistent and theme-driven */
   background: linear-gradient(135deg, rgba(var(--btn-primary-rgb),0.95) 0%, rgba(var(--btn-primary-rgb),0.85) 100%);
   border-color: rgba(var(--btn-primary-rgb),0.90);
   color: var(--btn-primary-text);
@@ -119,7 +110,6 @@
   text-decoration: none !important;
 }
 
-/* Outline variants - subtle */
 .btn-outline-primary,
 .btn-outline-secondary,
 .btn-outline-danger,
@@ -128,7 +118,6 @@
 .btn-outline-success,
 .btn-outline-light,
 .btn-outline-dark {
-  /* Unified outline style: stronger border, very light background */
   background: rgba(15,23,42,0.03);
   color: var(--btn-text);
   border: 1.5px solid rgba(15,23,42,0.12);
@@ -153,19 +142,15 @@
   background: rgba(15,23,42,0.05);
 }
 
-/* stronger, color-aware hover for primary outline (Details button) */
 .btn-outline-primary:hover:not(:disabled) {
   transform: translateY(-1px) !important;
-  /* use the same primary tone for background, border and shadow */
   background: rgba(var(--btn-primary-rgb),0.10) !important;
   border-color: rgba(var(--btn-primary-rgb),0.28) !important;
   box-shadow: 0 10px 30px rgba(var(--btn-primary-rgb),0.12) !important;
   color: var(--btn-primary-bg) !important;
 }
 
-/* subtle green accent for success buttons */
 .btn-success:hover:not(:disabled) {
-  /* Hover: slightly stronger tint and border but still minimalist */
   background: rgba(var(--btn-success-rgb), 0.12) !important;
   border-color: rgba(var(--btn-success-rgb), 0.30) !important;
   box-shadow: 0 8px 24px rgba(var(--btn-success-rgb), 0.08) !important;
@@ -181,13 +166,11 @@
   color: var(--btn-success) !important;
 }
 
-/* focus ring matching primary */
 .btn-outline-primary:focus-visible {
   outline: none;
   box-shadow: 0 0 0 4px rgba(var(--btn-primary-rgb),0.12) !important;
 }
 
-/* Ensure navbar buttons remain subtle */
 .navbar .btn, .navbar .btn-primary, .navbar .btn-secondary {
   background: transparent;
   border: 1px solid var(--btn-border);
@@ -195,31 +178,25 @@
   box-shadow: none !important;
 }
 
-/* Dropdown items that are buttons */
 .dropdown-item {
   background: transparent;
   color: var(--btn-text);
 }
 
-/* Small visual tweaks for spinner/icon alignment */
 .btn .spinner-border,
 .btn i {
   display: inline-block;
   vertical-align: middle;
 }
 
-/* Utility: standard small button appearance shared across headers/actions */
 .btn-standard {
-  /* Slightly bolder text to match header-style action buttons */
   font-weight: 600;
 }
 
-/* Accessibility: increase hit area on small devices */
 @media (max-width: 576px) {
   .btn { padding: 0.6rem 0.9rem; }
 }
 
-/* === Minimalist badges / status indicators === */
 .badge {
   display: inline-flex;
   align-items: center;
@@ -228,7 +205,6 @@
   font-size: 0.78rem;
   line-height: 1;
   border-radius: 6px;
-  /* Match outline button look: very light background + stronger border */
   background: rgba(15,23,42,0.03) !important;
   color: var(--btn-text) !important;
   border: 1.5px solid rgba(15,23,42,0.10) !important;
@@ -240,35 +216,35 @@
   padding: 0.25rem 0.7rem;
 }
 
-/* finished / success - subtle green */
 .badge.bg-success {
-  /* Subtle badge that follows outline/minimalist look */
   background: rgba(var(--btn-success-rgb),0.06) !important;
   color: var(--btn-success) !important;
   border-color: rgba(var(--btn-success-rgb),0.14) !important;
 }
 
-/* in-progress / primary - more vivid blue */
 .badge.bg-primary {
   background: rgba(var(--btn-primary-rgb),0.12) !important;
   color: var(--btn-text) !important;
   border-color: rgba(var(--btn-primary-rgb),0.18) !important;
 }
 
-/* pending / warning - subtle amber */
 .badge.bg-warning {
   background: rgba(var(--btn-warning-rgb),0.06) !important;
   color: var(--btn-warning) !important;
   border-color: rgba(var(--btn-warning-rgb),0.14) !important;
 }
 
-/* neutral / secondary */
 .badge.bg-secondary {
   background: rgba(15,23,42,0.04);
   color: var(--btn-muted);
   border-color: rgba(15,23,42,0.06);
 }
 
-/* small icon spacing inside badges */
+.badge.bg-danger {
+  background: rgba(var(--btn-danger-rgb),0.06) !important;
+  color: var(--btn-danger) !important;
+  border-color: rgba(var(--btn-danger-rgb),0.14) !important;
+}
+
 .badge i { font-size: 0.9em; }
 
