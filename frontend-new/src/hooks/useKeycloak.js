@@ -35,6 +35,10 @@ export const useKeycloak = () => {
         const authenticated = await initPromise;
         isInitialized = true;
         
+        if (authenticated) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        
         setIsAuthenticated(authenticated);
         setUser(authenticated ? keycloak.tokenParsed : null);
 

@@ -13,7 +13,7 @@ const ProtectedRoute = ({
     redirectTo = '/forbidden',
     autoRedirectFromRoot = true
 }) => {
-    const { isAuthenticated, isLoading, login, user } = useKeycloak();
+    const { isAuthenticated, isLoading, login, user, getToken } = useKeycloak();
     const { t } = useTranslation('common');
     const location = useLocation();
     const navigate = useNavigate();
@@ -21,6 +21,12 @@ const ProtectedRoute = ({
     // Auto-redirect from root based on user role
     useEffect(() => {
         if (autoRedirectFromRoot && isAuthenticated && user && location.pathname === '/') {
+            // Ensure token is available before redirecting
+            const token = getToken();
+            if (!token) {
+                return;
+            }
+            
             switch (user.userRole) {
                 case "Scientist":
                     navigate("/projects", { replace: true });
@@ -32,7 +38,7 @@ const ProtectedRoute = ({
                     navigate("/forbidden", { replace: true });
             }
         }
-    }, [isAuthenticated, user, navigate, location.pathname, autoRedirectFromRoot]);
+    }, [isAuthenticated, user, navigate, location.pathname, autoRedirectFromRoot, getToken]);
 
     // Loading state
     if (isLoading) {

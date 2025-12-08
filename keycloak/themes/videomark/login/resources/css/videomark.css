@@ -886,7 +886,6 @@ div[class*="kcInputGroup"] button:hover {
   border-left: none !important;
 }
 
-/* Default state - no special focus styling */
 .kcInputGroup input:focus,
 .kcInputGroup button:focus {
   outline: none !important;
@@ -894,7 +893,6 @@ div[class*="kcInputGroup"] button:hover {
   box-shadow: 0 2px 8px rgba(180, 180, 180, 0.07) !important;
 }
 
-/* Simple focus states controlled by JavaScript */
 .input-focused input,
 .input-focused .form-control, .pf-v5-c-form-control {
   border-color: #aaa !important;
@@ -927,7 +925,6 @@ div[class*="kcInputGroup"] button:hover {
   border-right: none !important;
 }
 
-/* Focus state triggered by JavaScript after button click */
 .password-toggle-focus input[type="password"],
 .password-toggle-focus input[type="text"],
 .password-toggle-focus .form-control {
@@ -942,9 +939,6 @@ div[class*="kcInputGroup"] button:hover {
   border-left: none !important;
 }
 
-/* Remove all previous focus states and replace with simple ones */
-
-/* Default state - no special border for connected inputs */
 .kcInputGroup input[type="password"].form-control,
 .kcInputGroup input[type="text"].form-control,
 .pf-v5-c-form-control {
@@ -957,7 +951,6 @@ div[class*="kcInputGroup"] button:hover {
   box-shadow: 2px 2px 3px rgba(255, 255, 255, 0.06), 0 -2px 3px rgba(255, 255, 255, 0.06), 2px 0 3px rgba(255, 255, 255, 0.06) !important;
 }
 
-/* When input is focused - style both input and button */
 .input-focused input[type="password"],
 .input-focused input[type="text"],
 .input-focused .form-control,
@@ -972,7 +965,6 @@ div[class*="kcInputGroup"] button:hover {
   border-left: none !important;
 }
 
-/* When button is focused - style both input and button */
 .button-focused input[type="password"],
 .button-focused input[type="text"],
 .button-focused .form-control,
@@ -989,10 +981,6 @@ div[class*="kcInputGroup"] button:hover {
   outline: none !important;
 }
 
-/* -------- Custom adjustments per user request -------- */
-/* Rounded corners, larger padding, darker border on focus, no eye icon */
-
-/* Increase padding for inputs to make them taller and more comfortable */
 .videomark-form .form-control,
 #kc-form .form-control,
 #kc-container-wrapper .form-control,
@@ -1006,7 +994,6 @@ div[class*="kcInputGroup"] button:hover {
   border-bottom-right-radius: 0px !important;
 }
 
-/* Ensure connected input looks like a single control with decorative right part */
 .kcInputGroup input {
   border-top-right-radius: 0 !important;
   border-bottom-right-radius: 0 !important;
@@ -1014,7 +1001,6 @@ div[class*="kcInputGroup"] button:hover {
   padding-right: 18px !important; 
 }
 
-/* Decorative button: rounded, no icon, non-interactive (visual only) */
 .kcInputGroup .kcFormPasswordVisibilityButtonClass.kcFormDecorativeButton {
   position: absolute !important;
   right: 0 !important;
@@ -1034,7 +1020,6 @@ div[class*="kcInputGroup"] button:hover {
   box-shadow: 0 1px 3px rgba(0,0,0,0.03) !important;
 }
 
-/* Hide any icon if accidentally present */
 .kcInputGroup .kcFormPasswordVisibilityButtonClass.kcFormDecorativeButton i {
   display: none !important;
 }
