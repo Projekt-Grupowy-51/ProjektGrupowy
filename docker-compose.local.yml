@@ -102,12 +102,6 @@ services:
     volumes:
       - ./keycloak/data:/opt/keycloak/data
       - ./keycloak/themes:/opt/keycloak/themes
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8080/health/ready || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 60s
 
   app:
     build:
@@ -146,8 +140,6 @@ services:
       - mynetwork
     depends_on:
       db:
-        condition: service_healthy
-      keycloak:
         condition: service_healthy
     volumes:
       - videos_data:/app/videos
