@@ -24,12 +24,12 @@ http {
   }
 
   upstream backend {
-    server app:8080;
+    server app:80;
     keepalive 32;
   }
 
   upstream keycloak {
-    server keycloak:80;
+    server keycloak:8080;
     keepalive 16;
   }
 
