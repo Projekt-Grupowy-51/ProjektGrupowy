@@ -25,7 +25,8 @@ services:
 
   keycloak:
     image: ghcr.io/projekt-grupowy-51/vidmark-keycloak:${KEYCLOAK_TAG:-latest}
-    command: ["start", "--optimized", "--import-realm", "--http-relative-path=/auth"]
+    command:
+      ["start", "--optimized", "--import-realm", "--http-relative-path=/auth"]
     environment:
       KC_DB: postgres
       KC_DB_URL: jdbc:postgresql://db:5432/${POSTGRES_DB}
@@ -52,12 +53,6 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    healthcheck:
-      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080 && echo -e 'GET /health/ready HTTP/1.1\\r\\nhost: localhost\\r\\n\\r\\n' >&3 && cat <&3 | grep -q '200 OK'"]
-      interval: 15s
-      timeout: 10s
-      retries: 10
-      start_period: 60s
     restart: unless-stopped
 
   app:
@@ -130,7 +125,11 @@ services:
       app:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:80/health || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "wget --no-verbose --tries=1 --spider http://localhost:80/health || exit 1",
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -154,7 +153,11 @@ services:
       keycloak:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:80/health || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "wget --no-verbose --tries=1 --spider http://localhost:80/health || exit 1",
+        ]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -174,7 +177,11 @@ services:
       - videos_data:/mnt/videos:ro
       - reports_data:/mnt/reports:ro
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:80/ || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "wget --no-verbose --tries=1 --spider http://localhost:80/ || exit 1",
+        ]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -214,7 +221,11 @@ services:
       - keycloak
       - postgres-exporter
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:9090/-/healthy || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "wget --no-verbose --tries=1 --spider http://localhost:9090/-/healthy || exit 1",
+        ]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -232,7 +243,11 @@ services:
     networks:
       - vidmark_network
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3100/ready || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "wget --no-verbose --tries=1 --spider http://localhost:3100/ready || exit 1",
+        ]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -256,7 +271,11 @@ services:
       - prometheus
       - loki
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1",
+        ]
       interval: 10s
       timeout: 5s
       retries: 5

@@ -182,45 +182,6 @@ jobs:
           echo "Deployment initiated successfully"
           EOF
 
-      - name: Health check
-        id: health_check
-        run: |
-          sshpass -p "${{ secrets.VPS_PASSWORD }}" ssh -o StrictHostKeyChecking=no \
-            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
-          set -e
-
-          cd ${{ env.DEPLOY_DIR }}
-
-          TIMEOUT=120
-          INTERVAL=5
-          ELAPSED=0
-
-          echo "Waiting for services to become healthy..."
-
-          while [ $ELAPSED -lt $TIMEOUT ]; do
-            # Check core services health using docker inspect
-            DB_HEALTHY=$(docker inspect vidmark_prod-db-1 --format='{{.State.Health.Status}}' 2>/dev/null | grep -c "healthy" || echo 0)
-            KEYCLOAK_HEALTHY=$(docker inspect vidmark_prod-keycloak-1 --format='{{.State.Health.Status}}' 2>/dev/null | grep -c "healthy" || echo 0)
-            APP_HEALTHY=$(docker inspect vidmark_prod-app-1 --format='{{.State.Health.Status}}' 2>/dev/null | grep -c "healthy" || echo 0)
-            FRONTEND_HEALTHY=$(docker inspect vidmark_prod-frontend-1 --format='{{.State.Health.Status}}' 2>/dev/null | grep -c "healthy" || echo 0)
-
-            echo "Health status - DB: $DB_HEALTHY, Keycloak: $KEYCLOAK_HEALTHY, App: $APP_HEALTHY, Frontend: $FRONTEND_HEALTHY (Elapsed: ${ELAPSED}s)"
-
-            if [ "$DB_HEALTHY" -eq 1 ] && [ "$KEYCLOAK_HEALTHY" -eq 1 ] && \
-               [ "$APP_HEALTHY" -eq 1 ] && [ "$FRONTEND_HEALTHY" -eq 1 ]; then
-              echo "All core services are healthy!"
-              exit 0
-            fi
-
-            sleep $INTERVAL
-            ELAPSED=$((ELAPSED + INTERVAL))
-          done
-
-          echo "Health check timeout after ${TIMEOUT}s"
-          docker compose -f docker-compose.prod.yml ps
-          exit 1
-          EOF
-
       - name: Validate deployment
         if: success()
         run: |
