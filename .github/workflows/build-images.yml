@@ -13,8 +13,6 @@ on:
         required: false
         type: string
   push:
-    branches:
-      - develop_cicd  # Temporary - makes workflow visible in UI
     tags:
       - 'v*.*.*'
 
