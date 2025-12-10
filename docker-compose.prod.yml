@@ -25,7 +25,8 @@ services:
 
   keycloak:
     image: ghcr.io/projekt-grupowy-51/vidmark-keycloak:${KEYCLOAK_TAG:-latest}
-    command: ["start", "--optimized", "--import-realm"]
+    command:
+      ["start", "--optimized", "--import-realm", "--http-relative-path=/auth"]
     environment:
       KC_DB: postgres
       KC_DB_URL: jdbc:postgresql://db:5432/${POSTGRES_DB}
@@ -33,7 +34,6 @@ services:
       KC_DB_PASSWORD: ${POSTGRES_PASS}
       KC_HOSTNAME: ${DOMAIN:-vidmistrz.pl}
       KC_HOSTNAME_PATH: /auth
-      KC_PROXY: edge
       KC_PROXY_HEADERS: xforwarded
       KC_HTTP_ENABLED: "true"
       KC_HOSTNAME_STRICT: "false"
