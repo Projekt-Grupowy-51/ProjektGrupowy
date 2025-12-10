@@ -22,8 +22,8 @@ COPY data/import/vidmark-realm.json /opt/keycloak/data/import/
 # Ensure themes folder exists
 RUN mkdir -p /opt/keycloak/themes
 
-# Build optimized Keycloak for production
-RUN /opt/keycloak/bin/kc.sh build
+# Build optimized Keycloak for production with PostgreSQL support
+RUN /opt/keycloak/bin/kc.sh build --db=postgres --features=scripts
 
 # Default command (will be overridden in docker-compose)
 CMD ["start", "--optimized", "--import-realm"]
