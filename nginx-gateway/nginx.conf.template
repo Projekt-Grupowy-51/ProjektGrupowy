@@ -20,25 +20,29 @@ http {
   # Upstream services
   upstream frontend {
     server frontend:80;
+    keepalive 16;
   }
 
   upstream backend {
     server app:8080;
+    keepalive 32;
   }
 
   upstream keycloak {
     server keycloak:8080;
+    keepalive 16;
   }
 
   upstream video_server {
     server nginx-videos:80;
+    keepalive 16;
   }
 
   server {
     listen 80;
     server_name ${DOMAIN};
 
-    client_max_body_size 500M;
+    client_max_body_size 1G;
 
     # Frontend - root path
     location / {

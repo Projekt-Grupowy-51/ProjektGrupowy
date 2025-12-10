@@ -53,7 +53,8 @@ http {
 
       sendfile on;
       tcp_nopush on;
-      aio on;
+      aio threads;
+      directio 4m;
 
       # For actual GET responses
       add_header 'Access-Control-Allow-Origin' $http_origin always;

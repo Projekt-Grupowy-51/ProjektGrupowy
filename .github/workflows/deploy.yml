@@ -23,6 +23,11 @@ on:
         required: true
         default: 'latest'
         type: string
+      gateway_tag:
+        description: 'Gateway image tag'
+        required: true
+        default: 'latest'
+        type: string
       enable_monitoring:
         description: 'Enable monitoring stack (Prometheus, Grafana, Loki)'
         required: true
@@ -82,11 +87,15 @@ jobs:
       - name: Generate .env file
         run: |
           cat << 'ENVEOF' > .env
+          # Domain Configuration
+          DOMAIN=${{ secrets.DOMAIN }}
+
           # Image Tags
           BACKEND_TAG=${{ inputs.backend_tag }}
           FRONTEND_TAG=${{ inputs.frontend_tag }}
           KEYCLOAK_TAG=${{ inputs.keycloak_tag }}
           NGINX_TAG=${{ inputs.nginx_tag }}
+          GATEWAY_TAG=${{ inputs.gateway_tag }}
           PROMETHEUS_TAG=latest
           LOKI_TAG=latest
           GRAFANA_TAG=latest
@@ -241,4 +250,5 @@ jobs:
           echo "**Frontend Tag:** ${{ inputs.frontend_tag }}" >> $GITHUB_STEP_SUMMARY
           echo "**Keycloak Tag:** ${{ inputs.keycloak_tag }}" >> $GITHUB_STEP_SUMMARY
           echo "**Nginx Tag:** ${{ inputs.nginx_tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Gateway Tag:** ${{ inputs.gateway_tag }}" >> $GITHUB_STEP_SUMMARY
           echo "**Monitoring Enabled:** ${{ inputs.enable_monitoring }}" >> $GITHUB_STEP_SUMMARY

@@ -115,12 +115,22 @@ if ([string]::IsNullOrWhiteSpace($NGINX_SECURELINK_SECRET)) {
 
 Write-Host ""
 
+# Domain Configuration
+Write-Host "=== Domain Configuration ===" -ForegroundColor Cyan
+$DOMAIN = Read-Host "Main Domain (e.g., example.com or vidmistrz.pl)"
+while ([string]::IsNullOrWhiteSpace($DOMAIN)) {
+    Write-Host "ERROR: Main Domain is required!" -ForegroundColor Red
+    $DOMAIN = Read-Host "Main Domain"
+}
+
+Write-Host ""
+
 # CORS Configuration
 Write-Host "=== CORS Configuration ===" -ForegroundColor Cyan
-$FRONTEND_DOMAIN = Read-Host "Frontend Domain (e.g., example.com or www.example.com)"
-while ([string]::IsNullOrWhiteSpace($FRONTEND_DOMAIN)) {
-    Write-Host "ERROR: Frontend Domain is required!" -ForegroundColor Red
-    $FRONTEND_DOMAIN = Read-Host "Frontend Domain"
+$FRONTEND_DOMAIN = Read-Host "Frontend Domain (e.g., example.com or www.example.com) [default: use Main Domain]"
+if ([string]::IsNullOrWhiteSpace($FRONTEND_DOMAIN)) {
+    $FRONTEND_DOMAIN = $DOMAIN
+    Write-Host "Using Main Domain: $FRONTEND_DOMAIN" -ForegroundColor Gray
 }
 
 $CORS_ALLOWED_ORIGIN = "https://$FRONTEND_DOMAIN"
@@ -168,6 +178,7 @@ while ([string]::IsNullOrWhiteSpace($GHCR_TOKEN)) {
 
 Write-Host ""
 Write-Host "=== Configuration Summary ===" -ForegroundColor Cyan
+Write-Host "Main Domain: https://$DOMAIN" -ForegroundColor Gray
 Write-Host "Database: $POSTGRES_USER @ $POSTGRES_DB" -ForegroundColor Gray
 Write-Host "Keycloak: https://$KEYCLOAK_HOSTNAME" -ForegroundColor Gray
 Write-Host "API: https://$API_DOMAIN" -ForegroundColor Gray
@@ -206,6 +217,9 @@ function Set-GitHubSecret {
 
 # Set all secrets
 $success = $true
+
+# Domain
+$success = $success -and (Set-GitHubSecret "DOMAIN" $DOMAIN)
 
 # Database
 $success = $success -and (Set-GitHubSecret "POSTGRES_USER" $POSTGRES_USER)
