@@ -17,7 +17,9 @@ const TopNavbar = () => {
     return flags[lang] || '🌐';
   };
 
-  const accountUrl = `${import.meta.env.VITE_KEYCLOAK_URL}realms/${import.meta.env.VITE_KEYCLOAK_REALM}/account`;
+  const keycloakUrl = window.ENV?.VITE_KEYCLOAK_URL || import.meta.env.VITE_KEYCLOAK_URL || 'http://localhost:8080/';
+  const keycloakRealm = window.ENV?.VITE_KEYCLOAK_REALM || import.meta.env.VITE_KEYCLOAK_REALM || 'vidmark';
+  const accountUrl = `${keycloakUrl}realms/${keycloakRealm}/account`;
 
   return (
       <nav className="navbar navbar-expand-lg">

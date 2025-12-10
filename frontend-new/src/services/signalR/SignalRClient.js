@@ -3,7 +3,9 @@ import * as signalR from "@microsoft/signalr";
 class SignalRService {
   connection = null;
   hubUrl =
-    import.meta.env.VITE_SIGNALR_HUB_URL ?? "http://localhost:5000/signalr";
+    window.ENV?.VITE_SIGNALR_HUB_URL ??
+    import.meta.env.VITE_SIGNALR_HUB_URL ??
+    "http://localhost:5000/signalr";
   startPromise = null; // Track ongoing start attempts
   stopPromise = null; // Track ongoing stop attempts
 

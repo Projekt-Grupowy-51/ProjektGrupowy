@@ -13,8 +13,17 @@ RUN mkdir -p /opt/keycloak/providers
 
 COPY --from=builder /app/target/*.jar /opt/keycloak/providers/
 
-# Ensure data and themes folders exist
-RUN mkdir -p /opt/keycloak/data /opt/keycloak/themes
+# Ensure data folder exists for realm import
+RUN mkdir -p /opt/keycloak/data/import
 
-# Default command (dev mode)
-CMD ["start-dev", "--import-realm"]
+# Copy realm configuration for auto-import
+COPY data/import/vidmark-realm.json /opt/keycloak/data/import/
+
+# Ensure themes folder exists
+RUN mkdir -p /opt/keycloak/themes
+
+# Build optimized Keycloak for production
+RUN /opt/keycloak/bin/kc.sh build
+
+# Default command (will be overridden in docker-compose)
+CMD ["start", "--optimized", "--import-realm"]
