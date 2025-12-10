@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       images:
-        description: 'Images to build (comma-separated: backend,frontend,keycloak,nginx,prometheus,loki,grafana,all)'
+        description: 'Images to build (comma-separated: backend,frontend,keycloak,nginx,gateway,prometheus,loki,grafana,all)'
         required: true
         default: 'all'
         type: string
@@ -18,7 +18,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  ORG: vidmark-51
+  ORG: projekt-grupowy-51
 
 jobs:
   prepare:
@@ -29,6 +29,7 @@ jobs:
       build-frontend: ${{ steps.determine.outputs.build-frontend }}
       build-keycloak: ${{ steps.determine.outputs.build-keycloak }}
       build-nginx: ${{ steps.determine.outputs.build-nginx }}
+      build-gateway: ${{ steps.determine.outputs.build-gateway }}
       build-prometheus: ${{ steps.determine.outputs.build-prometheus }}
       build-loki: ${{ steps.determine.outputs.build-loki }}
       build-grafana: ${{ steps.determine.outputs.build-grafana }}
@@ -51,6 +52,7 @@ jobs:
             echo "build-frontend=true" >> $GITHUB_OUTPUT
             echo "build-keycloak=true" >> $GITHUB_OUTPUT
             echo "build-nginx=true" >> $GITHUB_OUTPUT
+            echo "build-gateway=true" >> $GITHUB_OUTPUT
             echo "build-prometheus=true" >> $GITHUB_OUTPUT
             echo "build-loki=true" >> $GITHUB_OUTPUT
             echo "build-grafana=true" >> $GITHUB_OUTPUT
@@ -59,6 +61,7 @@ jobs:
             echo "build-frontend=$(echo $IMAGES | grep -q 'frontend' && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
             echo "build-keycloak=$(echo $IMAGES | grep -q 'keycloak' && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
             echo "build-nginx=$(echo $IMAGES | grep -q 'nginx' && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
+            echo "build-gateway=$(echo $IMAGES | grep -q 'gateway' && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
             echo "build-prometheus=$(echo $IMAGES | grep -q 'prometheus' && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
             echo "build-loki=$(echo $IMAGES | grep -q 'loki' && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
             echo "build-grafana=$(echo $IMAGES | grep -q 'grafana' && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
