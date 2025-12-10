@@ -34,10 +34,14 @@ on:
         type: boolean
         default: false
 
+permissions:
+  contents: read
+  packages: read
+
 env:
   DEPLOY_DIR: /home/vidmark/vidmark-deploy
   REGISTRY: ghcr.io
-  ORG: vidmark-51
+  ORG: projekt-grupowy-51
 
 jobs:
   deploy:
