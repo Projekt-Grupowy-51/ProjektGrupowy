@@ -44,6 +44,7 @@ services:
       SCIENTIST_CODE: ${SCIENTIST_ACCESS_CODE}
       KC_METRICS_ENABLED: "true"
       KC_HEALTH_ENABLED: "true"
+      KC_HTTP_MIME_TYPES: "text/css:css,application/javascript:js,font/woff2:woff2,font/woff:woff"
     volumes:
       - keycloak_data:/opt/keycloak/data
     networks:
