@@ -1,97 +1,244 @@
-name: Build, Push to GHCR and Deploy
+name: Deploy to Production
 
 on:
-  push:
-    branches:
-      - master
+  workflow_dispatch:
+    inputs:
+      backend_tag:
+        description: 'Backend image tag'
+        required: true
+        default: 'latest'
+        type: string
+      frontend_tag:
+        description: 'Frontend image tag'
+        required: true
+        default: 'latest'
+        type: string
+      keycloak_tag:
+        description: 'Keycloak image tag'
+        required: true
+        default: 'latest'
+        type: string
+      nginx_tag:
+        description: 'Nginx image tag'
+        required: true
+        default: 'latest'
+        type: string
+      enable_monitoring:
+        description: 'Enable monitoring stack (Prometheus, Grafana, Loki)'
+        required: true
+        type: boolean
+        default: false
 
 env:
+  DEPLOY_DIR: /home/vidmark/vidmark-deploy
   REGISTRY: ghcr.io
-  ORG: projekt-grupowy-51
-  TAG: latest
+  ORG: vidmark-51
 
 jobs:
-  build-and-push:
+  deploy:
+    name: Deploy to VPS
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout source
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Ensure /home/vidmark/vidmark-deploy exists on VPS
+      - name: Install SSH tools
+        run: sudo apt-get update && sudo apt-get install -y sshpass jq
+
+      - name: Ensure deployment directory exists
         run: |
-          sshpass -p "${{ secrets.VPS_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "mkdir -p /home/vidmark/vidmark-deploy"
+          sshpass -p "${{ secrets.VPS_PASSWORD }}" ssh -o StrictHostKeyChecking=no \
+            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
+            "mkdir -p ${{ env.DEPLOY_DIR }}"
+
+      - name: Backup current deployment
+        run: |
+          sshpass -p "${{ secrets.VPS_PASSWORD }}" ssh -o StrictHostKeyChecking=no \
+            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
+          cd ${{ env.DEPLOY_DIR }}
+
+          # Backup docker-compose.yml
+          if [ -f docker-compose.prod.yml ]; then
+            cp docker-compose.prod.yml docker-compose.prod.yml.backup
+            echo "Backed up docker-compose.prod.yml"
+          fi
+
+          # Backup .env
+          if [ -f .env ]; then
+            cp .env .env.backup
+            echo "Backed up .env"
+          fi
+
+          # Save current image tags
+          if [ -f docker-compose.prod.yml ]; then
+            docker compose -f docker-compose.prod.yml ps --format json 2>/dev/null | \
+              jq -r '.Image' > deployed-images.txt.backup || true
+            echo "Saved current image list"
+          fi
+
+          echo "Backup completed successfully"
+          EOF
+
+      - name: Generate .env file
+        run: |
+          cat << 'ENVEOF' > .env
+          # Image Tags
+          BACKEND_TAG=${{ inputs.backend_tag }}
+          FRONTEND_TAG=${{ inputs.frontend_tag }}
+          KEYCLOAK_TAG=${{ inputs.keycloak_tag }}
+          NGINX_TAG=${{ inputs.nginx_tag }}
+          PROMETHEUS_TAG=latest
+          LOKI_TAG=latest
+          GRAFANA_TAG=latest
+
+          # Database Configuration
+          POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASS=${{ secrets.POSTGRES_PASS }}
+          POSTGRES_DB=${{ secrets.POSTGRES_DB }}
+
+          # Keycloak Configuration
+          KEYCLOAK_HOSTNAME=${{ secrets.KEYCLOAK_HOSTNAME }}
+          KEYCLOAK_ADMIN=${{ secrets.KEYCLOAK_ADMIN }}
+          KEYCLOAK_ADMIN_PASSWORD=${{ secrets.KEYCLOAK_ADMIN_PASSWORD }}
+          SCIENTIST_ACCESS_CODE=${{ secrets.SCIENTIST_ACCESS_CODE }}
+          KEYCLOAK_AUTHORITY=${{ secrets.KEYCLOAK_AUTHORITY }}
+          KEYCLOAK_ISSUER=${{ secrets.KEYCLOAK_ISSUER }}
+          KEYCLOAK_AUDIENCE=${{ secrets.KEYCLOAK_AUDIENCE }}
+
+          # Frontend URLs
+          FRONTEND_API_URL=${{ secrets.FRONTEND_API_URL }}
+          FRONTEND_SIGNALR_URL=${{ secrets.FRONTEND_SIGNALR_URL }}
+          FRONTEND_KEYCLOAK_URL=${{ secrets.FRONTEND_KEYCLOAK_URL }}
+
+          # Nginx Configuration
+          NGINX_HOST=${{ secrets.NGINX_HOST }}
+          NGINX_INTERNAL_URL=${{ secrets.NGINX_INTERNAL_URL }}
+          NGINX_PUBLIC_BASEURL=${{ secrets.NGINX_PUBLIC_BASEURL }}
+          NGINX_SECURELINK_SECRET=${{ secrets.NGINX_SECURELINK_SECRET }}
+
+          # CORS Configuration
+          CORS_ALLOWED_ORIGIN=${{ secrets.CORS_ALLOWED_ORIGIN }}
+
+          # Monitoring Configuration
+          LOKI_URL=${{ inputs.enable_monitoring == true && 'http://loki:3100' || '' }}
+
+          # Grafana Configuration
+          GRAFANA_ADMIN_USER=${{ secrets.GRAFANA_ADMIN_USER }}
+          GRAFANA_ADMIN_PASSWORD=${{ secrets.GRAFANA_ADMIN_PASSWORD }}
+          ENVEOF
 
       - name: Upload docker-compose.prod.yml to VPS
         run: |
-          sshpass -p "${{ secrets.VPS_PASSWORD }}" scp -o StrictHostKeyChecking=no docker-compose.prod.yml ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/home/vidmark/vidmark-deploy/docker-compose.prod.yml
-
-      - name: Log in to GHCR
-        run: echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build and push app image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./ProjektGrupowy.API
-          push: true
-          tags: ghcr.io/${{ env.ORG }}/vidmark-app:${{ env.TAG }}
-
-      - name: Build and push frontend image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./frontend
-          push: true
-          tags: ghcr.io/${{ env.ORG }}/vidmark-frontend:${{ env.TAG }}
-          build-args: |
-            VITE_API_BASE_URL=https://api.vidmark.affectivese.org/api
-            VITE_SIGNALR_HUB_URL=https://api.vidmark.affectivese.org/hub/app
-
-      - name: Build and push nginx image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./nginx
-          push: true
-          tags: ghcr.io/${{ env.ORG }}/vidmark-nginx:${{ env.TAG }}
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build-and-push
-
-    steps:
-      - name: Install SSH client and sshpass
-        run: sudo apt-get update && sudo apt-get install -y sshpass
-
-      - name: Create .env file from secrets
-        run: |
-          cat <<EOF > .env
-          POSTGRES_DB=${{ secrets.POSTGRES_DB }}
-          POSTGRES_HOST=${{ secrets.POSTGRES_HOST }}
-          POSTGRES_USER=${{ secrets.POSTGRES_USER }}
-          POSTGRES_PASS=${{ secrets.POSTGRES_PASS }}
-          POSTGRES_PORT=${{ secrets.POSTGRES_PORT }}
-
-          JWT_SECRET=${{ secrets.JWT_SECRET }}
-          SCIENTIST_TOKEN=${{ secrets.SCIENTIST_TOKEN }}
-          EOF
+          sshpass -p "${{ secrets.VPS_PASSWORD }}" scp -o StrictHostKeyChecking=no \
+            docker-compose.prod.yml \
+            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{ env.DEPLOY_DIR }}/docker-compose.prod.yml
 
       - name: Upload .env to VPS
         run: |
-          sshpass -p "${{ secrets.VPS_PASSWORD }}" scp -o StrictHostKeyChecking=no .env ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/home/vidmark/vidmark-deploy/.env
+          sshpass -p "${{ secrets.VPS_PASSWORD }}" scp -o StrictHostKeyChecking=no \
+            .env \
+            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{ env.DEPLOY_DIR }}/.env
 
-      - name: Deploy and wipe .env on VPS
+      - name: Pull images and deploy
         env:
-          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
-          GITHUB_ACTOR: ${{ github.actor }}
+          ENABLE_MONITORING: ${{ inputs.enable_monitoring }}
         run: |
-          sshpass -p "${{ secrets.VPS_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
-          echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
-          cd /home/vidmark/vidmark-deploy
-          docker compose --env-file .env -f docker-compose.prod.yml pull
-          docker compose --env-file .env -f docker-compose.prod.yml up -d
-          rm -f .env
+          sshpass -p "${{ secrets.VPS_PASSWORD }}" ssh -o StrictHostKeyChecking=no \
+            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
+          set -e
+
+          cd ${{ env.DEPLOY_DIR }}
+
+          # Login to GitHub Container Registry
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+          # Determine compose command with optional monitoring profile
+          COMPOSE_CMD="docker compose -f docker-compose.prod.yml"
+          if [ "${{ inputs.enable_monitoring }}" = "true" ]; then
+            COMPOSE_CMD="$COMPOSE_CMD --profile monitoring"
+          fi
+
+          # Pull images
+          echo "Pulling images..."
+          $COMPOSE_CMD pull
+
+          # Deploy services
+          echo "Deploying services..."
+          $COMPOSE_CMD up -d --remove-orphans
+
+          echo "Deployment initiated successfully"
           EOF
 
-      - name: Delete .env locally from runner
-        run: rm -f .env
+      - name: Health check
+        id: health_check
+        run: |
+          sshpass -p "${{ secrets.VPS_PASSWORD }}" ssh -o StrictHostKeyChecking=no \
+            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
+          set -e
+
+          cd ${{ env.DEPLOY_DIR }}
+
+          TIMEOUT=120
+          INTERVAL=5
+          ELAPSED=0
+
+          echo "Waiting for services to become healthy..."
+
+          while [ $ELAPSED -lt $TIMEOUT ]; do
+            # Check core services health using docker inspect
+            DB_HEALTHY=$(docker inspect vidmark_prod-db-1 --format='{{.State.Health.Status}}' 2>/dev/null | grep -c "healthy" || echo 0)
+            KEYCLOAK_HEALTHY=$(docker inspect vidmark_prod-keycloak-1 --format='{{.State.Health.Status}}' 2>/dev/null | grep -c "healthy" || echo 0)
+            APP_HEALTHY=$(docker inspect vidmark_prod-app-1 --format='{{.State.Health.Status}}' 2>/dev/null | grep -c "healthy" || echo 0)
+            FRONTEND_HEALTHY=$(docker inspect vidmark_prod-frontend-1 --format='{{.State.Health.Status}}' 2>/dev/null | grep -c "healthy" || echo 0)
+
+            echo "Health status - DB: $DB_HEALTHY, Keycloak: $KEYCLOAK_HEALTHY, App: $APP_HEALTHY, Frontend: $FRONTEND_HEALTHY (Elapsed: ${ELAPSED}s)"
+
+            if [ "$DB_HEALTHY" -eq 1 ] && [ "$KEYCLOAK_HEALTHY" -eq 1 ] && \
+               [ "$APP_HEALTHY" -eq 1 ] && [ "$FRONTEND_HEALTHY" -eq 1 ]; then
+              echo "All core services are healthy!"
+              exit 0
+            fi
+
+            sleep $INTERVAL
+            ELAPSED=$((ELAPSED + INTERVAL))
+          done
+
+          echo "Health check timeout after ${TIMEOUT}s"
+          docker compose -f docker-compose.prod.yml ps
+          exit 1
+          EOF
+
+      - name: Validate deployment
+        if: success()
+        run: |
+          sshpass -p "${{ secrets.VPS_PASSWORD }}" ssh -o StrictHostKeyChecking=no \
+            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
+          cd ${{ env.DEPLOY_DIR }}
+
+          echo "Deployment validation successful!"
+          echo "Deployed services:"
+          docker compose -f docker-compose.prod.yml ps
+          EOF
+
+      - name: Cleanup secrets
+        if: always()
+        run: |
+          # Remove local .env file
+          rm -f .env
+
+          # Remove .env from VPS (keep backup for manual recovery)
+          sshpass -p "${{ secrets.VPS_PASSWORD }}" ssh -o StrictHostKeyChecking=no \
+            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
+            "cd ${{ env.DEPLOY_DIR }} && rm -f .env" || true
+
+      - name: Deployment summary
+        if: always()
+        run: |
+          echo "### Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Status:** ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Backend Tag:** ${{ inputs.backend_tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Frontend Tag:** ${{ inputs.frontend_tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Keycloak Tag:** ${{ inputs.keycloak_tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Nginx Tag:** ${{ inputs.nginx_tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Monitoring Enabled:** ${{ inputs.enable_monitoring }}" >> $GITHUB_STEP_SUMMARY
