@@ -22,7 +22,7 @@ const LabelButtons = ({ labels, onLabelAction, getLabelState }) => {
         return (
           <button
             key={label.id}
-            className={`btn btn-sm ${isPending ? 'btn-warning' : 'btn-outline-primary'}`}
+            className={`btn btn-sm ${isPending ? 'btn-outline-danger' : 'btn-outline-primary'}`}
             onClick={() => onLabelAction(label.id)}
             title={tooltipText}
             style={{

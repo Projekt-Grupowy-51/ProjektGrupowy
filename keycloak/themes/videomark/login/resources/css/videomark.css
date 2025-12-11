@@ -28,6 +28,9 @@
   --pf-v5-c-button--m-control--focus--after--BorderBottomColor: transparent !important;
   --pf-v5-c-button--m-control--after--BorderBottomColor: transparent !important;
   --pf-v5-c-button--m-control--after--BorderWidth: 0 !important;
+  border-color: #aaa !important;
+  box-shadow: 3px 0 0 rgba(180, 180, 180, 0.13), 0 -3px 0 rgba(180, 180, 180, 0.13), 0 3px 0 rgba(180, 180, 180, 0.13) !important;
+  border-left: none !important;
 }
 
 html,
@@ -347,6 +350,8 @@ a:hover {
   color: white !important;
   font-weight: 600 !important;
   text-decoration: none !important;
+  border-radius: 12px !important;
+  transition: transform 150ms ease, box-shadow 150ms ease, background 150ms ease !important;
 }
 
 #kc-form-buttons a {
@@ -358,6 +363,20 @@ a:hover {
 #kc-form-buttons a:hover {
   background: rgba(240, 240, 240, 0.55) !important;
   text-decoration: none !important;
+}
+
+/* Make register/login primary buttons rounded and add subtle hover lift */
+#kc-form-buttons input[type="submit"]:hover,
+#kc-form-buttons a:hover,
+#kc-login:hover,
+#kc-register:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.10) !important;
+}
+
+/* Ensure specific register button inherits the same rounded look as login */
+#kc-register {
+  border-radius: 12px !important;
 }
 
 #kc-registration,
@@ -663,7 +682,7 @@ a:hover {
 }
 
 .alert-info {
-    background: rgba(230, 246, 255, 0.45) !important;
+    background: rgba(237, 246, 251, 0.542) !important;
     color: #0288d1 !important;
     border-color: rgba(187, 222, 251, 0.38) !important;
     max-width: 30vw !important;
@@ -757,7 +776,31 @@ input#username.form-control,
   padding-right: 12px !important; /* reset padding since button is attached */
 }
 
-/* Password visibility button gets right radius only and positioned flush */
+#username, #email, #Role, #scientistCode{
+  border-radius: 16px !important;
+  overflow: hidden !important;
+  padding: 16px !important;
+}
+
+#username:focus, #email:focus, #role:focus, #scientistCode:focus{
+  border-radius: 16px !important;
+  overflow: hidden !important;
+  padding: 16px !important;
+}
+
+.pf-v5-c-form-control{
+  border-radius: 16px !important;
+  overflow: hidden !important;
+}
+
+.pf-v5-c-form__group{
+  margin-bottom: 1.5rem !important;
+}
+
+#keycloak-bg, .login-pf{
+  min-height: fit-content !important;
+}
+
 .kcInputGroup .kcFormPasswordVisibilityButtonClass {
   position: absolute !important;
   right: 0 !important;
@@ -775,19 +818,16 @@ input#username.form-control,
   border-left: none !important;
 }
 
-/* Ensure input group container is positioned relative */
 .kcInputGroup {
   position: relative !important;
   display: flex !important;
   align-items: stretch !important;
 }
 
-/* Reset general form-control padding for non-password inputs */
 .form-control:not([type="password"]) {
   padding-right: 12px !important;
 }
 
-/* Mobile adjustments */
 @media (max-width: 480px) {
   .kcInputGroup .kcFormPasswordVisibilityButtonClass {
     width: 36px !important;
@@ -801,7 +841,6 @@ input#username.form-control,
   }
 }
 
-/* More specific selectors for connected password input and button */
 div[class*="kcInputGroup"] input[type="password"],
 .pf-c-input-group input[type="password"],
 [data-password-toggle] ~ input[type="password"],
@@ -814,7 +853,6 @@ input[id="password-confirm"] {
   width: 100% !important;
 }
 
-/* Target password visibility buttons with multiple possible selectors */
 button[data-password-toggle],
 button[aria-controls="password"],
 button[aria-controls="password-confirm"],
@@ -838,7 +876,6 @@ div[class*="kcInputGroup"] button {
   text-decoration: none !important;
 }
 
-/* Hover state for password visibility button */
 button[data-password-toggle]:hover,
 button[aria-controls="password"]:hover,
 button[aria-controls="password-confirm"]:hover,
@@ -849,7 +886,6 @@ div[class*="kcInputGroup"] button:hover {
   border-left: none !important;
 }
 
-/* Default state - no special focus styling */
 .kcInputGroup input:focus,
 .kcInputGroup button:focus {
   outline: none !important;
@@ -857,9 +893,8 @@ div[class*="kcInputGroup"] button:hover {
   box-shadow: 0 2px 8px rgba(180, 180, 180, 0.07) !important;
 }
 
-/* Simple focus states controlled by JavaScript */
 .input-focused input,
-.input-focused .form-control {
+.input-focused .form-control, .pf-v5-c-form-control {
   border-color: #aaa !important;
   box-shadow: -3px 0 0 rgba(180, 180, 180, 0.13), 0 -3px 0 rgba(180, 180, 180, 0.13), 0 3px 0 rgba(180, 180, 180, 0.13) !important;
   border-right: none !important;
@@ -872,7 +907,7 @@ div[class*="kcInputGroup"] button:hover {
 }
 
 .button-focused input,
-.button-focused .form-control {
+.button-focused .form-control, .pf-v5-c-form-control {
   border-color: #aaa !important;
   box-shadow: -3px 0 0 rgba(180, 180, 180, 0.13), 0 -3px 0 rgba(180, 180, 180, 0.13), 0 3px 0 rgba(180, 180, 180, 0.13) !important;
   border-right: none !important;
@@ -890,7 +925,6 @@ div[class*="kcInputGroup"] button:hover {
   border-right: none !important;
 }
 
-/* Focus state triggered by JavaScript after button click */
 .password-toggle-focus input[type="password"],
 .password-toggle-focus input[type="text"],
 .password-toggle-focus .form-control {
@@ -905,11 +939,9 @@ div[class*="kcInputGroup"] button:hover {
   border-left: none !important;
 }
 
-/* Remove all previous focus states and replace with simple ones */
-
-/* Default state - no special border for connected inputs */
 .kcInputGroup input[type="password"].form-control,
-.kcInputGroup input[type="text"].form-control {
+.kcInputGroup input[type="text"].form-control,
+.pf-v5-c-form-control {
   border-color: rgba(200, 200, 200, 0.22) !important;
   box-shadow: 0 2px 8px rgba(180, 180, 180, 0.07) !important;
 }
@@ -919,12 +951,11 @@ div[class*="kcInputGroup"] button:hover {
   box-shadow: 2px 2px 3px rgba(255, 255, 255, 0.06), 0 -2px 3px rgba(255, 255, 255, 0.06), 2px 0 3px rgba(255, 255, 255, 0.06) !important;
 }
 
-/* When input is focused - style both input and button */
 .input-focused input[type="password"],
 .input-focused input[type="text"],
-.input-focused .form-control {
-  border-color: #aaa !important;
-  box-shadow: -3px 0 0 rgba(180, 180, 180, 0.13), 0 -3px 0 rgba(180, 180, 180, 0.13), 0 3px 0 rgba(180, 180, 180, 0.13) !important;
+.input-focused .form-control,
+.pf-v5-c-form-control {
+  box-shadow: -3px 0 0 rgba(222, 222, 222, 0.13), 0 -3px 0 rgba(222, 222, 222, 0.13), 0 3px 0 rgba(212, 212, 212, 0.13) !important;
   border-right: none !important;
 }
 
@@ -934,10 +965,10 @@ div[class*="kcInputGroup"] button:hover {
   border-left: none !important;
 }
 
-/* When button is focused - style both input and button */
 .button-focused input[type="password"],
 .button-focused input[type="text"],
-.button-focused .form-control {
+.button-focused .form-control,
+.pf-v5-c-form-control {
   border-color: #aaa !important;
   box-shadow: -3px 0 0 rgba(180, 180, 180, 0.13), 0 -3px 0 rgba(180, 180, 180, 0.13), 0 3px 0 rgba(180, 180, 180, 0.13) !important;
   border-right: none !important;
@@ -950,3 +981,45 @@ div[class*="kcInputGroup"] button:hover {
   outline: none !important;
 }
 
+.videomark-form .form-control,
+#kc-form .form-control,
+#kc-container-wrapper .form-control,
+#kc-register-form .form-control,
+.kcInputGroup .form-control,
+.kcInputGroup input {
+  padding: 1rem 1.25rem !important;
+  border-radius: 18px !important;
+  font-size: 1rem !important;
+  border-top-right-radius: 0px !important;
+  border-bottom-right-radius: 0px !important;
+}
+
+.kcInputGroup input {
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+  border-right: none !important;
+  padding-right: 18px !important; 
+}
+
+.kcInputGroup .kcFormPasswordVisibilityButtonClass.kcFormDecorativeButton {
+  position: absolute !important;
+  right: 0 !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  transform: none !important;
+  width: 48px !important;
+  height: 100% !important;
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+  border-top-right-radius: 18px !important;
+  border-bottom-right-radius: 18px !important;
+  border-left: none !important;
+  border: 1.5px solid rgba(180,180,180,0.22) !important;
+  background: rgba(255,255,255,0.95) !important;
+  pointer-events: none !important; 
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03) !important;
+}
+
+.kcInputGroup .kcFormPasswordVisibilityButtonClass.kcFormDecorativeButton i {
+  display: none !important;
+}

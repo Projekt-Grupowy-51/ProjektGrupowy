@@ -27,7 +27,9 @@
     "empty": "Brak etykiet dla tego tematu",
     "label": "etykieta",
     "add": "Dodaj etykietę",
-    "confirm_delete": "Czy na pewno chcesz usunąć tę etykietę?"
+    "confirm_delete": "Czy na pewno chcesz usunąć tę etykietę?",
+    "loading": "Ładowanie etykiet...",
+    "no_labels": "Nie znaleziono etykiet"
   },
   "messages": {
     "not_found": "Temat nie został znaleziony"
@@ -38,10 +40,6 @@
     "color": "Kolor"
   },
   "loading": "Ładowanie tematów...",
-  "labels": {
-    "loading": "Ładowanie etykiet...",
-    "no_labels": "Nie znaleziono etykiet"
-  },
   "confirm_delete_subject": "Czy na pewno chcesz usunąć przedmiot \"{{name}}\"? Ta operacja jest nieodwracalna.",
   "confirm_delete_label": "Czy na pewno chcesz usunąć etykietę \"{{name}}\"? Ta operacja jest nieodwracalna."
 }

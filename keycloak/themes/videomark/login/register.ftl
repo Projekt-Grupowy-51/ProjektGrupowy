@@ -11,6 +11,7 @@
         <main id="kc-content" class="videomark-content">
             <div id="kc-form">
                 <div id="kc-form-wrapper">
+                    <div class="card-content">
                     <form id="kc-register-form" class="videomark-form" action="${url.registrationAction}" method="post">
 
                         <@userProfileCommons.userProfileFormFields; callback, attribute>
@@ -86,7 +87,7 @@
 
                         <div class="${properties.kcFormGroupClass!}">
                             <div id="kc-form-buttons" class="${properties.kcFormButtonsClass!} form-group">
-                                <input class="btn-primary" type="submit" value="${msg("doRegister")}" id="kc-login"/>
+                                <input tabindex="4" class="${properties.kcButtonClass!} btn-primary" name="register" id="kc-register" type="submit" value="${msg("doRegister")}"/>
                             </div>
                         </div>
                         <div class="${properties.kcFormGroupClass!}">
@@ -98,6 +99,7 @@
                             </div>
                         </div>
                     </form>
+                    </div>
                 </div>
             </div>
         </main>

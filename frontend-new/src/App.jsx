@@ -37,6 +37,7 @@ import "./styles/theme.css";
 import "./styles/water-tiles.css";
 import "./styles/loading.css";
 import "./styles/tabs.css";
+import "./styles/buttons-minimal.css";
 
 function AppContent() {
   const { t } = useTranslation("common");

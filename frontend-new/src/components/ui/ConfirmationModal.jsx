@@ -44,12 +44,12 @@ const ConfirmationModal = () => {
 
   const getConfirmButtonVariant = () => {
     const variants = {
-      danger: 'danger',
-      warning: 'warning', 
-      info: 'primary',
-      success: 'success'
+      danger: 'outline-danger',
+      warning: 'outline-warning', 
+      info: 'outline-primary',
+      success: 'outline-success'
     };
-    return variants[confirmation.variant] || 'danger';
+    return variants[confirmation.variant] || 'outline-danger';
   };
 
   return createPortal(

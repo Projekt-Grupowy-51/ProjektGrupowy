@@ -36,7 +36,7 @@ const ProjectAccessCodesTab = ({ projectId }) => {
     <div>
       <Card>
         <Card.Header>
-          <div className="d-flex justify-content-between align-items-center">
+            <div className="d-flex justify-content-between align-items-center">
             <Card.Title level={5}>
               {t("projects:tabs.access_codes")} ({accessCodes?.length || 0})
             </Card.Title>
@@ -103,6 +103,7 @@ const ProjectAccessCodesTab = ({ projectId }) => {
                   className={expirationType === 3 ? "col-md-12" : "col-md-6"}
                 >
                   <Button
+                    size="sm"
                     variant="success"
                     onClick={handleCreate}
                     className="w-100"
