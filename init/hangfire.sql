@@ -1,1 +1,0 @@
-CREATE DATABASE hangfire WITH OWNER myuser;

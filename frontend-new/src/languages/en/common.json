@@ -1,0 +1,87 @@
+﻿{
+  "login": "Login",
+  "logout": "Logout",
+  "loading": "Loading...",
+  "description": "Description",
+  "name": "Name",
+  "actions": "Actions",
+  "scientistDashboard": "Scientist Dashboard",
+  "labelerDashboard": "Labeler Dashboard",
+  "language": {
+    "change": "Change language",
+    "en": "English",
+    "pl": "Polish"
+  },
+  "buttons": {
+    "back": "Back",
+    "cancel": "Cancel",
+    "refresh": "Refresh",
+    "delete": "Delete",
+    "details": "Details",
+    "add": "Add",
+    "edit": "Edit",
+    "copy": "Copy",
+    "retire": "Retire",
+    "logout": "Logout",
+    "save": "Save",
+    "tryAgain": "Try Again",
+    "dismiss": "Dismiss",
+    "close": "Close",
+    "download": "Download",
+    "editProfile": "Edit Profile"
+  },
+  "deleteConfirmation": {
+    "title": "Confirm Delete",
+    "message": "Are you sure you want to delete this {{item}}?",
+    "confirm": "Delete",
+    "cancel": "Cancel"
+  },
+  "acceptConfirmation": {
+    "title": "Accept action",
+    "message": "Do you really want to proceed with this action?",
+    "confirm": "Accept",
+    "cancel": "Cancel"
+  },
+  "states": {
+    "loading": "Loading...",
+    "error": "Error",
+    "empty": "No data",
+    "success": "Success",
+    "unknown": "Unknown",
+    "not_available": "N/A"
+  },
+  "emptyState": {
+    "defaultTitle": "No data found",
+    "defaultMessage": "There are no items to display"
+  },
+  "error": {
+    "defaultMessage": "An error occurred"
+  },
+  "created_at": "Created",
+  "updated_at": "Updated",
+  "home": {
+    "welcome_title": "Welcome to VidMark",
+    "welcome_subtitle": "Video analysis and labeling platform",
+    "view_projects": "View Projects"
+  },
+  "form": {
+    "username": "Username",
+    "please_select": "Please select..."
+  },
+  "table": {
+    "actions": "Actions"
+  },
+  "auth": {
+    "initializing": "Initializing authentication...",
+    "required_title": "Authentication Required",
+    "required_message": "Please log in to access VidMark platform.",
+    "login_button": "Login with Keycloak",
+    "signed_in_as": "Signed in as"
+  },
+  "confirmationContext": {
+    "default_message": "Are you sure you want to continue?"
+  },
+  "user": {
+    "fallback": "User"
+  }
+}

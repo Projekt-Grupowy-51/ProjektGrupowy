@@ -1,0 +1,146 @@
+﻿{
+  "add_title": "Dodaj nowy projekt",
+  "edit_title": "Edytuj projekt",
+  "list_title": "Projekty",
+  "project_details": "Szczegóły Projektu",
+  "form": {
+    "name": "Nazwa projektu",
+    "description": "Opis",
+    "finished": "Zakończony",
+    "status": "Status",
+    "status_options": {
+      "active": "Aktywny",
+      "completed": "Zakończony"
+    }
+  },
+  "tabs": {
+    "details": "Szczegóły",
+    "subjects": "Tematy",
+    "videos": "Grupy wideo",
+    "assignments": "Przydziały",
+    "labelers": "Etykietujący",
+    "access_codes": "Kody dostępu"
+  },
+  "buttons": {
+    "create": "Utwórz projekt",
+    "save": "Zapisz zmiany",
+    "creating": "Tworzenie...",
+    "loading": "Ładowanie projektów..."
+  },
+  "notifications": {
+    "create_success": "Projekt został dodany!",
+    "update_success": "Projekt zaktualizowany!",
+    "delete_success": "Projekt usunięty!",
+    "load_error": "Błąd ładowania projektów",
+    "details_error": "Błąd ładowania danych projektu"
+  },
+  "no_projects": "Brak projektów",
+  "messages": {
+    "no_projects": "Brak projektów",
+    "create_first_project": "Stwórz swój pierwszy projekt aby zacząć",
+    "confirm_delete": "Czy na pewno chcesz usunąć ten projekt? Tej operacji nie można cofnąć.",
+    "project_not_found": "Projekt nie został znaleziony"
+  },
+  "validation": {
+    "name_required": "Nazwa projektu jest wymagana",
+    "description_required": "Opis jest wymagany"
+  },
+  "status": {
+    "in_progress": "W trakcie",
+    "finished": "Zakończony",
+    "active": "Aktywny",
+    "completed": "Zakończony"
+  },
+  "add": {
+    "subject": "Dodaj temat",
+    "video_group": "Dodaj grupę wideo",
+    "assignment": "Dodaj przydział"
+  },
+  "not_found": {
+    "subject": "Nie znaleziono tematów",
+    "video_group": "Nie znaleziono grup wideo",
+    "assignment": "Nie znaleziono przydziałów",
+    "unassigned_labelers": "Brak etykietujących oczekujących na przypisanie",
+    "all_labelers": "Brak etykietujących w tym projekcie",
+    "assigned_labelers": "Nie znaleziono etykietujących w przydziałach"
+  },
+  "assignment": {
+    "subject": "Temat",
+    "video_group": "Grupa wideo"
+  },
+  "labeler_tab": {
+    "assign_labeler_to_assignment": "Przypisz etykietującego do przydziału",
+    "select_labeler": "Wybierz etykietującego",
+    "select_assignment": "Wybierz przydział",
+    "assign_labeler": "Przypisz etykietującego",
+    "unassigned_labelers": "Nieprzypisani etykietujący",
+    "all_labelers": "Wszyscy etykietujący",
+    "assigned_labelers": "Przypisani etykietujący",
+    "unassign_selected": "Usuń zaznaczone przypisania",
+    "unassign_all": "Usuń wszystkie przypisania",
+    "assign_all_selected": "Przypisz wszystkie zaznaczone",
+    "distribute_labelers": "Rozdziel etykietujących",
+    "labeler": "Etykietujący",
+    "no_assignments_selected": "Żaden etykietujący nie został przypisany do żadnego zadania.",
+    "distribute_confirm_message": "Czy na pewno chcesz automatycznie przypisać etykietujących do zadań? Ta operacja może zmienić istniejące przypisania.",
+    "unassign_all_confirm_message": "Czy na pewno chcesz cofnąć wszystkie przypisania etykietujących? Ta operacja jest nieodwracalna.",
+    "unassign_confirm_message": "Czy na pewno chcesz cofnąć przypisanie etykietującego \"{{labelerName}}\" do zadania? Ta operacja jest nieodwracalna."
+  },
+  "access_codes": {
+    "no_codes": "Nie znaleziono kodów dostępu",
+    "generate_title": "Generuj kody dostępu",
+    "loading": "Ładowanie kodów dostępu...",
+    "columns": {
+      "code": "Kod",
+      "created_at": "Utworzono",
+      "expires_at": "Wygasa",
+      "status": "Ważny"
+    },
+    "status": {
+      "valid": "✓ Ważny",
+      "invalid": "✗ Nieważny"
+    },
+    "durations": {
+      "14_days": "14 dni",
+      "30_days": "30 dni",
+      "custom": "Własny",
+      "unlimited": "Bezterminowo",
+      "days": "Dni"
+    },
+    "expiration": {
+      "never": "Nigdy",
+      "expired": "Wygasł"
+    },
+    "visibility": {
+      "show": "Pokaż kod",
+      "hide": "Ukryj kod"
+    },
+    "buttons": {
+      "generate": "Generuj kod dostępu"
+    },
+    "success": {
+      "created": "Kod dostępu utworzony pomyślnie!",
+      "copied": "Kod skopiowany do schowka!",
+      "retired": "Kod dostępu wycofany pomyślnie!"
+    },
+    "errors": {
+      "load_failed": "Nie udało się załadować kodów dostępu",
+      "create_failed": "Nie udało się utworzyć kodu",
+      "copy_failed": "Nie udało się skopiować kodu. Spróbuj ponownie."
+    },
+    "confirm_retire": "Czy na pewno chcesz wycofać kod dostępu \"{{code}}\"? Ta operacja jest nieodwracalna.",
+    "confirm_delete_assignment": "Czy na pewno chcesz usunąć przypisanie #{{id}}? Ta operacja jest nieodwracalna."
+  },
+  "video_groups": {
+    "loading": "Ładowanie grup wideo..."
+  },
+  "reports": {
+    "title": "Raporty Projektu",
+    "no_reports": "Nie wygenerowano jeszcze żadnych raportów",
+    "generate": "Generuj Raport",
+    "confirm_delete": "Czy na pewno chcesz usunąć raport \"{{name}}\"? Ta operacja jest nieodwracalna.",
+    "quality": "Jakość Raportu",
+    "quality_description": "Wyższa jakość trwa dłużej, ale zapewnia bardziej szczegółową analizę.",
+    "fallback_name": "Raport #{{id}}"
+  }
+}

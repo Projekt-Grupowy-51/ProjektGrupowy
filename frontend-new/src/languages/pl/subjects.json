@@ -1,0 +1,45 @@
+﻿{
+  "add_title": "Dodaj nowy temat",
+  "edit_title": "Edytuj temat",
+  "form": {
+    "name": "Nazwa tematu",
+    "description": "Opis"
+  },
+  "buttons": {
+    "add": "Dodaj temat",
+    "adding": "Dodawanie..."
+  },
+  "notifications": {
+    "required_fields": "Wszystkie pola są wymagane",
+    "add_success": "Temat został dodany!",
+    "add_error": "Błąd dodawania tematu",
+    "load_error": "Błąd ładowania szczegółów tematu",
+    "labels_error": "Błąd ładowania etykiet",
+    "delete_success": "Etykieta usunięta!",
+    "delete_error": "Błąd usuwania etykiety"
+  },
+  "details": {
+    "title": "Szczegóły tematu",
+    "description": "Opis"
+  },
+  "labels": {
+    "title": "Etykiety",
+    "empty": "Brak etykiet dla tego tematu",
+    "label": "etykieta",
+    "add": "Dodaj etykietę",
+    "confirm_delete": "Czy na pewno chcesz usunąć tę etykietę?",
+    "loading": "Ładowanie etykiet...",
+    "no_labels": "Nie znaleziono etykiet"
+  },
+  "messages": {
+    "not_found": "Temat nie został znaleziony"
+  },
+  "columns": {
+    "name": "Nazwa",
+    "shortcut": "Skrót",
+    "color": "Kolor"
+  },
+  "loading": "Ładowanie tematów...",
+  "confirm_delete_subject": "Czy na pewno chcesz usunąć przedmiot \"{{name}}\"? Ta operacja jest nieodwracalna.",
+  "confirm_delete_label": "Czy na pewno chcesz usunąć etykietę \"{{name}}\"? Ta operacja jest nieodwracalna."
+}

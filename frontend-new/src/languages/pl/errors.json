@@ -1,0 +1,15 @@
+{
+  "connection": {
+    "title": "Błąd",
+    "subtitle": "Problem z połączeniem",
+    "message": "Mamy problem z połączeniem z serwerem. Spróbuj ponownie później."
+  },
+  "forbidden": {
+    "title": "Brak dostępu",
+    "message": "Wygląda na to, że nie masz uprawnień do dostępu do tej strony. Skontaktuj się z administratorem, jeśli uważasz, że to błąd."
+  },
+  "notFound": {
+    "title": "Strona nie znaleziona",
+    "message": "Strona, której szukasz, nie istnieje lub została przeniesiona."
+  }
+}
