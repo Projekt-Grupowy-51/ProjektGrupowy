@@ -110,27 +110,13 @@ jobs:
           POSTGRES_DB=${{ secrets.POSTGRES_DB }}
 
           # Keycloak Configuration
-          KEYCLOAK_HOSTNAME=${{ secrets.KEYCLOAK_HOSTNAME }}
           KEYCLOAK_ADMIN=${{ secrets.KEYCLOAK_ADMIN }}
           KEYCLOAK_ADMIN_PASSWORD=${{ secrets.KEYCLOAK_ADMIN_PASSWORD }}
           SCIENTIST_ACCESS_CODE=${{ secrets.SCIENTIST_ACCESS_CODE }}
-          KEYCLOAK_AUTHORITY=${{ secrets.KEYCLOAK_AUTHORITY }}
-          KEYCLOAK_ISSUER=${{ secrets.KEYCLOAK_ISSUER }}
-          KEYCLOAK_AUDIENCE=${{ secrets.KEYCLOAK_AUDIENCE }}
-
-          # Frontend URLs
-          FRONTEND_API_URL=${{ secrets.FRONTEND_API_URL }}
-          FRONTEND_SIGNALR_URL=${{ secrets.FRONTEND_SIGNALR_URL }}
-          FRONTEND_KEYCLOAK_URL=${{ secrets.FRONTEND_KEYCLOAK_URL }}
 
           # Nginx Configuration
           NGINX_HOST=${{ secrets.NGINX_HOST }}
-          NGINX_INTERNAL_URL=${{ secrets.NGINX_INTERNAL_URL }}
-          NGINX_PUBLIC_BASEURL=${{ secrets.NGINX_PUBLIC_BASEURL }}
           NGINX_SECURELINK_SECRET=${{ secrets.NGINX_SECURELINK_SECRET }}
-
-          # CORS Configuration
-          CORS_ALLOWED_ORIGIN=${{ secrets.CORS_ALLOWED_ORIGIN }}
 
           # Monitoring Configuration
           LOKI_URL=${{ inputs.enable_monitoring == true && 'http://loki:3100' || '' }}

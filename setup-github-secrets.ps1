@@ -48,14 +48,27 @@ if ([string]::IsNullOrWhiteSpace($POSTGRES_DB)) { $POSTGRES_DB = "vidmark" }
 
 Write-Host ""
 
-# Keycloak Configuration
-Write-Host "=== Keycloak Configuration ===" -ForegroundColor Cyan
-$KEYCLOAK_HOSTNAME = Read-Host "KEYCLOAK_HOSTNAME (e.g., keycloak.example.com)"
-while ([string]::IsNullOrWhiteSpace($KEYCLOAK_HOSTNAME)) {
-    Write-Host "ERROR: KEYCLOAK_HOSTNAME is required!" -ForegroundColor Red
-    $KEYCLOAK_HOSTNAME = Read-Host "KEYCLOAK_HOSTNAME"
+# Domain Configuration (ASK THIS FIRST!)
+Write-Host "=== Domain Configuration ===" -ForegroundColor Cyan
+Write-Host "Enter your main domain. All services will be accessible through this single domain via gateway." -ForegroundColor Yellow
+Write-Host "Example: vidmistrz.pl" -ForegroundColor Gray
+Write-Host "  - Main app: https://vidmistrz.pl/" -ForegroundColor Gray
+Write-Host "  - API: https://vidmistrz.pl/api" -ForegroundColor Gray
+Write-Host "  - Keycloak: https://vidmistrz.pl/auth" -ForegroundColor Gray
+Write-Host "  - Videos: https://vidmistrz.pl/videos" -ForegroundColor Gray
+Write-Host "  - Grafana: https://vidmistrz.pl/grafana" -ForegroundColor Gray
+Write-Host ""
+
+$DOMAIN = Read-Host "Main Domain (e.g., vidmistrz.pl)"
+while ([string]::IsNullOrWhiteSpace($DOMAIN)) {
+    Write-Host "ERROR: Main Domain is required!" -ForegroundColor Red
+    $DOMAIN = Read-Host "Main Domain"
 }
 
+Write-Host ""
+
+# Keycloak Configuration
+Write-Host "=== Keycloak Configuration ===" -ForegroundColor Cyan
 $KEYCLOAK_ADMIN = Read-Host "KEYCLOAK_ADMIN [default: admin]"
 if ([string]::IsNullOrWhiteSpace($KEYCLOAK_ADMIN)) { $KEYCLOAK_ADMIN = "admin" }
 
@@ -71,65 +84,23 @@ if ([string]::IsNullOrWhiteSpace($SCIENTIST_ACCESS_CODE)) {
     Write-Host "Generated: $SCIENTIST_ACCESS_CODE" -ForegroundColor Green
 }
 
-$KEYCLOAK_AUTHORITY = "https://$KEYCLOAK_HOSTNAME/realms/vidmark"
-$KEYCLOAK_ISSUER = "https://$KEYCLOAK_HOSTNAME/realms/vidmark"
-$KEYCLOAK_AUDIENCE = "vidmark-client"
-
-Write-Host ""
-
-# Frontend URLs
-Write-Host "=== Frontend URLs ===" -ForegroundColor Cyan
-$API_DOMAIN = Read-Host "API Domain (e.g., api.example.com)"
-while ([string]::IsNullOrWhiteSpace($API_DOMAIN)) {
-    Write-Host "ERROR: API Domain is required!" -ForegroundColor Red
-    $API_DOMAIN = Read-Host "API Domain"
-}
-
-$FRONTEND_API_URL = "https://$API_DOMAIN/api"
-$FRONTEND_SIGNALR_URL = "https://$API_DOMAIN/hub/app"
-$FRONTEND_KEYCLOAK_URL = "https://$KEYCLOAK_HOSTNAME/"
-
-Write-Host "FRONTEND_API_URL: $FRONTEND_API_URL" -ForegroundColor Gray
-Write-Host "FRONTEND_SIGNALR_URL: $FRONTEND_SIGNALR_URL" -ForegroundColor Gray
-Write-Host "FRONTEND_KEYCLOAK_URL: $FRONTEND_KEYCLOAK_URL" -ForegroundColor Gray
-
 Write-Host ""
 
 # Nginx Configuration
 Write-Host "=== Nginx Configuration ===" -ForegroundColor Cyan
-$NGINX_DOMAIN = Read-Host "Nginx Domain (e.g., nginx.example.com)"
-while ([string]::IsNullOrWhiteSpace($NGINX_DOMAIN)) {
-    Write-Host "ERROR: Nginx Domain is required!" -ForegroundColor Red
-    $NGINX_DOMAIN = Read-Host "Nginx Domain"
+Write-Host "NGINX_HOST is used internally by nginx service (usually same as DOMAIN)" -ForegroundColor Gray
+
+$NGINX_HOST = Read-Host "NGINX_HOST [default: use Main Domain]"
+if ([string]::IsNullOrWhiteSpace($NGINX_HOST)) {
+    $NGINX_HOST = $DOMAIN
+    Write-Host "Using Main Domain: $NGINX_HOST" -ForegroundColor Gray
 }
 
-$NGINX_HOST = $NGINX_DOMAIN
-$NGINX_INTERNAL_URL = "http://nginx/videos"
-$NGINX_PUBLIC_BASEURL = "https://$NGINX_DOMAIN"
-
-$NGINX_SECURELINK_SECRET = "super-secret-link-key"
-
-Write-Host ""
-
-# Domain Configuration
-Write-Host "=== Domain Configuration ===" -ForegroundColor Cyan
-$DOMAIN = Read-Host "Main Domain (e.g., example.com or vidmistrz.pl)"
-while ([string]::IsNullOrWhiteSpace($DOMAIN)) {
-    Write-Host "ERROR: Main Domain is required!" -ForegroundColor Red
-    $DOMAIN = Read-Host "Main Domain"
+$NGINX_SECURELINK_SECRET = Read-Host "NGINX_SECURELINK_SECRET (leave empty to auto-generate)"
+if ([string]::IsNullOrWhiteSpace($NGINX_SECURELINK_SECRET)) {
+    $NGINX_SECURELINK_SECRET = -join ((48..57) + (65..90) + (97..122) | Get-Random -Count 64 | ForEach-Object {[char]$_})
+    Write-Host "Generated: $NGINX_SECURELINK_SECRET" -ForegroundColor Green
 }
-
-Write-Host ""
-
-# CORS Configuration
-Write-Host "=== CORS Configuration ===" -ForegroundColor Cyan
-$FRONTEND_DOMAIN = Read-Host "Frontend Domain (e.g., example.com or www.example.com) [default: use Main Domain]"
-if ([string]::IsNullOrWhiteSpace($FRONTEND_DOMAIN)) {
-    $FRONTEND_DOMAIN = $DOMAIN
-    Write-Host "Using Main Domain: $FRONTEND_DOMAIN" -ForegroundColor Gray
-}
-
-$CORS_ALLOWED_ORIGIN = "https://$FRONTEND_DOMAIN"
 
 Write-Host ""
 
@@ -175,11 +146,12 @@ while ([string]::IsNullOrWhiteSpace($GHCR_TOKEN)) {
 Write-Host ""
 Write-Host "=== Configuration Summary ===" -ForegroundColor Cyan
 Write-Host "Main Domain: https://$DOMAIN" -ForegroundColor Gray
+Write-Host "  - Frontend: https://$DOMAIN/" -ForegroundColor Gray
+Write-Host "  - API: https://$DOMAIN/api" -ForegroundColor Gray
+Write-Host "  - Keycloak: https://$DOMAIN/auth" -ForegroundColor Gray
+Write-Host "  - Videos: https://$DOMAIN/videos" -ForegroundColor Gray
+Write-Host "  - Grafana: https://$DOMAIN/grafana" -ForegroundColor Gray
 Write-Host "Database: $POSTGRES_USER @ $POSTGRES_DB" -ForegroundColor Gray
-Write-Host "Keycloak: https://$KEYCLOAK_HOSTNAME" -ForegroundColor Gray
-Write-Host "API: https://$API_DOMAIN" -ForegroundColor Gray
-Write-Host "Nginx: https://$NGINX_DOMAIN" -ForegroundColor Gray
-Write-Host "Frontend: https://$FRONTEND_DOMAIN" -ForegroundColor Gray
 Write-Host "VPS: $VPS_USER@$VPS_HOST" -ForegroundColor Gray
 Write-Host ""
 
@@ -223,27 +195,13 @@ $success = $success -and (Set-GitHubSecret "POSTGRES_PASS" $POSTGRES_PASS)
 $success = $success -and (Set-GitHubSecret "POSTGRES_DB" $POSTGRES_DB)
 
 # Keycloak
-$success = $success -and (Set-GitHubSecret "KEYCLOAK_HOSTNAME" $KEYCLOAK_HOSTNAME)
 $success = $success -and (Set-GitHubSecret "KEYCLOAK_ADMIN" $KEYCLOAK_ADMIN)
 $success = $success -and (Set-GitHubSecret "KEYCLOAK_ADMIN_PASSWORD" $KEYCLOAK_ADMIN_PASSWORD)
 $success = $success -and (Set-GitHubSecret "SCIENTIST_ACCESS_CODE" $SCIENTIST_ACCESS_CODE)
-$success = $success -and (Set-GitHubSecret "KEYCLOAK_AUTHORITY" $KEYCLOAK_AUTHORITY)
-$success = $success -and (Set-GitHubSecret "KEYCLOAK_ISSUER" $KEYCLOAK_ISSUER)
-$success = $success -and (Set-GitHubSecret "KEYCLOAK_AUDIENCE" $KEYCLOAK_AUDIENCE)
-
-# Frontend URLs
-$success = $success -and (Set-GitHubSecret "FRONTEND_API_URL" $FRONTEND_API_URL)
-$success = $success -and (Set-GitHubSecret "FRONTEND_SIGNALR_URL" $FRONTEND_SIGNALR_URL)
-$success = $success -and (Set-GitHubSecret "FRONTEND_KEYCLOAK_URL" $FRONTEND_KEYCLOAK_URL)
 
 # Nginx
 $success = $success -and (Set-GitHubSecret "NGINX_HOST" $NGINX_HOST)
-$success = $success -and (Set-GitHubSecret "NGINX_INTERNAL_URL" $NGINX_INTERNAL_URL)
-$success = $success -and (Set-GitHubSecret "NGINX_PUBLIC_BASEURL" $NGINX_PUBLIC_BASEURL)
 $success = $success -and (Set-GitHubSecret "NGINX_SECURELINK_SECRET" $NGINX_SECURELINK_SECRET)
-
-# CORS
-$success = $success -and (Set-GitHubSecret "CORS_ALLOWED_ORIGIN" $CORS_ALLOWED_ORIGIN)
 
 # Grafana
 $success = $success -and (Set-GitHubSecret "GRAFANA_ADMIN_USER" $GRAFANA_ADMIN_USER)
@@ -253,9 +211,6 @@ $success = $success -and (Set-GitHubSecret "GRAFANA_ADMIN_PASSWORD" $GRAFANA_ADM
 $success = $success -and (Set-GitHubSecret "VPS_HOST" $VPS_HOST)
 $success = $success -and (Set-GitHubSecret "VPS_USER" $VPS_USER)
 $success = $success -and (Set-GitHubSecret "VPS_PASSWORD" $VPS_PASSWORD_PLAIN)
-
-# GHCR
-$success = $success -and (Set-GitHubSecret "GHCR_TOKEN" $GHCR_TOKEN)
 
 Write-Host ""
 
@@ -276,12 +231,25 @@ if ($success) {
 }
 
 Write-Host ""
-Write-Host "IMPORTANT: Save these generated passwords in a secure location!" -ForegroundColor Yellow
+Write-Host "=== IMPORTANT: Save these credentials! ===" -ForegroundColor Yellow
 Write-Host ""
 Write-Host "Generated credentials:" -ForegroundColor Cyan
-Write-Host "POSTGRES_PASS: $POSTGRES_PASS" -ForegroundColor Gray
-Write-Host "KEYCLOAK_ADMIN_PASSWORD: $KEYCLOAK_ADMIN_PASSWORD" -ForegroundColor Gray
-Write-Host "SCIENTIST_ACCESS_CODE: $SCIENTIST_ACCESS_CODE" -ForegroundColor Gray
-Write-Host "NGINX_SECURELINK_SECRET: $NGINX_SECURELINK_SECRET" -ForegroundColor Gray
-Write-Host "GRAFANA_ADMIN_PASSWORD: $GRAFANA_ADMIN_PASSWORD" -ForegroundColor Gray
+Write-Host "Main Domain: https://$DOMAIN" -ForegroundColor White
+Write-Host ""
+Write-Host "Database:" -ForegroundColor White
+Write-Host "  POSTGRES_USER: $POSTGRES_USER" -ForegroundColor Gray
+Write-Host "  POSTGRES_PASS: $POSTGRES_PASS" -ForegroundColor Gray
+Write-Host "  POSTGRES_DB: $POSTGRES_DB" -ForegroundColor Gray
+Write-Host ""
+Write-Host "Keycloak Admin (https://$DOMAIN/auth/):" -ForegroundColor White
+Write-Host "  Username: $KEYCLOAK_ADMIN" -ForegroundColor Gray
+Write-Host "  Password: $KEYCLOAK_ADMIN_PASSWORD" -ForegroundColor Gray
+Write-Host "  Scientist Code: $SCIENTIST_ACCESS_CODE" -ForegroundColor Gray
+Write-Host ""
+Write-Host "Grafana (https://$DOMAIN/grafana/):" -ForegroundColor White
+Write-Host "  Username: $GRAFANA_ADMIN_USER" -ForegroundColor Gray
+Write-Host "  Password: $GRAFANA_ADMIN_PASSWORD" -ForegroundColor Gray
+Write-Host ""
+Write-Host "Internal Secrets:" -ForegroundColor White
+Write-Host "  NGINX_SECURELINK_SECRET: $NGINX_SECURELINK_SECRET" -ForegroundColor Gray
 Write-Host ""

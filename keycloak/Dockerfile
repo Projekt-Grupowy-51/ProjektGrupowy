@@ -19,8 +19,9 @@ RUN mkdir -p /opt/keycloak/data/import
 # Copy realm configuration for auto-import
 COPY data/import/vidmark-realm.json /opt/keycloak/data/import/
 
-# Ensure themes folder exists
+# Ensure themes folder exists and copy custom themes
 RUN mkdir -p /opt/keycloak/themes
+COPY themes/videomark /opt/keycloak/themes/videomark
 
 # Build optimized Keycloak for production with PostgreSQL support
 RUN /opt/keycloak/bin/kc.sh build --db=postgres --features=scripts

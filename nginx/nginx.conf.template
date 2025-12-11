@@ -46,7 +46,7 @@ http {
       autoindex off;
 
       secure_link $arg_md5,$arg_expires;
-      secure_link_md5 "$secure_link_expires$uri super-secret-link-key";
+      secure_link_md5 "$secure_link_expires$uri ${NGINX_SECURELINK_SECRET}";
 
       if ($secure_link = "") { return 403; } 
       if ($secure_link = "0") { return 410; }

@@ -48,8 +48,6 @@ services:
       - keycloak_data:/opt/keycloak/data
     networks:
       - vidmark_network
-    ports:
-      - "18133:8080"
     depends_on:
       db:
         condition: service_healthy
@@ -88,8 +86,6 @@ services:
 
       - SignalR__HubUrl=/hub/app
       - Limits__MaxBodySizeMb=100
-    ports:
-      - "18130:80"
     networks:
       - vidmark_network
     volumes:
@@ -115,8 +111,6 @@ services:
       - VITE_KEYCLOAK_URL=https://${DOMAIN:-vidmistrz.pl}/auth/
       - VITE_KEYCLOAK_REALM=vidmark
       - VITE_KEYCLOAK_CLIENT_ID=vidmark-client
-    ports:
-      - "18131:80"
     networks:
       - vidmark_network
     depends_on:
@@ -244,6 +238,8 @@ services:
       GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
       GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_SERVER_ROOT_URL: https://${DOMAIN:-vidmistrz.pl}/grafana/
+      GF_SERVER_SERVE_FROM_SUB_PATH: "true"
     volumes:
       - grafana_data:/var/lib/grafana
     ports:
