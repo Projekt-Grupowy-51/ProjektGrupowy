@@ -107,11 +107,7 @@ $NGINX_HOST = $NGINX_DOMAIN
 $NGINX_INTERNAL_URL = "http://nginx/videos"
 $NGINX_PUBLIC_BASEURL = "https://$NGINX_DOMAIN"
 
-$NGINX_SECURELINK_SECRET = Read-Host "NGINX_SECURELINK_SECRET (leave empty to auto-generate)"
-if ([string]::IsNullOrWhiteSpace($NGINX_SECURELINK_SECRET)) {
-    $NGINX_SECURELINK_SECRET = -join ((48..57) + (65..90) + (97..122) | Get-Random -Count 32 | ForEach-Object {[char]$_})
-    Write-Host "Generated: $NGINX_SECURELINK_SECRET" -ForegroundColor Green
-}
+$NGINX_SECURELINK_SECRET = "super-secret-link-key"
 
 Write-Host ""
 
