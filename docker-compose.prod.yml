@@ -75,7 +75,7 @@ services:
 
       - Videos__RootDirectory=videos
       - Videos__NginxUrl=http://nginx-videos/videos
-      - Videos__NginxPublicBaseUrl=https://${DOMAIN:-vidmistrz.pl}/videos
+      - Videos__NginxPublicBaseUrl=https://${DOMAIN:-vidmistrz.pl}
       - Videos__SecureLinkSecret=${NGINX_SECURELINK_SECRET}
 
       - Reports__RootDirectory=reports
