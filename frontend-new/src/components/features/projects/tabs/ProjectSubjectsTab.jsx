@@ -26,10 +26,10 @@ const ProjectSubjectsTab = ({ projectId }) => {
         <div className="fw-bold">{subject.name}</div>
         <small className="text-muted">{subject.email}</small>
       </div>
-      <div className="d-flex gap-1">
+        <div className="d-flex gap-1">
         <Button
           size="sm"
-          variant="info"
+          variant="outline"
           icon="fas fa-eye"
           onClick={() => navigate(`/subjects/${subject.id}`)}
         >

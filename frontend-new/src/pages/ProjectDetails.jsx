@@ -73,6 +73,7 @@ const ProjectDetails = () => {
         icon="fas fa-project-diagram"
         actions={
           <Button
+            size="sm"
             variant="outline-secondary"
             icon="fas fa-arrow-left"
             onClick={() => handleBackToList()}

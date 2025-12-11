@@ -44,6 +44,7 @@
   --color-info-50: #faf5ff;       /* Light purple */
   --color-info-500: #a855f7;      /* Electric purple */
   --color-info-600: #9333ea;      /* Deep purple */
+  --bs-info-bg-subtle: #ebfbff;
 
   /* === SEMANTIC COLORS === */
   --color-background: var(--color-neutral-50);

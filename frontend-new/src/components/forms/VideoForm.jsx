@@ -72,7 +72,7 @@ const VideoForm = ({
         <div className="mt-3">
           <Button
             type="button"
-            variant="secondary"
+            variant="primary"
             onClick={() => handleButtonClick()}
           >
             {t('buttons.select_files')}
@@ -135,7 +135,7 @@ const VideoForm = ({
                     <div className="d-flex justify-content-center">
                       <Button
                         type="button"
-                        variant="danger"
+                        variant="outline-danger"
                         onClick={() => removeVideo(index)}
                         disabled={loading}
                         icon="fas fa-trash-alt"
@@ -150,7 +150,7 @@ const VideoForm = ({
           </Table>
 
           {loading && (
-            <div className="mb-3">
+            <div>
               <label className="form-label">{t('upload.progress')}</label>
               <div className="progress">
                 <div

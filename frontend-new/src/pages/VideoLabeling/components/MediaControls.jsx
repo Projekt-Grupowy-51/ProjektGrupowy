@@ -99,7 +99,7 @@ const MediaControls = ({
           </Button>
 
           <Button
-            variant={isPlaying ? "warning" : "success"}
+            variant={isPlaying ? "outline-danger" : "outline-success"}
             size="sm"
             onClick={() => onPlayPause()}
             title={t('videos:labeling.play_pause_shortcut')}
@@ -124,7 +124,7 @@ const MediaControls = ({
         <div className="d-flex align-items-center">
           <select
             className="form-select form-select-sm"
-            style={{ width: '50px', fontSize: '0.7rem', padding: '4px' }}
+            style={{ width: '65px', fontSize: '0.7rem', padding: '4px' }}
             value={playbackSpeed}
             onChange={(e) => onSpeedChange(parseFloat(e.target.value))}
             title={t('videos:labeling.playback_speed')}

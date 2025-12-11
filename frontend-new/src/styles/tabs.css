@@ -24,6 +24,7 @@
 .nav-tabs {
   border-bottom: 1px solid var(--color-border);
   margin-bottom: var(--spacing-md);
+  justify-content: space-evenly;
 }
 
 .nav-tabs .nav-link {

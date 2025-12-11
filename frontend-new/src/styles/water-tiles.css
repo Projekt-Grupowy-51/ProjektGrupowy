@@ -6,6 +6,7 @@ body {
   font-family: var(--font-family-sans);
   background: linear-gradient(135deg, #ffffff 0%, var(--color-neutral-100) 100%);
   color: var(--color-text-primary);
+  min-height: 97vh;
 }
 
 /* === BUTTON SYSTEM === */
@@ -44,7 +45,6 @@ body {
 .btn-primary:hover {
   background: var(--color-primary-900);
   border-color: var(--color-primary-900);
-  transform: translateY(-2px);
   box-shadow: var(--shadow-sharp);
 }
 
@@ -58,7 +58,6 @@ body {
 .btn-secondary:hover {
   background: var(--color-neutral-100);
   border-color: var(--color-neutral-400);
-  transform: translateY(-1px);
   box-shadow: var(--shadow-md);
 }
 
@@ -72,7 +71,6 @@ body {
 
 .btn-success:hover {
   background: var(--color-success-600);
-  transform: translateY(-2px);
   box-shadow: 0 8px 32px rgba(132, 204, 22, 0.4);
 }
 
@@ -86,7 +84,6 @@ body {
 
 .btn-warning:hover {
   background: var(--color-warning-600);
-  transform: translateY(-2px);
   box-shadow: 0 8px 32px rgba(249, 115, 22, 0.4);
 }
 
@@ -100,7 +97,6 @@ body {
 
 .btn-danger:hover {
   background: var(--color-danger-600);
-  transform: translateY(-2px);
   box-shadow: 0 8px 32px rgba(239, 68, 68, 0.4);
 }
 
@@ -114,7 +110,6 @@ body {
 
 .btn-info:hover {
   background: var(--color-info-600);
-  transform: translateY(-2px);
   box-shadow: 0 8px 32px rgba(168, 85, 247, 0.4);
 }
 
@@ -130,7 +125,6 @@ body {
   background: var(--color-neutral-100);
   border-color: var(--color-neutral-400);
   color: var(--color-text-primary);
-  transform: translateY(-1px);
   box-shadow: var(--shadow-base);
 }
 
@@ -145,7 +139,6 @@ body {
 .btn-dark:hover {
   background: var(--color-primary-800);
   border-color: var(--color-primary-800);
-  transform: translateY(-2px);
   box-shadow: var(--shadow-sharp);
 }
 
@@ -155,7 +148,6 @@ body {
   border: none;
   color: var(--color-text-primary);
   font-weight: var(--font-weight-medium);
-  text-decoration: underline;
 }
 
 .btn-link:hover {
@@ -177,7 +169,6 @@ body {
   background: var(--color-primary-900);
   border-color: var(--color-primary-900);
   color: white;
-  transform: translateY(-1px);
 }
 
 .btn-outline-secondary {
@@ -190,7 +181,6 @@ body {
   background: var(--color-neutral-100);
   border-color: var(--color-neutral-400);
   color: var(--color-text-primary);
-  transform: translateY(-1px);
   box-shadow: var(--shadow-base);
 }
 
@@ -204,7 +194,6 @@ body {
   background: var(--color-danger-50);
   border-color: var(--color-danger-500);
   color: var(--color-danger-700);
-  transform: translateY(-1px);
   box-shadow: var(--shadow-base);
 }
 
@@ -218,7 +207,6 @@ body {
   background: var(--color-warning-50);
   border-color: var(--color-warning-500);
   color: var(--color-warning-700);
-  transform: translateY(-1px);
   box-shadow: var(--shadow-base);
 }
 
@@ -232,7 +220,6 @@ body {
   background: var(--color-info-50);
   border-color: var(--color-info-500);
   color: var(--color-info-700);
-  transform: translateY(-1px);
   box-shadow: var(--shadow-base);
 }
 
@@ -246,7 +233,6 @@ body {
   background: var(--color-success-50);
   border-color: var(--color-success-500);
   color: var(--color-success-700);
-  transform: translateY(-1px);
   box-shadow: var(--shadow-base);
 }
 
@@ -260,7 +246,6 @@ body {
   background: var(--color-surface);
   border-color: var(--color-neutral-500);
   color: var(--color-text-primary);
-  transform: translateY(-1px);
   box-shadow: var(--shadow-base);
 }
 
@@ -274,7 +259,6 @@ body {
   background: var(--color-primary-900);
   border-color: var(--color-primary-900);
   color: white;
-  transform: translateY(-1px);
   box-shadow: var(--shadow-base);
 }
 
@@ -286,8 +270,7 @@ body {
 }
 
 .card:hover {
-  box-shadow: var(--shadow-sharp);
-  transform: translateY(-2px);
+  box-shadow: var(--shadow-xl);
 }
 
 .card-header.bg-info {
@@ -560,12 +543,27 @@ body {
     margin-top: 0;
   }
 }
+
 /* === UTILITIES === */
-.text-primary { color: var(--color-primary-900) !important; }
-.text-danger { color: var(--color-danger-600) !important; }
-.text-success { color: var(--color-success-600) !important; }
-.text-warning { color: var(--color-warning-600) !important; }
-.text-info { color: var(--color-info-600) !important; }
+.text-primary {
+  color: var(--color-primary-900) !important;
+}
+
+.text-danger {
+  color: var(--color-danger-600) !important;
+}
+
+.text-success {
+  color: var(--color-success-600) !important;
+}
+
+.text-warning {
+  color: var(--color-warning-600) !important;
+}
+
+.text-info {
+  color: var(--color-info-600) !important;
+}
 
 /* === WATER TILE EFFECTS === */
 .water-tile {
@@ -599,4 +597,18 @@ body {
 
 .modal .modal-footer {
   background: var(--color-surface-secondary) !important;
+}
+
+.card-title {
+  margin-bottom: 0 !important;
+}
+
+.text-white {
+  color: white !important;
+}
+
+td {
+  justify-content: center;
+  align-items: center;
+  vertical-align: middle !important;
 }
