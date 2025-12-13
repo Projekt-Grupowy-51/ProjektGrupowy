@@ -11,6 +11,7 @@ using VidMark.Application.Features.VideoGroups.Commands.UpdateVideoGroup;
 using VidMark.Application.Features.VideoGroups.Queries.GetVideoGroup;
 using VidMark.Application.Features.VideoGroups.Queries.GetVideoGroups;
 using VidMark.Application.Features.VideoGroups.Queries.GetVideosByVideoGroupId;
+using VidMark.Application.Features.VideoGroups.Queries.GetVideoGroupStatistics;
 using VidMark.Application.Services;
 using VidMark.Domain.Utils.Constants;
 
@@ -153,6 +154,37 @@ public class VideoGroupController(
         }
 
         var response = mapper.Map<IEnumerable<VideoResponse>>(result.Value);
+        return Ok(response);
+    }
+
+    /// <summary>
+    /// Get statistics for a specific video group.
+    /// </summary>
+    /// <param name="id">The ID of the video group.</param>
+    /// <returns>Statistics including total videos, labels, completion percentage, and breakdowns.</returns>
+    [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
+    [HttpGet("{id:int}/statistics")]
+    public async Task<ActionResult<VideoGroupStatisticsResponse>> GetVideoGroupStatisticsAsync(int id)
+    {
+        var query = new GetVideoGroupStatisticsQuery(id, currentUserService.UserId, currentUserService.IsAdmin);
+        var result = await mediator.Send(query);
+
+        if (!result.IsSuccess)
+        {
+            return NotFound(result.Errors);
+        }
+
+        var response = new VideoGroupStatisticsResponse
+        {
+            TotalVideos = result.Value.TotalVideos,
+            TotalLabels = result.Value.TotalLabels,
+            CompletedVideos = result.Value.CompletedVideos,
+            CompletionPercentage = result.Value.CompletionPercentage,
+            LabelsByType = result.Value.LabelsByType,
+            LabelsBySubject = result.Value.LabelsBySubject,
+            VideoProgress = result.Value.VideoProgress
+        };
+
         return Ok(response);
     }
 }

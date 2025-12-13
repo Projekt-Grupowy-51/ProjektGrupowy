@@ -9,6 +9,7 @@ export const useVideoDetails = () => {
 
   const [video, setVideo] = useState(null);
   const [assignedLabels, setAssignedLabels] = useState([]);
+  const [allLabels, setAllLabels] = useState([]);
   const [videoLoading, setVideoLoading] = useState(false);
   const [labelsLoading, setLabelsLoading] = useState(false);
   const [videoError, setVideoError] = useState(null);

@@ -10,7 +10,14 @@
     "video_not_supported": "Twoja przeglądarka nie obsługuje tagu video.",
     "no_labels": "Brak etykiet przypisanych do tego wideo",
     "loading_video": "Ładowanie wideo...",
-    "failed_to_load": "Błąd ładowania wideo"
+    "failed_to_load": "Błąd ładowania wideo",
+    "labels_summary": "Podsumowanie etykiet",
+    "total_labels": "Łącznie etykiet",
+    "labels_by_type": "Etykiety wg typu",
+    "labels_by_subject": "Etykiety wg tematu",
+    "labels_by_labeler": "Etykiety wg etykietującego",
+    "top_labelers": "Top 10 najbardziej aktywnych etykietujących",
+    "no_statistics": "Brak dostępnych statystyk"
   },
   "messages": {
     "not_found": "Wideo nie zostało znalezione"

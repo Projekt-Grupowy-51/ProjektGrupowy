@@ -46,14 +46,19 @@ public class SubjectVideoGroupAssignmentResponse
     /// A collection of labelers associated with the assignment.
     /// </summary>
     public IEnumerable<LabelerResponse> Labelers { get; set; } = new List<LabelerResponse>();
-    
+
     /// <summary>
     /// The date when the assignment was created.
     /// </summary>
     public DateOnly CreationDate { get; set; }
-    
+
     /// <summary>
     /// The date when the assignment was last modified. Null if never modified.
     /// </summary>
     public DateOnly? ModificationDate { get; set; }
+
+    /// <summary>
+    /// Indicates whether all assigned labelers have completed this assignment.
+    /// </summary>
+    public bool IsCompleted { get; set; }
 }

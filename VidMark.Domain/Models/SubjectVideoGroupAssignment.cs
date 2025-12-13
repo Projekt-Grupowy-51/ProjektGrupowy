@@ -46,7 +46,7 @@ public class SubjectVideoGroupAssignment : BaseEntity, IOwnedEntity
     public void ClearLabelers(string userId)
     {
         Labelers.Clear();
-        AddDomainEvent("Labelowacze zostali odpisani z przypisania!", userId);
+        AddDomainEvent("Etykietujący zostali odpisani z przypisania!", userId);
     }
 
     public void AddLabelers(IEnumerable<User> labelers, string userId)
@@ -58,7 +58,7 @@ public class SubjectVideoGroupAssignment : BaseEntity, IOwnedEntity
                 Labelers.Add(labeler);
             }
         }
-        AddDomainEvent("Labelowacze zostali przypisani do przypisania!", userId);
+        AddDomainEvent("Etykietujący zostali przypisani do przypisania!", userId);
     }
 
     public static SubjectVideoGroupAssignment Create(Subject subject, VideoGroup videoGroup, string createdById)
@@ -87,7 +87,7 @@ public class SubjectVideoGroupAssignment : BaseEntity, IOwnedEntity
         if (!Labelers.Contains(labeler))
         {
             Labelers.Add(labeler);
-            AddDomainEvent("Labelowacz został przypisany!", userId);
+            AddDomainEvent("Etykietujący został przypisany!", userId);
         }
     }
 
@@ -96,7 +96,7 @@ public class SubjectVideoGroupAssignment : BaseEntity, IOwnedEntity
         if (Labelers.Contains(labeler))
         {
             Labelers.Remove(labeler);
-            AddDomainEvent("Labelowacz został odpisany!", userId);
+            AddDomainEvent("Etykietujący został odpisany!", userId);
         }
     }
 }

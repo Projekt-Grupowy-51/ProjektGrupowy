@@ -10,6 +10,7 @@ using VidMark.API.Utils;
 using VidMark.Application.Features.AssignedLabels.Queries.GetAssignedLabelsByVideoId;
 using VidMark.Application.Features.AssignedLabels.Queries.GetAssignedLabelsByVideoIdAndSubjectId;
 using VidMark.Application.Features.AssignedLabels.Queries.GetAssignedLabelsPage;
+using VidMark.Application.Features.AssignedLabels.Queries.GetVideoLabelStatistics;
 using VidMark.Application.Features.Videos.Commands.AddVideo;
 using VidMark.Application.Features.Videos.Commands.DeleteVideo;
 using VidMark.Application.Features.Videos.Commands.ProcessVideo;
@@ -318,5 +319,34 @@ public class VideoController(
             AssignedLabels = mapper.Map<List<AssignedLabelResponse>>(pageResult.Value),
             TotalLabelCount = countResult.Value
         });
+    }
+
+    /// <summary>
+    /// Get statistics about labels assigned to a video.
+    /// </summary>
+    /// <param name="id">The ID of the video.</param>
+    /// <returns>Statistics about the assigned labels.</returns>
+    [HttpGet("{id:int}/label-statistics")]
+    [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
+
+    public async Task<ActionResult<VideoLabelStatisticsResponse>> GetVideoLabelStatisticsAsync(int id)
+    {
+        var query = new GetVideoLabelStatisticsQuery(id, currentUserService.UserId, currentUserService.IsAdmin);
+        var result = await mediator.Send(query);
+
+        if (!result.IsSuccess)
+        {
+            return NotFound(result.Errors);
+        }
+
+        var response = new VideoLabelStatisticsResponse
+        {
+            TotalLabels = result.Value.TotalLabels,
+            LabelsByType = result.Value.LabelsByType,
+            LabelsBySubject = result.Value.LabelsBySubject,
+            LabelsByLabeler = result.Value.LabelsByLabeler
+        };
+
+        return Ok(response);
     }
 }

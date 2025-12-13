@@ -13,7 +13,8 @@
     "no_assignments": "Brak przypisanych zadań dla tego projektu.",
     "columns": {
       "subject": "Temat",
-      "video_group": "Grupa wideo"
+      "video_group": "Grupa wideo",
+      "completed": "Ukończono"
     }
   },
   "loading": "Ładowanie danych...",

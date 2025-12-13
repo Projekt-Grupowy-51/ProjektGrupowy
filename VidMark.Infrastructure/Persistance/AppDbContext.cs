@@ -27,6 +27,7 @@ public class AppDbContext : DbContext, IApplicationDbContext, IReadWriteContext
     public DbSet<GeneratedReport> GeneratedReports { get; set; }
     public DbSet<User> Users { get; set; }
     public DbSet<DomainEvent> DomainEvents { get; set; }
+    public DbSet<SubjectVideoGroupAssignmentCompletion> AssignmentCompletions { get; set; }
 
     public override int SaveChanges()
     {

@@ -22,10 +22,10 @@ export const useLabelerVideoGroups = () => {
   const fetchData = () => {
     setLoading(true);
     setError(null);
-    
+
     return Promise.all([
       ProjectService.getAll(),
-      SubjectVideoGroupAssignmentService.getAll()
+      SubjectVideoGroupAssignmentService.getLabelerAssignments()
     ])
       .then(([projectsData, assignmentsData]) => {
         setProjects(projectsData || []);
@@ -66,11 +66,28 @@ export const useLabelerVideoGroups = () => {
     setExpandedProjects(prev => ({ ...prev, [projectId]: !prev[projectId] }));
   };
 
-  const getProjectAssignments = (projectId) => 
+  const getProjectAssignments = (projectId) =>
     assignments.filter(a => a.projectId === projectId);
 
-  const handleAssignmentClick = (assignment) => 
+  const handleAssignmentClick = (assignment) =>
     navigate(`/video-labeling/${assignment.id}`);
+
+  const handleToggleCompletion = async (assignmentId, isCompleted) => {
+    try {
+      await SubjectVideoGroupAssignmentService.toggleCompletion(assignmentId, isCompleted);
+
+      // Update local state
+      setAssignments(prev =>
+        prev.map(a =>
+          a.id === assignmentId
+            ? { ...a, isCompleted }
+            : a
+        )
+      );
+    } catch (err) {
+      setError(err.message);
+    }
+  };
 
   return {
     projects,
@@ -84,6 +101,7 @@ export const useLabelerVideoGroups = () => {
     handleJoinProject,
     toggleProjectExpand,
     getProjectAssignments,
-    handleAssignmentClick
+    handleAssignmentClick,
+    handleToggleCompletion
   };
 };

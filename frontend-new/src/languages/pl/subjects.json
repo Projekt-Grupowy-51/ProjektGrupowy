@@ -31,6 +31,20 @@
     "loading": "Ładowanie etykiet...",
     "no_labels": "Nie znaleziono etykiet"
   },
+  "statistics": {
+    "title": "Statystyki przedmiotu",
+    "total_label_types": "Typy etykiet",
+    "total_assigned": "Całkowite użycia",
+    "unique_videos": "Oznaczone wideo",
+    "total_assignments": "Przypisania",
+    "label_usage": "Użycie etykiet według typu",
+    "labels_by_labeler": "Etykiety według oznaczającego",
+    "top_labelers": "Top 10 najbardziej aktywnych etykietujących",
+    "labels_by_project": "Etykiety według projektu",
+    "labels_count": "Etykiety",
+    "no_data": "Brak dostępnych danych statystycznych",
+    "no_labels": "Nie przypisano jeszcze żadnych etykiet dla tego przedmiotu"
+  },
   "messages": {
     "not_found": "Temat nie został znaleziony"
   },

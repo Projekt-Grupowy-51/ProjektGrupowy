@@ -15,11 +15,28 @@
   },
   "tabs": {
     "details": "Details",
+    "statistics": "Statistics",
     "subjects": "Subjects",
     "videos": "Video Groups",
     "assignments": "Assignments",
     "labelers": "Labelers",
     "access_codes": "Access Codes"
+  },
+  "statistics": {
+    "total_labels": "Total Labels",
+    "total_videos": "Total Videos",
+    "total_labelers": "Total Labelers",
+    "progress": "Progress",
+    "assignment_progress": "Assignment Progress",
+    "labels_by_subject": "Labels by Subject",
+    "labels_by_type": "Labels by Type",
+    "labels_by_labeler": "Labels by Labeler",
+    "top_labelers": "Top 10 Most Active Labelers",
+    "total_subjects": "Subjects",
+    "total_video_groups": "Video Groups",
+    "total_assignments": "Assignments",
+    "count": "Count",
+    "no_data": "No statistics available. Start labeling videos to see data here."
   },
   "buttons": {
     "create": "Create Project",
@@ -137,10 +154,24 @@
   "reports": {
     "title": "Project Reports",
     "no_reports": "No reports generated yet",
-    "generate": "Generate Report", 
+    "generate": "Generate Report",
     "confirm_delete": "Are you sure you want to delete report \"{{name}}\"? This operation cannot be undone.",
     "quality": "Report Quality",
     "quality_description": "Higher quality takes longer to generate but provides more detailed analysis.",
     "fallback_name": "Report #{{id}}"
+  },
+  "labeler_statistics": {
+    "title": "Statistics for {{name}}",
+    "total_assignments": "Total Assignments",
+    "completed_assignments": "Completed",
+    "in_progress_assignments": "In Progress",
+    "total_labels": "Total Labels",
+    "completion_progress": "Completion Progress",
+    "labels_by_subject": "Labels by Subject",
+    "label_count": "Label Count",
+    "assignment_details": "Assignment Details",
+    "videos_labeled": "Videos Labeled",
+    "progress": "Progress",
+    "status": "Status"
   }
 }

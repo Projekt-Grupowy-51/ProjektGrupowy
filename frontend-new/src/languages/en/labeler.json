@@ -13,7 +13,8 @@
     "no_assignments": "No assignments for this project yet.",
     "columns": {
       "subject": "Subject",
-      "video_group": "Video Group"
+      "video_group": "Video Group",
+      "completed": "Completed"
     }
   },
   "loading": "Loading data...",

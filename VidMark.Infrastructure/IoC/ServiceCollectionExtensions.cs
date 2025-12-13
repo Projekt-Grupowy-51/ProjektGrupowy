@@ -59,6 +59,7 @@ public static class ServiceCollectionExtensions
         // Repositories
         _ = services.AddScoped<IKeycloakUserRepository, KeycloakUserRepository>();
         _ = services.AddScoped<IAssignedLabelRepository, AssignedLabelRepository>();
+        _ = services.AddScoped<IAssignmentCompletionRepository, AssignmentCompletionRepository>();
         _ = services.AddScoped<ILabelRepository, LabelRepository>();
         _ = services.AddScoped<IProjectRepository, ProjectRepository>();
         _ = services.AddScoped<ISubjectRepository, SubjectRepository>();

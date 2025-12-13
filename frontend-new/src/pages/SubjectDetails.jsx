@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useSubjectDetails } from '../hooks/useSubjectDetails.js';
 import { Card, Button, Table } from '../components/ui';
 import { LoadingSpinner, ErrorAlert, EmptyState } from '../components/common';
+import SubjectStatistics from '../components/subject/SubjectStatistics.jsx';
 
 const SubjectDetails = () => {
   const { t } = useTranslation(['subjects', 'common']);
@@ -101,6 +102,13 @@ const SubjectDetails = () => {
               </Button>
             </div>
           </Card.Footer>
+        </Card>
+
+        {/* STATISTICS SECTION */}
+        <Card className="mb-4">
+          <Card.Body>
+            <SubjectStatistics subjectId={subject.id} />
+          </Card.Body>
         </Card>
 
         {/* LABELS UNDER DETAILS */}

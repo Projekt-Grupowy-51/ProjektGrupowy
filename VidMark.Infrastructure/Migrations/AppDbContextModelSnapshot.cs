@@ -44,6 +44,25 @@ namespace VidMark.Infrastructure.Migrations
                     b.ToTable("project_labelers", (string)null);
                 });
 
+            modelBuilder.Entity("SubjectVideoGroupAssignmentUser", b =>
+                {
+                    b.Property<int>("LabeledAssignmentsId")
+                        .HasColumnType("integer")
+                        .HasColumnName("labeled_assignments_id");
+
+                    b.Property<string>("LabelersId")
+                        .HasColumnType("text")
+                        .HasColumnName("labelers_id");
+
+                    b.HasKey("LabeledAssignmentsId", "LabelersId")
+                        .HasName("pk_labelers_assignments");
+
+                    b.HasIndex("LabelersId")
+                        .HasDatabaseName("ix_labelers_assignments_labelers_id");
+
+                    b.ToTable("labelers_assignments", (string)null);
+                });
+
             modelBuilder.Entity("VidMark.Domain.Events.DomainEvent", b =>
                 {
                     b.Property<int>("Id")
@@ -459,6 +478,56 @@ namespace VidMark.Infrastructure.Migrations
                     b.ToTable("subject_video_group_assignments", (string)null);
                 });
 
+            modelBuilder.Entity("VidMark.Domain.Models.SubjectVideoGroupAssignmentCompletion", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("completed_at");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<bool>("IsCompleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_completed");
+
+                    b.Property<string>("LabelerId")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("labeler_id");
+
+                    b.Property<DateTime?>("ModifiedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("modified_at");
+
+                    b.Property<int>("SubjectVideoGroupAssignmentId")
+                        .HasColumnType("integer")
+                        .HasColumnName("subject_video_group_assignment_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_assignment_completions");
+
+                    b.HasIndex("LabelerId")
+                        .HasDatabaseName("ix_assignment_completions_labeler_id");
+
+                    b.HasIndex("SubjectVideoGroupAssignmentId", "LabelerId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_assignment_completions_subject_video_group_assignment_id_la");
+
+                    b.ToTable("assignment_completions", (string)null);
+                });
+
             modelBuilder.Entity("VidMark.Domain.Models.User", b =>
                 {
                     b.Property<string>("Id")
@@ -610,25 +679,6 @@ namespace VidMark.Infrastructure.Migrations
                     b.ToTable("video_groups", (string)null);
                 });
 
-            modelBuilder.Entity("SubjectVideoGroupAssignmentUser", b =>
-                {
-                    b.Property<int>("LabeledAssignmentsId")
-                        .HasColumnType("integer")
-                        .HasColumnName("labeled_assignments_id");
-
-                    b.Property<string>("LabelersId")
-                        .HasColumnType("text")
-                        .HasColumnName("labelers_id");
-
-                    b.HasKey("LabeledAssignmentsId", "LabelersId")
-                        .HasName("pk_labelers_assignments");
-
-                    b.HasIndex("LabelersId")
-                        .HasDatabaseName("ix_labelers_assignments_labelers_id");
-
-                    b.ToTable("labelers_assignments", (string)null);
-                });
-
             modelBuilder.Entity("ProjectUser", b =>
                 {
                     b.HasOne("VidMark.Domain.Models.Project", null)
@@ -644,6 +694,23 @@ namespace VidMark.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_project_labelers_user_entity_project_labelers_id");
+                });
+
+            modelBuilder.Entity("SubjectVideoGroupAssignmentUser", b =>
+                {
+                    b.HasOne("VidMark.Domain.Models.SubjectVideoGroupAssignment", null)
+                        .WithMany()
+                        .HasForeignKey("LabeledAssignmentsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_labelers_assignments_subject_video_group_assignments_labele");
+
+                    b.HasOne("VidMark.Domain.Models.User", null)
+                        .WithMany()
+                        .HasForeignKey("LabelersId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_labelers_assignments_user_entity_labelers_id");
                 });
 
             modelBuilder.Entity("VidMark.Domain.Models.AssignedLabel", b =>
@@ -802,6 +869,27 @@ namespace VidMark.Infrastructure.Migrations
                     b.Navigation("VideoGroup");
                 });
 
+            modelBuilder.Entity("VidMark.Domain.Models.SubjectVideoGroupAssignmentCompletion", b =>
+                {
+                    b.HasOne("VidMark.Domain.Models.User", "Labeler")
+                        .WithMany()
+                        .HasForeignKey("LabelerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_assignment_completions_users_labeler_id");
+
+                    b.HasOne("VidMark.Domain.Models.SubjectVideoGroupAssignment", "Assignment")
+                        .WithMany()
+                        .HasForeignKey("SubjectVideoGroupAssignmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_assignment_completions_subject_video_group_assignments_subj");
+
+                    b.Navigation("Assignment");
+
+                    b.Navigation("Labeler");
+                });
+
             modelBuilder.Entity("VidMark.Domain.Models.Video", b =>
                 {
                     b.HasOne("VidMark.Domain.Models.User", "CreatedBy")
@@ -842,23 +930,6 @@ namespace VidMark.Infrastructure.Migrations
                     b.Navigation("CreatedBy");
 
                     b.Navigation("Project");
-                });
-
-            modelBuilder.Entity("SubjectVideoGroupAssignmentUser", b =>
-                {
-                    b.HasOne("VidMark.Domain.Models.SubjectVideoGroupAssignment", null)
-                        .WithMany()
-                        .HasForeignKey("LabeledAssignmentsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_labelers_assignments_subject_video_group_assignments_labele");
-
-                    b.HasOne("VidMark.Domain.Models.User", null)
-                        .WithMany()
-                        .HasForeignKey("LabelersId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_labelers_assignments_user_entity_labelers_id");
                 });
 
             modelBuilder.Entity("VidMark.Domain.Models.Label", b =>

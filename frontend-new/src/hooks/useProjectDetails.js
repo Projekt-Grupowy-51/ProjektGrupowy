@@ -57,6 +57,7 @@ export const useProjectDetails = (passedProjectId) => {
 
   const tabs = useMemo(() => project ? [
     { id: 'details', label: 'Details', icon: 'fas fa-info-circle', data: { projectId, onDeleteProject: handleDeleteProject } },
+    { id: 'statistics', label: 'Statistics', icon: 'fas fa-chart-pie', data: { projectId } },
     { id: 'subjects', label: 'Subjects', icon: 'fas fa-book', badge: stats?.subjects || 0, data: { projectId } },
     { id: 'videos', label: 'Videos', icon: 'fas fa-video', badge: stats?.videos || 0, data: { projectId } },
     { id: 'assignments', label: 'Assignments', icon: 'fas fa-tasks', badge: stats?.assignments || 0, data: { projectId } },

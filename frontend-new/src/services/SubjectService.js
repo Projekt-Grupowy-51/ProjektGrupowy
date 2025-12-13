@@ -94,6 +94,20 @@ class SubjectService {
     }
   }
 
+  /**
+   * Get statistics for a subject
+   * GET /api/subjects/{id}/statistics
+   * @param {number} id - Subject ID
+   * @returns {Promise<Object>} Statistics object with label usage, assignments, and breakdowns
+   */
+  async getStatistics(id) {
+    try {
+      return await apiClient.get(`/subjects/${id}/statistics`);
+    } catch (error) {
+      throw new Error(`Failed to get statistics for subject ${id}: ${error.message}`);
+    }
+  }
+
 }
 
 export default new SubjectService();

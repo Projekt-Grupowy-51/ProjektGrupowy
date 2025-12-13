@@ -15,4 +15,5 @@ public interface IReadWriteContext
     DbSet<ProjectAccessCode> ProjectAccessCodes { get; }
     DbSet<GeneratedReport> GeneratedReports { get; }
     DbSet<User> Users { get; }
+    DbSet<SubjectVideoGroupAssignmentCompletion> AssignmentCompletions { get; }
 }

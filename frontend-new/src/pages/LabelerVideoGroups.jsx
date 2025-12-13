@@ -30,6 +30,7 @@ const LabelerVideoGroups = () => {
     toggleProjectExpand,
     getProjectAssignments,
     handleAssignmentClick,
+    handleToggleCompletion,
   } = useLabelerVideoGroups();
 
   if (loading) {
@@ -121,6 +122,7 @@ const LabelerVideoGroups = () => {
                           <TableCell>
                             {t("labeler:projects.columns.video_group")}
                           </TableCell>
+                          <TableCell>{t("labeler:projects.columns.completed")}</TableCell>
                           <TableCell>{t("common:actions")}</TableCell>
                         </TableRow>
                       </TableHead>
@@ -136,6 +138,19 @@ const LabelerVideoGroups = () => {
                               <TableCell>
                                 {assignment.videoGroupName ||
                                   t("common:states.unknown")}
+                              </TableCell>
+                              <TableCell>
+                                <div className="form-check">
+                                  <input
+                                    className="form-check-input"
+                                    type="checkbox"
+                                    checked={assignment.isCompleted || false}
+                                    onChange={(e) =>
+                                      handleToggleCompletion(assignment.id, e.target.checked)
+                                    }
+                                    style={{ cursor: 'pointer' }}
+                                  />
+                                </div>
                               </TableCell>
                               <TableCell>
                                 <Button

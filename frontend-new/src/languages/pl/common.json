@@ -12,6 +12,10 @@
     "en": "Angielski",
     "pl": "Polski"
   },
+  "nav": {
+    
+    "projects": "Projekty"
+  },
   "buttons": {
     "back": "Wróć",
     "cancel": "Anuluj",
@@ -28,7 +32,8 @@
     "dismiss": "Odrzuć",
     "close": "Zamknij",
     "download": "Pobierz",
-    "editProfile": "Edytuj Profil"
+    "editProfile": "Edytuj Profil",
+    "statistics": "Statystyki"
   },
   "deleteConfirmation": {
     "title": "Potwierdź usunięcie",
@@ -48,7 +53,12 @@
     "empty": "Brak danych",
     "success": "Sukces",
     "unknown": "Nieznany",
-    "not_available": "Brak danych"
+    "not_available": "Brak danych",
+    "yes": "Tak",
+    "no": "Nie",
+    "completed": "Ukończone",
+    "in_progress": "W trakcie",
+    "not_started": "Nierozpoczęte"
   },
   "emptyState": {
     "defaultTitle": "Nie znaleziono danych",
@@ -70,7 +80,11 @@
   },
   "form": {
     "username": "Nazwa użytkownika",
-    "please_select": "Wybierz..."
+    "please_select": "Wybierz...",
+    "email": "Email",
+    "subject": "Temat",
+    "video_group": "Grupa wideo",
+    "video": "Wideo"
   },
   "table": {
     "actions": "Akcje"

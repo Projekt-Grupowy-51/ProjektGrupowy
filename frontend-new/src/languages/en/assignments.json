@@ -48,5 +48,32 @@
   "status": {
     "completed": "Completed",
     "pending": "Pending"
+  },
+  "statistics": {
+    "title": "Assignment Statistics",
+    "labeler_title": "Statistics for {{name}} - {{subject}} / {{videoGroup}}",
+    "total_videos": "Total Videos",
+    "labeled_videos": "Labeled Videos",
+    "total_labels": "Total Labels",
+    "assigned_labelers": "Assigned Labelers",
+    "completion_rate": "Completion Rate",
+    "video_status": "Video Status",
+    "status": "Status",
+    "progress": "Progress",
+    "completed": "Completed",
+    "in_progress": "In Progress",
+    "not_started": "Not Started",
+    "top_labelers": "Top 10 Most Active Labelers",
+    "labels_count": "Labels Count",
+    "labels_created": "Labels Created",
+    "labeled": "Labeled",
+    "video_progress": "Video Progress",
+    "labelers": "labelers",
+    "all_labelers": "All Labelers",
+    "name": "Name",
+    "email": "Email",
+    "completion": "Completion",
+    "no_data": "No statistics available",
+    "no_labels": "No labels have been assigned yet"
   }
 }

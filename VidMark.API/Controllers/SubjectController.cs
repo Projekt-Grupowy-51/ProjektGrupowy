@@ -11,6 +11,7 @@ using VidMark.Application.Features.Subjects.Commands.UpdateSubject;
 using VidMark.Application.Features.Subjects.Queries.GetSubject;
 using VidMark.Application.Features.Subjects.Queries.GetSubjectLabels;
 using VidMark.Application.Features.Subjects.Queries.GetSubjects;
+using VidMark.Application.Features.Subjects.Queries.GetSubjectStatistics;
 using VidMark.Application.Services;
 using VidMark.Domain.Utils.Constants;
 
@@ -154,6 +155,37 @@ public class SubjectController(
         }
 
         var response = mapper.Map<IEnumerable<LabelResponse>>(result.Value);
+        return Ok(response);
+    }
+
+    /// <summary>
+    /// Get statistics for a specific subject.
+    /// </summary>
+    /// <param name="id">The ID of the subject.</param>
+    /// <returns>Statistics including label usage, assignments, and breakdowns by labeler and project.</returns>
+    [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
+    [HttpGet("{id:int}/statistics")]
+    public async Task<ActionResult<SubjectStatisticsResponse>> GetSubjectStatisticsAsync(int id)
+    {
+        var query = new GetSubjectStatisticsQuery(id, currentUserService.UserId, currentUserService.IsAdmin);
+        var result = await mediator.Send(query);
+
+        if (!result.IsSuccess)
+        {
+            return NotFound(result.Errors);
+        }
+
+        var response = new SubjectStatisticsResponse
+        {
+            TotalLabels = result.Value.TotalLabels,
+            TotalAssignedLabels = result.Value.TotalAssignedLabels,
+            UniqueVideosLabeled = result.Value.UniqueVideosLabeled,
+            TotalAssignments = result.Value.TotalAssignments,
+            LabelUsageByType = result.Value.LabelUsageByType,
+            LabelsByLabeler = result.Value.LabelsByLabeler,
+            LabelsByProject = result.Value.LabelsByProject
+        };
+
         return Ok(response);
     }
 }

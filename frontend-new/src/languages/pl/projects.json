@@ -15,11 +15,28 @@
   },
   "tabs": {
     "details": "Szczegóły",
+    "statistics": "Statystyki",
     "subjects": "Tematy",
     "videos": "Grupy wideo",
     "assignments": "Przydziały",
     "labelers": "Etykietujący",
     "access_codes": "Kody dostępu"
+  },
+  "statistics": {
+    "total_labels": "Łączna liczba etykiet",
+    "total_videos": "Łączna liczba wideo",
+    "total_labelers": "Liczba etykietujących",
+    "progress": "Postęp",
+    "assignment_progress": "Postęp przydziałów",
+    "labels_by_subject": "Etykiety wg tematu",
+    "labels_by_type": "Etykiety wg typu",
+    "labels_by_labeler": "Etykiety wg etykietującego",
+    "top_labelers": "Top 10 najbardziej aktywnych etykietujących",
+    "total_subjects": "Tematy",
+    "total_video_groups": "Grupy wideo",
+    "total_assignments": "Przydziały",
+    "count": "Liczba",
+    "no_data": "Brak dostępnych statystyk. Zacznij etykietować wideo, aby zobaczyć dane."
   },
   "buttons": {
     "create": "Utwórz projekt",
@@ -142,5 +159,19 @@
     "quality": "Jakość Raportu",
     "quality_description": "Wyższa jakość trwa dłużej, ale zapewnia bardziej szczegółową analizę.",
     "fallback_name": "Raport #{{id}}"
+  },
+  "labeler_statistics": {
+    "title": "Statystyki dla {{name}}",
+    "total_assignments": "Wszystkie Przypisania",
+    "completed_assignments": "Ukończone",
+    "in_progress_assignments": "W Trakcie",
+    "total_labels": "Wszystkie Etykiety",
+    "completion_progress": "Postęp Ukończenia",
+    "labels_by_subject": "Etykiety według Przedmiotu",
+    "label_count": "Liczba Etykiet",
+    "assignment_details": "Szczegóły Przypisań",
+    "videos_labeled": "Oznaczone Filmy",
+    "progress": "Postęp",
+    "status": "Status"
   }
 }

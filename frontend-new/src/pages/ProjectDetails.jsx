@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Container, Card, Button, Tabs } from '../components/ui';
 import { LoadingSpinner, ErrorAlert, PageHeader } from '../components/common';
 import ProjectDetailsTab from '../components/features/projects/tabs/ProjectDetailsTab.jsx';
+import ProjectStatisticsTab from '../components/features/projects/tabs/ProjectStatisticsTab.jsx';
 import ProjectSubjectsTab from '../components/features/projects/tabs/ProjectSubjectsTab.jsx';
 import ProjectVideosTab from '../components/features/projects/tabs/ProjectVideosTab.jsx';
 import ProjectAssignmentsTab from '../components/features/projects/tabs/ProjectAssignmentsTab.jsx';
@@ -25,6 +26,7 @@ const ProjectDetails = () => {
   // Tab component mapping
   const tabComponents = {
     'details': ProjectDetailsTab,
+    'statistics': ProjectStatisticsTab,
     'subjects': ProjectSubjectsTab,
     'videos': ProjectVideosTab,
     'assignments': ProjectAssignmentsTab,

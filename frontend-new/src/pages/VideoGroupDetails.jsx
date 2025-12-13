@@ -6,6 +6,7 @@ import { LoadingSpinner, ErrorAlert, EmptyState } from "../components/common";
 import { useVideoGroupDetails } from "../hooks/useVideoGroupDetails.js";
 import { useSignalRConnection } from "../hooks/useSignalRConnection.js";
 import { MessageTypes } from "../services/signalR/MessageTypes.js";
+import VideoGroupStatistics from "../components/videoGroup/VideoGroupStatistics.jsx";
 
 const VideoGroupDetails = () => {
   const { t } = useTranslation(["videoGroups", "videos", "common"]);
@@ -140,6 +141,13 @@ const VideoGroupDetails = () => {
               </Button>
             </div>
           </Card.Footer>
+        </Card>
+
+        {/* STATISTICS SECTION */}
+        <Card className="mb-4">
+          <Card.Body>
+            <VideoGroupStatistics videoGroupId={parseInt(id)} />
+          </Card.Body>
         </Card>
 
         {/* VIDEOS UNDER DETAILS */}

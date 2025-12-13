@@ -94,6 +94,20 @@ class VideoGroupService {
     }
   }
 
+  /**
+   * Get statistics for a video group
+   * GET /api/video-groups/{id}/statistics
+   * @param {number} id - Video group ID
+   * @returns {Promise<Object>} Statistics object with totals, completion, and breakdowns
+   */
+  async getStatistics(id) {
+    try {
+      return await apiClient.get(`/video-groups/${id}/statistics`);
+    } catch (error) {
+      throw new Error(`Failed to get statistics for video group ${id}: ${error.message}`);
+    }
+  }
+
 }
 
 export default new VideoGroupService();

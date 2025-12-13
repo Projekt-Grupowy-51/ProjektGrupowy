@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Container, Card, Button, Alert, Table, TableHead, TableBody, TableRow, TableCell } from '../components/ui';
 import { LoadingSpinner, ErrorAlert, PageHeader, DetailPageActions } from '../components/common';
 import { useSubjectVideoGroupAssignmentDetails } from '../hooks/useSubjectVideoGroupAssignmentDetails.js';
+import AssignmentStatistics from '../components/assignment/AssignmentStatistics.jsx';
 
 const SubjectVideoGroupAssignmentDetails = () => {
   const { t } = useTranslation(['assignments', 'common']);
@@ -123,6 +124,13 @@ const SubjectVideoGroupAssignmentDetails = () => {
               {t('assignments:errors.load_video_group')}
             </Alert>
           )}
+        </Card.Body>
+      </Card>
+
+      {/* Statistics Section */}
+      <Card className="mb-4">
+        <Card.Body>
+          <AssignmentStatistics assignmentId={parseInt(assignmentDetails.id)} />
         </Card.Body>
       </Card>
 

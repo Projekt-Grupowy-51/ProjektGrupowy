@@ -10,7 +10,14 @@
     "video_not_supported": "Your browser does not support the video tag.",
     "no_labels": "No labels assigned to this video",
     "loading_video": "Loading video...",
-    "failed_to_load": "Failed to load video"
+    "failed_to_load": "Failed to load video",
+    "labels_summary": "Labels Summary",
+    "total_labels": "Total Labels",
+    "labels_by_type": "Labels by Type",
+    "labels_by_subject": "Labels by Subject",
+    "labels_by_labeler": "Labels by Labeler",
+    "top_labelers": "Top 10 Most Active Labelers",
+    "no_statistics": "No statistics available"
   },
   "messages": {
     "not_found": "Video not found"

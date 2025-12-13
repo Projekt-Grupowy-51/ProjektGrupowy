@@ -260,6 +260,22 @@ class VideoService {
       );
     }
   }
+
+  /**
+   * Get label statistics for a video
+   * GET /api/videos/{id}/label-statistics
+   * @param {number} id - Video ID
+   * @returns {Promise<Object>} Statistics object with totalLabels, labelsByType, labelsBySubject, labelsByLabeler
+   */
+  async getLabelStatistics(id) {
+    try {
+      return await apiClient.get(`/videos/${id}/label-statistics`);
+    } catch (error) {
+      throw new Error(
+        `Failed to get label statistics for video ${id}: ${error.message}`
+      );
+    }
+  }
 }
 
 export default new VideoService();

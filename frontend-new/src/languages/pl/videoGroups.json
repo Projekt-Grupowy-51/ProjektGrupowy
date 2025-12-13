@@ -29,6 +29,19 @@
     "empty": "Brak wideo w tej grupie",
     "no_videos": "Nie znaleziono wideo"
   },
+  "statistics": {
+    "title": "Statystyki grupy wideo",
+    "total_videos": "Wszystkie wideo",
+    "total_labels": "Wszystkie etykiety",
+    "completed_videos": "Ukończone wideo",
+    "completion_rate": "Stopień ukończenia",
+    "labels_by_type": "Etykiety według typu",
+    "labels_by_subject": "Etykiety według przedmiotu",
+    "video_progress": "Postęp wideo",
+    "labels_count": "Etykiety",
+    "no_data": "Brak dostępnych danych statystycznych",
+    "no_labels": "Nie utworzono jeszcze żadnych etykiet dla tej grupy wideo"
+  },
   "confirm_delete_group": "Czy na pewno chcesz usunąć grupę wideo \"{{name}}\"? Ta operacja jest nieodwracalna.",
   "confirm_delete_video_group": "Czy na pewno chcesz usunąć grupę wideo \"{{name}}\"? Ta operacja jest nieodwracalna.",
   "confirm_delete_video": "Czy na pewno chcesz usunąć wideo \"{{title}}\"? Ta operacja jest nieodwracalna."

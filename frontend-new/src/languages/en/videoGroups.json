@@ -28,6 +28,19 @@
     "empty": "No videos in this group yet",
     "no_videos": "No videos found"
   },
+  "statistics": {
+    "title": "Video Group Statistics",
+    "total_videos": "Total Videos",
+    "total_labels": "Total Labels",
+    "completed_videos": "Completed Videos",
+    "completion_rate": "Completion Rate",
+    "labels_by_type": "Labels by Type",
+    "labels_by_subject": "Labels by Subject",
+    "video_progress": "Video Progress",
+    "labels_count": "Labels",
+    "no_data": "No statistics data available",
+    "no_labels": "No labels have been created yet for this video group"
+  },
   "confirm_delete_group": "Are you sure you want to delete video group \"{{name}}\"? This operation cannot be undone.",
   "confirm_delete_video_group": "Are you sure you want to delete video group \"{{name}}\"? This operation cannot be undone.",
   "confirm_delete_video": "Are you sure you want to delete video \"{{title}}\"? This operation cannot be undone."

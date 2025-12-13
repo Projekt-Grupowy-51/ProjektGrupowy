@@ -12,6 +12,10 @@
     "en": "English",
     "pl": "Polish"
   },
+  "nav": {
+    
+    "projects": "Projects"
+  },
   "buttons": {
     "back": "Back",
     "cancel": "Cancel",
@@ -28,7 +32,8 @@
     "dismiss": "Dismiss",
     "close": "Close",
     "download": "Download",
-    "editProfile": "Edit Profile"
+    "editProfile": "Edit Profile",
+    "statistics": "Statistics"
   },
   "deleteConfirmation": {
     "title": "Confirm Delete",
@@ -48,7 +53,12 @@
     "empty": "No data",
     "success": "Success",
     "unknown": "Unknown",
-    "not_available": "N/A"
+    "not_available": "N/A",
+    "yes": "Yes",
+    "no": "No",
+    "completed": "Completed",
+    "in_progress": "In Progress",
+    "not_started": "Not Started"
   },
   "emptyState": {
     "defaultTitle": "No data found",
@@ -66,7 +76,11 @@
   },
   "form": {
     "username": "Username",
-    "please_select": "Please select..."
+    "please_select": "Please select...",
+    "email": "Email",
+    "subject": "Subject",
+    "video_group": "Video Group",
+    "video": "Video"
   },
   "table": {
     "actions": "Actions"

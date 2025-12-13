@@ -21,10 +21,12 @@ using VidMark.Application.Features.Projects.Queries.GetLabelersByProject;
 using VidMark.Application.Features.Projects.Queries.GetProject;
 using VidMark.Application.Features.Projects.Queries.GetProjects;
 using VidMark.Application.Features.Projects.Queries.GetProjectStats;
+using VidMark.Application.Features.Projects.Queries.GetProjectDetailedStats;
 using VidMark.Application.Features.Projects.Queries.GetUnassignedLabelersOfProject;
 using VidMark.Application.Features.Subjects.Queries.GetSubjectsByProject;
 using VidMark.Application.Features.SubjectVideoGroupAssignments.Queries.GetSubjectVideoGroupAssignmentsByProject;
 using VidMark.Application.Features.VideoGroups.Queries.GetVideoGroupsByProject;
+using VidMark.Application.Interfaces.Repositories;
 using VidMark.Application.Services;
 using VidMark.Domain.Utils.Constants;
 
@@ -41,7 +43,8 @@ namespace VidMark.API.Controllers;
 public class ProjectController(
     IMediator mediator,
     ICurrentUserService currentUserService,
-    IMapper mapper) : ControllerBase
+    IMapper mapper,
+    IAssignmentCompletionRepository completionRepository) : ControllerBase
 {
     /// <summary>
     /// Get all projects.
@@ -305,7 +308,48 @@ public class ProjectController(
             return NotFound(result.Errors);
         }
 
-        var response = mapper.Map<IEnumerable<SubjectVideoGroupAssignmentResponse>>(result.Value);
+        // Get all completions for assignments in this project
+        var assignmentIds = result.Value.Select(a => a.Id).ToList();
+        var allCompletions = new List<VidMark.Domain.Models.SubjectVideoGroupAssignmentCompletion>();
+
+        foreach (var assignmentId in assignmentIds)
+        {
+            var completions = await completionRepository.GetByAssignmentIdAsync(assignmentId);
+            allCompletions.AddRange(completions);
+        }
+
+        var completionsByAssignment = allCompletions
+            .GroupBy(c => c.SubjectVideoGroupAssignmentId)
+            .ToDictionary(
+                g => g.Key,
+                g => g.ToList()
+            );
+
+        var response = result.Value.Select(assignment =>
+        {
+            var mapped = mapper.Map<SubjectVideoGroupAssignmentResponse>(assignment);
+
+            // Calculate IsCompleted: true if all assigned labelers have completed
+            var assignedLabelerIds = assignment.Labelers.Select(l => l.Id).ToHashSet();
+            var completions = completionsByAssignment.GetValueOrDefault(assignment.Id, new List<VidMark.Domain.Models.SubjectVideoGroupAssignmentCompletion>());
+
+            if (assignedLabelerIds.Count == 0)
+            {
+                mapped.IsCompleted = false;
+            }
+            else
+            {
+                var completedLabelerIds = completions
+                    .Where(c => c.IsCompleted)
+                    .Select(c => c.LabelerId)
+                    .ToHashSet();
+
+                mapped.IsCompleted = assignedLabelerIds.All(id => completedLabelerIds.Contains(id));
+            }
+
+            return mapped;
+        }).ToList();
+
         return Ok(response);
     }
 
@@ -351,4 +395,40 @@ public class ProjectController(
         var response = mapper.Map<ProjectStatsResponse>(result.Value);
         return Ok(response);
     }
+
+    /// <summary>
+    /// Get detailed statistics for a specific project including label counts and breakdowns.
+    /// </summary>
+    /// <param name="projectId">The ID of the project.</param>
+    /// <returns>Detailed statistics including labels by subject, labeler, type, and progress</returns>
+    [Authorize(Policy = PolicyConstants.RequireAdminOrScientist)]
+    [HttpGet("{projectId:int}/detailed-stats")]
+    public async Task<ActionResult<ProjectDetailedStatsResponse>> GetProjectDetailedStatsAsync(int projectId)
+    {
+        var query = new GetProjectDetailedStatsQuery(projectId, currentUserService.UserId, currentUserService.IsAdmin);
+        var result = await mediator.Send(query);
+
+        if (!result.IsSuccess)
+        {
+            return NotFound(result.Errors);
+        }
+
+        var response = new ProjectDetailedStatsResponse
+        {
+            TotalSubjects = result.Value.TotalSubjects,
+            TotalVideoGroups = result.Value.TotalVideoGroups,
+            TotalVideos = result.Value.TotalVideos,
+            TotalAssignments = result.Value.TotalAssignments,
+            TotalLabelers = result.Value.TotalLabelers,
+            TotalLabels = result.Value.TotalLabels,
+            LabelsBySubject = result.Value.LabelsBySubject,
+            LabelsByLabeler = result.Value.LabelsByLabeler,
+            LabelsByType = result.Value.LabelsByType,
+            CompletedAssignments = result.Value.CompletedAssignments,
+            ProgressPercentage = result.Value.ProgressPercentage
+        };
+
+        return Ok(response);
+    }
+
 }

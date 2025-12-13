@@ -48,5 +48,32 @@
   "status": {
     "completed": "Zakończone",
     "pending": "Oczekujące"
+  },
+  "statistics": {
+    "title": "Statystyki przypisania",
+    "labeler_title": "Statystyki dla {{name}} - {{subject}} / {{videoGroup}}",
+    "total_videos": "Wszystkie filmy",
+    "labeled_videos": "Oznakowane filmy",
+    "total_labels": "Wszystkie etykiety",
+    "assigned_labelers": "Przypisani etykietujący",
+    "completion_rate": "Wskaźnik ukończenia",
+    "video_status": "Status filmów",
+    "status": "Status",
+    "progress": "Postęp",
+    "completed": "Ukończone",
+    "in_progress": "W trakcie",
+    "not_started": "Nierozpoczęte",
+    "top_labelers": "Top 10 najbardziej aktywnych etykietujących",
+    "labels_count": "Liczba etykiet",
+    "labels_created": "Utworzone etykiety",
+    "labeled": "Oznakowane",
+    "video_progress": "Postęp filmów",
+    "labelers": "etykietujących",
+    "all_labelers": "Wszyscy etykietujący",
+    "name": "Nazwa",
+    "email": "Email",
+    "completion": "Ukończenie",
+    "no_data": "Brak dostępnych statystyk",
+    "no_labels": "Nie przypisano jeszcze żadnych etykiet"
   }
 }

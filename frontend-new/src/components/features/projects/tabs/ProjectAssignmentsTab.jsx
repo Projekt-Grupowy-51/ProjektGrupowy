@@ -57,7 +57,7 @@ const ProjectAssignmentsTab = ({ projectId }) => {
                   </small>
                 </div>
                 <div className="d-flex gap-1">
-                  {assignment.completed ? (
+                  {assignment.isCompleted ? (
                     <span className="badge bg-success">
                       <i className="fas fa-check me-1"></i>
                       {t('assignments:status.completed')}

@@ -1,10 +1,13 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useKeycloak } from '../../hooks/useKeycloak.js';
 
 const TopNavbar = () => {
   const { isAuthenticated, user, logout } = useKeycloak();
   const { t, i18n } = useTranslation('common');
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const changeLanguage = (language) => {
     i18n.changeLanguage(language);
@@ -21,6 +24,8 @@ const TopNavbar = () => {
   const keycloakRealm = window.ENV?.VITE_KEYCLOAK_REALM || import.meta.env.VITE_KEYCLOAK_REALM || 'vidmark';
   const accountUrl = `${keycloakUrl}realms/${keycloakRealm}/account`;
 
+  const isScientist = user?.userRole === 'Scientist';
+
   return (
       <nav className="navbar navbar-expand-lg">
         <div className="container-fluid">
@@ -28,6 +33,19 @@ const TopNavbar = () => {
             <img src="../../../public/logo-removebg.png" alt="VidMark Logo" style={{ height: '30px', objectFit: 'contain' }} className="me-2" />
             VidMark
           </a>
+
+          {/* Navigation Links */}
+          {isAuthenticated && isScientist && (
+            <div className="navbar-nav me-auto">
+              <button
+                className={`nav-link btn btn-link ${location.pathname === '/projects' ? 'active fw-bold' : ''}`}
+                onClick={() => navigate('/projects')}
+              >
+                <i className="fas fa-project-diagram me-1"></i>
+                {t('nav.projects')}
+              </button>
+            </div>
+          )}
 
           <div className="navbar-nav ms-auto align-items-center">
             {/* Language Dropdown */}

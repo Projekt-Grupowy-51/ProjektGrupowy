@@ -1,14 +1,15 @@
-import React from "react";
+import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
 import { Card, Button, Table, Select } from "../../../ui";
 import { EmptyState } from "../../../common";
 import { useProjectLabelers } from "../../../../hooks/useProjectLabelers";
+import { LabelerAssignmentStatisticsModal } from "../../../assignment";
 
 const ProjectLabelersTab = ({ projectId }) => {
   const { t } = useTranslation(["common", "projects"]);
-  const navigate = useNavigate();
+  const [showStatisticsModal, setShowStatisticsModal] = useState(false);
+  const [selectedAssignmentForStats, setSelectedAssignmentForStats] = useState(null);
 
   const {
     labelers,
@@ -63,6 +64,16 @@ const ProjectLabelersTab = ({ projectId }) => {
       return;
     }
     await assignAllSelected();
+  };
+
+  const handleShowStatistics = (assignmentId, labelerId, labelerName) => {
+    setSelectedAssignmentForStats({ assignmentId, labelerId, labelerName });
+    setShowStatisticsModal(true);
+  };
+
+  const handleCloseStatistics = () => {
+    setShowStatisticsModal(false);
+    setSelectedAssignmentForStats(null);
   };
 
   if (loading) return <div>{t("common:loading")}</div>;
@@ -299,12 +310,13 @@ const ProjectLabelersTab = ({ projectId }) => {
                       <div className="d-flex gap-2">
                         <Button
                           size="sm"
-                          variant="primary"
+                          variant="info"
                           onClick={() =>
-                            navigate(`/assignments/${item.assignmentId}`)
+                            handleShowStatistics(item.assignmentId, item.labelerId, item.labelerName)
                           }
                         >
-                          {t("common:buttons.details")}
+                          <i className="fas fa-chart-bar me-1"></i>
+                          {t("common:buttons.statistics")}
                         </Button>
                         <Button
                           size="sm"
@@ -424,6 +436,15 @@ const ProjectLabelersTab = ({ projectId }) => {
           </Card.Body>
         </Card>
       )}
+
+      {/* Labeler Assignment Statistics Modal */}
+      <LabelerAssignmentStatisticsModal
+        show={showStatisticsModal}
+        onHide={handleCloseStatistics}
+        assignmentId={selectedAssignmentForStats?.assignmentId}
+        labelerId={selectedAssignmentForStats?.labelerId}
+        labelerName={selectedAssignmentForStats?.labelerName}
+      />
     </div>
   );
 };

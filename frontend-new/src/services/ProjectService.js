@@ -193,6 +193,20 @@ class ProjectService {
   }
 
   /**
+   * Get detailed project statistics including label breakdowns
+   * GET /api/Project/{id}/detailed-stats
+   * @param {number} id - Project ID
+   * @returns {Promise<Object>} Detailed statistics object with label counts, breakdowns, and progress
+   */
+  async getDetailedStats(id) {
+    try {
+      return await apiClient.get(`/projects/${id}/detailed-stats`);
+    } catch (error) {
+      throw new Error(`Failed to get detailed statistics for project ${id}: ${error.message}`);
+    }
+  }
+
+  /**
    * Get unassigned labelers for project
    * GET /api/Project/{id}/unassigned-labelers
    * @param {number} id - Project ID
