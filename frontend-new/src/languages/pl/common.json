@@ -1,0 +1,105 @@
+﻿{
+  "login": "Zaloguj się",
+  "logout": "Wyloguj",
+  "loading": "Ładowanie...",
+  "description": "Opis",
+  "name": "Nazwa",
+  "actions": "Akcje",
+  "scientistDashboard": "Panel naukowca",
+  "labelerDashboard": "Panel etykietującego",
+  "language": {
+    "change": "Zmień język",
+    "en": "Angielski",
+    "pl": "Polski"
+  },
+  "nav": {
+    
+    "projects": "Projekty"
+  },
+  "buttons": {
+    "back": "Wróć",
+    "cancel": "Anuluj",
+    "refresh": "Odśwież",
+    "delete": "Usuń",
+    "details": "Szczegóły",
+    "add": "Dodaj",
+    "edit": "Edytuj",
+    "copy": "Kopiuj",
+    "retire": "Wycofaj",
+    "logout": "Wyloguj",
+    "save": "Zapisz",
+    "tryAgain": "Spróbuj ponownie",
+    "dismiss": "Odrzuć",
+    "close": "Zamknij",
+    "download": "Pobierz",
+    "editProfile": "Edytuj Profil",
+    "statistics": "Statystyki"
+  },
+  "deleteConfirmation": {
+    "title": "Potwierdź usunięcie",
+    "message": "Czy na pewno chcesz usunąć ten {{item}}?",
+    "confirm": "Usuń",
+    "cancel": "Anuluj"
+  },
+  "acceptConfirmation": {
+    "title": "Potwierdź operacje",
+    "message": "Czy na pewno chcesz zatwierdzić tę operację?",
+    "confirm": "Zatwierdź",
+    "cancel": "Anuluj"
+  },
+  "states": {
+    "loading": "Ładowanie...",
+    "error": "Błąd",
+    "empty": "Brak danych",
+    "success": "Sukces",
+    "unknown": "Nieznany",
+    "not_available": "Brak danych",
+    "yes": "Tak",
+    "no": "Nie",
+    "completed": "Ukończone",
+    "in_progress": "W trakcie",
+    "not_started": "Nierozpoczęte"
+  },
+  "emptyState": {
+    "defaultTitle": "Nie znaleziono danych",
+    "defaultMessage": "Brak elementów do wyświetlenia"
+  },
+  "error": {
+    "defaultMessage": "Wystąpił błąd"
+  },
+  "created_at": "Utworzono",
+  "updated_at": "Zaktualizowano",
+  "status": {
+    "active": "Aktywny",
+    "inactive": "Nieaktywny"
+  },
+  "home": {
+    "welcome_title": "Witamy w VidMark",
+    "welcome_subtitle": "Platforma do analizy i oznaczania wideo",
+    "view_projects": "Zobacz Projekty"
+  },
+  "form": {
+    "username": "Nazwa użytkownika",
+    "please_select": "Wybierz...",
+    "email": "Email",
+    "subject": "Temat",
+    "video_group": "Grupa wideo",
+    "video": "Wideo"
+  },
+  "table": {
+    "actions": "Akcje"
+  },
+  "auth": {
+    "initializing": "Inicjalizacja uwierzytelnienia...",
+    "required_title": "Wymagane uwierzytelnienie",
+    "required_message": "Zaloguj się, aby uzyskać dostęp do platformy VidMark.",
+    "login_button": "Zaloguj się przez Keycloak",
+    "signed_in_as": "Zalogowany jako"
+  },
+  "confirmationContext": {
+    "default_message": "Czy na pewno chcesz kontynuować?"
+  },
+  "user": {
+    "fallback": "Użytkownik"
+  }
+}

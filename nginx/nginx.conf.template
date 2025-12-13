@@ -1,4 +1,4 @@
-worker_processes 2;
+worker_processes 4;
 
 events {
   worker_connections 1024;
@@ -7,6 +7,30 @@ events {
 http {
   include       mime.types;
   default_type  application/octet-stream;
+
+  access_log /dev/stdout;
+  error_log  /dev/stderr notice;
+
+  # --- gzip for JSON (and friends) ---
+  gzip on;
+  gzip_comp_level 5;          # 1–9; 4–6 is a good balance
+  gzip_min_length 2048;        # don’t bother for tiny files
+  gzip_vary on;               # adds Vary: Accept-Encoding
+  gzip_http_version 1.1;
+  gzip_disable "msie6";
+  gzip_proxied any;
+
+  # Explicitly include JSON types (plus a few safe text types)
+  gzip_types
+      application/json
+      application/problem+json
+      text/json
+      text/plain
+      application/javascript
+      text/css
+      application/xml
+      text/xml;
+  # -----------------------------------
 
   server {
     listen ${NGINX_PORT};
@@ -18,47 +42,70 @@ http {
     }
 
     location /videos/ {
-        root /mnt;
-        autoindex on;
+      root /mnt;
+      autoindex off;
 
-	sendfile on;
-	tcp_nopush on;
-	aio on;
+      secure_link $arg_md5,$arg_expires;
+      secure_link_md5 "$secure_link_expires$uri ${NGINX_SECURELINK_SECRET}";
 
-        add_header 'Access-Control-Allow-Origin' $http_origin always;
-        add_header 'Access-Control-Allow-Credentials' 'true' always;
-        add_header 'Access-Control-Allow-Methods' 'GET, OPTIONS' always;
-        add_header 'Access-Control-Allow-Headers' 'Origin, Content-Type, Accept, Range' always;
-        add_header 'Access-Control-Expose-Headers' 'Content-Length, Content-Range' always;
+      if ($secure_link = "") { return 403; } 
+      if ($secure_link = "0") { return 410; }
 
-        if ($request_method = OPTIONS) {
-            add_header 'Access-Control-Max-Age' 1728000;
-            add_header 'Content-Type' 'text/plain; charset=UTF-8';
-            add_header 'Content-Length' 0;
-            return 204;
-        }
+      sendfile on;
+      tcp_nopush on;
+      aio threads;
+      directio 4m;
+
+      # For actual GET responses
+      add_header 'Access-Control-Allow-Origin' $http_origin always;
+      add_header 'Access-Control-Allow-Credentials' 'true' always;
+      add_header 'Access-Control-Expose-Headers' 'Content-Length, Content-Range' always;
+      add_header Vary Origin always;
+
+      # Preflight
+      if ($request_method = OPTIONS) {
+          add_header 'Access-Control-Allow-Origin' $http_origin always;
+          add_header 'Access-Control-Allow-Credentials' 'true' always;
+          add_header 'Access-Control-Allow-Methods' 'GET, OPTIONS' always;
+
+          # Let the browser ask for whatever it wants:
+          add_header 'Access-Control-Allow-Headers' "$http_access_control_request_headers" always;
+
+          add_header 'Access-Control-Max-Age' 1728000;
+          add_header 'Content-Type' 'text/plain; charset=UTF-8';
+          add_header 'Content-Length' 0;
+          return 204;
+      }
     }
 
     location /reports/ {
-        root /mnt;
-        autoindex on;
+      root /mnt;
+      autoindex off;
 
-	sendfile on;
-	tcp_nopush on;
-	aio on;
+      sendfile on;
+      tcp_nopush on;
+      aio on;
 
-        add_header 'Access-Control-Allow-Origin' $http_origin always;
-        add_header 'Access-Control-Allow-Credentials' 'true' always;
-        add_header 'Access-Control-Allow-Methods' 'GET, OPTIONS' always;
-        add_header 'Access-Control-Allow-Headers' 'Origin, Content-Type, Accept, Range' always;
-        add_header 'Access-Control-Expose-Headers' 'Content-Length, Content-Range' always;
+      # For actual GET responses
+      add_header 'Access-Control-Allow-Origin' $http_origin always;
+      add_header 'Access-Control-Allow-Credentials' 'true' always;
+      add_header 'Access-Control-Expose-Headers' 'Content-Length, Content-Range' always;
+      add_header Vary Origin always;
 
-        if ($request_method = OPTIONS) {
-            add_header 'Access-Control-Max-Age' 1728000;
-            add_header 'Content-Type' 'text/plain; charset=UTF-8';
-            add_header 'Content-Length' 0;
-            return 204;
-        }
+      # Preflight
+      if ($request_method = OPTIONS) {
+          add_header 'Access-Control-Allow-Origin' $http_origin always;
+          add_header 'Access-Control-Allow-Credentials' 'true' always;
+          add_header 'Access-Control-Allow-Methods' 'GET, OPTIONS' always;
+
+          # Let the browser ask for whatever it wants:
+          add_header 'Access-Control-Allow-Headers' "$http_access_control_request_headers" always;
+
+          add_header 'Access-Control-Max-Age' 1728000;
+          add_header 'Content-Type' 'text/plain; charset=UTF-8';
+          add_header 'Content-Length' 0;
+          return 204;
+      }
     }
   }
 }

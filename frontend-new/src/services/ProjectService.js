@@ -1,0 +1,252 @@
+import apiClient from './ApiClient.js';
+
+/**
+ * ProjectService - Handles project operations
+ * Maps to ProjectController endpoints
+ */
+class ProjectService {
+
+  /**
+   * Get all projects
+   * GET /api/Project
+   * @returns {Promise<Array>} Array of ProjectResponse objects
+   */
+  async getAll() {
+    try {
+      return await apiClient.get('/projects');
+    } catch (error) {
+      throw new Error(`Failed to get projects: ${error.message}`);
+    }
+  }
+
+  /**
+   * Get specific project by ID
+   * GET /api/Project/{id}
+   * @param {number} id - Project ID
+   * @returns {Promise<Object>} ProjectResponse object
+   */
+  async getById(id) {
+    try {
+      return await apiClient.get(`/projects/${id}`);
+    } catch (error) {
+      throw new Error(`Failed to get project ${id}: ${error.message}`);
+    }
+  }
+
+  /**
+   * Create new project
+   * POST /api/Project
+   * @param {Object} projectRequest - Project creation request
+   * @param {string} projectRequest.name - Project name
+   * @param {string} projectRequest.description - Project description
+   * @returns {Promise<Object>} ProjectResponse object
+   */
+  async create(projectRequest) {
+    try {
+      return await apiClient.post('/projects', projectRequest);
+    } catch (error) {
+      throw new Error(`Failed to create project: ${error.message}`);
+    }
+  }
+
+  /**
+   * Update project
+   * PUT /api/Project/{id}
+   * @param {number} id - Project ID
+   * @param {Object} projectRequest - Project update request
+   * @returns {Promise<void>}
+   */
+  async update(id, projectRequest) {
+    try {
+      await apiClient.put(`/projects/${id}`, projectRequest);
+    } catch (error) {
+      throw new Error(`Failed to update project ${id}: ${error.message}`);
+    }
+  }
+
+  /**
+   * Delete project
+   * DELETE /api/Project/{id}
+   * @param {number} id - Project ID to delete
+   * @returns {Promise<void>}
+   */
+  async delete(id) {
+    try {
+      await apiClient.delete(`/projects/${id}`);
+    } catch (error) {
+      throw new Error(`Failed to delete project ${id}: ${error.message}`);
+    }
+  }
+
+  /**
+   * Get project labelers
+   * GET /api/Project/{id}/Labelers
+   * @param {number} id - Project ID
+   * @returns {Promise<Array>} Array of LabelerResponse objects
+   */
+  async getUsers(id) {
+    try {
+      return await apiClient.get(`/projects/${id}/labelers`);
+    } catch (error) {
+      throw new Error(`Failed to get labelers for project ${id}: ${error.message}`);
+    }
+  }
+
+  /**
+   * Get project subjects
+   * GET /api/Project/{id}/subjects
+   * @param {number} id - Project ID
+   * @returns {Promise<Array>} Array of SubjectResponse objects
+   */
+  async getSubjects(id) {
+    try {
+      return await apiClient.get(`/projects/${id}/subjects`);
+    } catch (error) {
+      throw new Error(`Failed to get subjects for project ${id}: ${error.message}`);
+    }
+  }
+
+  /**
+   * Get project video groups
+   * GET /api/Project/{id}/VideoGroups
+   * @param {number} id - Project ID
+   * @returns {Promise<Array>} Array of VideoGroupResponse objects
+   */
+  async getVideoGroups(id) {
+    try {
+      return await apiClient.get(`/projects/${id}/video-groups`);
+    } catch (error) {
+      throw new Error(`Failed to get video groups for project ${id}: ${error.message}`);
+    }
+  }
+
+  /**
+   * Get project reports
+   * GET /api/Project/{id}/reports
+   * @param {number} id - Project ID
+   * @returns {Promise<Array>} Array of ProjectReportResponse objects
+   */
+  async getReports(id) {
+    try {
+      return await apiClient.get(`/projects/${id}/reports`);
+    } catch (error) {
+      throw new Error(`Failed to get reports for project ${id}: ${error.message}`);
+    }
+  }
+
+  /**
+   * Add user to project
+   * POST /api/Project/{id}/users/{userId}
+   * @param {number} id - Project ID
+   * @param {string} userId - User ID to add
+   * @returns {Promise<void>}
+   */
+  async addUser(id, userId) {
+    try {
+      await apiClient.post(`/Project/${id}/users/${userId}`);
+    } catch (error) {
+      throw new Error(`Failed to add user ${userId} to project ${id}: ${error.message}`);
+    }
+  }
+
+  /**
+   * Remove user from project
+   * DELETE /api/Project/{id}/users/{userId}
+   * @param {number} id - Project ID
+   * @param {string} userId - User ID to remove
+   * @returns {Promise<void>}
+   */
+  async removeUser(id, userId) {
+    try {
+      await apiClient.delete(`/Project/${id}/users/${userId}`);
+    } catch (error) {
+      throw new Error(`Failed to remove user ${userId} from project ${id}: ${error.message}`);
+    }
+  }
+
+  /**
+   * Get project assignments
+   * GET /api/Project/{id}/assignments
+   * @param {number} id - Project ID
+   * @returns {Promise<Array>} Array of SubjectVideoGroupAssignmentResponse objects
+   */
+  async getAssignments(id) {
+    try {
+      return await apiClient.get(`/projects/${id}/subject-video-group-assignments`);
+    } catch (error) {
+      throw new Error(`Failed to get assignments for project ${id}: ${error.message}`);
+    }
+  }
+
+  /**
+   * Get project statistics
+   * GET /api/Project/{id}/stats
+   * @param {number} id - Project ID
+   * @returns {Promise<Object>} Project statistics object
+   */
+  async getStats(id) {
+    try {
+      return await apiClient.get(`/projects/${id}/stats`);
+    } catch (error) {
+      throw new Error(`Failed to get statistics for project ${id}: ${error.message}`);
+    }
+  }
+
+  /**
+   * Get detailed project statistics including label breakdowns
+   * GET /api/Project/{id}/detailed-stats
+   * @param {number} id - Project ID
+   * @returns {Promise<Object>} Detailed statistics object with label counts, breakdowns, and progress
+   */
+  async getDetailedStats(id) {
+    try {
+      return await apiClient.get(`/projects/${id}/detailed-stats`);
+    } catch (error) {
+      throw new Error(`Failed to get detailed statistics for project ${id}: ${error.message}`);
+    }
+  }
+
+  /**
+   * Get unassigned labelers for project
+   * GET /api/Project/{id}/unassigned-labelers
+   * @param {number} id - Project ID
+   * @returns {Promise<Array>} Array of unassigned labeler objects
+   */
+  async getUnassignedLabelers(id) {
+    try {
+      return await apiClient.get(`/projects/${id}/unassigned-labelers`);
+    } catch (error) {
+      throw new Error(`Failed to get unassigned labelers for project ${id}: ${error.message}`);
+    }
+  }
+
+  /**
+   * Distribute labelers across assignments
+   * POST /api/Project/{id}/distribute
+   * @param {number} id - Project ID
+   * @returns {Promise<void>}
+   */
+  async distributeLabelers(id) {
+    try {
+      await apiClient.post(`/projects/${id}/distribute`);
+    } catch (error) {
+      throw new Error(`Failed to distribute labelers for project ${id}: ${error.message}`);
+    }
+  }
+
+  /**
+   * Unassign all labelers from assignments
+   * POST /api/Project/{id}/unassign-all
+   * @param {number} id - Project ID
+   * @returns {Promise<void>}
+   */
+  async unassignAllLabelers(id) {
+    try {
+      await apiClient.post(`/projects/${id}/unassign-all`);
+    } catch (error) {
+      throw new Error(`Failed to unassign all labelers for project ${id}: ${error.message}`);
+    }
+  }
+}
+
+export default new ProjectService();

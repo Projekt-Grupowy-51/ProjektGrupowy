@@ -1,0 +1,6 @@
+@VidMark.API_HostAddress = http://localhost:5267
+
+GET {{VidMark.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

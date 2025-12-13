@@ -1,0 +1,614 @@
+/*
+ * Water Tiles - Modern Minimalist Design Override
+ */
+
+body {
+  font-family: var(--font-family-sans);
+  background: linear-gradient(135deg, #ffffff 0%, var(--color-neutral-100) 100%);
+  color: var(--color-text-primary);
+  min-height: 97vh;
+}
+
+/* === BUTTON SYSTEM === */
+.btn {
+  font-weight: var(--font-weight-medium);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-base);
+  border: 1px solid transparent;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.btn:focus,
+.btn:focus-visible {
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+  outline: none;
+}
+
+.btn:disabled,
+.btn.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+  transform: none !important;
+}
+
+/* Primary - Bold Black */
+.btn-primary {
+  background: linear-gradient(135deg, var(--color-primary-900) 0%, var(--color-primary-800) 100%);
+  border-color: var(--color-primary-900);
+  color: white;
+  font-weight: var(--font-weight-semibold);
+}
+
+.btn-primary:hover {
+  background: var(--color-primary-900);
+  border-color: var(--color-primary-900);
+  box-shadow: var(--shadow-sharp);
+}
+
+/* Secondary - Soft stone */
+.btn-secondary {
+  background: var(--color-surface);
+  border-color: var(--color-neutral-300);
+  color: var(--color-text-primary);
+}
+
+.btn-secondary:hover {
+  background: var(--color-neutral-100);
+  border-color: var(--color-neutral-400);
+  box-shadow: var(--shadow-md);
+}
+
+/* Success - Vibrant Lime */
+.btn-success {
+  background: linear-gradient(135deg, var(--color-success-500) 0%, var(--color-success-600) 100%);
+  border-color: var(--color-success-500);
+  color: white;
+  font-weight: var(--font-weight-semibold);
+}
+
+.btn-success:hover {
+  background: var(--color-success-600);
+  box-shadow: 0 8px 32px rgba(132, 204, 22, 0.4);
+}
+
+/* Warning - Electric Orange */
+.btn-warning {
+  background: linear-gradient(135deg, var(--color-warning-500) 0%, var(--color-warning-600) 100%);
+  border-color: var(--color-warning-500);
+  color: white;
+  font-weight: var(--font-weight-semibold);
+}
+
+.btn-warning:hover {
+  background: var(--color-warning-600);
+  box-shadow: 0 8px 32px rgba(249, 115, 22, 0.4);
+}
+
+/* Danger - Electric Red */
+.btn-danger {
+  background: linear-gradient(135deg, var(--color-danger-500) 0%, var(--color-danger-600) 100%);
+  border-color: var(--color-danger-500);
+  color: white;
+  font-weight: var(--font-weight-semibold);
+}
+
+.btn-danger:hover {
+  background: var(--color-danger-600);
+  box-shadow: 0 8px 32px rgba(239, 68, 68, 0.4);
+}
+
+/* Info - Electric Purple */
+.btn-info {
+  background: linear-gradient(135deg, var(--color-info-500) 0%, var(--color-info-600) 100%);
+  border-color: var(--color-info-500);
+  color: white;
+  font-weight: var(--font-weight-semibold);
+}
+
+.btn-info:hover {
+  background: var(--color-info-600);
+  box-shadow: 0 8px 32px rgba(168, 85, 247, 0.4);
+}
+
+/* Light - White background */
+.btn-light {
+  background: var(--color-surface);
+  border-color: var(--color-neutral-300);
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-medium);
+}
+
+.btn-light:hover {
+  background: var(--color-neutral-100);
+  border-color: var(--color-neutral-400);
+  color: var(--color-text-primary);
+  box-shadow: var(--shadow-base);
+}
+
+/* Dark - Black background */
+.btn-dark {
+  background: var(--color-primary-900);
+  border-color: var(--color-primary-900);
+  color: white;
+  font-weight: var(--font-weight-semibold);
+}
+
+.btn-dark:hover {
+  background: var(--color-primary-800);
+  border-color: var(--color-primary-800);
+  box-shadow: var(--shadow-sharp);
+}
+
+/* Link - Text only */
+.btn-link {
+  background: transparent;
+  border: none;
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-medium);
+}
+
+.btn-link:hover {
+  color: var(--color-primary-900);
+  text-decoration: none;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Outline variants */
+.btn-outline-primary {
+  background: transparent;
+  border-color: var(--color-primary-900);
+  color: var(--color-primary-900);
+  font-weight: var(--font-weight-medium);
+}
+
+.btn-outline-primary:hover {
+  background: var(--color-primary-900);
+  border-color: var(--color-primary-900);
+  color: white;
+}
+
+.btn-outline-secondary {
+  background: transparent;
+  border-color: var(--color-neutral-300);
+  color: var(--color-text-secondary);
+}
+
+.btn-outline-secondary:hover {
+  background: var(--color-neutral-100);
+  border-color: var(--color-neutral-400);
+  color: var(--color-text-primary);
+  box-shadow: var(--shadow-base);
+}
+
+.btn-outline-danger {
+  background: transparent;
+  border-color: var(--color-danger-300);
+  color: var(--color-danger-600);
+}
+
+.btn-outline-danger:hover {
+  background: var(--color-danger-50);
+  border-color: var(--color-danger-500);
+  color: var(--color-danger-700);
+  box-shadow: var(--shadow-base);
+}
+
+.btn-outline-warning {
+  background: transparent;
+  border-color: var(--color-warning-500);
+  color: var(--color-warning-600);
+}
+
+.btn-outline-warning:hover {
+  background: var(--color-warning-50);
+  border-color: var(--color-warning-500);
+  color: var(--color-warning-700);
+  box-shadow: var(--shadow-base);
+}
+
+.btn-outline-info {
+  background: transparent;
+  border-color: var(--color-info-500);
+  color: var(--color-info-600);
+}
+
+.btn-outline-info:hover {
+  background: var(--color-info-50);
+  border-color: var(--color-info-500);
+  color: var(--color-info-700);
+  box-shadow: var(--shadow-base);
+}
+
+.btn-outline-success {
+  background: transparent;
+  border-color: var(--color-success-500);
+  color: var(--color-success-600);
+}
+
+.btn-outline-success:hover {
+  background: var(--color-success-50);
+  border-color: var(--color-success-500);
+  color: var(--color-success-700);
+  box-shadow: var(--shadow-base);
+}
+
+.btn-outline-light {
+  background: transparent;
+  border-color: var(--color-neutral-400);
+  color: var(--color-text-secondary);
+}
+
+.btn-outline-light:hover {
+  background: var(--color-surface);
+  border-color: var(--color-neutral-500);
+  color: var(--color-text-primary);
+  box-shadow: var(--shadow-base);
+}
+
+.btn-outline-dark {
+  background: transparent;
+  border-color: var(--color-primary-900);
+  color: var(--color-primary-900);
+}
+
+.btn-outline-dark:hover {
+  background: var(--color-primary-900);
+  border-color: var(--color-primary-900);
+  color: white;
+  box-shadow: var(--shadow-base);
+}
+
+/* === CARDS === */
+.card {
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-base);
+  transition: all var(--transition-base);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-xl);
+}
+
+.card-header.bg-info {
+  background: var(--color-neutral-100);
+  color: var(--color-primary-900);
+}
+
+/* === FORMS === */
+.form-control:focus {
+  border-color: var(--color-border-focus);
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+}
+
+/* === TABLES === */
+.table {
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-base);
+}
+
+/* === ALERTS === */
+.alert {
+  border-radius: var(--radius-md);
+}
+
+.alert-primary {
+  background: var(--color-neutral-100);
+  border-color: var(--color-neutral-300);
+  color: var(--color-text-primary);
+}
+
+.alert-secondary {
+  background: var(--color-neutral-100);
+  border-color: var(--color-neutral-300);
+  color: var(--color-text-secondary);
+}
+
+.alert-light {
+  background: var(--color-surface);
+  border-color: var(--color-neutral-200);
+  color: var(--color-text-primary);
+}
+
+.alert-dark {
+  background: var(--color-primary-900);
+  border-color: var(--color-primary-800);
+  color: white;
+}
+
+/* === NAVBAR === */
+.navbar {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-base);
+  margin: 1rem auto;
+  padding: 0.75rem 1rem;
+  max-width: calc(100% - 2rem);
+  border: 1px solid var(--color-neutral-200);
+  position: relative;
+  z-index: 1030;
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.95);
+  transition: all var(--transition-base);
+}
+
+.navbar:hover {
+  box-shadow: var(--shadow-md);
+}
+
+/* Navbar Brand */
+.navbar-brand {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary-900) !important;
+  text-decoration: none !important;
+}
+
+.navbar-brand i {
+  color: var(--color-primary-700);
+}
+
+/* Container Layout */
+.navbar .container-fluid {
+  padding: 0;
+}
+
+/* Navbar Buttons - Enhanced Shadows */
+.navbar .btn {
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--color-neutral-200);
+  transition: all var(--transition-base);
+  text-decoration: none !important;
+}
+
+.navbar .btn:hover {
+  box-shadow: var(--shadow-xl);
+  transform: translateY(-2px);
+  text-decoration: none !important;
+}
+
+.navbar .btn:active {
+  box-shadow: var(--shadow-md);
+  transform: translateY(0);
+}
+
+/* Remove underline and blue colors from all button states */
+.navbar .btn,
+.navbar .btn:focus,
+.navbar .btn:active,
+.navbar .btn:hover {
+  text-decoration: none !important;
+  color: var(--color-text-primary) !important;
+}
+
+/* Primary buttons in navbar */
+.navbar .btn-primary {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15), 0 4px 12px rgba(0, 0, 0, 0.1);
+  color: white !important;
+}
+
+.navbar .btn-primary:hover {
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.2), 0 6px 20px rgba(0, 0, 0, 0.15);
+  color: white !important;
+}
+
+/* Secondary buttons in navbar */
+.navbar .btn-secondary {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1), 0 3px 10px rgba(0, 0, 0, 0.08);
+}
+
+.navbar .btn-secondary:hover {
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15), 0 5px 15px rgba(0, 0, 0, 0.12);
+}
+
+/* Fix for link buttons - remove underline and blue color */
+.navbar .btn-link {
+  text-decoration: none !important;
+  color: var(--color-text-primary) !important;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+}
+
+.navbar .btn-link:hover {
+  text-decoration: none !important;
+  color: var(--color-primary-900) !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+/* Dropdown toggle buttons */
+.navbar .dropdown-toggle {
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  text-decoration: none !important;
+}
+
+.navbar .dropdown-toggle:hover {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  text-decoration: none !important;
+}
+
+/* User dropdown specific */
+.navbar .btn-link.dropdown-toggle {
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+  text-decoration: none !important;
+}
+
+.navbar .btn-link.dropdown-toggle:hover {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  text-decoration: none !important;
+}
+
+/* Dropdown Menus */
+.navbar .dropdown-menu {
+  margin-top: 0.5rem;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-xl);
+  border: 1px solid var(--color-neutral-200);
+}
+
+/* Dropdown Items - remove underlines */
+.navbar .dropdown-item {
+  position: relative;
+  transition: all var(--transition-base);
+  padding: 0.5rem 1rem;
+  text-decoration: none !important;
+}
+
+.navbar .dropdown-item:hover:not(.active) {
+  background-color: var(--color-neutral-100);
+  color: var(--color-primary-900);
+  text-decoration: none !important;
+}
+
+.navbar .dropdown-item.active {
+  background-color: var(--color-neutral-200);
+  color: var(--color-primary-900);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none !important;
+}
+
+/* Language Dropdown Specific Styles */
+.navbar .dropdown-menu li button.dropdown-item {
+  position: relative;
+  transition: all var(--transition-base);
+  text-decoration: none !important;
+}
+
+/* User Dropdown Text Styles */
+.navbar .btn-link.dropdown-toggle .text-dark {
+  color: var(--color-text-primary) !important;
+  text-decoration: none !important;
+}
+
+.navbar .btn-link.dropdown-toggle:hover .text-dark {
+  color: var(--color-primary-900) !important;
+  text-decoration: none !important;
+}
+
+/* Navbar Toggle Button */
+.navbar-toggler {
+  border: 1px solid var(--color-neutral-300);
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+  text-decoration: none !important;
+}
+
+.navbar-toggler:hover {
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+  text-decoration: none !important;
+}
+
+.navbar-toggler:focus {
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+  outline: none;
+  text-decoration: none !important;
+}
+
+/* Remove any anchor tag styles within navbar */
+.navbar a,
+.navbar a:hover,
+.navbar a:focus {
+  text-decoration: none !important;
+}
+
+/* Responsive Design */
+@media (max-width: 991.98px) {
+  .navbar {
+    margin: 0.5rem;
+    max-width: calc(100% - 1rem);
+    padding: 0.5rem;
+  }
+
+  .navbar-collapse {
+    margin-top: 1rem;
+    padding: 1rem 0;
+  }
+
+  .navbar .btn {
+    margin: 0.25rem 0;
+    width: 100%;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    text-decoration: none !important;
+  }
+
+  .navbar .btn:hover {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    text-decoration: none !important;
+  }
+
+  .dropdown-menu {
+    border: none;
+    box-shadow: var(--shadow-lg);
+    margin-top: 0;
+  }
+}
+
+/* === UTILITIES === */
+.text-primary {
+  color: var(--color-primary-900) !important;
+}
+
+.text-danger {
+  color: var(--color-danger-600) !important;
+}
+
+.text-success {
+  color: var(--color-success-600) !important;
+}
+
+.text-warning {
+  color: var(--color-warning-600) !important;
+}
+
+.text-info {
+  color: var(--color-info-600) !important;
+}
+
+/* === WATER TILE EFFECTS === */
+.water-tile {
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-base);
+  transition: all var(--transition-base);
+}
+
+.water-tile:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-sharp);
+}
+
+/* === MODALS === */
+.modal {
+  backdrop-filter: blur(10px);
+}
+
+.modal .modal-content {
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+}
+
+.modal .modal-header {
+  background: var(--color-surface-secondary) !important;
+}
+
+.modal .modal-body {
+  background: var(--color-surface) !important;
+}
+
+.modal .modal-footer {
+  background: var(--color-surface-secondary) !important;
+}
+
+.card-title {
+  margin-bottom: 0 !important;
+}
+
+.text-white {
+  color: white !important;
+}
+
+td {
+  justify-content: center;
+  align-items: center;
+  vertical-align: middle !important;
+}

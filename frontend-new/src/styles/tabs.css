@@ -1,0 +1,104 @@
+/* Tab animations and styling */
+
+.tab-content {
+  position: relative;
+}
+
+.tab-pane {
+  transition: opacity var(--transition-base), transform var(--transition-base);
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.tab-pane.fade {
+  opacity: 0;
+  transform: translateX(10px);
+}
+
+.tab-pane.fade.show {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Enhanced tab navigation styling */
+.nav-tabs {
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: var(--spacing-md);
+  justify-content: space-evenly;
+}
+
+.nav-tabs .nav-link {
+  position: relative;
+  transition: all var(--transition-base);
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  border-radius: var(--radius-base) var(--radius-base) 0 0;
+  padding: var(--spacing-sm) var(--spacing-md);
+  margin-bottom: -1px;
+}
+
+.nav-tabs .nav-link:hover {
+  color: var(--color-text-primary);
+  background-color: var(--color-surface-secondary);
+  border-bottom: 2px solid var(--color-primary-300);
+}
+
+.nav-tabs .nav-link.active {
+  color: var(--color-text-primary);
+  background-color: var(--color-surface);
+  border-bottom: 2px solid var(--color-primary-900);
+  font-weight: var(--font-weight-medium);
+}
+
+.nav-tabs .nav-link.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--color-primary-900);
+  animation: slideIn var(--transition-base) ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* Tab content animation variants */
+.tab-content-slide {
+  overflow: hidden;
+}
+
+.tab-content-slide .tab-pane {
+  transition: transform var(--transition-base), opacity var(--transition-base);
+}
+
+.tab-content-slide .tab-pane.fade {
+  transform: translateX(30px);
+  opacity: 0;
+}
+
+.tab-content-slide .tab-pane.fade.show {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+/* Tab content fade-in animation */
+.tab-content-fade .tab-pane {
+  transition: opacity var(--transition-slow);
+}
+
+.tab-content-fade .tab-pane.fade {
+  opacity: 0;
+}
+
+.tab-content-fade .tab-pane.fade.show {
+  opacity: 1;
+}

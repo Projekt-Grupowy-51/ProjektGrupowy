@@ -1,0 +1,26 @@
+﻿{
+  "title": "My Projects & Assignments",
+  "join_project": {
+    "button": "Join Project",
+    "placeholder": "Paste access code",
+    "success": "Successfully joined the project!",
+    "invalid_code": "Invalid or expired access code",
+    "required_code": "Please enter an access code"
+  },
+  "projects": {
+    "assignments": "Assignments",
+    "no_projects": "You haven't joined any projects yet. Join a project using an access code.",
+    "no_assignments": "No assignments for this project yet.",
+    "columns": {
+      "subject": "Subject",
+      "video_group": "Video Group",
+      "completed": "Completed"
+    }
+  },
+  "loading": "Loading data...",
+  "start_labeling": "Start labeling",
+  "errors": {
+    "load_projects": "Failed to load projects",
+    "load_assignments": "Failed to load assignments"
+  }
+}

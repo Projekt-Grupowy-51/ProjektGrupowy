@@ -1,0 +1,15 @@
+{
+  "connection": {
+    "title": "Error",
+    "subtitle": "Connection Issue",
+    "message": "We're having trouble connecting to the server. Please try again later."
+  },
+  "forbidden": {
+    "title": "Forbidden",
+    "message": "Looks like you don't have permission to access this page. Please contact your administrator if you believe this is an error."
+  },
+  "notFound": {
+    "title": "Page Not Found",
+    "message": "The page you're looking for doesn't exist or has been moved."
+  }
+}

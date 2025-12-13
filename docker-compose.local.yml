@@ -1,58 +1,145 @@
+name: vidmark_local
+
 services:
   db:
-    image: postgres:latest
+    image: postgres:17
     environment:
-      POSTGRES_USER: myuser
-      POSTGRES_PASSWORD: mypassword
-      POSTGRES_DB: mydatabase
+      POSTGRES_USER: ${PGSQL_USER}
+      POSTGRES_PASSWORD: ${PGSQL_PASSWORD}
+      POSTGRES_DB: ${PGSQL_DB}
     ports:
-      - "5432:5432"
+      - "${DB_PORT}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init:/docker-entrypoint-initdb.d
     networks:
       - mynetwork
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U myuser -d mydatabase"]
+      test: ["CMD-SHELL", 'pg_isready -U "$PGSQL_USER" -d "$PGSQL_DB"']
       interval: 10s
       timeout: 5s
       retries: 5
 
+  postgres-exporter:
+    image: quay.io/prometheuscommunity/postgres-exporter:latest
+    environment:
+      DATA_SOURCE_NAME: "postgresql://${PGSQL_USER}:${PGSQL_PASSWORD}@db:5432/${PGSQL_DB}?sslmode=disable"
+    ports:
+      - "9187:9187"
+    networks:
+      - mynetwork
+    depends_on:
+      db:
+        condition: service_healthy
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.retention.time=15d
+      - --web.enable-lifecycle
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prom_data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - mynetwork
+    depends_on:
+      - app
+      - keycloak
+      - postgres-exporter
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+    ports:
+      - "3030:3000"
+    networks:
+      - mynetwork
+    depends_on:
+      - prometheus
+
+  loki:
+    image: grafana/loki:2.9.6
+    command: -config.file=/etc/loki/loki-config.yml
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./loki/loki-config.yml:/etc/loki/loki-config.yml:ro
+      - loki_data:/loki
+    networks:
+      - mynetwork
+
+  keycloak:
+    build:
+      context: ./keycloak
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: ${KEYCLOAK_DB_URL}
+      KC_DB_USERNAME: ${PGSQL_USER}
+      KC_DB_PASSWORD: ${PGSQL_PASSWORD}
+      KC_HOSTNAME: ${KEYCLOAK_HOSTNAME}
+      KC_HOSTNAME_STRICT: "false"
+      KC_HOSTNAME_STRICT_HTTPS: "false"
+      KC_HTTP_ENABLED: "true"
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KC_FEATURES: scripts
+      SCIENTIST_CODE: ${SCIENTIST_ACCESS_CODE}
+      KC_METRICS_ENABLED: "true"
+      KC_HEALTH_ENABLED: "true"
+    ports:
+      - "${KEYCLOAK_PORT}:8080"
+    networks:
+      - mynetwork
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./keycloak/data:/opt/keycloak/data
+      - ./keycloak/themes:/opt/keycloak/themes
+
   app:
     build:
-      context: ./ProjektGrupowy.API
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: VidMark.API/Dockerfile
+    restart: on-failure:5
     environment:
-      - ASPNETCORE_ENVIRONMENT=Production
-      - ASPNETCORE_URLS=http://+:80
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
+      - ASPNETCORE_URLS=${ASPNETCORE_URLS}
 
-      - ConnectionStrings__DefaultConnection=Host=db;Database=mydatabase;UserName=myuser;Password=mypassword;Port=5432
-      - ConnectionStrings__HangfireConnection=Host=db;Database=mydatabase;UserName=myuser;Password=mypassword;Port=5432
+      - ConnectionStrings__DefaultConnection=Host=${PGSQL_HOST};Database=${PGSQL_DB};UserName=${PGSQL_USER};Password=${PGSQL_PASSWORD};Port=${PGSQL_PORT};Pooling=true;Minimum Pool Size=64; Maximum Pool Size=96; Connection Pruning Interval=60;Connection Idle Lifetime=900;Max Auto Prepare=200;
+      - ConnectionStrings__HangfireConnection=Host=${PGSQL_HOST};Database=${PGSQL_DB};UserName=${PGSQL_USER};Password=${PGSQL_PASSWORD};Port=${PGSQL_PORT};Pooling=true;Minimum Pool Size=64; Maximum Pool Size=96; Connection Pruning Interval=60;Connection Idle Lifetime=900;Max Auto Prepare=200;
 
-      - Logging__LogLevel__Default=Information
-      - Logging__LogLevel__Microsoft.AspNetCore=Warning
+      - Logging__LogLevel__Default=${LOGGING_DEFAULT_LEVEL}
+      - Logging__LogLevel__Microsoft.AspNetCore=${LOGGING_ASPNETCORE_LEVEL}
 
-      - JWT__ValidIssuer=http://localhost:5000
-      - JWT__ValidAudience=http://localhost:3000
-      - JWT__Secret=YourSuperSecretKeyThatIsAtLeast16CharactersLong
-      - JWT__JwtCookieName=AuthToken
-      - JWT__RefreshCookieName=RefreshToken
-      - JWT__ScientistCreateToken=secret
-      - JWT__RegularTokenExpiresInMinutes=15
-      - JWT__RefreshTokenExpiresInDays=7
+      - Loki__Url=${LOKI_URL}
 
-      - Videos__RootDirectory=videos
-      - Videos__NginxUrl=http://localhost:8080/videos
+      - Keycloak__Authority=${KEYCLOAK_AUTHORITY}
+      - Keycloak__Issuer=${KEYCLOAK_ISSUER}
+      - Keycloak__Audience=${KEYCLOAK_AUDIENCE}
 
-      - Reports__RootDirectory=reports
-      - Reports__NginxUrl=http://localhost:8080/reports
+      - Videos__RootDirectory=${VIDEOS_ROOT}
+      - Videos__NginxUrl=http://localhost:${NGINX_PORT}/videos
+      - Videos__NginxPublicBaseUrl=${NGINX_PUBLIC_BASEURL}
+      - Videos__SecureLinkSecret=${NGINX_SECURELINK_SECRET}
 
-      - Cors__AllowedDevOrigin=http://localhost:3000
-      - Cors__AllowedProductionOrigin=https://some-production-url.com
+      - Reports__RootDirectory=${REPORTS_ROOT}
+      - Reports__NginxUrl=http://localhost:${NGINX_PORT}/reports
 
-      - SignalR__HubUrl=/hub/app
+      - Cors__AllowedDevOrigin=${CORS_ALLOWEDDEV}
+      - Cors__AllowedProductionOrigin=${CORS_ALLOWEDPROD}
     ports:
-      - "5000:80"
+      - "${APP_PORT}:80"
     networks:
       - mynetwork
     depends_on:
@@ -61,35 +148,23 @@ services:
     volumes:
       - videos_data:/app/videos
       - reports_data:/app/reports
+      - logs_data:/app/Logs
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:80/health || exit 1"]
       interval: 10s
       timeout: 5s
-      retries: 5
-
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-      args:
-        VITE_API_BASE_URL: http://localhost:5000/api
-        VITE_SIGNALR_HUB_URL: http://localhost:5000/hub/app
-    ports:
-      - "3000:80"
-    networks:
-      - mynetwork
-    depends_on:
-      - app
+      retries: 10
+      start_period: 30s
 
   nginx:
     build:
       context: ./nginx
       dockerfile: Dockerfile
     environment:
-      - NGINX_HOST=localhost
-      - NGINX_PORT=80
+      - NGINX_HOST=${NGINX_HOST}
+      - NGINX_PORT=${NGINX_INTERNAL_PORT}
     ports:
-      - "8080:80"
+      - "${NGINX_PORT}:80"
     networks:
       - mynetwork
     volumes:
@@ -99,7 +174,11 @@ services:
 volumes:
   postgres_data:
   videos_data:
+  loki_data:
   reports_data:
+  logs_data:
+  prom_data:
+  grafana_data:
 
 networks:
   mynetwork:

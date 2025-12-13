@@ -1,0 +1,59 @@
+﻿{
+  "add_title": "Add New Subject",
+  "edit_title": "Edit Subject",
+  "form": {
+    "name": "Subject Name",
+    "description": "Description"
+  },
+  "buttons": {
+    "add": "Add Subject",
+    "adding": "Adding..."
+  },
+  "notifications": {
+    "required_fields": "All fields are required",
+    "add_success": "Subject added successfully!",
+    "add_error": "Failed to add subject",
+    "load_error": "Failed to load subject details",
+    "labels_error": "Failed to load labels",
+    "delete_success": "Label deleted successfully!",
+    "delete_error": "Failed to delete label"
+  },
+  "details": {
+    "title": "Subject Details",
+    "description": "Description"
+  },
+  "labels": {
+    "title": "Labels",
+    "empty": "No labels found for this subject",
+    "label": "label",
+    "add": "Add Label",
+    "confirm_delete": "Are you sure you want to delete this label?",
+    "loading": "Loading labels...",
+    "no_labels": "No labels found"
+  },
+  "statistics": {
+    "title": "Subject Statistics",
+    "total_label_types": "Label Types",
+    "total_assigned": "Total Uses",
+    "unique_videos": "Videos Labeled",
+    "total_assignments": "Assignments",
+    "label_usage": "Label Usage by Type",
+    "labels_by_labeler": "Labels by Labeler",
+    "top_labelers": "Top 10 Most Active Labelers",
+    "labels_by_project": "Labels by Project",
+    "labels_count": "Labels",
+    "no_data": "No statistics data available",
+    "no_labels": "No labels have been assigned yet for this subject"
+  },
+  "messages": {
+    "not_found": "Subject not found"
+  },
+  "columns": {
+    "name": "Name",
+    "shortcut": "Shortcut",
+    "color": "Color"
+  },
+  "loading": "Loading subjects...",
+  "confirm_delete_subject": "Are you sure you want to delete subject \"{{name}}\"? This operation cannot be undone.",
+  "confirm_delete_label": "Are you sure you want to delete label \"{{name}}\"? This operation cannot be undone."
+}

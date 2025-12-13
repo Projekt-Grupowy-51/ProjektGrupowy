@@ -1,0 +1,12 @@
+/* Modal backdrop blur effect - blur only the main application content */
+body.modal-open-blur #root {
+  filter: blur(3px);
+  transition: filter 0.2s ease-in-out;
+}
+
+/* Ensure modals rendered via portal stay unblurred */
+body.modal-open-blur > .modal,
+body.modal-open-blur > .modal-backdrop,
+body.modal-open-blur > div > .modal {
+  filter: none !important;
+}

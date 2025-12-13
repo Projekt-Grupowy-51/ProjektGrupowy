@@ -1,0 +1,92 @@
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import VideoGroupService from "../services/VideoGroupService.js";
+import VideoService from "../services/VideoService.js";
+
+export const useVideoGroupDetails = (videoGroupId) => {
+  const navigate = useNavigate();
+
+  const [videoGroup, setVideoGroup] = useState(null);
+  const [videos, setVideos] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const fetchData = () => {
+    if (!videoGroupId) return Promise.resolve();
+
+    const id = parseInt(videoGroupId);
+    setLoading(true);
+    setError(null);
+
+    return Promise.all([
+      VideoGroupService.getById(id),
+      VideoGroupService.getVideos(id),
+    ])
+      .then(([videoGroupData, videosData]) => {
+        setVideoGroup(videoGroupData);
+        setVideos(videosData || []);
+      })
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false));
+  };
+
+  const fetchVideos = () => {
+    if (!videoGroupId) return Promise.resolve();
+
+    return VideoGroupService.getVideos(parseInt(videoGroupId))
+      .then(setVideos)
+      .catch((err) => setError(err.message));
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [videoGroupId]);
+
+  const updateVideo = async (videoId, videoData) => {
+    return VideoService.update(videoId, videoData).then(() => fetchVideos());
+  };
+
+  const deleteVideo = async (videoId) => {
+    return VideoService.delete(videoId).then(() => fetchVideos());
+  };
+
+  const deleteVideoGroup = async () => {
+    return VideoGroupService.delete(parseInt(videoGroupId)).then(() => {
+      if (videoGroup?.projectId) {
+        navigate(`/projects/${videoGroup.projectId}`);
+      } else {
+        navigate("/videogroups");
+      }
+    });
+  };
+
+  const handleBack = () => {
+    if (videoGroup?.projectId) {
+      navigate(`/projects/${videoGroup.projectId}`);
+    } else {
+      navigate("/videogroups");
+    }
+  };
+
+  const handleAddVideo = () => {
+    navigate(`/videos/add?videoGroupId=${videoGroupId}`);
+  };
+
+  const handleEditVideoGroup = () => {
+    navigate(`/videogroups/${videoGroupId}/edit`);
+  };
+
+  return {
+    videoGroup,
+    videos,
+    loading,
+    error,
+    updateVideo,
+    deleteVideo,
+    deleteVideoGroup,
+    handleBack,
+    handleAddVideo,
+    handleEditVideoGroup,
+    refetchVideos: fetchVideos,
+  };
+};

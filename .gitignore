@@ -16,6 +16,8 @@
 # Mono auto generated files
 mono_crash.*
 
+**/dist/*
+
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/
@@ -35,6 +37,10 @@ bld/
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
+.vscode/
+**/.claude/
+.idea/
+
 # Uncomment if you have tasks that create the project's static files in wwwroot
 #wwwroot/
 
@@ -68,7 +74,7 @@ ScaffoldingReadMe.txt
 
 # StyleCop
 StyleCopReport.xml
-
+.DB_Store
 # Files built by Visual Studio
 *_i.c
 *_p.c
@@ -361,5 +367,6 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
-
-**/videos/
+.env
+/.claude/settings.local.json
+/ANALIZA_PROJEKTU_PRACA_INZYNIERSKA.md
