@@ -9,7 +9,8 @@ import { LabelerAssignmentStatisticsModal } from "../../../assignment";
 const ProjectLabelersTab = ({ projectId }) => {
   const { t } = useTranslation(["common", "projects"]);
   const [showStatisticsModal, setShowStatisticsModal] = useState(false);
-  const [selectedAssignmentForStats, setSelectedAssignmentForStats] = useState(null);
+  const [selectedAssignmentForStats, setSelectedAssignmentForStats] =
+    useState(null);
 
   const {
     labelers,
@@ -132,7 +133,7 @@ const ProjectLabelersTab = ({ projectId }) => {
                 {t("projects:labeler_tab.assign_labeler")}
               </Button>
             </div>
-            </div>
+          </div>
         </Card.Body>
       </Card>
 
@@ -224,7 +225,7 @@ const ProjectLabelersTab = ({ projectId }) => {
                           variant="success"
                           size="sm"
                           className="btn-standard"
-                          style={{ minWidth: '25%' }}
+                          style={{ minWidth: "25%" }}
                           onClick={() =>
                             assignLabeler(
                               labeler.id,
@@ -310,9 +311,13 @@ const ProjectLabelersTab = ({ projectId }) => {
                       <div className="d-flex gap-2">
                         <Button
                           size="sm"
-                          variant="info"
+                          variant="outline-info"
                           onClick={() =>
-                            handleShowStatistics(item.assignmentId, item.labelerId, item.labelerName)
+                            handleShowStatistics(
+                              item.assignmentId,
+                              item.labelerId,
+                              item.labelerName
+                            )
                           }
                         >
                           <i className="fas fa-chart-bar me-1"></i>
@@ -347,8 +352,8 @@ const ProjectLabelersTab = ({ projectId }) => {
 
       {/* All Labelers Section */}
       <div className="d-flex justify-content-between align-items-center mb-3 mt-5">
-        <h4 className="mb-0">{t("projects:labeler_tab.all_labelers")}(
-          {allLabelers?.length || 0})
+        <h4 className="mb-0">
+          {t("projects:labeler_tab.all_labelers")}({allLabelers?.length || 0})
         </h4>
         <div className="d-flex gap-2">
           {allLabelers?.length > 0 &&
@@ -415,7 +420,7 @@ const ProjectLabelersTab = ({ projectId }) => {
                           variant="success"
                           size="sm"
                           className="btn-standard"
-                          style={{ minWidth: '25%' }}
+                          style={{ minWidth: "25%" }}
                           onClick={() =>
                             assignLabeler(
                               labeler.id,
