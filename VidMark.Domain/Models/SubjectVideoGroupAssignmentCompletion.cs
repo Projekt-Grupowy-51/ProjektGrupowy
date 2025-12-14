@@ -48,7 +48,7 @@ public class SubjectVideoGroupAssignmentCompletion : BaseEntity
             IsCompleted = true;
             CompletedAt = DateTime.UtcNow;
             ModifiedAt = DateTime.UtcNow;
-            AddDomainEvent("Przypisanie oznaczone jako ukoñczone!", userId);
+            AddDomainEvent(MessageContent.AssignmentMarkedComplete, userId);
         }
     }
 
@@ -59,7 +59,7 @@ public class SubjectVideoGroupAssignmentCompletion : BaseEntity
             IsCompleted = false;
             CompletedAt = null;
             ModifiedAt = DateTime.UtcNow;
-            AddDomainEvent("Przypisanie oznaczone jako nieukoñczone!", userId);
+            AddDomainEvent(MessageContent.AssignmentMarkedIncomplete, userId);
         }
     }
 }

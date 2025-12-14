@@ -40,7 +40,7 @@ public class GeneratedReport : BaseEntity, IOwnedEntity
         };
 
         // Add user notification
-        report.AddDomainEvent("Raport został wygenerowany!", createdById);
+        report.AddDomainEvent(MessageContent.ReportGenerated, createdById);
 
         return report;
     }
@@ -48,8 +48,8 @@ public class GeneratedReport : BaseEntity, IOwnedEntity
     public void AddReportGeneratedEvent()
     {
         // Add typed event for SignalR refresh after report is saved and has an ID
-        this.AddTypedDomainEvent(
-            "Report generated",
+        AddTypedDomainEvent(
+            MessageContent.ReportGenerated,
             CreatedById,
             "ReportGeneratedEvent",
             new { ProjectId = Project.Id, ReportId = Id }

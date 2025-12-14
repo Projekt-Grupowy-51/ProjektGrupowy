@@ -24,7 +24,7 @@ public class ProjectAccessCode : BaseEntity, IOwnedEntity
     public void Retire(string userId)
     {
         ExpiresAtUtc = DateTime.UtcNow;
-        AddDomainEvent("Kod dostępu został wycofany!", userId);
+        AddDomainEvent(MessageContent.AccessCodeRetired, userId);
     }
     public string CreatedById { get; set; } = string.Empty;
 
@@ -64,7 +64,7 @@ public class ProjectAccessCode : BaseEntity, IOwnedEntity
             ExpiresAtUtc = GetExpirationDate(expiration, customDays),
             CreatedById = createdById
         };
-        accessCode.AddDomainEvent("Kod dostępu został utworzony!", createdById);
+        accessCode.AddDomainEvent(MessageContent.AccessCodeCreated, createdById);
         return accessCode;
     }
 }

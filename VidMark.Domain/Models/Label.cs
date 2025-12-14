@@ -55,7 +55,7 @@ public class Label : BaseEntity, IOwnedEntity
             Subject = subject,
             CreatedById = createdById
         };
-        label.AddDomainEvent("Etykieta została dodana!", createdById);
+        label.AddDomainEvent(MessageContent.LabelAdded, createdById);
         return label;
     }
 
@@ -66,6 +66,6 @@ public class Label : BaseEntity, IOwnedEntity
         Type = type;
         Shortcut = shortcut;
         Subject = subject;
-        AddDomainEvent("Etykieta została zaktualizowana!", userId);
+        AddDomainEvent(MessageContent.LabelUpdated, userId);
     }
 }

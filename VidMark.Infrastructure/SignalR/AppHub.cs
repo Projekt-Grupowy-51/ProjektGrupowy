@@ -5,4 +5,4 @@ using Microsoft.Extensions.Logging;
 namespace VidMark.Infrastructure.SignalR;
 
 [Authorize]
-public class AppHub : Hub;
+public class AppHub : Hub<IAppHubClient>;

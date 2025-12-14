@@ -46,7 +46,7 @@ public class SubjectVideoGroupAssignment : BaseEntity, IOwnedEntity
     public void ClearLabelers(string userId)
     {
         Labelers.Clear();
-        AddDomainEvent("Etykietujący zostali odpisani z przypisania!", userId);
+        AddDomainEvent(MessageContent.LabelersRemovedFromAssignment, userId);
     }
 
     public void AddLabelers(IEnumerable<User> labelers, string userId)
@@ -58,7 +58,7 @@ public class SubjectVideoGroupAssignment : BaseEntity, IOwnedEntity
                 Labelers.Add(labeler);
             }
         }
-        AddDomainEvent("Etykietujący zostali przypisani do przypisania!", userId);
+        AddDomainEvent(MessageContent.LabelersAddedToAssignment, userId);
     }
 
     public static SubjectVideoGroupAssignment Create(Subject subject, VideoGroup videoGroup, string createdById)
@@ -70,7 +70,7 @@ public class SubjectVideoGroupAssignment : BaseEntity, IOwnedEntity
             CreationDate = DateOnly.FromDateTime(DateTime.Today),
             CreatedById = createdById
         };
-        assignment.AddDomainEvent("Przypisanie zostało dodane!", createdById);
+        assignment.AddDomainEvent(MessageContent.AssignmentCreated, createdById);
         return assignment;
     }
 
@@ -79,7 +79,7 @@ public class SubjectVideoGroupAssignment : BaseEntity, IOwnedEntity
         Subject = subject;
         VideoGroup = videoGroup;
         ModificationDate = DateOnly.FromDateTime(DateTime.Today);
-        AddDomainEvent("Przypisanie zostało zaktualizowane!", userId);
+        AddDomainEvent(MessageContent.AssignmentUpdated, userId);
     }
 
     public void AssignLabeler(User labeler, string userId)
@@ -87,7 +87,7 @@ public class SubjectVideoGroupAssignment : BaseEntity, IOwnedEntity
         if (!Labelers.Contains(labeler))
         {
             Labelers.Add(labeler);
-            AddDomainEvent("Etykietujący został przypisany!", userId);
+            AddDomainEvent(MessageContent.LabelerAddedToAssignment, userId);
         }
     }
 
@@ -96,7 +96,7 @@ public class SubjectVideoGroupAssignment : BaseEntity, IOwnedEntity
         if (Labelers.Contains(labeler))
         {
             Labelers.Remove(labeler);
-            AddDomainEvent("Etykietujący został odpisany!", userId);
+            AddDomainEvent(MessageContent.LabelerRemovedFromAssignment, userId);
         }
     }
 }

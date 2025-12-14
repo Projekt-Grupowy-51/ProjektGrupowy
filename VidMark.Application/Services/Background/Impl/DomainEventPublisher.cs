@@ -54,7 +54,7 @@ public class DomainEventPublisher : IDomainEventPublisher
                 {
                     // Legacy notification event
                     var notification = new DomainEventNotification(
-                        domainEvent.Message,
+                        domainEvent.MessageContent,
                         domainEvent.UserId,
                         domainEvent.OccurredAt
                     );
@@ -74,10 +74,10 @@ public class DomainEventPublisher : IDomainEventPublisher
             {
                 failedCount++;
                 _logger.LogError(ex,
-                    "Error occurred while publishing domain event {EventId}. Event type: {EventType}, Message: {Message}",
+                    "Error occurred while publishing domain event {EventId}. Event type: {EventType}, MessageContent: {MessageContent}",
                     domainEvent.Id,
                     domainEvent.EventType ?? "notification",
-                    domainEvent.Message);
+                    domainEvent.MessageContent);
                 // Continue processing other events - don't mark this one as published
             }
         }

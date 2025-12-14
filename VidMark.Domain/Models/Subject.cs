@@ -29,7 +29,7 @@ public class Subject : BaseEntity, IOwnedEntity
             Project = project,
             CreatedById = createdById
         };
-        subject.AddDomainEvent("Temat został dodany!", createdById);
+        subject.AddDomainEvent(MessageContent.SubjectAdded, createdById);
         return subject;
     }
 
@@ -38,6 +38,6 @@ public class Subject : BaseEntity, IOwnedEntity
         Name = name;
         Description = description;
         Project = project;
-        AddDomainEvent("Temat został zaktualizowany!", userId);
+        AddDomainEvent(MessageContent.SubjectUpdated, userId);
     }
 }

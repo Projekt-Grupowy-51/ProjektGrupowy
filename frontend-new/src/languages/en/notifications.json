@@ -1,0 +1,31 @@
+{
+  "messages": {
+    "0": "Label assigned successfully",
+    "1": "Report has been generated",
+    "2": "Label added successfully",
+    "3": "Label updated successfully",
+    "4": "Project created successfully",
+    "5": "Project updated successfully",
+    "6": "Labeler joined the project",
+    "7": "Access code has been retired",
+    "8": "Access code created successfully",
+    "9": "Subject added successfully",
+    "10": "Subject updated successfully",
+    "11": "Labelers removed from assignment",
+    "12": "Labelers added to assignment",
+    "13": "Assignment created successfully",
+    "14": "Assignment updated successfully",
+    "15": "Labeler added to assignment",
+    "16": "Labeler removed from assignment",
+    "17": "Assignment marked as complete",
+    "18": "Assignment marked as incomplete",
+    "19": "Video added successfully",
+    "20": "Video updated successfully",
+    "21": "Video has been processed",
+    "22": "Video group created successfully",
+    "23": "Video group updated successfully",
+    "24": "Item deleted successfully",
+    "25": "An error occurred. Please try again.",
+    "26": "Validation error. Please check your input."
+  }
+}

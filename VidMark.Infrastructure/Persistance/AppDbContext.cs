@@ -73,7 +73,7 @@ public class AppDbContext : DbContext, IApplicationDbContext, IReadWriteContext
                 {
                     var entityName = entry.Entity.GetType().Name;
                     var userId = _currentUserService?.UserId ?? "system";
-                    baseEntity.AddDomainEvent($"{GetPolishEntityName(entityName)} został usunięty!", userId);
+                    baseEntity.AddDomainEvent(MessageContent.EntityDeleted, userId);
                 }
             }
         }

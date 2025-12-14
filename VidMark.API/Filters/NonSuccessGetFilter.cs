@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc.Filters;
 using VidMark.Application.Interfaces.SignalR;
 using VidMark.Application.Services;
+using VidMark.Domain.Models;
 using Serilog;
 
 namespace VidMark.API.Filters;
@@ -18,7 +19,7 @@ public class NonSuccessGetFilter(IMessageService messageService, ICurrentUserSer
         {
             try
             {
-                await messageService.SendErrorAsync(currentUserService.UserId, "Something went wrong");
+                await messageService.SendErrorAsync(currentUserService.UserId, MessageContent.GenericError);
             }
             catch (Exception ex)
             {

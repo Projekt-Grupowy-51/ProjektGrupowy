@@ -22,6 +22,8 @@ import enVideoGroups from './languages/en/videoGroups.json';
 import plVideoGroups from './languages/pl/videoGroups.json';
 import enErrors from './languages/en/errors.json';
 import plErrors from './languages/pl/errors.json';
+import enNotifications from './languages/en/notifications.json';
+import plNotifications from './languages/pl/notifications.json';
 
 const resources = {
     en: {
@@ -35,6 +37,7 @@ const resources = {
         videos: enVideos,
         videoGroups: enVideoGroups,
         errors: enErrors,
+        notifications: enNotifications,
     },
     pl: {
         common: plCommon,
@@ -47,6 +50,7 @@ const resources = {
         videos: plVideos,
         videoGroups: plVideoGroups,
         errors: plErrors,
+        notifications: plNotifications,
     }
 };
 
@@ -57,7 +61,7 @@ i18n
     .init({
         resources,
         fallbackLng: 'en',
-        ns: ['common', 'auth', 'labels', 'labeler', 'projects', 'subjects', 'assignments', 'videoGroups', 'videos', 'errors'],
+        ns: ['common', 'auth', 'labels', 'labeler', 'projects', 'subjects', 'assignments', 'videoGroups', 'videos', 'errors', 'notifications'],
         defaultNS: 'common',
         detection: {
             order: ['querystring', 'localStorage', 'navigator', 'htmlTag'],

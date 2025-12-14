@@ -54,7 +54,7 @@ public class AssignedLabel : BaseEntity, IOwnedEntity
             Start = start,
             End = end
         };
-        assignedLabel.AddDomainEvent("Przypisana etykieta została dodana!", userId);
+        assignedLabel.AddDomainEvent(MessageContent.AssignedLabelAdded, userId);
         return assignedLabel;
     }
 }

@@ -1,10 +1,12 @@
+using VidMark.Domain.Models;
+
 namespace VidMark.Domain.Events;
 
 public class DomainEvent
 {
     public int Id { get; set; }
 
-    public string Message { get; set; } = string.Empty;
+    public MessageContent MessageContent { get; set; }
 
     public string UserId { get; set; } = string.Empty;
 
@@ -18,22 +20,22 @@ public class DomainEvent
 
     public DateTime? PublishedAt { get; set; }
 
-    public static DomainEvent Create(string message, string userId)
+    public static DomainEvent Create(MessageContent content, string userId)
     {
         return new DomainEvent
         {
-            Message = message,
+            MessageContent = content,
             UserId = userId,
             OccurredAt = DateTime.UtcNow,
             IsPublished = false
         };
     }
 
-    public static DomainEvent CreateTyped(string message, string userId, string eventType, string eventData)
+    public static DomainEvent CreateTyped(MessageContent content, string userId, string eventType, string eventData)
     {
         return new DomainEvent
         {
-            Message = message,
+            MessageContent = content,
             UserId = userId,
             EventType = eventType,
             EventData = eventData,

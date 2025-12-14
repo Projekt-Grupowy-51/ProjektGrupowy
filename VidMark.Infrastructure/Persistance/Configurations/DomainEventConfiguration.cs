@@ -10,9 +10,9 @@ public class DomainEventConfiguration : IEntityTypeConfiguration<DomainEvent>
     {
         builder.HasKey(e => e.Id);
 
-        builder.Property(e => e.Message)
+        builder.Property(e => e.MessageContent)
             .IsRequired()
-            .HasMaxLength(500);
+            .HasConversion<string>();
 
         builder.Property(e => e.UserId)
             .IsRequired()
