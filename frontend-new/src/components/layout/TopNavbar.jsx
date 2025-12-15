@@ -30,7 +30,7 @@ const TopNavbar = () => {
       <nav className="navbar navbar-expand-lg">
         <div className="container-fluid">
           <a className="navbar-brand d-flex align-items-center" href="/">
-            <img src="../../../public/logo-removebg.png" alt="VidMark Logo" style={{ height: '30px', objectFit: 'contain' }} className="me-2" />
+            <img src="/logo-removebg.png" alt="VidMark Logo" style={{ height: '30px', objectFit: 'contain' }} className="me-2" />
             VidMark
           </a>
 
