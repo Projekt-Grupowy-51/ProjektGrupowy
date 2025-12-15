@@ -74,12 +74,12 @@ services:
       - Keycloak__MetadataAddress=http://keycloak:8080/realms/vidmark/.well-known/openid-configuration
 
       - Videos__RootDirectory=videos
-      - Videos__NginxUrl=http://nginx-videos/videos
+      - Videos__NginxUrl=https://${DOMAIN:-vidmistrz.pl}/videos
       - Videos__NginxPublicBaseUrl=https://${DOMAIN:-vidmistrz.pl}
       - Videos__SecureLinkSecret=${NGINX_SECURELINK_SECRET}
 
       - Reports__RootDirectory=reports
-      - Reports__NginxUrl=http://nginx-videos/reports
+      - Reports__NginxUrl=https://${DOMAIN:-vidmistrz.pl}/reports
 
       - Cors__AllowedDevOrigin=https://${DOMAIN:-vidmistrz.pl}
       - Cors__AllowedProductionOrigin=https://${DOMAIN:-vidmistrz.pl}
