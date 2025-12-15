@@ -30,7 +30,7 @@ public class VideoGroup : BaseEntity, IOwnedEntity
             Project = project,
             CreatedById = createdById
         };
-        videoGroup.AddDomainEvent("Grupa wideo została dodana!", createdById);
+        videoGroup.AddDomainEvent(MessageContent.VideoGroupCreated, createdById);
         return videoGroup;
     }
 
@@ -39,6 +39,6 @@ public class VideoGroup : BaseEntity, IOwnedEntity
         Name = name;
         Description = description;
         Project = project;
-        AddDomainEvent("Grupa wideo została zaktualizowana!", userId);
+        AddDomainEvent(MessageContent.VideoGroupUpdated, userId);
     }
 }

@@ -1,5 +1,5 @@
 import axios from "axios";
-import keycloak from './keycloak.js';
+import keycloak from "./keycloak.js";
 
 export const API_BASE_URL =
   window.ENV?.VITE_API_BASE_URL ||
@@ -40,13 +40,13 @@ class ApiClient {
       (response) => response,
       async (error) => {
         const originalRequest = error.config;
-        
+
         if (error.response?.status === 401 && !originalRequest._retry) {
           originalRequest._retry = true;
-          
+
           try {
             await this.handleUnauthorized();
-            
+
             // If token was refreshed, retry the original request
             const token = this.getAuthToken();
             if (token) {
@@ -57,11 +57,17 @@ class ApiClient {
             return Promise.reject(refreshError);
           }
         } else if (error.response?.status === 403) {
+          console.error("[ApiClient] HTTP 403 Forbidden received:", {
+            url: originalRequest.url,
+            method: originalRequest.method,
+            status: error.response?.status,
+            data: error.response?.data,
+          });
           window.location.href = "/forbidden";
         } else if (error.response?.status >= 500) {
           window.location.href = "/error";
         }
-        
+
         return Promise.reject(error);
       }
     );

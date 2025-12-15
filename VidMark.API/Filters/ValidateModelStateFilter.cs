@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc.Filters;
 using VidMark.Application.Interfaces.SignalR;
 using VidMark.Application.Services;
+using VidMark.Domain.Models;
 using VidMark.API.Utils;
 using VidMark.API.Extensions;
 
@@ -14,7 +15,7 @@ public class ValidateModelStateFilter(IMessageService messageService, ICurrentUs
         if (!context.ModelState.IsValid)
         {
             context.Result = new BadRequestObjectResult(context.ModelState.GetErrorsAsResponse());
-            await messageService.SendErrorAsync(currentUserService.UserId, $"Error occured while validating Model. Errors: {context.ModelState.GetErrorsAsResponse()}");
+            await messageService.SendErrorAsync(currentUserService.UserId, MessageContent.ValidationError);
             return;
         }
 

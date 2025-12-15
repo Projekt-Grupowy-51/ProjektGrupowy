@@ -410,13 +410,21 @@ a:hover {
 }
 
 #input-error,
-.kc-feedback-text {
+.kc-feedback-text,
+#input-error-username,
+#input-error-password,
+#input-error-password-confirm,
+span[id^="input-error-"],
+.pf-v5-c-form__helper-text.pf-m-error {
+  display: block !important;
   background: rgba(255, 230, 230, 0.38) !important;
   color: #d32f2f !important;
   border-radius: 8px !important;
   padding: 0.2em 0.6em !important;
   margin-top: 0.25rem !important;
   font-size: 0.9rem !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
 }
 
 .alert {
@@ -426,11 +434,13 @@ a:hover {
   border: 1.5px solid rgba(200, 200, 200, 0.15) !important;
 }
 
-/* Tidy alerts so they don't blow out the layout */
+/* Tidy alerts and errors so they don't blow out the layout */
 .alert-info,
 .alert,
 #input-error,
-.kc-feedback-text {
+.kc-feedback-text,
+span[id^="input-error-"],
+.pf-v5-c-form__helper-text.pf-m-error {
 	max-width: 100% !important;
 	margin: 0.5rem 0 !important;
 	box-sizing: border-box !important;

@@ -53,7 +53,7 @@
             </div>
         </main>
     <#elseif section = "info">
-        <div class="alert alert-info">
+        <div class="alert alert-info" style="padding: 10px;">
             <#if realm.duplicateEmailsAllowed>
                 ${msg("emailInstructionUsername")}
             <#else>

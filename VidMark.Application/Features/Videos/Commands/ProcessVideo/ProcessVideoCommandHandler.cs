@@ -7,6 +7,7 @@ using MediatR;
 using VidMark.Application.Interfaces.Repositories;
 using VidMark.Application.Interfaces.SignalR;
 using VidMark.Application.Interfaces.UnitOfWork;
+using VidMark.Domain.Models;
 
 namespace VidMark.Application.Features.Videos.Commands.ProcessVideo;
 
@@ -63,8 +64,8 @@ public class ProcessVideoCommandHandler(
 
         await Task.WhenAll(t2, t4);
 
-        await messageService.SendVideoProcessedAsync(request.UserId, "Video processed successfully.", cancellationToken);
-        await messageService.SendSuccessAsync(request.UserId, "Video processed successfully.", cancellationToken);
+        await messageService.SendVideoProcessedAsync(request.UserId, MessageContent.VideoProcessed, cancellationToken);
+        await messageService.SendSuccessAsync(request.UserId, MessageContent.VideoProcessed, cancellationToken);
 
         var baseQuality = $"{baseW}x{baseH}";
         video.OriginalQuality = baseQuality;

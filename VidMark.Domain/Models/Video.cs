@@ -61,7 +61,7 @@ public class Video : BaseEntity, IOwnedEntity
             PositionInQueue = positionInQueue,
             CreatedById = createdById
         };
-        video.AddDomainEvent("Wideo zostało dodane!", createdById);
+        video.AddDomainEvent(MessageContent.VideoAdded, createdById);
         return video;
     }
 
@@ -81,6 +81,6 @@ public class Video : BaseEntity, IOwnedEntity
             ContentType = contentType;
         }
 
-        AddDomainEvent("Wideo zostało zaktualizowane!", userId);
+        AddDomainEvent(MessageContent.VideoUpdated, userId);
     }
 }

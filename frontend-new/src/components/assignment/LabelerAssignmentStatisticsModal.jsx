@@ -4,7 +4,13 @@ import { useTranslation } from "react-i18next";
 import { Modal, Card, Table } from "../ui";
 import SubjectVideoGroupAssignmentService from "../../services/SubjectVideoGroupAssignmentService";
 
-const LabelerAssignmentStatisticsModal = ({ show, onHide, assignmentId, labelerId, labelerName }) => {
+const LabelerAssignmentStatisticsModal = ({
+  show,
+  onHide,
+  assignmentId,
+  labelerId,
+  labelerName,
+}) => {
   const { t } = useTranslation(["common", "assignments"]);
   const [statistics, setStatistics] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -20,7 +26,11 @@ const LabelerAssignmentStatisticsModal = ({ show, onHide, assignmentId, labelerI
     try {
       setLoading(true);
       setError(null);
-      const data = await SubjectVideoGroupAssignmentService.getLabelerStatistics(assignmentId, labelerId);
+      const data =
+        await SubjectVideoGroupAssignmentService.getLabelerStatistics(
+          assignmentId,
+          labelerId
+        );
       setStatistics(data);
     } catch (err) {
       setError(err.message);
@@ -37,15 +47,19 @@ const LabelerAssignmentStatisticsModal = ({ show, onHide, assignmentId, labelerI
         <div className="col-md-3">
           <Card className="h-100">
             <Card.Body>
-              <h6 className="text-muted mb-1">{t("assignments:statistics.total_videos")}</h6>
+              <h6 className="text-muted mb-1">
+                {t("assignments:statistics.total_videos")}
+              </h6>
               <h3 className="mb-0">{statistics.totalVideos}</h3>
             </Card.Body>
           </Card>
         </div>
         <div className="col-md-3">
-          <Card className="h-100 bg-success text-white">
+          <Card className="h-100">
             <Card.Body>
-              <h6 className="mb-1">{t("assignments:statistics.labeled_videos")}</h6>
+              <h6 className="mb-1">
+                {t("assignments:statistics.labeled_videos")}
+              </h6>
               <h3 className="mb-0">{statistics.labeledVideos}</h3>
             </Card.Body>
           </Card>
@@ -53,22 +67,36 @@ const LabelerAssignmentStatisticsModal = ({ show, onHide, assignmentId, labelerI
         <div className="col-md-3">
           <Card className="h-100">
             <Card.Body>
-              <h6 className="text-muted mb-1">{t("assignments:statistics.total_labels")}</h6>
+              <h6 className="text-muted mb-1">
+                {t("assignments:statistics.total_labels")}
+              </h6>
               <h3 className="mb-0">{statistics.totalLabels}</h3>
             </Card.Body>
           </Card>
         </div>
         <div className="col-md-3">
-          <Card className={`h-100 ${statistics.isCompleted ? 'bg-success text-white' : ''}`}>
+          <Card
+            className={`h-100 ${
+              statistics.isCompleted ? "bg-success text-white" : ""
+            }`}
+          >
             <Card.Body>
-              <h6 className={statistics.isCompleted ? 'mb-1' : 'text-muted mb-1'}>
+              <h6
+                className={statistics.isCompleted ? "mb-1" : "text-muted mb-1"}
+              >
                 {t("assignments:statistics.status")}
               </h6>
               <h5 className="mb-0">
                 {statistics.isCompleted ? (
-                  <><i className="fas fa-check me-2"></i>{t("common:states.completed")}</>
+                  <>
+                    <i className="fas fa-check me-2"></i>
+                    {t("common:states.completed")}
+                  </>
                 ) : (
-                  <><i className="fas fa-clock me-2"></i>{t("common:states.in_progress")}</>
+                  <>
+                    <i className="fas fa-clock me-2"></i>
+                    {t("common:states.in_progress")}
+                  </>
                 )}
               </h5>
             </Card.Body>
@@ -78,7 +106,6 @@ const LabelerAssignmentStatisticsModal = ({ show, onHide, assignmentId, labelerI
     );
   };
 
-
   const renderVideosTable = () => {
     if (!statistics || !statistics.videos || statistics.videos.length === 0) {
       return null;
@@ -87,15 +114,21 @@ const LabelerAssignmentStatisticsModal = ({ show, onHide, assignmentId, labelerI
     return (
       <Card>
         <Card.Header>
-          <Card.Title level={6}>{t("assignments:statistics.video_progress")}</Card.Title>
+          <Card.Title level={6}>
+            {t("assignments:statistics.video_progress")}
+          </Card.Title>
         </Card.Header>
         <Card.Body>
           <Table striped>
             <Table.Head>
               <Table.Row>
                 <Table.Cell header>{t("common:form.video")}</Table.Cell>
-                <Table.Cell header>{t("assignments:statistics.labels_created")}</Table.Cell>
-                <Table.Cell header>{t("assignments:statistics.labeled")}</Table.Cell>
+                <Table.Cell header>
+                  {t("assignments:statistics.labels_created")}
+                </Table.Cell>
+                <Table.Cell header>
+                  {t("assignments:statistics.labeled")}
+                </Table.Cell>
               </Table.Row>
             </Table.Head>
             <Table.Body>
@@ -132,8 +165,8 @@ const LabelerAssignmentStatisticsModal = ({ show, onHide, assignmentId, labelerI
       size="xl"
       title={t("assignments:statistics.labeler_title", {
         name: labelerName || labelerId,
-        subject: statistics?.subjectName || '',
-        videoGroup: statistics?.videoGroupName || ''
+        subject: statistics?.subjectName || "",
+        videoGroup: statistics?.videoGroupName || "",
       })}
     >
       <Modal.Body>
@@ -142,13 +175,16 @@ const LabelerAssignmentStatisticsModal = ({ show, onHide, assignmentId, labelerI
         {statistics && (
           <>
             <div className="mb-3">
-              <strong>{t("common:form.email")}:</strong> {statistics.labelerEmail || t("common:not_available")}
+              <strong>{t("common:form.email")}:</strong>{" "}
+              {statistics.labelerEmail || t("common:not_available")}
             </div>
             <div className="mb-3">
-              <strong>{t("common:form.subject")}:</strong> {statistics.subjectName}
+              <strong>{t("common:form.subject")}:</strong>{" "}
+              {statistics.subjectName}
             </div>
             <div className="mb-3">
-              <strong>{t("common:form.video_group")}:</strong> {statistics.videoGroupName}
+              <strong>{t("common:form.video_group")}:</strong>{" "}
+              {statistics.videoGroupName}
             </div>
             {renderStatCards()}
             {renderVideosTable()}
@@ -167,7 +203,8 @@ const LabelerAssignmentStatisticsModal = ({ show, onHide, assignmentId, labelerI
 LabelerAssignmentStatisticsModal.propTypes = {
   show: PropTypes.bool.isRequired,
   onHide: PropTypes.func.isRequired,
-  assignmentId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  assignmentId: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+    .isRequired,
   labelerId: PropTypes.string,
   labelerName: PropTypes.string,
 };

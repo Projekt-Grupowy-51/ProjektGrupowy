@@ -122,7 +122,8 @@
       "30_days": "30 Days",
       "custom": "Custom",
       "unlimited": "Unlimited",
-      "days": "Days"
+      "days": "Days",
+      "custom_hours": "Custom value (days)"
     },
     "expiration": {
       "never": "Never",
@@ -146,7 +147,7 @@
       "copy_failed": "Failed to copy code. Please try again."
     },
     "confirm_retire": "Are you sure you want to retire access code \"{{code}}\"? This operation cannot be undone.",
-  "confirm_delete_assignment": "Are you sure you want to delete assignment #{{id}}? This operation cannot be undone."
+    "confirm_delete_assignment": "Are you sure you want to delete assignment #{{id}}? This operation cannot be undone."
   },
   "video_groups": {
     "loading": "Loading video groups..."

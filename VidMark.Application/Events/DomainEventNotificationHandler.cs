@@ -20,13 +20,13 @@ public class DomainEventNotificationHandler : INotificationHandler<DomainEventNo
     public async Task Handle(DomainEventNotification notification, CancellationToken cancellationToken)
     {
         _logger.LogInformation(
-            "Domain Event: {Message} | User: {UserId} | Occurred: {OccurredAt}",
-            notification.Message,
+            "Domain Event: {Content} | User: {UserId} | Occurred: {OccurredAt}",
+            notification.Content,
             notification.UserId,
             notification.OccurredAt
         );
 
         // Wysyłanie powiadomienia przez SignalR
-        await _messageService.SendInfoAsync(notification.UserId, notification.Message, cancellationToken);
+        await _messageService.SendInfoAsync(notification.UserId, notification.Content, cancellationToken);
     }
 }

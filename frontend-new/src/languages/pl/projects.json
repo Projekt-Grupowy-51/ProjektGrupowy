@@ -122,7 +122,8 @@
       "30_days": "30 dni",
       "custom": "Własny",
       "unlimited": "Bezterminowo",
-      "days": "Dni"
+      "days": "Dni",
+      "custom_hours": "Własna wartość (dni)"
     },
     "expiration": {
       "never": "Nigdy",

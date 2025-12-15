@@ -1,0 +1,31 @@
+{
+  "messages": {
+    "0": "Etykieta przypisana pomyślnie",
+    "1": "Raport został wygenerowany",
+    "2": "Etykieta dodana pomyślnie",
+    "3": "Etykieta zaktualizowana pomyślnie",
+    "4": "Projekt utworzony pomyślnie",
+    "5": "Projekt zaktualizowany pomyślnie",
+    "6": "Etykietujący dołączył do projektu",
+    "7": "Kod dostępu został wycofany",
+    "8": "Kod dostępu utworzony pomyślnie",
+    "9": "Podmiot dodany pomyślnie",
+    "10": "Podmiot zaktualizowany pomyślnie",
+    "11": "Etykietujący zostali usunięci z przydziału",
+    "12": "Etykietujący zostali dodani do przydziału",
+    "13": "Przydział utworzony pomyślnie",
+    "14": "Przydział zaktualizowany pomyślnie",
+    "15": "Etykietujący dodany do przydziału",
+    "16": "Etykietujący usunięty z przydziału",
+    "17": "Przydział oznaczony jako ukończony",
+    "18": "Przydział oznaczony jako nieukończony",
+    "19": "Wideo dodane pomyślnie",
+    "20": "Wideo zaktualizowane pomyślnie",
+    "21": "Wideo zostało przetworzone",
+    "22": "Grupa wideo utworzona pomyślnie",
+    "23": "Grupa wideo zaktualizowana pomyślnie",
+    "24": "Element usunięty pomyślnie",
+    "25": "Wystąpił błąd. Spróbuj ponownie.",
+    "26": "Błąd walidacji. Sprawdź wprowadzone dane."
+  }
+}

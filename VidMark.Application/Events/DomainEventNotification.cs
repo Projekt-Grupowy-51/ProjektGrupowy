@@ -1,16 +1,17 @@
 using MediatR;
+using VidMark.Domain.Models;
 
 namespace VidMark.Application.Events;
 
 public class DomainEventNotification : INotification
 {
-    public string Message { get; }
+    public MessageContent Content { get; }
     public string UserId { get; }
     public DateTime OccurredAt { get; }
 
-    public DomainEventNotification(string message, string userId, DateTime occurredAt)
+    public DomainEventNotification(MessageContent content, string userId, DateTime occurredAt)
     {
-        Message = message;
+        Content = content;
         UserId = userId;
         OccurredAt = occurredAt;
     }

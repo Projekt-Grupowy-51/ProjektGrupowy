@@ -11,42 +11,26 @@ using VidMark.Domain.Models;
 
 namespace VidMark.Application.Features.Projects.Commands.DistributeLabelersEqually;
 
-public class DistributeLabelersEquallyCommandHandler : IRequestHandler<DistributeLabelersEquallyCommand, Result<bool>>
+public class DistributeLabelersEquallyCommandHandler(
+    IProjectRepository projectRepository,
+    ISubjectVideoGroupAssignmentRepository subjectVideoGroupAssignmentRepository,
+    IUnitOfWork unitOfWork,
+    ICurrentUserService currentUserService,
+    IAuthorizationService authorizationService,
+    IMediator mediator)
+    : IRequestHandler<DistributeLabelersEquallyCommand, Result<bool>>
 {
-    private readonly IProjectRepository _projectRepository;
-    private readonly ISubjectVideoGroupAssignmentRepository _subjectVideoGroupAssignmentRepository;
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly ICurrentUserService _currentUserService;
-    private readonly IAuthorizationService _authorizationService;
-    private readonly IMediator _mediator;
-
-    public DistributeLabelersEquallyCommandHandler(
-        IProjectRepository projectRepository,
-        ISubjectVideoGroupAssignmentRepository subjectVideoGroupAssignmentRepository,
-        IUnitOfWork unitOfWork,
-        ICurrentUserService currentUserService,
-        IAuthorizationService authorizationService,
-        IMediator mediator)
-    {
-        _projectRepository = projectRepository;
-        _subjectVideoGroupAssignmentRepository = subjectVideoGroupAssignmentRepository;
-        _unitOfWork = unitOfWork;
-        _currentUserService = currentUserService;
-        _authorizationService = authorizationService;
-        _mediator = mediator;
-    }
-
     public async Task<Result<bool>> Handle(DistributeLabelersEquallyCommand request, CancellationToken cancellationToken)
     {
-        var project = await _projectRepository.GetProjectAsync(request.ProjectId, request.UserId, request.IsAdmin);
+        var project = await projectRepository.GetProjectAsync(request.ProjectId, request.UserId, request.IsAdmin);
 
         if (project is null)
         {
             return Result.Fail("No project found!");
         }
 
-        var authResult = await _authorizationService.AuthorizeAsync(
-            _currentUserService.User,
+        var authResult = await authorizationService.AuthorizeAsync(
+            currentUserService.User,
             project,
             new ResourceOperationRequirement(ResourceOperation.Modify));
 
@@ -62,7 +46,7 @@ public class DistributeLabelersEquallyCommandHandler : IRequestHandler<Distribut
         }
 
         var unassignedLabelersQuery = new GetUnassignedLabelersOfProjectQuery(request.ProjectId, request.UserId, request.IsAdmin);
-        var unassignedLabelersResult = await _mediator.Send(unassignedLabelersQuery, cancellationToken);
+        var unassignedLabelersResult = await mediator.Send(unassignedLabelersQuery, cancellationToken);
 
         if (unassignedLabelersResult.IsFailed)
         {
@@ -83,53 +67,56 @@ public class DistributeLabelersEquallyCommandHandler : IRequestHandler<Distribut
             return Result.Ok(true);
         }
 
-        var assignmentsCount = await _projectRepository.GetLabelerCountForAssignments(projectId, userId, isAdmin);
+        var assignmentsCount = await projectRepository.GetLabelerCountForAssignments(projectId, userId, isAdmin);
 
-        var n = assignmentsCount.Count;
-        var totalSize = assignmentsCount.Values.Sum() + labelers.Count;
-        var targetSize = Math.Max(1, totalSize / n);
+        if (assignmentsCount.Count == 0)
+        {
+            return Result.Fail("No assignments found.");
+        }
 
-        var remaining = labelers.Count;
-        var assigned = 0;
+        // Sort assignments by current count (ascending) to fill up the least populated ones first
+        var sortedAssignments = assignmentsCount
+            .OrderBy(x => x.Value)
+            .ToList();
 
+        // Create a distribution plan using round robin
+        var distributionPlan = new Dictionary<int, List<User>>();
+        foreach (var (assignmentId, _) in sortedAssignments)
+        {
+            distributionPlan[assignmentId] = new List<User>();
+        }
+
+        // Distribute labelers in round robin fashion
+        var labelersList = labelers.ToList();
+        var assignmentIndex = 0;
+
+        foreach (var labeler in labelersList)
+        {
+            var (assignmentId, _) = sortedAssignments[assignmentIndex];
+            distributionPlan[assignmentId].Add(labeler);
+
+            assignmentIndex = (assignmentIndex + 1) % sortedAssignments.Count;
+        }
+
+        // Execute the distribution plan
         try
         {
-            foreach (var (assignmentId, labelerCount) in assignmentsCount)
+            foreach (var (assignmentId, labelersToAssign) in distributionPlan)
             {
-                var toAssign = Math.Max(0, targetSize - labelerCount);
-
-                if (toAssign == 0)
+                if (labelersToAssign.Count == 0)
                 {
                     continue;
                 }
 
-                var toAssignList = labelers
-                    .Skip(assigned)
-                    .Take(toAssign);
+                var assignResult = await AssignLabelerToAssignmentAsync(assignmentId, labelersToAssign, userId, isAdmin);
 
-                var assignResult = await AssignLabelerToAssignmentAsync(assignmentId, toAssignList, userId, isAdmin);
-
-                if (assignResult.IsFailed)
-                {
-                    return Result.Fail("Failed to assign labeler to assignment");
-                }
-
-                assigned += toAssign;
-                remaining -= toAssign;
-            }
-
-            // Handle remaining labelers
-            if (remaining > 0)
-            {
-                var lastAssignmentId = assignmentsCount.Keys.Last();
-                var assignResult = await AssignLabelerToAssignmentAsync(lastAssignmentId, labelers.Skip(assigned), userId, isAdmin);
                 if (assignResult.IsFailed)
                 {
                     return Result.Fail("Failed to assign labeler to assignment");
                 }
             }
 
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await unitOfWork.SaveChangesAsync(cancellationToken);
             return Result.Ok(true);
         }
         catch (Exception e)
@@ -140,15 +127,15 @@ public class DistributeLabelersEquallyCommandHandler : IRequestHandler<Distribut
 
     private async Task<Result<bool>> AssignLabelerToAssignmentAsync(int assignmentId, IEnumerable<User> labelers, string userId, bool isAdmin)
     {
-        var assignment = await _subjectVideoGroupAssignmentRepository.GetSubjectVideoGroupAssignmentAsync(assignmentId, userId, isAdmin);
+        var assignment = await subjectVideoGroupAssignmentRepository.GetSubjectVideoGroupAssignmentAsync(assignmentId, userId, isAdmin);
 
         if (assignment is null)
         {
             return Result.Fail("No assignment found!");
         }
 
-        var authResult = await _authorizationService.AuthorizeAsync(
-            _currentUserService.User,
+        var authResult = await authorizationService.AuthorizeAsync(
+            currentUserService.User,
             assignment,
             new ResourceOperationRequirement(ResourceOperation.Modify));
 

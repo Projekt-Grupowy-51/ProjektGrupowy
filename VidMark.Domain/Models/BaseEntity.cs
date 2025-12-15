@@ -7,16 +7,16 @@ public abstract class BaseEntity
 {
     public List<DomainEvent> DomainEvents { get; private set; } = new();
 
-    public void AddDomainEvent(string message, string userId)
+    public void AddDomainEvent(MessageContent content, string userId)
     {
-        var domainEvent = DomainEvent.Create(message, userId);
+        var domainEvent = DomainEvent.Create(content, userId);
         DomainEvents.Add(domainEvent);
     }
 
-    public void AddTypedDomainEvent(string message, string userId, string eventType, object eventData)
+    public void AddTypedDomainEvent(MessageContent content, string userId, string eventType, object eventData)
     {
         var eventDataJson = JsonSerializer.Serialize(eventData);
-        var domainEvent = DomainEvent.CreateTyped(message, userId, eventType, eventDataJson);
+        var domainEvent = DomainEvent.CreateTyped(content, userId, eventType, eventDataJson);
         DomainEvents.Add(domainEvent);
     }
 

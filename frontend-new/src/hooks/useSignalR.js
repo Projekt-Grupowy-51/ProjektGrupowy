@@ -2,6 +2,7 @@
 // This hook should ONLY be called once at the app level (App.jsx)
 // For child components that need SignalR access, use useSignalRConnection instead
 import { useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { useKeycloak } from "./useKeycloak.js";
 import { useNotification } from "../contexts/NotificationContext.jsx";
 import signalRClient from "../services/signalR/SignalRClientSingleton.js";
@@ -13,11 +14,13 @@ let globalInitialized = false;
 export const useSignalR = () => {
   const { isAuthenticated, getToken } = useKeycloak();
   const { addNotification } = useNotification();
+  const { t } = useTranslation('notifications');
 
   const addNotificationRef = useRef(addNotification);
   const getTokenRef = useRef(getToken);
   const isAuthRef = useRef(isAuthenticated);
   const previousAuthRef = useRef(isAuthenticated);
+  const translateRef = useRef(t);
 
   // keep refs fresh without retriggering init
   useEffect(() => {
@@ -29,6 +32,9 @@ export const useSignalR = () => {
   useEffect(() => {
     isAuthRef.current = isAuthenticated;
   }, [isAuthenticated]);
+  useEffect(() => {
+    translateRef.current = t;
+  }, [t]);
 
   // one-time global initialization - happens only once per app lifecycle
   useEffect(() => {
@@ -41,17 +47,21 @@ export const useSignalR = () => {
         () => isAuthRef.current
       );
 
-      signalRClient.onMessage(MessageTypes.Success, function (msg) {
-        addNotificationRef.current(msg, "success");
+      signalRClient.onMessage(MessageTypes.Success, function (messageContentEnum) {
+        const translatedMessage = translateRef.current(`messages.${messageContentEnum}`);
+        addNotificationRef.current(translatedMessage, "success");
       });
-      signalRClient.onMessage(MessageTypes.Error, function (msg) {
-        addNotificationRef.current(msg, "error");
+      signalRClient.onMessage(MessageTypes.Error, function (messageContentEnum) {
+        const translatedMessage = translateRef.current(`messages.${messageContentEnum}`);
+        addNotificationRef.current(translatedMessage, "error");
       });
-      signalRClient.onMessage(MessageTypes.Warning, function (msg) {
-        addNotificationRef.current(msg, "warning");
+      signalRClient.onMessage(MessageTypes.Warning, function (messageContentEnum) {
+        const translatedMessage = translateRef.current(`messages.${messageContentEnum}`);
+        addNotificationRef.current(translatedMessage, "warning");
       });
-      signalRClient.onMessage(MessageTypes.Info, function (msg) {
-        addNotificationRef.current(msg, "info");
+      signalRClient.onMessage(MessageTypes.Info, function (messageContentEnum) {
+        const translatedMessage = translateRef.current(`messages.${messageContentEnum}`);
+        addNotificationRef.current(translatedMessage, "info");
       });
 
       globalInitialized = true;

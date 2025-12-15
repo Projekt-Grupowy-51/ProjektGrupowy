@@ -4,6 +4,7 @@ using VidMark.API.Filters;
 using VidMark.Application.Exceptions;
 using VidMark.Application.Interfaces.SignalR;
 using VidMark.Application.Services;
+using VidMark.Domain.Models;
 using VidMark.Infrastructure.SignalR;
 using Serilog;
 
@@ -70,7 +71,7 @@ public static class WebApplicationExtensions
                     {
                         context.Response.StatusCode = StatusCodes.Status403Forbidden;
 
-                        await messageService.SendErrorAsync(currentUserService.UserId, "You do not have permission to perform this action.");
+                        await messageService.SendErrorAsync(currentUserService.UserId, MessageContent.GenericError);
 
                         await context.Response.WriteAsJsonAsync(new
                         {
@@ -82,7 +83,7 @@ public static class WebApplicationExtensions
                     {
                         context.Response.StatusCode = StatusCodes.Status500InternalServerError;
 
-                        await messageService.SendErrorAsync(currentUserService.UserId, "An internal server error occurred.");
+                        await messageService.SendErrorAsync(currentUserService.UserId, MessageContent.GenericError);
 
                         await context.Response.WriteAsJsonAsync(new
                         {

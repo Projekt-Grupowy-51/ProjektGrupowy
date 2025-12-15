@@ -10,40 +10,32 @@ namespace VidMark.Application.Pipelines;
 /// Pipeline behavior that publishes a notification to trigger outbox processing after each command/query execution.
 /// This behavior is only active when OutboxSettings.ProcessingMode is set to "Pipeline".
 /// </summary>
-public class OutboxProcessingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
+public class OutboxProcessingBehavior<TRequest, TResponse>(
+    IPublisher publisher,
+    IOptions<OutboxSettings> outboxSettings,
+    ILogger<OutboxProcessingBehavior<TRequest, TResponse>> logger)
+    : IPipelineBehavior<TRequest, TResponse>
     where TRequest : notnull
 {
-    private readonly IPublisher _publisher;
-    private readonly OutboxSettings _outboxSettings;
-    private readonly ILogger<OutboxProcessingBehavior<TRequest, TResponse>> _logger;
-
-    public OutboxProcessingBehavior(
-        IPublisher publisher,
-        IOptions<OutboxSettings> outboxSettings,
-        ILogger<OutboxProcessingBehavior<TRequest, TResponse>> logger)
-    {
-        _publisher = publisher;
-        _outboxSettings = outboxSettings.Value;
-        _logger = logger;
-    }
+    private readonly OutboxSettings _outboxSettings = outboxSettings.Value;
 
     public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
     {
         // Execute the command/query
-        var response = await next();
+        var response = await next(cancellationToken);
 
         // Publish notification to trigger outbox processing only if configured for Pipeline mode
-        if (_outboxSettings.IsPipelineMode)
+        if (!_outboxSettings.IsPipelineMode) 
+            return response;
+        
+        try
         {
-            try
-            {
-                await _publisher.Publish(new ProcessOutboxNotification(), cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error occurred while publishing outbox processing notification for request {RequestType}", typeof(TRequest).Name);
-                // Don't throw - we don't want to fail the request because of event publishing issues
-            }
+            await publisher.Publish(new ProcessOutboxNotification(), cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error occurred while publishing outbox processing notification for request {RequestType}", typeof(TRequest).Name);
+            // Don't throw - we don't want to fail the request because of event publishing issues
         }
 
         return response;

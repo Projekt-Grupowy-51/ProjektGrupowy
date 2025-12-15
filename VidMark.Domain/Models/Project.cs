@@ -39,7 +39,7 @@ public class Project : BaseEntity, IOwnedEntity
             CreatedById = createdById,
             CreationDate = DateOnly.FromDateTime(DateTime.Today)
         };
-        project.AddDomainEvent("Projekt został dodany!", createdById);
+        project.AddDomainEvent(MessageContent.ProjectAdded, createdById);
         return project;
     }
 
@@ -49,7 +49,7 @@ public class Project : BaseEntity, IOwnedEntity
         Description = description;
         ModificationDate = DateOnly.FromDateTime(DateTime.Today);
         EndDate = finished ? DateOnly.FromDateTime(DateTime.Today) : null;
-        AddDomainEvent("Projekt został zaktualizowany!", userId);
+        AddDomainEvent(MessageContent.ProjectUpdated, userId);
     }
 
     public void AddLabeler(User labeler, string userId)
@@ -57,7 +57,7 @@ public class Project : BaseEntity, IOwnedEntity
         if (!ProjectLabelers.Contains(labeler))
         {
             ProjectLabelers.Add(labeler);
-            AddDomainEvent($"Użytkownik {labeler.UserName} dołączył do projektu {Name}!", CreatedById);
+            AddDomainEvent(MessageContent.LabelerJoinedProject, CreatedById);
         }
     }
 }
