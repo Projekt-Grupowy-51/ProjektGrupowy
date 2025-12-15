@@ -131,14 +131,18 @@ http {
 
     # Grafana (monitoring)
     location /grafana/ {
-      proxy_pass http://grafana/;
+      proxy_pass http://grafana;  # Remove the trailing slash
       proxy_set_header Host $host;
       proxy_set_header X-Real-IP $remote_addr;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
       proxy_set_header X-Forwarded-Proto $forwarded_proto;
 
-      # Prevent nginx from rewriting Grafana's redirects
-      proxy_redirect off;
+      # Required for Grafana to generate correct URLs
+      rewrite ^/grafana/(.*) /$1 break;
+      
+      # Rewrite redirects to include /grafana prefix
+      proxy_redirect http://$host/ https://$host/grafana/;
+      proxy_redirect http://grafana:3000/ https://$host/grafana/;
 
       # WebSocket support for Grafana Live
       proxy_http_version 1.1;
