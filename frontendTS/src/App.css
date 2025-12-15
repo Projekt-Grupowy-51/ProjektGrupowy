@@ -1,0 +1,37 @@
+﻿#root {
+    font-family: "Poppins", Arial, sans-serif;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 2rem;
+    text-align: center;
+}
+
+tr:nth-child(even) {
+    background-color: inherit; /* Bootstrap handles row striping */
+}
+
+tr:nth-child(odd) {
+    background: #FFF;
+}
+
+th, td {
+    padding: 0; /* Bootstrap handles padding */
+    text-align: left;
+    border: none; /* Bootstrap handles borders */
+}
+
+th {
+    background: none; /* Bootstrap handles header styles */
+    color: inherit; /* Bootstrap handles text color */
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+
+table {
+    margin: 20px 0;
+}
+
+tr:hover {
+    background-color: inherit; /* Bootstrap handles hover effects */
+}
