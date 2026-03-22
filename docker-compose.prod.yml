@@ -26,13 +26,12 @@ services:
       SCIENTIST_CODE: ${SCIENTIST_ACCESS_CODE}
       KC_METRICS_ENABLED: "true"
       KC_HEALTH_ENABLED: "true"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - keycloak_data:/opt/keycloak/data
     networks:
       - vidmark_network
-    depends_on:
-      db:
-        condition: service_healthy
     restart: unless-stopped
 
   app:
@@ -74,9 +73,6 @@ services:
       - videos_data:/app/videos
       - reports_data:/app/reports
       - logs_data:/app/Logs
-    depends_on:
-      db:
-        condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:80/health || exit 1"]
       interval: 15s
@@ -153,13 +149,12 @@ services:
 
   postgres-exporter:
     image: quay.io/prometheuscommunity/postgres-exporter:v0.15.0
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       DATA_SOURCE_NAME: "postgresql://${POSTGRES_USER}:${POSTGRES_PASS}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=disable"
     networks:
       - vidmark_network
-    depends_on:
-      db:
-        condition: service_healthy
     profiles:
       - monitoring
     restart: unless-stopped
@@ -248,7 +243,6 @@ services:
     restart: unless-stopped
 
 volumes:
-  postgres_data:
   keycloak_data:
   videos_data:
   reports_data:
