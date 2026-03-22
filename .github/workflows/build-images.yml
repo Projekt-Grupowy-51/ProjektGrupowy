@@ -3,6 +3,10 @@ name: Build Container Images
 on:
   workflow_dispatch:
     inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        type: environment
       images:
         description: 'Images to build (comma-separated: backend,frontend,keycloak,nginx,gateway,prometheus,loki,grafana,all)'
         required: true

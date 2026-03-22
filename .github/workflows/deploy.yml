@@ -3,6 +3,10 @@ name: Deploy to Production
 on:
   workflow_dispatch:
     inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        type: environment
       backend_tag:
         description: 'Backend image tag'
         required: true
@@ -47,6 +51,7 @@ jobs:
   deploy:
     name: Deploy to VPS
     runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

@@ -5,34 +5,16 @@ services:
   # CORE SERVICES (Always running)
   # ============================================
 
-  db:
-    image: postgres:17
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASS}
-      POSTGRES_DB: ${POSTGRES_DB}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - vidmark_network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
-    restart: unless-stopped
-
   keycloak:
     image: ghcr.io/projekt-grupowy-51/vidmark-keycloak:${KEYCLOAK_TAG:-latest}
     command:
       ["start", "--optimized", "--import-realm", "--http-relative-path=/auth"]
     environment:
       KC_DB: postgres
-      KC_DB_URL: jdbc:postgresql://db:5432/${POSTGRES_DB}
+      KC_DB_URL: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
       KC_DB_USERNAME: ${POSTGRES_USER}
       KC_DB_PASSWORD: ${POSTGRES_PASS}
-      KC_HOSTNAME: ${DOMAIN:-vidmistrz.pl}
+      KC_HOSTNAME: ${DOMAIN:-vidmark.affectivese.org}
       KC_HOSTNAME_PATH: /auth
       KC_PROXY_HEADERS: xforwarded
       KC_HTTP_ENABLED: "true"
@@ -61,28 +43,28 @@ services:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:80
 
-      - ConnectionStrings__DefaultConnection=Host=db;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASS};Port=5432;Pooling=true;Minimum Pool Size=64;Maximum Pool Size=96;Connection Pruning Interval=60;Connection Idle Lifetime=900;Max Auto Prepare=200;
-      - ConnectionStrings__HangfireConnection=Host=db;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASS};Port=5432
+      - ConnectionStrings__DefaultConnection=Host=${POSTGRES_HOST};Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASS};Port=${POSTGRES_PORT};Pooling=true;Minimum Pool Size=64;Maximum Pool Size=96;Connection Pruning Interval=60;Connection Idle Lifetime=900;Max Auto Prepare=200;
+      - ConnectionStrings__HangfireConnection=Host=${POSTGRES_HOST};Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASS};Port=${POSTGRES_PORT}
 
       - Logging__LogLevel__Default=Information
       - Logging__LogLevel__Microsoft.AspNetCore=Warning
       - Loki__Url=${LOKI_URL:-}
 
-      - Keycloak__Authority=https://${DOMAIN:-vidmistrz.pl}/auth/realms/vidmark
-      - Keycloak__Issuer=https://${DOMAIN:-vidmistrz.pl}/auth/realms/vidmark
+      - Keycloak__Authority=https://${DOMAIN:-vidmark.affectivese.org}/auth/realms/vidmark
+      - Keycloak__Issuer=https://${DOMAIN:-vidmark.affectivese.org}/auth/realms/vidmark
       - Keycloak__Audience=vidmark-client
       - Keycloak__MetadataAddress=http://keycloak:8080/realms/vidmark/.well-known/openid-configuration
 
       - Videos__RootDirectory=videos
-      - Videos__NginxUrl=https://${DOMAIN:-vidmistrz.pl}/videos
-      - Videos__NginxPublicBaseUrl=https://${DOMAIN:-vidmistrz.pl}
+      - Videos__NginxUrl=https://${DOMAIN:-vidmark.affectivese.org}/videos
+      - Videos__NginxPublicBaseUrl=https://${DOMAIN:-vidmark.affectivese.org}
       - Videos__SecureLinkSecret=${NGINX_SECURELINK_SECRET}
 
       - Reports__RootDirectory=reports
-      - Reports__NginxUrl=https://${DOMAIN:-vidmistrz.pl}/reports
+      - Reports__NginxUrl=https://${DOMAIN:-vidmark.affectivese.org}/reports
 
-      - Cors__AllowedDevOrigin=https://${DOMAIN:-vidmistrz.pl}
-      - Cors__AllowedProductionOrigin=https://${DOMAIN:-vidmistrz.pl}
+      - Cors__AllowedDevOrigin=https://${DOMAIN:-vidmark.affectivese.org}
+      - Cors__AllowedProductionOrigin=https://${DOMAIN:-vidmark.affectivese.org}
 
       - SignalR__HubUrl=/hub/app
       - Limits__MaxBodySizeMb=100
@@ -106,9 +88,9 @@ services:
   frontend:
     image: ghcr.io/projekt-grupowy-51/vidmark-frontend:${FRONTEND_TAG:-latest}
     environment:
-      - VITE_API_BASE_URL=https://${DOMAIN:-vidmistrz.pl}/api
-      - VITE_SIGNALR_HUB_URL=https://${DOMAIN:-vidmistrz.pl}/hub/app
-      - VITE_KEYCLOAK_URL=https://${DOMAIN:-vidmistrz.pl}/auth/
+      - VITE_API_BASE_URL=https://${DOMAIN:-vidmark.affectivese.org}/api
+      - VITE_SIGNALR_HUB_URL=https://${DOMAIN:-vidmark.affectivese.org}/hub/app
+      - VITE_KEYCLOAK_URL=https://${DOMAIN:-vidmark.affectivese.org}/auth/
       - VITE_KEYCLOAK_REALM=vidmark
       - VITE_KEYCLOAK_CLIENT_ID=vidmark-client
     networks:
@@ -122,7 +104,7 @@ services:
   gateway:
     image: ghcr.io/projekt-grupowy-51/vidmark-gateway:${GATEWAY_TAG:-latest}
     environment:
-      - DOMAIN=${DOMAIN:-vidmistrz.pl}
+      - DOMAIN=${DOMAIN:-vidmark.affectivese.org}
     ports:
       - "80:80"
     networks:
@@ -146,7 +128,7 @@ services:
   nginx-videos:
     image: ghcr.io/projekt-grupowy-51/vidmark-nginx:${NGINX_TAG:-latest}
     environment:
-      - NGINX_HOST=${NGINX_HOST:-vidmistrz.pl}
+      - NGINX_HOST=${NGINX_HOST:-vidmark.affectivese.org}
       - NGINX_PORT=80
       - NGINX_SECURELINK_SECRET=${NGINX_SECURELINK_SECRET}
     networks:
@@ -172,7 +154,7 @@ services:
   postgres-exporter:
     image: quay.io/prometheuscommunity/postgres-exporter:v0.15.0
     environment:
-      DATA_SOURCE_NAME: "postgresql://${POSTGRES_USER}:${POSTGRES_PASS}@db:5432/${POSTGRES_DB}?sslmode=disable"
+      DATA_SOURCE_NAME: "postgresql://${POSTGRES_USER}:${POSTGRES_PASS}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=disable"
     networks:
       - vidmark_network
     depends_on:
@@ -238,7 +220,7 @@ services:
       GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
       GF_USERS_ALLOW_SIGN_UP: "false"
-      GF_SERVER_ROOT_URL: https://${DOMAIN:-vidmistrz.pl}/grafana/
+      GF_SERVER_ROOT_URL: https://${DOMAIN:-vidmark.affectivese.org}/grafana/
       GF_SERVER_SERVE_FROM_SUB_PATH: "true"
       GF_SERVER_PROTOCOL: http
       GF_SERVER_ENFORCE_DOMAIN: "false"
