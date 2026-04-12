@@ -212,14 +212,14 @@ jobs:
             TARGET_SERVICES="$TARGET_SERVICES nginx-videos"
           fi
 
+          if [ "${{ inputs.enable_monitoring }}" = "true" ]; then
+            TARGET_SERVICES="$TARGET_SERVICES postgres-exporter prometheus loki grafana"
+          fi
+
           TARGET_SERVICES=$(echo "$TARGET_SERVICES" | xargs)
           if [ -z "$TARGET_SERVICES" ]; then
             echo "No services selected for deployment"
             exit 1
-          fi
-
-          if [ "${{ inputs.enable_monitoring }}" = "true" ]; then
-            TARGET_SERVICES="$TARGET_SERVICES postgres-exporter prometheus loki grafana"
           fi
 
           echo "Selected services: $TARGET_SERVICES"
@@ -230,7 +230,7 @@ jobs:
 
           # Deploy services
           echo "Deploying services..."
-          $COMPOSE_CMD up -d --remove-orphans $TARGET_SERVICES
+          $COMPOSE_CMD up -d --remove-orphans --no-deps $TARGET_SERVICES
 
           echo "Deployment initiated successfully"
           EOF
