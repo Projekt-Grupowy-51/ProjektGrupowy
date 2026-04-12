@@ -32,6 +32,31 @@ on:
         required: true
         default: 'latest'
         type: string
+      deploy_app:
+        description: 'Deploy app service'
+        required: true
+        type: boolean
+        default: true
+      deploy_frontend:
+        description: 'Deploy frontend service'
+        required: true
+        type: boolean
+        default: true
+      deploy_keycloak:
+        description: 'Deploy keycloak service'
+        required: true
+        type: boolean
+        default: true
+      deploy_gateway:
+        description: 'Deploy gateway service'
+        required: true
+        type: boolean
+        default: true
+      deploy_nginx_videos:
+        description: 'Deploy nginx-videos service'
+        required: true
+        type: boolean
+        default: true
       enable_monitoring:
         description: 'Enable monitoring stack (Prometheus, Grafana, Loki)'
         required: true
@@ -164,13 +189,48 @@ jobs:
             COMPOSE_CMD="$COMPOSE_CMD --profile monitoring"
           fi
 
+          # Determine target services to deploy from boolean inputs
+          TARGET_SERVICES=""
+
+          if [ "${{ inputs.deploy_app }}" = "true" ]; then
+            TARGET_SERVICES="$TARGET_SERVICES app"
+          fi
+
+          if [ "${{ inputs.deploy_frontend }}" = "true" ]; then
+            TARGET_SERVICES="$TARGET_SERVICES frontend"
+          fi
+
+          if [ "${{ inputs.deploy_keycloak }}" = "true" ]; then
+            TARGET_SERVICES="$TARGET_SERVICES keycloak"
+          fi
+
+          if [ "${{ inputs.deploy_gateway }}" = "true" ]; then
+            TARGET_SERVICES="$TARGET_SERVICES gateway"
+          fi
+
+          if [ "${{ inputs.deploy_nginx_videos }}" = "true" ]; then
+            TARGET_SERVICES="$TARGET_SERVICES nginx-videos"
+          fi
+
+          TARGET_SERVICES=$(echo "$TARGET_SERVICES" | xargs)
+          if [ -z "$TARGET_SERVICES" ]; then
+            echo "No services selected for deployment"
+            exit 1
+          fi
+
+          if [ "${{ inputs.enable_monitoring }}" = "true" ]; then
+            TARGET_SERVICES="$TARGET_SERVICES postgres-exporter prometheus loki grafana"
+          fi
+
+          echo "Selected services: $TARGET_SERVICES"
+
           # Pull images
           echo "Pulling images..."
-          $COMPOSE_CMD pull
+          $COMPOSE_CMD pull $TARGET_SERVICES
 
           # Deploy services
           echo "Deploying services..."
-          $COMPOSE_CMD up -d --remove-orphans
+          $COMPOSE_CMD up -d --remove-orphans $TARGET_SERVICES
 
           echo "Deployment initiated successfully"
           EOF
@@ -209,4 +269,9 @@ jobs:
           echo "**Keycloak Tag:** ${{ inputs.keycloak_tag }}" >> $GITHUB_STEP_SUMMARY
           echo "**Nginx Tag:** ${{ inputs.nginx_tag }}" >> $GITHUB_STEP_SUMMARY
           echo "**Gateway Tag:** ${{ inputs.gateway_tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Deploy app:** ${{ inputs.deploy_app }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Deploy frontend:** ${{ inputs.deploy_frontend }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Deploy keycloak:** ${{ inputs.deploy_keycloak }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Deploy gateway:** ${{ inputs.deploy_gateway }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Deploy nginx-videos:** ${{ inputs.deploy_nginx_videos }}" >> $GITHUB_STEP_SUMMARY
           echo "**Monitoring Enabled:** ${{ inputs.enable_monitoring }}" >> $GITHUB_STEP_SUMMARY
