@@ -102,7 +102,7 @@ services:
     environment:
       - DOMAIN=${DOMAIN:-vidmark.affectivese.org}
     ports:
-      - "80:80"
+      - "81:80"
     networks:
       - vidmark_network
     depends_on:
