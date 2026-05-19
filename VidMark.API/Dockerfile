@@ -27,17 +27,18 @@ RUN apt-get update \
       ffmpeg \
       curl \
       ca-certificates \
+      gosu \
  && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /app/videos /app/reports /app/Logs /home/app/.aspnet/DataProtection-Keys \
  && chown -R app:app /app /home/app
 
 COPY --from=build /app/publish/ ./
+COPY --chmod=755 VidMark.API/entrypoint.sh /entrypoint.sh
 
 ENV ASPNETCORE_URLS=http://+:80 \
     DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
 
 EXPOSE 80
 
-USER app
-ENTRYPOINT ["dotnet", "VidMark.API.dll"]
+ENTRYPOINT ["/entrypoint.sh"]
